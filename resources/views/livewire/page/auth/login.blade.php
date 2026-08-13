@@ -25,9 +25,9 @@
 
             <x-wirekit::stack gap="10">
 
-                <x-wirekit::input name="email" wire:model="email" label="Email" placeholder="nama@perusahaan.com" />
+                <x-wirekit::input name="email" wire:model.debounce.live.500ms="email" label="Email" placeholder="nama@perusahaan.com" />
 
-                <x-wirekit::password-input name="password" label="Password" optimistic="savePassword" />
+                <x-wirekit::password-input name="password" label="Password" wire:model.debounce.live.500ms="password" optimistic="savePassword" />
 
                 <div class="mt-4">
                     <x-wirekit::checkbox name="remember" wire:model="remember" label="Ingat Saya" class="my-5" />
@@ -35,7 +35,7 @@
 
                 <x-wirekit::button type="submit" color="primary" class="w-full bg-[#30AFFF] text-white
                                            hover:bg-sky-500
-                                           focus:ring-2 focus:ring-[#92EEFF]">
+                                           focus:ring-2 focus:ring-[#92EEFF]" :disabled="!$this->canSubmit()">
                     Masuk ke Sistem
                 </x-wirekit::button>
 
