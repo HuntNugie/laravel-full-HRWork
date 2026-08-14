@@ -7,55 +7,60 @@
         {{-- =========================================================
         HEADER
         ========================================================== --}}
-        <x-slot:header>
+       <x-slot:header>
 
-            <x-wirekit::header>
+    <x-wirekit::header>
 
-                {{-- Mobile sidebar toggle --}}
-                <x-wirekit::sidebar.toggle class="lg:hidden" />
+        {{-- Mobile only --}}
+        <x-wirekit::sidebar.toggle class="lg:hidden" />
 
-                {{-- Brand --}}
-                <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2">
-                    <x-wirekit::image class="w-10 h-10" src="/assets/logo-inovindo.webp"
-                        alt="A product shot" ratio="1/1" fit="contain" rounded />
+        <a
+            href="{{ route('dashboard') }}"
+            wire:navigate
+            class="flex items-center gap-2"
+        >
+            <x-wirekit::image
+                class="h-10 w-10"
+                src="/assets/logo-inovindo.webp"
+                alt="A product shot"
+                ratio="1/1"
+                fit="contain"
+                rounded
+            />
 
-                    <span class="font-bold tracking-tight text-slate-900">
-                        {{ config('app.name') }}
-                    </span>
-                </a>
+            <span class="font-bold tracking-tight text-slate-900">
+                {{ config('app.name') }}
+            </span>
+        </a>
 
+        <div class="flex-1"></div>
 
-                <div class="flex-1"></div>
+        <div class="hidden items-center gap-3 sm:flex">
+            <x-wirekit::stack gap="0" class="text-right">
 
+                <p class="text-sm font-semibold text-slate-900">
+                    {{ auth()->user()->name }}
+                </p>
 
-                {{-- Static user --}}
-                <div class="hidden items-center gap-3 sm:flex">
+                <p class="text-xs text-slate-500">
+                    {{ auth()->user()->getRoleNames()->first() }}
+                </p>
 
-                    <x-wirekit::stack gap="0" class="text-right">
+            </x-wirekit::stack>
 
-                        <p class="text-sm font-semibold text-slate-900">
-                            Nugie
-                        </p>
+            <div
+                class="flex h-9 w-9 items-center justify-center
+                       rounded-full bg-[#92EEFF]/60"
+            >
+                <span class="text-sm font-semibold text-sky-700">
+                    N
+                </span>
+            </div>
+        </div>
 
-                        <p class="text-xs text-slate-500">
-                            Administrator
-                        </p>
+    </x-wirekit::header>
 
-                    </x-wirekit::stack>
-
-
-                    <div class="flex h-9 w-9 items-center justify-center
-                               rounded-full bg-[#92EEFF]/60">
-                        <span class="text-sm font-semibold text-sky-700">
-                            N
-                        </span>
-                    </div>
-
-                </div>
-
-            </x-wirekit::header>
-
-        </x-slot:header>
+</x-slot:header>
 
 
 

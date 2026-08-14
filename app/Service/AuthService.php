@@ -12,6 +12,11 @@ class AuthService{
             return true;
         }
         return false;
+    }
 
+    static function logout(){
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken();
     }
 }

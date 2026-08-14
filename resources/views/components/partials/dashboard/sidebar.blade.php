@@ -1,149 +1,102 @@
-  <x-slot:sidebar>
+<x-slot:sidebar>
 
-            <x-wirekit::sidebar>
+    <x-wirekit::sidebar
+    >
 
-                <x-slot:header>
+        <x-wirekit::sidebar.group label="Overview">
 
-                    <x-wirekit::stack gap="1">
+            <x-wirekit::sidebar.item
+                href="{{ route('dashboard') }}"
+                :active="request()->routeIs('dashboard')"
+                icon="home"
+                wire:navigate
+            >
+                Dashboard
+            </x-wirekit::sidebar.item>
 
-                        <span
-                            class="text-xs font-medium uppercase
-                                   tracking-wider text-slate-400"
-                        >
-                            Administration
-                        </span>
-
-                        <span class="text-sm font-semibold text-slate-900">
-                            Management Panel
-                        </span>
-
-                    </x-wirekit::stack>
-
-                </x-slot:header>
+        </x-wirekit::sidebar.group>
 
 
-                {{-- Overview --}}
-                <x-wirekit::sidebar.group label="Overview">
+        <x-wirekit::sidebar.group label="Access Management">
 
-                    <x-wirekit::sidebar.item
-                        href="{{ route('dashboard') }}"
-                        :active="request()->routeIs('dashboard')"
-                        wire:navigate
-                    >
-                        Dashboard
-                    </x-wirekit::sidebar.item>
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="users"
+                wire:navigate
+            >
+                Users
+            </x-wirekit::sidebar.item>
 
-                </x-wirekit::sidebar.group>
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="shield-check"
+                wire:navigate
+            >
+                Roles
+            </x-wirekit::sidebar.item>
 
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="key"
+                wire:navigate
+            >
+                Permissions
+            </x-wirekit::sidebar.item>
 
-                {{-- Access Management --}}
-                <x-wirekit::sidebar.group label="Access Management">
-
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Users
-                    </x-wirekit::sidebar.item>
-
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Roles
-                    </x-wirekit::sidebar.item>
-
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Permissions
-                    </x-wirekit::sidebar.item>
-
-                </x-wirekit::sidebar.group>
+        </x-wirekit::sidebar.group>
 
 
-                {{-- HR Management --}}
-                <x-wirekit::sidebar.group label="Human Resources">
+        <x-wirekit::sidebar.group label="Human Resources">
 
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Employees
-                    </x-wirekit::sidebar.item>
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="user-group"
+                wire:navigate
+            >
+                Employees
+            </x-wirekit::sidebar.item>
 
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Attendance
-                    </x-wirekit::sidebar.item>
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="clock"
+                wire:navigate
+            >
+                Attendance
+            </x-wirekit::sidebar.item>
 
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Performance
-                    </x-wirekit::sidebar.item>
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="chart-bar"
+                wire:navigate
+            >
+                Performance
+            </x-wirekit::sidebar.item>
 
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Training & TNA
-                    </x-wirekit::sidebar.item>
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="academic-cap"
+                wire:navigate
+            >
+                Training & TNA
+            </x-wirekit::sidebar.item>
 
-                </x-wirekit::sidebar.group>
-
-
-                {{-- System --}}
-                <x-wirekit::sidebar.group label="System">
-
-                    <x-wirekit::sidebar.item
-                        href="#"
-                        wire:navigate
-                    >
-                        Settings
-                    </x-wirekit::sidebar.item>
-
-                </x-wirekit::sidebar.group>
+        </x-wirekit::sidebar.group>
 
 
-                {{-- Sidebar Footer --}}
-                <x-slot:footer>
+        <x-wirekit::sidebar.group label="System">
 
-                    <x-wirekit::stack gap="3">
+            <x-wirekit::sidebar.item
+                href="#"
+                icon="cog-6-tooth"
+                wire:navigate
+            >
+                Settings
+            </x-wirekit::sidebar.item>
 
-                        <div
-                            class="rounded-xl border border-slate-200
-                                   bg-slate-50 p-3"
-                        >
-
-                            <p class="truncate text-sm font-semibold text-slate-900">
-                                Nugie
-                            </p>
-
-                            <p class="truncate text-xs text-slate-500">
-                                nugie@example.com
-                            </p>
-
-                        </div>
+        </x-wirekit::sidebar.group>
 
 
-                        {{-- Sementara statis --}}
-                        <x-wirekit::button
-                            type="button"
-                            class="w-full bg-[#FF5656] text-white
-                                   hover:bg-red-500"
-                        >
-                            Logout
-                        </x-wirekit::button>
+        <livewire:components.main.btn-logout/>
+    </x-wirekit::sidebar>
 
-                    </x-wirekit::stack>
-
-                </x-slot:footer>
-
-            </x-wirekit::sidebar>
-
-        </x-slot:sidebar>
+</x-slot:sidebar>
