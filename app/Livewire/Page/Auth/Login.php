@@ -33,8 +33,9 @@ class Login extends Component
         return filled($this->email) && filled($this->password) && $this->getErrorBag()->isEmpty();
     }
     public function authenticate(){
-        if( ! AuthService::login($this->email,$this->password,$this->remember)){
-            $this->addError("login_error","Email atau password salah");
+        $result = AuthService::login($this->email,$this->password,$this->remember);
+        if( !$result['result']){
+            $this->addError("login_error",$result["message"]);
             return;
         }
         $this->redirectRoute("dashboard",navigate:true);

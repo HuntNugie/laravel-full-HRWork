@@ -12,6 +12,6 @@ Route::middleware('guest')->group(function () {
 });
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
 });

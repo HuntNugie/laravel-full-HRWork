@@ -22,16 +22,20 @@
 
         {{-- Login --}}
         <x-wirekit::form wire:submit="authenticate">
+            @error("login_error")
+                <x-wirekit::alert variant="danger">{{ $message }}</x-wirekit::alert>
+            @enderror
+            <x-wirekit::stack gap="md">
 
-            <x-wirekit::stack gap="10">
+                <x-wirekit::input name="email" wire:model.debounce.live.500ms="email" label="Email"
+                    placeholder="nama@perusahaan.com" />
 
-                <x-wirekit::input name="email" wire:model.debounce.live.500ms="email" label="Email" placeholder="nama@perusahaan.com" />
+                <x-wirekit::password-input name="password" label="Password" wire:model.debounce.live.500ms="password"
+                    optimistic="savePassword" />
 
-                <x-wirekit::password-input name="password" label="Password" wire:model.debounce.live.500ms="password" optimistic="savePassword" />
 
-                <div class="my-4">
-                    <x-wirekit::checkbox name="remember" wire:model="remember" label="Ingat Saya" class="my-5" />
-                </div>
+                <x-wirekit::checkbox name="remember" wire:model="remember" label="Ingat Saya" class="my-5" />
+
 
                 <x-wirekit::button type="submit" color="primary" class="w-full bg-[#30AFFF] text-white
                                            hover:bg-sky-500
