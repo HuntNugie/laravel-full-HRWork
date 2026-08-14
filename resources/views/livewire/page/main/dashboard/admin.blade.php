@@ -1,7 +1,7 @@
-  <x-wirekit::stack gap="6">
+  <x-wirekit::stack gap="md">
 
                 {{-- Page Heading --}}
-                <x-wirekit::stack gap="1">
+                <x-wirekit::stack gap="sm">
 
                     <span class="text-sm font-medium text-[#30AFFF]">
                         Administration
@@ -245,7 +245,7 @@
 
                         <x-wirekit::card.body>
 
-                            <x-wirekit::stack gap="3">
+                            <x-wirekit::stack gap="md">
 
                                 <x-wirekit::button
                                     type="button"
