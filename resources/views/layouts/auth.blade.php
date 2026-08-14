@@ -1,4 +1,4 @@
-<x-layouts::app title="Login">
+<x-layouts::app :title='$title'>
 
     <div class="min-h-screen bg-white">
 

@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Page\Auth;
 
+use App\Service\AuthService;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-#[Layout('layouts.auth')]
+#[Layout('layouts.auth',["title" => "Halaman Login"])]
 class Login extends Component
 {
     #[Validate([
@@ -31,8 +32,13 @@ class Login extends Component
     {
         return filled($this->email) && filled($this->password) && $this->getErrorBag()->isEmpty();
     }
-    public function login(){
-        
+    public function authenticate(){
+        if( ! AuthService::login($this->email,$this->password,$this->remember)){
+            $this->addError("login_error","Email atau password salah");
+            return;
+        }
+        $this->redirectRoute("dashboard",navigate:true);
+
     }
     
     public function render()

@@ -29,7 +29,7 @@
 
                 <x-wirekit::password-input name="password" label="Password" wire:model.debounce.live.500ms="password" optimistic="savePassword" />
 
-                <div class="mt-4">
+                <div class="my-4">
                     <x-wirekit::checkbox name="remember" wire:model="remember" label="Ingat Saya" class="my-5" />
                 </div>
 

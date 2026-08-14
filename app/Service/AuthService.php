@@ -8,6 +8,7 @@ class AuthService{
             'email' => $email,
             'password' => $password
         ],$remember)){
+            session()->regenerate();
             return true;
         }
         return false;
