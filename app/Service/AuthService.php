@@ -17,7 +17,7 @@ class AuthService{
             'password' => $password
         ],$remember)){
             session()->regenerate();
-            return ["result"=>true,];
+            return ["result"=>true,"message"=>"berhasil login"];
         }
         return ["result"=>false,"message"=>"email atau password salah"];
     }

@@ -33,13 +33,13 @@ class Login extends Component
         return filled($this->email) && filled($this->password) && $this->getErrorBag()->isEmpty();
     }
     public function authenticate(){
-        $result = AuthService::login($this->email,$this->password,$this->remember);
-        if( !$result['result']){
-            $this->addError("login_error",$result["message"]);
+        ['message' => $message,'result' => $result] = AuthService::login($this->email,$this->password,$this->remember);
+        if( !$result){
+            $this->addError("login_error",$message);
             return;
         }
         $this->redirectRoute("dashboard",navigate:true);
-
+        return;
     }
     
     public function render()

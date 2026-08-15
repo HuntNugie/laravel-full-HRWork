@@ -28,7 +28,7 @@
             <x-wirekit::stack gap="md">
 
                 <x-wirekit::input name="email" wire:model.debounce.live.500ms="email" label="Email"
-                    placeholder="nama@perusahaan.com" />
+                    placeholder="nama@perusahaan.com" class="text-black" />
 
                 <x-wirekit::password-input name="password" label="Password" wire:model.debounce.live.500ms="password"
                     optimistic="savePassword" />
