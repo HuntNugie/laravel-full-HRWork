@@ -17,14 +17,14 @@
         </x-wirekit::sidebar.group>
 
 
-        <x-wirekit::sidebar.group label="Access Management">
+        <x-wirekit::sidebar.group label="Personal access">
 
             <x-wirekit::sidebar.item
                 href="#"
-                icon="users"
+                icon="clock"
                 wire:navigate
             >
-                Users
+                Presensi
             </x-wirekit::sidebar.item>
 
             <x-wirekit::sidebar.item
@@ -83,20 +83,23 @@
         </x-wirekit::sidebar.group>
 
 
-        <x-wirekit::sidebar.group label="System">
+        <x-wirekit::sidebar.group label="Profile Setting">
 
-            <x-wirekit::sidebar.item
-                href="#"
-                icon="cog-6-tooth"
+              <x-wirekit::sidebar.item
+                href="{{ route('my-profile') }}"
+                :active="request()->routeIs('my-profile')"
+                icon="users"
                 wire:navigate
             >
-                Settings
+                My Profile
             </x-wirekit::sidebar.item>
 
         </x-wirekit::sidebar.group>
 
 
-        <livewire:components.main.btn-logout/>
+        <x-slot:footer>
+            <livewire:components.main.btn-logout />
+        </x-slot:footer>
     </x-wirekit::sidebar>
 
 </x-slot:sidebar>

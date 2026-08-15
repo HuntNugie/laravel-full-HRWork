@@ -1,1 +1,1 @@
-<x-wirekit::button intent="danger" wire:click="Logout">Logout</x-wirekit::button>
+<x-wirekit::button intent="danger" wire:click="Logout" class="w-full">Logout</x-wirekit::button>

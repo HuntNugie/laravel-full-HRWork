@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Page\Auth\Login;
+use App\Livewire\Page\Main\Base\MyProfile;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
 Route::get('/', function () {
@@ -14,4 +15,5 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth','isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
+    Route::get('/my-profile', MyProfile::class)->name('my-profile');
 });

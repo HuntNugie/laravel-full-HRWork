@@ -60,3 +60,8 @@
         }
     }
 }
+
+:root {
+    --color-wk-bg-muted: #dbeafe;
+    --color-wk-text: #2563eb;
+}

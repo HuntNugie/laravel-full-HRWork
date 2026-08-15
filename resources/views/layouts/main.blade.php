@@ -7,60 +7,47 @@
         {{-- =========================================================
         HEADER
         ========================================================== --}}
-       <x-slot:header>
+        <x-slot:header>
 
-    <x-wirekit::header>
+            <x-wirekit::header>
 
-        {{-- Mobile only --}}
-        <x-wirekit::sidebar.toggle class="lg:hidden" />
+                {{-- Mobile only --}}
+                <x-wirekit::sidebar.toggle class="lg:hidden" />
 
-        <a
-            href="{{ route('dashboard') }}"
-            wire:navigate
-            class="flex items-center gap-2"
-        >
-            <x-wirekit::image
-                class="h-10 w-10"
-                src="/assets/logo-inovindo.webp"
-                alt="A product shot"
-                ratio="1/1"
-                fit="contain"
-                rounded
-            />
+                <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center gap-2">
+                    <x-wirekit::image class="h-10 w-10" src="/assets/logo-inovindo.webp" alt="A product shot"
+                        ratio="1/1" fit="contain" rounded />
 
-            <span class="font-bold tracking-tight text-slate-900">
-                {{ config('app.name') }}
-            </span>
-        </a>
+                    <span class="font-bold tracking-tight text-slate-900">
+                        {{ config('app.name') }}
+                    </span>
+                </a>
 
-        <div class="flex-1"></div>
+                <div class="flex-1"></div>
 
-        <div class="hidden items-center gap-3 sm:flex">
-            <x-wirekit::stack gap="0" class="text-right">
+                <div class="hidden items-center gap-3 sm:flex">
+                    <x-wirekit::stack gap="0" class="text-right">
 
-                <p class="text-sm font-semibold text-slate-900">
-                    {{ auth()->user()->name }}
-                </p>
+                        <p class="text-sm font-semibold text-slate-900">
+                            {{ auth()->user()->name }}
+                        </p>
 
-                <p class="text-xs text-slate-500">
-                    {{ auth()->user()->getRoleNames()->first() }}
-                </p>
+                        <p class="text-xs text-slate-500">
+                            {{ auth()->user()->getRoleNames()->first() }}
+                        </p>
 
-            </x-wirekit::stack>
+                    </x-wirekit::stack>
 
-            <div
-                class="flex h-9 w-9 items-center justify-center
-                       rounded-full bg-[#92EEFF]/60"
-            >
-                <span class="text-sm font-semibold text-sky-700">
-                    N
-                </span>
-            </div>
-        </div>
+                    {{-- ini tempat ntar gambar  --}}
+                        <x-wirekit::image  class="flex h-9 w-9 items-center justify-center
+                       rounded-full bg-[#92EEFF]/60 h-10 w-10" src="/assets/logo-inovindo.webp" alt="A product shot"
+                            ratio="1/1" fit="contain" rounded />
+                    
+                </div>
 
-    </x-wirekit::header>
+            </x-wirekit::header>
 
-</x-slot:header>
+        </x-slot:header>
 
 
 
