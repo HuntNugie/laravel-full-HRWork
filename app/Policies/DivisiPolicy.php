@@ -37,7 +37,7 @@ class DivisiPolicy
      */
     public function update(User $user, Divisi $divisi): bool
     {
-        return false;
+        return $user->can('update-divisi');
     }
 
     /**

@@ -52,9 +52,11 @@
                 {{-- Actions --}}
                 <div class="flex gap-2">
 
-                    <x-wirekit::button type="button" class="px-3 py-2">
-                        Edit Division
-                    </x-wirekit::button>
+                    <livewire:components.main.divisi.form-edit>
+                        <x-wirekit::button type="button" class="px-3 py-2" wire:click="$dispatch('open-edit',{id:{{ $divisi->id }}})">
+                            Edit Division
+                        </x-wirekit::button>
+                    </livewire:components.main.divisi.form-edit>
 
                     <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
                         + Add Team
@@ -202,8 +204,8 @@
 
 
                                     <span class="inline-flex items-center rounded-full
-                                                   bg-emerald-50 px-2.5 py-1
-                                                   text-xs font-medium text-emerald-600">
+                                                       bg-emerald-50 px-2.5 py-1
+                                                       text-xs font-medium text-emerald-600">
                                         Active
                                     </span>
 
