@@ -4,15 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class team extends Model
+class Team extends Model
 {
     // relasi ke divisi
         public function divisi(){
-            return $this->belongsTo(divisi::class,'divisi_id');
+            return $this->belongsTo(Divisi::class,'divisi_id');
         }
 
     // relasi ke employees
         public function employees(){
-            return $this->hasMany(employees::class,'team_id');
+            return $this->hasMany(Employees::class,'team_id');
         }
     }

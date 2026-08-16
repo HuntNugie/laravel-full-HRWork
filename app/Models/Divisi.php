@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Model;
 
 #[Guarded('id')]
-class divisi extends Model
+class Divisi extends Model
 {
 
     // relasi ke team
     public function team(){
-        return $this->hasMany(team::class,'divisi_id');
+        return $this->hasMany(Team::class,'divisi_id');
     }
 
 }

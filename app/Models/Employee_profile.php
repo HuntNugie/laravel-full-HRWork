@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class employee_profile extends Model
+class Employee_profile extends Model
 {
     // relasi ke employees
     public function employees(){
-        return $this->belongsTo(employees::class,'employee_id');
+        return $this->belongsTo(Employees::class,'employee_id');
     }
 }

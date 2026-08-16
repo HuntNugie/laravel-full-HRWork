@@ -31,7 +31,7 @@ class User extends Authenticatable implements HasMedia
 
     // relasi ke table employees
     public function employees(){
-        return $this->hasOne(employees::class,'user_id');
+        return $this->hasOne(Employees::class,'user_id');
     }
     protected function casts(): array
     {

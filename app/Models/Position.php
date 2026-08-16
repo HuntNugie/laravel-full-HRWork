@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class position extends Model
+class Position extends Model
 {
     // relasi ke employees
     public function employees(){
-        return $this->hasMany(employees::class,'position_id');
+        return $this->hasMany(Employees::class,'position_id');
     }
 }
