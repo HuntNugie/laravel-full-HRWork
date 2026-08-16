@@ -4,6 +4,8 @@ use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Base\MyProfile;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
+use App\Livewire\Page\Main\Hr\Divisi;
+
 Route::get('/', function () {
     return redirect()->route("login");
 });
@@ -16,4 +18,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth','isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/my-profile', MyProfile::class)->name('my-profile');
+
+    Route::prefix('divisi')->group(function(){
+        Route::get('/view',Divisi::class)->middleware('permission:view-divisi')->name('divisi.view');
+    });
 });

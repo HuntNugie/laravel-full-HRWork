@@ -46,15 +46,19 @@
         </x-wirekit::sidebar.group>
 
 
-        <x-wirekit::sidebar.group label="Human Resources">
+        <x-wirekit::sidebar.group label="{{ auth()->user()->getRoleNames()->first() }}">
 
-            <x-wirekit::sidebar.item
-                href="#"
+        @can('view-divisi')
+               <x-wirekit::sidebar.item
+                href="{{ route('divisi.view') }}"
                 icon="user-group"
+                :active="request()->routeIs('divisi.view')"
                 wire:navigate
             >
-                Employees
+                Divisi
             </x-wirekit::sidebar.item>
+        @endcan
+         
 
             <x-wirekit::sidebar.item
                 href="#"
