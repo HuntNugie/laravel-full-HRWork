@@ -87,18 +87,7 @@
         </x-wirekit::sidebar.group>
 
 
-        <x-wirekit::sidebar.group label="Profile Setting">
-
-              <x-wirekit::sidebar.item
-                href="{{ route('my-profile') }}"
-                :active="request()->routeIs('my-profile')"
-                icon="users"
-                wire:navigate
-            >
-                My Profile
-            </x-wirekit::sidebar.item>
-
-        </x-wirekit::sidebar.group>
+    
 
 
         <x-slot:footer>

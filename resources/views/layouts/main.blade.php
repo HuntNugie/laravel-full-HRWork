@@ -38,11 +38,22 @@
 
                     </x-wirekit::stack>
 
-                    {{-- ini tempat ntar gambar  --}}
-                        <x-wirekit::image  class="flex h-9 w-9 items-center justify-center
+                    {{-- ini tempat ntar gambar --}}
+                  
+                    <x-wirekit::dropdown>
+                        <x-wirekit::dropdown.trigger>
+                             <x-wirekit::image class="flex h-9 w-9 items-center justify-center
                        rounded-full bg-[#92EEFF]/60 h-10 w-10" src="/assets/logo-inovindo.webp" alt="A product shot"
-                            ratio="1/1" fit="contain" rounded />
-                    
+                        ratio="1/1" fit="contain" rounded />
+                        </x-wirekit::dropdown.trigger>
+                        <x-wirekit::dropdown.panel>
+                            <x-wirekit::dropdown.item href="{{ route('my-profile') }}" wire:navigate>Profile</x-wirekit::dropdown.item>
+                            <x-wirekit::dropdown.separator />
+                            <x-wirekit::dropdown.item class="px-4">
+                                <livewire:components.main.btn-logout/>
+                            </x-wirekit::dropdown.item>
+                        </x-wirekit::dropdown.panel>
+                    </x-wirekit::dropdown>
                 </div>
 
             </x-wirekit::header>

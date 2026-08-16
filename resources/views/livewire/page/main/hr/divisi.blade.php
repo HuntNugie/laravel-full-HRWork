@@ -55,13 +55,7 @@
                 {{-- Search --}}
                 <div class="w-full sm:w-64">
 
-                    <input type="text" placeholder="Search division..." class="w-full rounded-lg border border-slate-200
-                               bg-white px-3 py-2.5 text-sm
-                               text-slate-900 outline-none
-                               transition
-                               focus:border-[#30AFFF]
-                               focus:ring-2 focus:ring-[#30AFFF]/20">
-
+                    <x-wirekit::input placeholder="Cari nama divisi" name="search" wire:model.live.debounce.500ms="search" class="text-black" />
                 </div>
 
             </div>
@@ -156,8 +150,8 @@
 
                                     <span
                                         class="inline-flex items-center rounded-full
-                                                    px-2.5 py-1
-                                                   text-xs font-medium {{ $divisi->is_active == 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
+                                                        px-2.5 py-1
+                                                       text-xs font-medium {{ $divisi->is_active == 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
                                         {{ $divisi->is_active }}
                                     </span>
 
@@ -172,8 +166,8 @@
                                         </x-wirekit::button>
 
                                         <x-wirekit::button type="button" class="px-3 py-1.5 text-xs
-                                                       bg-red-50 text-red-600
-                                                       hover:bg-red-100">
+                                                           bg-red-50 text-red-600
+                                                           hover:bg-red-100">
                                             Delete
                                         </x-wirekit::button>
                                     </div>
