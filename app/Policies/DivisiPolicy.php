@@ -21,7 +21,7 @@ class DivisiPolicy
      */
     public function view(User $user, Divisi $divisi): bool
     {
-        return false;
+        return $user->can('view-divisi');
     }
 
     /**

@@ -161,15 +161,10 @@
 
                                     <div class="flex justify-end gap-2">
 
-                                        <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                            Edit
+                                        <x-wirekit::button href="{{ route('divisi.name',$divisi->id) }}" wire:navigate type="button" class="px-3 py-1.5 text-xs">
+                                            Detail
                                         </x-wirekit::button>
-
-                                        <x-wirekit::button type="button" class="px-3 py-1.5 text-xs
-                                                           bg-red-50 text-red-600
-                                                           hover:bg-red-100">
-                                            Delete
-                                        </x-wirekit::button>
+                                     
                                     </div>
 
                                 </td>
