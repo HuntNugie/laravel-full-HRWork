@@ -22,10 +22,10 @@
         </x-wirekit::stack>
 
         @can('create-divisi')
-            {{-- Add Division --}}
-            <livewire:components.main.divisi.form-add />
-        @endcan
 
+            <livewire:components.main.divisi.form-add />
+
+        @endcan
 
     </div>
 
@@ -55,8 +55,13 @@
                 {{-- Search --}}
                 <div class="w-full sm:w-64">
 
-                    <x-wirekit::input placeholder="Cari nama divisi" name="search"
-                        wire:model.live.debounce.500ms="search" class="text-black" />
+                    <x-wirekit::input
+                        placeholder="Cari nama divisi"
+                        name="search"
+                        wire:model.live.debounce.500ms="search"
+                        class="text-black"
+                    />
+
                 </div>
 
             </div>
@@ -68,102 +73,141 @@
 
             <div class="overflow-x-auto">
 
-                <table class="w-full text-left">
+                <x-wirekit::table alpine-sort hoverable>
 
                     {{-- =================================================
                     TABLE HEADER
                     ================================================== --}}
-                    <thead>
+                    <x-wirekit::table.head>
 
-                        <tr class="border-b border-slate-200">
+                        <x-wirekit::table.row>
 
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                                #
-                            </th>
+                          
 
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            <x-wirekit::table.th
+                                sortable
+                                column="name"
+                            >
                                 Division
-                            </th>
+                            </x-wirekit::table.th>
 
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            <x-wirekit::table.th>
                                 Description
-                            </th>
+                            </x-wirekit::table.th>
 
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            <x-wirekit::table.th
+                                sortable
+                                column="teams"
+                            >
                                 Teams
-                            </th>
+                            </x-wirekit::table.th>
 
-                            <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            <x-wirekit::table.th
+                                sortable
+                                column="status"
+                            >
                                 Status
-                            </th>
+                            </x-wirekit::table.th>
 
-                            <th
-                                class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            <x-wirekit::table.th>
                                 Actions
-                            </th>
+                            </x-wirekit::table.th>
 
-                        </tr>
+                        </x-wirekit::table.row>
 
-                    </thead>
+                    </x-wirekit::table.head>
 
 
                     {{-- =================================================
                     TABLE BODY
                     ================================================== --}}
-                    <tbody class="divide-y divide-slate-100">
+                    <x-wirekit::table.body>
 
-
-                        {{-- Division 1 --}}
                         @forelse ($divisis as $divisi)
-                            <tr class="transition hover:bg-slate-50">
 
-                                <td class="px-4 py-4 text-sm text-slate-400">
-                                    {{ $loop->iteration }}
-                                </td>
+                            <x-wirekit::table.row>
 
-                                <td class="px-4 py-4">
+                            
+                                {{-- Division --}}
+                                <x-wirekit::table.td>
 
                                     <div class="flex items-center gap-3">
 
+                                        <div
+                                            class="flex h-9 w-9 shrink-0
+                                                   items-center justify-center
+                                                   rounded-lg bg-[#92EEFF]/40"
+                                        >
 
+                                            <x-wirekit::icon
+                                                name="building-office-2"
+                                                class="size-5 text-sky-600"
+                                            />
 
-                                        <div>
+                                        </div>
 
-                                            <p class="text-sm font-semibold text-slate-800">
-                                                {{$divisi->name}}
+                                        <div class="min-w-0">
+
+                                            <p class="truncate text-sm font-semibold text-slate-800">
+                                                {{ $divisi->name }}
                                             </p>
 
                                         </div>
 
                                     </div>
 
-                                </td>
+                                </x-wirekit::table.td>
 
-                                <td class="px-4 py-4 text-sm text-slate-500">
-                                    {{$divisi->description}}
-                                </td>
 
-                                <td class="px-4 py-4 text-sm text-slate-600">
-                                    {{ count($divisi->team) }}
-                                </td>
+                                {{-- Description --}}
+                                <x-wirekit::table.td>
 
-                                <td class="px-4 py-4">
+                                    <span class="text-sm text-slate-500">
+                                        {{ $divisi->description ?: '-' }}
+                                    </span>
+
+                                </x-wirekit::table.td>
+
+
+                                {{-- Teams --}}
+                                <x-wirekit::table.td>
+
+                                    <span class="text-sm text-slate-600">
+                                        {{ $divisi->team->count() }}
+                                    </span>
+
+                                </x-wirekit::table.td>
+
+
+                                {{-- Status --}}
+                                <x-wirekit::table.td>
 
                                     <span
                                         class="inline-flex items-center rounded-full
-                                                            px-2.5 py-1
-                                                           text-xs font-medium {{ $divisi->is_active == 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
-                                        {{ $divisi->is_active }}
+                                               px-2.5 py-1 text-xs font-medium
+                                               {{ $divisi->is_active === 'active'
+                                                    ? 'bg-emerald-50 text-emerald-600'
+                                                    : 'bg-red-50 text-red-600' }}"
+                                    >
+                                        {{ ucfirst($divisi->is_active) }}
                                     </span>
 
-                                </td>
+                                </x-wirekit::table.td>
 
-                                <td class="px-4 py-4">
 
-                                    <div class="flex justify-end gap-2">
+                                {{-- Actions --}}
+                                <x-wirekit::table.td>
+
+                                    <div class="flex justify-end">
+
                                         @can('show-divisi')
-                                            <x-wirekit::button href="{{ route('divisi.name', $divisi->id) }}" wire:navigate
-                                                type="button" class="px-3 py-1.5 text-xs">
+
+                                            <x-wirekit::button
+                                                href="{{ route('divisi.name', $divisi->id) }}"
+                                                wire:navigate
+                                                type="button"
+                                                class="px-3 py-1.5 text-xs"
+                                            >
                                                 Detail
                                             </x-wirekit::button>
 
@@ -171,25 +215,40 @@
 
                                     </div>
 
-                                </td>
+                                </x-wirekit::table.td>
 
-                            </tr>
+                            </x-wirekit::table.row>
 
                         @empty
-                            <tr>
-                                <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-500">
-                                    No data available
-                                </td>
-                            </tr>
+
+                            <x-wirekit::table.row>
+
+                                <x-wirekit::table.td colspan="6">
+
+                                    <div class="py-8 text-center">
+
+                                        <p class="text-sm text-slate-500">
+                                            No division data available.
+                                        </p>
+
+                                    </div>
+
+                                </x-wirekit::table.td>
+
+                            </x-wirekit::table.row>
+
                         @endforelse
 
+                    </x-wirekit::table.body>
+
+                </x-wirekit::table>
+
+            </div>
 
 
+            {{-- Pagination --}}
+            <div class="mt-4">
 
-                    </tbody>
-
-
-                </table>
                 {{ $divisis->links() }}
 
             </div>
