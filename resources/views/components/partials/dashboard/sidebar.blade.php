@@ -59,6 +59,7 @@
             </x-wirekit::sidebar.item>
         @endcan
          
+        
 
             <x-wirekit::sidebar.item
                 href="#"
@@ -90,9 +91,7 @@
     
 
 
-        <x-slot:footer>
-            <livewire:components.main.btn-logout />
-        </x-slot:footer>
+     
     </x-wirekit::sidebar>
 
 </x-slot:sidebar>

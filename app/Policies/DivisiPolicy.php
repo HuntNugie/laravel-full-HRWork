@@ -45,7 +45,7 @@ class DivisiPolicy
      */
     public function delete(User $user, Divisi $divisi): bool
     {
-        return false;
+        return $user->can('delete-divisi');
     }
 
     /**

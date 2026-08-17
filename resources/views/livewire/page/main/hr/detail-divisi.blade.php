@@ -51,12 +51,22 @@
 
                 {{-- Actions --}}
                 <div class="flex gap-2">
+                    @can('update-divisi')
+                        <livewire:components.main.divisi.form-edit>
+                            <x-wirekit::button type="button" class="px-3 py-2"
+                                wire:click="$dispatch('open-edit',{id:{{ $divisi->id }}})">
+                                Edit Division
+                            </x-wirekit::button>
+                        </livewire:components.main.divisi.form-edit>
+                    @endcan
 
-                    <livewire:components.main.divisi.form-edit>
-                        <x-wirekit::button type="button" class="px-3 py-2" wire:click="$dispatch('open-edit',{id:{{ $divisi->id }}})">
-                            Edit Division
-                        </x-wirekit::button>
-                    </livewire:components.main.divisi.form-edit>
+                    @can('delete-divisi')
+                        <livewire:components.main.divisi.delete>
+                            <x-wirekit::button type="button" intent="danger" wire:click="$dispatch('open-delete',{id:{{ $divisi->id }}})" class="text-white hover:bg-black-500">
+                                Delete Divisi
+                            </x-wirekit::button>
+                        </livewire:components.main.divisi.delete>
+                    @endcan
 
                     <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
                         + Add Team
@@ -204,8 +214,8 @@
 
 
                                     <span class="inline-flex items-center rounded-full
-                                                       bg-emerald-50 px-2.5 py-1
-                                                       text-xs font-medium text-emerald-600">
+                                                                   bg-emerald-50 px-2.5 py-1
+                                                                   text-xs font-medium text-emerald-600">
                                         Active
                                     </span>
 
