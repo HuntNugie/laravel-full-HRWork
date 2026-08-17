@@ -4,8 +4,8 @@ use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Base\MyProfile;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
-use App\Livewire\Page\Main\Hr\DetailDivisi;
-use App\Livewire\Page\Main\Hr\Divisi;
+use App\Livewire\Page\Main\Divisi\DetailDivisi;
+use App\Livewire\Page\Main\Divisi\Divisi;
 
 Route::get('/', function () {
     return redirect()->route("login");

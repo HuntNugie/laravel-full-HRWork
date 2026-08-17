@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Page\Main\Hr;
+namespace App\Livewire\Page\Main\Divisi;
 
 use App\Models\Divisi as ModelsDivisi;
 use Livewire\Attributes\Layout;
@@ -34,7 +34,7 @@ class Divisi extends Component
             ->when($this->search, fn($q) => $q->where('name', 'LIKE', '%' . $this->search . '%'))
             ->latest()
             ->paginate(5);
-        return view('livewire.page.main.hr.divisi', [
+        return view('livewire.page.main.divisi.divisi', [
             'divisis' => $divisis
         ]);
     }

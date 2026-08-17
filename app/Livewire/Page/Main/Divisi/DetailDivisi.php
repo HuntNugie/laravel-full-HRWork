@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Page\Main\Hr;
+namespace App\Livewire\Page\Main\Divisi;
 
 use App\Models\Divisi;
 use Livewire\Attributes\Layout;
@@ -23,6 +23,6 @@ class DetailDivisi extends Component
     }
     public function render()
     {
-        return view('livewire.page.main.hr.detail-divisi');
+        return view('livewire.page.main.divisi.detail-divisi');
     }
 }
