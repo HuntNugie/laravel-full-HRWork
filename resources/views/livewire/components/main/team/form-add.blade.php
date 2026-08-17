@@ -1,25 +1,23 @@
-<x-wirekit::modal name="create-division">
+<x-wirekit::modal name="create-team">
 
     <x-slot:trigger>
-        <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500">
-              <x-wirekit::icon name=plus/> Divisi
-        </x-wirekit::button>
+        {{ $slot }}
     </x-slot:trigger>
 
 
     {{-- =====================================================
-        HEADER
+    HEADER
     ====================================================== --}}
     <x-wirekit::modal.header>
 
         <x-wirekit::stack gap="1">
 
             <h2 class="text-lg font-semibold text-slate-900">
-                Tambah Divisi
+                Tambah Team
             </h2>
 
             <p class="text-sm text-slate-500">
-                Tambahkan divisi baru ke dalam struktur organisasi.
+                Tambahkan Team baru ke dalam struktur organisasi.
             </p>
 
         </x-wirekit::stack>
@@ -28,7 +26,7 @@
 
 
     {{-- =====================================================
-        BODY
+    BODY
     ====================================================== --}}
     <x-wirekit::modal.body>
 
@@ -37,80 +35,72 @@
             <x-wirekit::stack gap="md">
 
                 {{-- =================================================
-                    NAME
+                NAME
                 ================================================== --}}
                 <x-wirekit::field>
 
                     <x-wirekit::label for="division-name" class="text-black">
-                        Nama Divisi
+                        Nama Team
                     </x-wirekit::label>
 
-                    <x-wirekit::input
-                        id="division-name"
-                        type="text"
-                        name="name"
-                        class="text-black"
-                        wire:model.live.debounce.500ms="name"
-                        placeholder="Contoh: Human Resources"
-                    />
+                    <x-wirekit::input id="division-name" type="text" name="name" class="text-black"
+                        wire:model.live.debounce.500ms="name" placeholder="Contoh: Human Resources" />
 
-                 
+
 
                 </x-wirekit::field>
 
 
                 {{-- =================================================
-                    DESCRIPTION
+                DESCRIPTION
                 ================================================== --}}
                 <x-wirekit::field>
 
-                    <x-wirekit::label for="division-description" class="text-black">
-                        Deskripsi
+                    <x-wirekit::label for="Team-description" class="text-black">
+                        Deskripsi Team
                     </x-wirekit::label>
 
-                    <x-wirekit::textarea
-                        id="division-description"
-                        wire:model.live.debounce.500ms="desc"
-                        name="desc"
-                        class="text-black"
-                        rows="4"
-                        placeholder="Deskripsi mengenai divisi..."
-                    />
+                    <x-wirekit::textarea id="Team-description" wire:model.live.debounce.500ms="desc" name="desc"
+                        class="text-black" rows="4" placeholder="Deskripsi mengenai team..." />
 
-                   
+
+
+                </x-wirekit::field>
+                <x-wirekit::field>
+
+                    <x-wirekit::label for="divisi" class="text-black">
+                         Divisi
+                    </x-wirekit::label>
+
+                    <x-wirekit::select id="divisi" class="text-black" name="Divisi" placeholder="Pilih Divisi..." :options="$divisis" wire:model.live="divisiId" />
+                 
+
 
                 </x-wirekit::field>
 
 
                 {{-- =================================================
-                    STATUS
+                STATUS
                 ================================================== --}}
-                <div
-                    class="flex items-center justify-between rounded-lg border border-slate-200 p-4"
-                >
+                <div class="flex items-center justify-between rounded-lg border border-slate-200 p-4">
 
                     <div>
 
                         <p class="text-sm font-medium text-slate-700">
-                            Status Divisi
+                            Status Team
                         </p>
 
                         <p class="mt-1 text-xs text-slate-400">
-                            Tentukan apakah divisi aktif digunakan.
+                            Tentukan apakah Team aktif digunakan.
                         </p>
 
                     </div>
 
                     <label class="inline-flex cursor-pointer items-center">
 
-                        <input
-                            type="checkbox"
-                            wire:model="isActive"
-                            class="peer sr-only"
-                        >
+                        <input type="checkbox" wire:model="isActive" class="peer sr-only">
 
-                        <div
-                            class="relative h-6 w-11 rounded-full
+                        <div class="relative h-6 w-11 rounded-full
                                    bg-slate-200
                                    after:absolute after:left-[2px]
                                    after:top-[2px]
@@ -121,8 +111,7 @@
                                    after:transition-all
                                    peer-checked:bg-[#30AFFF]
                                    peer-checked:after:translate-x-full
-                                   peer-checked:after:border-white"
-                        ></div>
+                                   peer-checked:after:border-white"></div>
 
                     </label>
 
@@ -136,33 +125,24 @@
 
 
                 {{-- =================================================
-                    FOOTER
+                FOOTER
                 ================================================== --}}
                 <div class="flex justify-end gap-2 pt-2">
 
                     <x-wirekit::modal.close>
 
-                        <x-wirekit::button
-                            type="button"
-                            size="sm"
-                        >
+                        <x-wirekit::button type="button" size="sm">
                             Cancel
                         </x-wirekit::button>
 
                     </x-wirekit::modal.close>
 
 
-                    <x-wirekit::button
-                        type="submit"
-                        wire:loading.attr="disabled"
-                        wire:target="store"
-                        size="sm"
-                        :disabled="!$this->canSubmit()"
-                        class="bg-[#30AFFF] text-white hover:bg-sky-500"
-                    >
+                    <x-wirekit::button type="submit" wire:loading.attr="disabled" wire:target="store" size="sm"
+                        class="bg-[#30AFFF] text-white hover:bg-sky-500" :disabled="!$this->canSubmit()">
 
                         <span wire:loading.remove wire:target="store">
-                            Add Division
+                            Add Team
                         </span>
 
                         <span wire:loading wire:target="store">
