@@ -55,7 +55,8 @@
                 {{-- Search --}}
                 <div class="w-full sm:w-64">
 
-                    <x-wirekit::input placeholder="Cari nama divisi" name="search" wire:model.live.debounce.500ms="search" class="text-black" />
+                    <x-wirekit::input placeholder="Cari nama divisi" name="search"
+                        wire:model.live.debounce.500ms="search" class="text-black" />
                 </div>
 
             </div>
@@ -150,8 +151,8 @@
 
                                     <span
                                         class="inline-flex items-center rounded-full
-                                                        px-2.5 py-1
-                                                       text-xs font-medium {{ $divisi->is_active == 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
+                                                            px-2.5 py-1
+                                                           text-xs font-medium {{ $divisi->is_active == 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
                                         {{ $divisi->is_active }}
                                     </span>
 
@@ -160,11 +161,14 @@
                                 <td class="px-4 py-4">
 
                                     <div class="flex justify-end gap-2">
+                                        @can('show-divisi')
+                                            <x-wirekit::button href="{{ route('divisi.name', $divisi->id) }}" wire:navigate
+                                                type="button" class="px-3 py-1.5 text-xs">
+                                                Detail
+                                            </x-wirekit::button>
 
-                                        <x-wirekit::button href="{{ route('divisi.name',$divisi->id) }}" wire:navigate type="button" class="px-3 py-1.5 text-xs">
-                                            Detail
-                                        </x-wirekit::button>
-                                     
+                                        @endcan
+
                                     </div>
 
                                 </td>

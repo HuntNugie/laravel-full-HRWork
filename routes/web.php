@@ -21,7 +21,7 @@ Route::middleware(['auth','isActive'])->group(function () {
     Route::get('/my-profile', MyProfile::class)->name('my-profile');
 
     Route::prefix('divisi')->group(function(){
-        Route::middleware('permission:view-divisi')->group(function(){
+        Route::middleware(['permission:view-divisi','permission:show-divisi'])->group(function(){
             Route::get('/view',Divisi::class)->name('divisi.view');
             Route::get('/{divisi}/detail',DetailDivisi::class)->name('divisi.name');
         });

@@ -19,6 +19,10 @@ class Divisi extends Component
         $this->resetPage();
     }
 
+    public function mount(){
+        $this->authorize('viewAny',ModelsDivisi::class);
+    }
+
     #[On('create-divisi')]
     public function refreshDivisi()
     {
