@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
+use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Team\Team;
 
 Route::get('/', function () {
@@ -28,5 +29,9 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('team')->middleware(['permission:view-team','permission:show-team'])->group(function(){
         Route::get('/',Team::class)->name('team.view');
+    });
+
+    Route::prefix('employee')->middleware(['permission:view-employee'])->group(function(){
+        Route::get('/',Employee::class)->name('employee.view');
     });
 });

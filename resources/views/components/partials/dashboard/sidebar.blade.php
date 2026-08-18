@@ -41,15 +41,17 @@
 
             @can('view-team')
 
-                <x-wirekit::sidebar.item href="{{ route('team.view') }}" icon="user-group" :active="request()->routeIs('team.view')" wire:navigate>
+                <x-wirekit::sidebar.item href="{{ route('team.view') }}" icon="user-group"
+                    :active="request()->routeIs('team.view')" wire:navigate>
                     Team
                 </x-wirekit::sidebar.item>
             @endcan
 
-            <x-wirekit::sidebar.item href="#" icon="chart-bar" wire:navigate>
-                Performance
-            </x-wirekit::sidebar.item>
-
+            @can('view-employee')
+                <x-wirekit::sidebar.item href="{{ route('employee.view') }}" :active="request()->routeIs('employee.view')" icon="user" wire:navigate>
+                    Employee Management
+                </x-wirekit::sidebar.item>
+            @endcan
             <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
                 Training & TNA
             </x-wirekit::sidebar.item>
