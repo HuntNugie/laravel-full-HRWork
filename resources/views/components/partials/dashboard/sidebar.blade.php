@@ -34,7 +34,7 @@
             @can('view-divisi')
                 <x-wirekit::sidebar.item href="{{ route('divisi.view') }}" icon="building"
                     :active="request()->routeIs('divisi.view')" wire:navigate>
-                    Divisi
+                    Divisi 
                 </x-wirekit::sidebar.item>
             @endcan
 
@@ -52,12 +52,21 @@
                     Employee Management
                 </x-wirekit::sidebar.item>
             @endcan
+
+            @can('view-position')
+                <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge" wire:navigate>
+                    Position Management
+                </x-wirekit::sidebar.item>
+            @endcan
             <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
                 Training & TNA
             </x-wirekit::sidebar.item>
 
         </x-wirekit::sidebar.group>
 
+        <x-slot:footer>
+            <x-wirekit::theme-controller />
+        </x-slot:footer>
 
 
 

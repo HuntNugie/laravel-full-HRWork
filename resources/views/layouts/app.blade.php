@@ -8,7 +8,7 @@
     <title>{{ $title ?? config('app.name') }}</title>
     <link rel="icon" href="/assets/logo-inovindo.webp" type="image/webp" sizes="32x32">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
+    @wirekitThemeScript
     @livewireStyles
     @wirekitStyles
 </head>

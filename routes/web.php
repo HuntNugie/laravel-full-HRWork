@@ -7,6 +7,7 @@ use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
 use App\Livewire\Page\Main\Employee\Employee;
+use App\Livewire\Page\Main\Position\Position;
 use App\Livewire\Page\Main\Team\Team;
 
 Route::get('/', function () {
@@ -22,16 +23,22 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/my-profile', MyProfile::class)->name('my-profile');
 
-    Route::prefix('divisi')->middleware(['permission:view-divisi', 'permission:show-divisi'])->group(function () {
+    Route::prefix('divisions')->middleware(['permission:view-divisi', 'permission:show-divisi'])->group(function () {
         Route::get('/', Divisi::class)->name('divisi.view');
         Route::get('/{divisi}/detail', DetailDivisi::class)->name('divisi.name');
     });
 
-    Route::prefix('team')->middleware(['permission:view-team','permission:show-team'])->group(function(){
+    Route::prefix('teams')->middleware(['permission:view-team','permission:show-team'])->group(function(){
         Route::get('/',Team::class)->name('team.view');
     });
 
-    Route::prefix('employee')->middleware(['permission:view-employee'])->group(function(){
+    Route::prefix('employees')->middleware(['permission:view-employee'])->group(function(){
         Route::get('/',Employee::class)->name('employee.view');
     });
+
+    Route::prefix('positions')->middleware(['permission:view-position'])->group(function(){
+        Route::get('/',Position::class)->name('position.view');
+    });
+
+
 });
