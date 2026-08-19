@@ -12,4 +12,9 @@ class Position extends Model
     public function employees(){
         return $this->hasMany(Employees::class,'position_id');
     }
+
+    // relasi ke jobdesk
+    public function jobdesk(){
+        return $this->hasMany(PositionJobdesk::class,'position_id');
+    }
 }

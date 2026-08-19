@@ -7,6 +7,7 @@ use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
 use App\Livewire\Page\Main\Employee\Employee;
+use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
 use App\Livewire\Page\Main\Team\Team;
 
@@ -38,6 +39,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('positions')->middleware(['permission:view-position'])->group(function(){
         Route::get('/',Position::class)->name('position.view');
+        Route::get('/{position:slug}/detail',DetailPosition::class)->name('position.show');
     });
 
 

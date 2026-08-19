@@ -20,6 +20,10 @@ class Position extends Component
     }
 
     #[On('create-position')]
+    public function refreshPage(){
+        $this->resetPage();
+    }
+
     public function render()
     {
         $positions = ModelsPosition::with('employees')->when($this->search,function($q){

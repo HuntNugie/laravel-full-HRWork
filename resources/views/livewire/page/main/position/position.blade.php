@@ -163,7 +163,7 @@
                           {{-- Actions --}}
                           <x-wirekit::table.td>
 
-                              <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                              <x-wirekit::button href="{{ route('position.show',$position->slug) }}" type="button" class="px-3 py-1.5 text-xs" wire:navigate>
                                   Detail
                               </x-wirekit::button>
 
