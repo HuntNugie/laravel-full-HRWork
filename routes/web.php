@@ -39,7 +39,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('positions')->middleware(['permission:view-position'])->group(function(){
         Route::get('/',Position::class)->name('position.view');
-        Route::get('/{position:slug}/detail',DetailPosition::class)->name('position.show');
+        Route::get('/{position}/detail',DetailPosition::class)->name('position.show');
     });
 
 

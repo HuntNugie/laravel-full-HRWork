@@ -37,7 +37,7 @@ class PositionPolicy
      */
     public function update(User $user, Position $position): bool
     {
-        return false;
+        return $user->can('update-position');
     }
 
     /**

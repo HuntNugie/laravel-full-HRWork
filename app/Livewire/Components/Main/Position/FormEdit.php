@@ -3,11 +3,14 @@
 namespace App\Livewire\Components\Main\Position;
 
 use App\Models\Position;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-class FormAdd extends Component
+class FormEdit extends Component
 {
+    public Position $position;
+
 
     #[Validate(['required', 'min:2', 'string'], message: [
         'name.required' => 'Nama wajib di isi',
@@ -31,32 +34,43 @@ class FormAdd extends Component
 
     public array $jobdesk = [];
 
-    public function saveJobdesk(array $jobdesk)
+    public function update()
     {
-        $this->jobdesk = $jobdesk;
-    }
-    public function store()
-    {
-        $this->authorize('create', Position::class);
+        $this->authorize('update', $this->position);
 
-        $position = Position::create([
+        $this->position->update([
             'name' => $this->name,
             'description' => $this->desc,
             'min_salary_daily' => $this->salary,
             'is_active' => $this->isActive ? 'active' : 'inactive'
         ]);
 
+        $this->position->jobdesk()->delete();
+
         foreach ($this->jobdesk as $job) {
-            $position->jobdesk()->create(
-                [
-                    'jobdesk' => $job
-                ]
-            );
+            $this->position->jobdesk()->create([
+                'jobdesk' => $job
+            ]);
         }
 
-        $this->dispatch('wirekit-modal-close', name: 'create-position');
-        $this->dispatch('create-position');
+        $this->dispatch('wirekit-modal-close', name: 'edit-position');
+        $this->dispatch('updated-position');
+    }
 
+    #[On('open-edit')]
+    public function getData(int $id)
+    {
+        $this->position = Position::findOrFail($id);
+        $this->name = $this->position->name;
+        $this->desc = $this->position->description;
+        $this->salary = $this->position->min_salary_daily;
+        $this->isActive = $this->position->is_active == 'active' ? true : false;
+        $this->jobdesk = $this->position->jobdesk->pluck('jobdesk')->toArray();
+    }
+
+    public function saveJobdesk(array $jobdesk)
+    {
+        $this->jobdesk = $jobdesk;
     }
     public function canSubmit()
     {
@@ -64,6 +78,6 @@ class FormAdd extends Component
     }
     public function render()
     {
-        return view('livewire.components.main.position.form-add');
+        return view('livewire.components.main.position.form-edit');
     }
 }

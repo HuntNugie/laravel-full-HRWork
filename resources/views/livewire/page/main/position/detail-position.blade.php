@@ -22,10 +22,12 @@
 
         <div class="flex items-center gap-2">
 
-            <x-wirekit::button type="button" class="px-3 py-1.5 text-sm">
-                <x-wirekit::icon name="pencil" />
-                Edit Position
-            </x-wirekit::button>
+            <livewire:components.main.position.form-edit>
+                <x-wirekit::button type="button" class="px-3 py-1.5 text-sm" wire:click="$dispatch('open-edit',{id:{{ $position->id }}})">
+                    <x-wirekit::icon name="pencil" />
+                    Edit Position
+                </x-wirekit::button>
+            </livewire:components.main.position.form-edit>
 
         </div>
 
@@ -72,7 +74,7 @@
                         </p>
                     </div>
 
-             
+
 
                     {{-- Minimum Salary --}}
                     <div>
@@ -206,7 +208,7 @@
             <div class="space-y-4">
 
                 <p class="text-sm leading-6 text-slate-600">
-                  {{$position->description}}
+                    {{$position->description}}
                 </p>
 
                 <div>
@@ -216,22 +218,22 @@
                     </h3>
 
                     <ul class="mt-3 space-y-2 text-sm text-slate-600">
-                    
-                    @forelse ($position->jobdesk as $job)
-                         <li class="flex gap-2">
-                            <span class="text-[#30AFFF]">•</span>
-                            {{ $job->jobdesk }}
-                        </li>
-                    @empty 
-                    <li class="flex gap-2">
-                           -
-                            
-                    </li>
-                        
-                    @endforelse
-                       
 
-                    
+                        @forelse ($position->jobdesk as $job)
+                            <li class="flex gap-2">
+                                <span class="text-[#30AFFF]">•</span>
+                                {{ $job->jobdesk }}
+                            </li>
+                        @empty
+                            <li class="flex gap-2">
+                                -
+
+                            </li>
+
+                        @endforelse
+
+
+
 
                     </ul>
 
