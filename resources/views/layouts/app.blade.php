@@ -20,6 +20,7 @@
     <div id="wk-overlay-root" role="region" aria-label="Overlays"></div>
     @endpersist
     @wirekitScripts
+    <script src="{{ asset('vendor/wirekit/wirekit-optimistic.js') }}"></script>
     @livewireScripts
 </body>
 

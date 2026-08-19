@@ -72,16 +72,7 @@
                         </p>
                     </div>
 
-                    <div>
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Description
-                        </p>
-
-                        <p class="mt-1 text-sm font-semibold text-slate-800">
-                            {{ $position->description }}
-                        </p>
-                    </div>
-
+             
 
                     {{-- Minimum Salary --}}
                     <div>
@@ -215,38 +206,32 @@
             <div class="space-y-4">
 
                 <p class="text-sm leading-6 text-slate-600">
-                    Software Engineer bertanggung jawab untuk merancang,
-                    mengembangkan, menguji, dan memelihara aplikasi yang
-                    digunakan oleh perusahaan.
+                  {{$position->description}}
                 </p>
 
                 <div>
 
                     <h3 class="text-sm font-semibold text-slate-800">
-                        Responsibilities
+                        Jobdesk utama
                     </h3>
 
                     <ul class="mt-3 space-y-2 text-sm text-slate-600">
-
-                        <li class="flex gap-2">
+                    
+                    @forelse ($position->jobdesk as $job)
+                         <li class="flex gap-2">
                             <span class="text-[#30AFFF]">•</span>
-                            Mengembangkan dan memelihara aplikasi perusahaan.
+                            {{ $job->jobdesk }}
                         </li>
+                    @empty 
+                    <li class="flex gap-2">
+                           -
+                            
+                    </li>
+                        
+                    @endforelse
+                       
 
-                        <li class="flex gap-2">
-                            <span class="text-[#30AFFF]">•</span>
-                            Melakukan debugging dan perbaikan masalah pada aplikasi.
-                        </li>
-
-                        <li class="flex gap-2">
-                            <span class="text-[#30AFFF]">•</span>
-                            Berkolaborasi dengan developer dan team terkait.
-                        </li>
-
-                        <li class="flex gap-2">
-                            <span class="text-[#30AFFF]">•</span>
-                            Memastikan kualitas dan performa aplikasi.
-                        </li>
+                    
 
                     </ul>
 

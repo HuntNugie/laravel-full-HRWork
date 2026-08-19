@@ -11,7 +11,7 @@ class DetailPosition extends Component
 {
     public Position $position;
     public function mount(Position $position){
-        $this->position = $position->load(['employees']);
+        $this->position = $position->load(['employees','jobdesk']);
     }
 
     public function render()

@@ -68,6 +68,16 @@
                 </x-wirekit::field>
                 <x-wirekit::field>
 
+                    <x-wirekit::label for="Position-description" class="text-black">
+                        Masukan JobDesk
+                    </x-wirekit::label>
+
+                  <x-wirekit::tags-input  name="jobdesk"  placeholder="Add a JobDesk..." :value="$this->jobdesk" optimistic="saveJobdesk" />
+
+
+                </x-wirekit::field>
+                <x-wirekit::field>
+
                     <div x-data="{
         value: @entangle('salary').live,
 
