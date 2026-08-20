@@ -31,7 +31,7 @@
                     placeholder="nama@perusahaan.com" class="text-black" />
 
                 <x-wirekit::password-input name="password" label="Password" wire:model.debounce.live.500ms="password"
-                    optimistic="savePassword" />
+                   />
 
 
                 <x-wirekit::checkbox name="remember" wire:model="remember" label="Ingat Saya" class="my-5" />

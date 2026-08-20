@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Base\MyProfile;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,8 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('employees')->middleware(['permission:view-employee'])->group(function(){
         Route::get('/',Employee::class)->name('employee.view');
+        // untuk menambahkan employee
+        Route::get('/create',CreateEmployee::class)->middleware('permission:create-employee')->name('employee.create');
     });
 
     Route::prefix('positions')->middleware(['permission:view-position'])->group(function(){

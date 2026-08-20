@@ -62,9 +62,81 @@
     }
 }
 
+
 :root {
-    --color-wk-bg-muted: #dbeafe;
-    --color-wk-text: #2563eb;
-    --z-wk-dropdown: 2000;
-    --z-wk-modal: 1000;
+    /* ==========================================
+       BACKGROUND
+    ========================================== */
+
+    --color-wk-bg: #F8FCFF;
+    --color-wk-bg-elevated: #FFFFFF;
+    --color-wk-bg-subtle: #F2FBFF;
+    --color-wk-bg-muted: #E8F8FF;
+
+
+    /* ==========================================
+       INPUT
+    ========================================== */
+
+    --color-wk-bg-input: #FFFFFF;
+
+
+    /* ==========================================
+       TEXT
+    ========================================== */
+
+    --color-wk-text: #2B4655;
+    --color-wk-text-muted: #607784;
+    --color-wk-text-subtle: #7B909B;
+    --color-wk-text-placeholder: #9BAAB2;
+
+
+    /* ==========================================
+       PRIMARY / ACCENT
+    ========================================== */
+
+    --color-wk-accent: #30AFFF;
+    --color-wk-accent-hover: #159CEB;
+    --color-wk-accent-content: #087DBF;
+    --color-wk-accent-fg: #FFFFFF;
+
+    --color-wk-ring: #30AFFF;
+
+
+    /* ==========================================
+       SUCCESS
+    ========================================== */
+
+    --color-wk-success: #C4F7CA;
+    --color-wk-success-hover: #AEEBB7;
+    --color-wk-success-text: #2E7040;
+    --color-wk-success-fg: #1F4E2C;
+
+
+    /* ==========================================
+       BORDER
+    ========================================== */
+
+    --color-wk-border: #D7E6EC;
+    --color-wk-border-subtle: #E8F1F4;
+    --color-wk-border-strong: #B6CBD5;
+    --color-wk-border-strong-hover: #8EAAB8;
+
+
+    /* ==========================================
+       WARNING
+    ========================================== */
+
+    --color-wk-warning: #D8FFC5;
+    --color-wk-warning-hover: #C4F3AE;
+    --color-wk-warning-text: #53722F;
+
+
+    /* ==========================================
+       DANGER
+    ========================================== */
+
+    --color-wk-danger: #FF6B6B;
+    --color-wk-danger-hover: #E95656;
+    --color-wk-danger-text: #A52F2F;
 }
