@@ -27,4 +27,9 @@ class Employees extends Model
     public function position(){
         return $this->belongsTo(Position::class,'position_id');
     }
+
+    // relasi ke employee contract
+    public function employeeContract(){
+        return $this->hasMany(EmployeeContract::class,'employee_id');
+    }
 }
