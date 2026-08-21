@@ -4,8 +4,85 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bab0b573bbd9e1ae96b0f8188e057950",
+    "content-hash": "6d9528a119a391afb84c2502c6c9d7b3",
     "packages": [
+        {
+            "name": "aliziodev/laravel-wilayah",
+            "version": "v1.0.60",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aliziodev/laravel-wilayah.git",
+                "reference": "a7b6799eeacd48ff0030bd3e71863ec913a2ab0c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aliziodev/laravel-wilayah/zipball/a7b6799eeacd48ff0030bd3e71863ec913a2ab0c",
+                "reference": "a7b6799eeacd48ff0030bd3e71863ec913a2ab0c",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/cache": "^11.0|^12.0|^13.0",
+                "illuminate/console": "^11.0|^12.0|^13.0",
+                "illuminate/database": "^11.0|^12.0|^13.0",
+                "illuminate/support": "^11.0|^12.0|^13.0",
+                "php": "^8.2|^8.3"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.29",
+                "orchestra/testbench": "^9.0|^10.0|^11.0",
+                "pestphp/pest": "^3.7|^4.0",
+                "pestphp/pest-plugin-drift": "^3.0|^4.0",
+                "pestphp/pest-plugin-laravel": "^3.0|^4.0"
+            },
+            "suggest": {
+                "aliziodev/laravel-wilayah-boundaries": "Tambahkan data polygon batas wilayah untuk fitur peta/GIS",
+                "aliziodev/laravel-wilayah-logos": "Tambahkan asset logo/lambang daerah (Provinsi dan Kab/Kota)"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Wilayah": "Aliziodev\\Wilayah\\Facades\\Wilayah"
+                    },
+                    "providers": [
+                        "Aliziodev\\Wilayah\\WilayahServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Aliziodev\\Wilayah\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aliziodev",
+                    "email": "dev@aliziodev.com",
+                    "homepage": "https://github.com/aliziodev"
+                }
+            ],
+            "description": "Laravel package untuk data wilayah administratif Indonesia (Provinsi, Kabupaten/Kota, Kecamatan, Desa/Kelurahan) yang selalu up-to-date.",
+            "homepage": "https://github.com/aliziodev/laravel-wilayah",
+            "keywords": [
+                "district",
+                "indonesia",
+                "laravel",
+                "province",
+                "regency",
+                "region",
+                "village",
+                "wilayah"
+            ],
+            "support": {
+                "issues": "https://github.com/aliziodev/laravel-wilayah/issues",
+                "source": "https://github.com/aliziodev/laravel-wilayah/tree/v1.0.60"
+            },
+            "time": "2026-08-19T02:48:45+00:00"
+        },
         {
             "name": "blade-ui-kit/blade-heroicons",
             "version": "2.7.0",
