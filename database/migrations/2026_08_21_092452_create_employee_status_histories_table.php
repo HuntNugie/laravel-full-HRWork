@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('employee_status_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
-            $table->string('old_status')->nullable();
-            $table->string('new_status')->nullable();
+            $table->enum('old_status',['onboarding','active','inactive','resign','terminated'])->nullable();
+            $table->enum('new_status',['onboarding','active','inactive','resign','terminated'])->nullable();
             $table->date('effective_date');
             $table->text('reason')->nullable();
             $table->timestamps();

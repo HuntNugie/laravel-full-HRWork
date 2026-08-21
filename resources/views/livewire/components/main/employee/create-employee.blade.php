@@ -309,47 +309,6 @@
 
 
 
-            {{-- =================================================
-            4. EMPLOYMENT INFORMATION
-            ================================================== --}}
-            <x-wirekit::card>
-
-                <x-wirekit::card.header>
-
-                    <x-wirekit::stack gap="1">
-
-                        <h2 class="text-lg font-semibold text-black">
-                            Informasi Masa Kerja
-                        </h2>
-
-                        <p class="text-sm text-black/60">
-                            Informasi mengenai masa kerja karyawan.
-                        </p>
-
-                    </x-wirekit::stack>
-
-                </x-wirekit::card.header>
-
-
-                <x-wirekit::card.body>
-
-                    <div class="grid gap-5 md:grid-cols-2">
-
-
-                        {{-- Join Date --}}
-                        <x-wirekit::input class="text-black" label="Tanggal Bergabung" type="date" name="join_date"
-                            wire:model.live="joinDate" />
-
-
-                       
-
-                    </div>
-
-                </x-wirekit::card.body>
-
-            </x-wirekit::card>
-
-
 
             {{-- =================================================
             5. BANK ACCOUNT
