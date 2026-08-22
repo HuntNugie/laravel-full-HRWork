@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\divisi;
+use App\Models\Divisi;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +13,7 @@ class DivisiSeeder extends Seeder
      */
     public function run(): void
     {
-        divisi::create([
+        Divisi::create([
             'name' => "Development",
             'description' => "Divisi pengembangan aplikasi",
             'is_active' => 'inactive'

@@ -9,14 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->unsignedBigInteger('divisi_id')
-                ->nullable()
-                ->change();
+           $table->dropForeign(['divisi_id']);
+           $table->dropColumn('divisi_id');
+        });
 
-            $table->foreign('divisi_id')
-                ->references('id')
-                ->on('divisis')
-                ->nullOnDelete();
+        Schema::table('teams', function (Blueprint $table) {
+            $table->foreignId('divisi_id')->nullable()->constrained('divisis')->nullOnDelete();
         });
     }
 
