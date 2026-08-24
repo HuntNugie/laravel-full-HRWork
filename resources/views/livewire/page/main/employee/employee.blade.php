@@ -19,7 +19,8 @@
         </x-wirekit::stack>
 
 
-        <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500" href="{{ route('employee.create') }}" wire:navigate>
+        <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500" href="{{ route('employee.create') }}"
+            wire:navigate>
             <x-wirekit::icon name="user-add" />
             Employee
         </x-wirekit::button>
@@ -52,7 +53,7 @@
                 {{-- Search --}}
                 <div class="w-full sm:w-64">
 
-                    <x-wirekit::input placeholder="Cari nama employee" name="search" class="text-black" />
+                    <x-wirekit::input placeholder="Cari nama employee" wire:model.live.debounce.500ms="search" name="search" class="text-black" />
 
                 </div>
 
@@ -88,7 +89,7 @@
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th sortable column="status">
-                                Status
+                                Status Pegawai
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
@@ -102,256 +103,108 @@
 
                     <x-wirekit::table.body>
 
-                        {{-- =================================================
-                        EMPLOYEE 1
-                        ================================================== --}}
-                        <x-wirekit::table.row>
+                        @forelse ($employees as $employee)
+                            <x-wirekit::table.row>
 
-                            {{-- Employee --}}
-                            <x-wirekit::table.td>
+                                {{-- Employee --}}
+                                <x-wirekit::table.td>
 
-                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-3">
 
-                                    <div
-                                        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                        <span class="text-sm font-semibold text-sky-600">
-                                            AP
-                                        </span>
-                                    </div>
+                                        <div
+                                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
+                                            <span class="text-sm font-semibold text-sky-600">
+                                                AP
+                                            </span>
+                                        </div>
 
-                                    <div class="min-w-0">
+                                        <div class="min-w-0">
 
-                                        <p class="truncate text-sm font-semibold text-slate-800">
-                                            Andi Pratama
-                                        </p>
+                                            <p class="truncate text-sm font-semibold text-slate-800">
+                                              {{$employee->user->name}}
+                                            </p>
 
-                                        <p class="truncate text-xs text-slate-400">
-                                            EMP-001
-                                        </p>
+                                            <p class="truncate text-xs text-slate-400">
+                                                {{ $employee->employee_code }}
+                                            </p>
 
-                                    </div>
-
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            {{-- Position --}}
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    Software Engineer
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            {{-- Team --}}
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    Development
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            {{-- Email --}}
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-600">
-                                    andi@inovindo.co.id
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            {{-- Status --}}
-                            <x-wirekit::table.td>
-
-                                <span class="inline-flex items-center rounded-full
-                                bg-emerald-50 px-2.5 py-1
-                                text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            {{-- Actions --}}
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- =================================================
-                        EMPLOYEE 2
-                        ================================================== --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <div class="flex items-center gap-3">
-
-                                    <div
-                                        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-violet-100">
-                                        <span class="text-sm font-semibold text-violet-600">
-                                            SR
-                                        </span>
-                                    </div>
-
-                                    <div class="min-w-0">
-
-                                        <p class="truncate text-sm font-semibold text-slate-800">
-                                            Siti Rahma
-                                        </p>
-
-                                        <p class="truncate text-xs text-slate-400">
-                                            EMP-002
-                                        </p>
+                                        </div>
 
                                     </div>
 
-                                </div>
-
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                {{-- Position --}}
+                                <x-wirekit::table.td>
 
-                                <span class="text-sm text-slate-700">
-                                    UI/UX Designer
-                                </span>
+                                    <span class="text-sm text-slate-700">
+                                        {{ $employee->position->name }}
+                                    </span>
 
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    Design
-                                </span>
-
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                {{-- Team --}}
+                                <x-wirekit::table.td>
 
-                                <span class="text-sm text-slate-600">
-                                    siti@inovindo.co.id
-                                </span>
+                                    <span class="text-sm text-slate-700">
+                                        {{ $employee->team->name }}
+                                    </span>
 
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="inline-flex items-center rounded-full
-                                bg-emerald-50 px-2.5 py-1
-                                text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                {{-- Email --}}
+                                <x-wirekit::table.td>
 
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
+                                    <span class="text-sm text-slate-600">
+                                        {{ $employee->user->email }}
+                                    </span>
 
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
+                                </x-wirekit::table.td>
 
 
-                        {{-- =================================================
-                        EMPLOYEE 3
-                        ================================================== --}}
-                        <x-wirekit::table.row>
+                                {{-- Status --}}
+                                <x-wirekit::table.td>
 
-                            <x-wirekit::table.td>
+                                    <span
+                                        class="inline-flex items-center rounded-full
+                              px-2.5 py-1
+                                text-xs font-medium   {{ $employee->statusHistory()->latest()->first()?->new_status == 'active' ? 'bg-emerald-50  text-emerald-600' : 'bg-red-50  text-red-600' }}">
+                                        {{ $employee->statusHistory()->latest()->first()->new_status ?? "Belum di ketahui"}}
+                                    </span>
 
-                                <div class="flex items-center gap-3">
+                                </x-wirekit::table.td>
 
-                                    <div
-                                        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100">
-                                        <span class="text-sm font-semibold text-amber-600">
-                                            RF
-                                        </span>
-                                    </div>
 
-                                    <div class="min-w-0">
+                                {{-- Actions --}}
+                                <x-wirekit::table.td>
 
-                                        <p class="truncate text-sm font-semibold text-slate-800">
-                                            Rizky Fadillah
+                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                        Detail
+                                    </x-wirekit::button>
+
+                                </x-wirekit::table.td>
+
+                            </x-wirekit::table.row>
+
+                        @empty
+                            <x-wirekit::table.row>
+                                <x-wirekit::table.td colspan="6">
+                                    <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                                        <p class="text-sm font-medium text-slate-700">
+                                            Belum ada data karyawan.
                                         </p>
 
-                                        <p class="truncate text-xs text-slate-400">
-                                            EMP-003
+                                        <p class="text-sm text-slate-500">
+                                            Silakan tambahkan karyawan terlebih dahulu.
                                         </p>
-
                                     </div>
+                                </x-wirekit::table.td>
+                            </x-wirekit::table.row>
+                        @endforelse
 
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    HR Staff
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    Human Resource
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-600">
-                                    rizky@inovindo.co.id
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="inline-flex items-center rounded-full
-                                bg-slate-100 px-2.5 py-1
-                                text-xs font-medium text-slate-500">
-                                    Inactive
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
 
                     </x-wirekit::table.body>
 
