@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Livewire\Components\Main\Employee;
 
 use Aliziodev\Wilayah\Facades\Wilayah;
@@ -52,7 +53,7 @@ class CreateEmployeeForm extends Form
     ])]
     public string $nik = '';
 
-    #[Validate('required,in:male,female', message: [
+    #[Validate(['required', 'in:male,female'], message: [
         'gender.required' => 'Jenis kelamin wajib di isi',
         'gender.in' => 'Jenis kelamin di luar pilihan',
     ])]
@@ -72,24 +73,37 @@ class CreateEmployeeForm extends Form
     #[Validate(['required'], message: ['detailAddress.required' => 'alamat lengkap wajib di isi'])]
     public string $detailAddress = '';
 
-    #[Validate(['required','exists:teams,id'],message:[
+    #[Validate(['required', 'exists:teams,id'], message: [
         'teamId.required' => 'team wajib di isi',
         'teamId.exists' => 'Team tidak ada di database'
     ])]
     public $teamId = '';
 
-    #[Validate(['required','exists:positions,id'],message:[
+    #[Validate(['required', 'exists:positions,id'], message: [
         'positionId.required' => 'Jabatan wajib di isi',
         'positionId.exists' => 'Jabatan tidak ada di database'
     ])]
     public $positionId = '';
+
+    #[Validate(['required', 'exists:banks,id'], message: [
+        'bankId.required' => 'Bank wajib di pilih',
+        'bankId.exists' => 'Bank wajib yang ada di pilihan',
+    ])]
+    public $bankId = '';
+
+    #[Validate(['required', 'numeric'], message: ['accountNumber.required' => 'wajib mengisi nomor rekening', 'accountNumber.numeric' => 'yang di isi wajib angka'])]
+    public string $accountNumber = '';
+
+    #[Validate(['required'], message: ['accountHolder.required' => 'Nama pemilik rekening wajib di isi'])]
+    public string $accountHolder = '';
+
     public function provinceOptions(): array
     {
         return collect(
             Wilayah::forSelect('provinces')
         )->mapWithKeys(
-                fn($item) => [$item['value'] => $item['label']]
-            )->toArray();
+            fn($item) => [$item['value'] => $item['label']]
+        )->toArray();
     }
 
     public function regencyOptions(): array
@@ -104,8 +118,8 @@ class CreateEmployeeForm extends Form
                 province: $this->provinceCode
             )
         )->mapWithKeys(
-                fn($item) => [$item['value'] => $item['label']]
-            )->toArray();
+            fn($item) => [$item['value'] => $item['label']]
+        )->toArray();
     }
 
     public function districtOptions(): array
@@ -120,8 +134,8 @@ class CreateEmployeeForm extends Form
                 regency: $this->regencyCode
             )
         )->mapWithKeys(
-                fn($item) => [$item['value'] => $item['label']]
-            )->toArray();
+            fn($item) => [$item['value'] => $item['label']]
+        )->toArray();
     }
 
     public function villageOptions(): array
@@ -136,8 +150,8 @@ class CreateEmployeeForm extends Form
                 district: $this->districtCode
             )
         )->mapWithKeys(
-                fn($item) => [$item['value'] => $item['label']]
-            )->toArray();
+            fn($item) => [$item['value'] => $item['label']]
+        )->toArray();
     }
 
     public function updatedProvinceCode(): void

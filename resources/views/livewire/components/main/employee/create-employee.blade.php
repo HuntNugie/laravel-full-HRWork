@@ -30,7 +30,7 @@
     {{-- =====================================================
     MAIN FORM
     ====================================================== --}}
-    <x-wirekit::form wire:submit="save">
+    <x-wirekit::form wire:submit="store">
 
         <x-wirekit::stack gap="md">
 
@@ -185,7 +185,7 @@
                         {{-- =================================================
                         Gender
                         ================================================== --}}
-                        <x-wirekit::select label="Jenis Kelamin" name="gender" wire:model.live="gender"
+                        <x-wirekit::select label="Jenis Kelamin" name="form.gender" wire:model.live="form.gender"
                             placeholder="Pilih jenis kelamin..." :options="[
         'male' => 'Laki-laki',
         'female' => 'Perempuan',
@@ -238,8 +238,8 @@
                                 {{-- Detail Alamat --}}
                                 <div class="md:col-span-2">
 
-                                    <x-wirekit::input class="text-black" label="Detail Alamat" name="address_detail"
-                                        wire:model.live.debounce.500ms="form.addressDetail" maxlength="255"
+                                    <x-wirekit::input class="text-black" label="Detail Alamat" name="form.detailAddress"
+                                        wire:model.live.debounce.500ms="form.detailAddress" maxlength="255"
                                         placeholder="Contoh: Jl. Sukajadi No. 10" />
 
                                 </div>
@@ -339,7 +339,7 @@
 
 
                         {{-- Bank --}}
-                        <x-wirekit::select label="Bank" name="bank_id" wire:model.live="bankId"
+                        <x-wirekit::select label="Bank" name="bank_id" wire:model.live="form.bankId"
                             placeholder="Pilih bank..." :options="$this->banks" />
 
 
@@ -348,8 +348,8 @@
 
                             <div x-data="{ text: '', max: 30, min: 5 }">
 
-                                <x-wirekit::input class="text-black" label="Nomor Rekening" name="account_number"
-                                    x-model="text" wire:model.live.debounce.500ms="accountNumber" maxlength="30"
+                                <x-wirekit::input class="text-black" label="Nomor Rekening" name="form.accountNumber"
+                                    x-model="text" wire:model.live.debounce.500ms="form.accountNumber" maxlength="30"
                                     inputmode="numeric" placeholder="Masukkan nomor rekening" />
 
                                 <div
@@ -387,8 +387,8 @@
 
                             <div x-data="{ text: '', max: 100, min: 3 }">
 
-                                <x-wirekit::input class="text-black" label="Nama Pemilik Rekening" name="account_holder"
-                                    x-model="text" wire:model.live.debounce.500ms="accountHolder" maxlength="100"
+                                <x-wirekit::input class="text-black" label="Nama Pemilik Rekening" name="form.accountHolder"
+                                    x-model="text" wire:model.live.debounce.500ms="form.accountHolder" maxlength="100"
                                     placeholder="Nama yang terdaftar pada rekening" />
 
                                 <div

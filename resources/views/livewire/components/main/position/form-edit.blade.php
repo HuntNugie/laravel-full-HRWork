@@ -13,11 +13,11 @@
         <x-wirekit::stack gap="1">
 
             <h2 class="text-lg font-semibold text-slate-900">
-                Tambah Position
+                Update Position
             </h2>
 
             <p class="text-sm text-slate-500">
-                Tambahkan Position baru ke dalam struktur organisasi.
+                Update Position ke dalam struktur organisasi.
             </p>
 
         </x-wirekit::stack>
@@ -208,7 +208,7 @@
                         :disabled="!$this->canSubmit()" class="bg-[#30AFFF] text-white hover:bg-sky-500">
 
                         <span wire:loading.remove wire:target="store">
-                            Add Position
+                            Update Position
                         </span>
 
                         <span wire:loading wire:target="store">
