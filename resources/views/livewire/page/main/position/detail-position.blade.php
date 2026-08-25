@@ -316,7 +316,8 @@
 
                     <x-wirekit::table.body>
 
-                        {{-- Employee 1 --}}
+                        @forelse ($position->employees  as $employee)
+                                    {{-- Employee 1 --}}
                         <x-wirekit::table.row>
 
                             <x-wirekit::table.td>
@@ -333,11 +334,11 @@
                                     <div class="min-w-0">
 
                                         <p class="truncate text-sm font-semibold text-slate-800">
-                                            Andi Pratama
+                                            {{ $employee->user->name }}
                                         </p>
 
                                         <p class="truncate text-xs text-slate-400">
-                                            EMP-001
+                                            {{ $employee->employee_code }}
                                         </p>
 
                                     </div>
@@ -350,7 +351,7 @@
                             <x-wirekit::table.td>
 
                                 <span class="text-sm text-slate-700">
-                                    Development
+                                    {{ $employee->team->name }}
                                 </span>
 
                             </x-wirekit::table.td>
@@ -385,148 +386,16 @@
                             </x-wirekit::table.td>
 
                         </x-wirekit::table.row>
-
-
-                        {{-- Employee 2 --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <div class="flex items-center gap-3">
-
-                                    <div
-                                        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-violet-100">
-                                        <span class="text-sm font-semibold text-violet-600">
-                                            BA
-                                        </span>
+                        @empty
+                            <x-wirekit::table.row>
+                                <x-wirekit::table.td colspan="5">
+                                    <div class="py-6 text-center text-sm text-slate-500">
+                                        Belum ada employee pada posisi ini.
                                     </div>
+                                </x-wirekit::table.td>
+                            </x-wirekit::table.row>
+                        @endforelse
 
-                                    <div class="min-w-0">
-
-                                        <p class="truncate text-sm font-semibold text-slate-800">
-                                            Budi Ahmad
-                                        </p>
-
-                                        <p class="truncate text-xs text-slate-400">
-                                            EMP-004
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    Development
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm font-medium text-slate-700">
-                                    Rp275.000
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="inline-flex items-center rounded-full
-                                bg-emerald-50 px-2.5 py-1
-                                text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- Employee 3 --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <div class="flex items-center gap-3">
-
-                                    <div
-                                        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100">
-                                        <span class="text-sm font-semibold text-amber-600">
-                                            RF
-                                        </span>
-                                    </div>
-
-                                    <div class="min-w-0">
-
-                                        <p class="truncate text-sm font-semibold text-slate-800">
-                                            Rizky Fadillah
-                                        </p>
-
-                                        <p class="truncate text-xs text-slate-400">
-                                            EMP-007
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    Development
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm font-medium text-slate-700">
-                                    Rp250.000
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="inline-flex items-center rounded-full
-                                bg-emerald-50 px-2.5 py-1
-                                text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
 
                     </x-wirekit::table.body>
 

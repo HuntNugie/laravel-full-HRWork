@@ -265,47 +265,6 @@
 
 
 
-            {{-- =================================================
-            3. JOB ASSIGNMENT
-            ================================================== --}}
-            <x-wirekit::card>
-
-                <x-wirekit::card.header>
-
-                    <x-wirekit::stack gap="1">
-
-                        <h2 class="text-lg font-semibold text-black">
-                            Penempatan Kerja
-                        </h2>
-
-                        <p class="text-sm text-black/60">
-                            Tentukan posisi dan tim tempat karyawan bekerja.
-                        </p>
-
-                    </x-wirekit::stack>
-
-                </x-wirekit::card.header>
-
-
-                <x-wirekit::card.body>
-
-                    <div class="grid gap-5 md:grid-cols-2">
-
-
-                        {{-- Team --}}
-                        <x-wirekit::select label="Tim" name="form.teamId" wire:model.live="form.teamId"
-                            placeholder="Pilih tim..." :options="$this->teams" />
-
-
-                        {{-- Position --}}
-                        <x-wirekit::select label="Posisi" name="form.positionId" wire:model.live="form.positionId"
-                            placeholder="Pilih posisi..." :options="$this->positions" />
-
-                    </div>
-
-                </x-wirekit::card.body>
-
-            </x-wirekit::card>
 
 
 

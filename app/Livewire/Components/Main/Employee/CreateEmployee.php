@@ -15,13 +15,9 @@ class CreateEmployee extends Component
 {
     public ?User $user;
     public CreateEmployeeForm $form;
-    public array $teams = [];
-    public array $positions = [];
     public array $banks = [];
     public function mount()
     {
-        $this->teams = Team::query()->pluck('name', 'id')->toArray();
-        $this->positions = Position::query()->pluck('name', 'id')->toArray();
         $this->banks = Bank::query()->pluck('name', 'id')->toArray();
     }
 
@@ -50,10 +46,7 @@ class CreateEmployee extends Component
     protected function createEmployee()
     {
         $this->authorize('create', Employees::class);
-        $employee = $this->user->employees()->create([
-            'team_id' => $this->form->teamId,
-            'position_id' => $this->form->positionId
-        ]);
+        $employee = $this->user->employees()->create();
 
         $employee->update(['employee_code' => 'EMP-' . $employee->id]);
 

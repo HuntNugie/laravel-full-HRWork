@@ -73,17 +73,6 @@ class CreateEmployeeForm extends Form
     #[Validate(['required'], message: ['detailAddress.required' => 'alamat lengkap wajib di isi'])]
     public string $detailAddress = '';
 
-    #[Validate(['required', 'exists:teams,id'], message: [
-        'teamId.required' => 'team wajib di isi',
-        'teamId.exists' => 'Team tidak ada di database'
-    ])]
-    public $teamId = '';
-
-    #[Validate(['required', 'exists:positions,id'], message: [
-        'positionId.required' => 'Jabatan wajib di isi',
-        'positionId.exists' => 'Jabatan tidak ada di database'
-    ])]
-    public $positionId = '';
 
     #[Validate(['required', 'exists:banks,id'], message: [
         'bankId.required' => 'Bank wajib di pilih',

@@ -12,11 +12,11 @@ class EmployeeProfileAddress extends Model
     // relasi ke employe profile
     public function employee_profile()
     {
-        $this->belongsTo(Employee_profile::class, 'employee_profile_id');
+        return $this->belongsTo(Employee_profile::class, 'employee_profile_id');
     }
 
     public function village()
     {
-        $this->belongsTo(Village::class, 'village_code', 'code');
+        return  $this->belongsTo(Village::class, 'village_code', 'code');
     }
 }

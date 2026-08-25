@@ -38,6 +38,12 @@ class Employees extends Model
         return $this->hasMany(EmployeeContract::class, 'employee_id');
     }
 
+    // relasi has one untuk contract employee terbaru
+    public function latestEmployeeContract()
+    {
+        return $this->hasOne(EmployeeContract::class, 'employee_id')->latestOfMany();
+    }
+
     // relasi ke status history
     public function statusHistory()
     {

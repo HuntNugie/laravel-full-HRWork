@@ -139,7 +139,7 @@
                                 <x-wirekit::table.td>
 
                                     <span class="text-sm text-slate-700">
-                                        {{ $employee->position->name }}
+                                        {{ $employee->position?->name ?? "Belum di ketahui" }}
                                     </span>
 
                                 </x-wirekit::table.td>
@@ -149,7 +149,7 @@
                                 <x-wirekit::table.td>
 
                                     <span class="text-sm text-slate-700">
-                                        {{ $employee->team->name }}
+                                        {{ $employee->team?->name ?? "Belum di ketahui"}}
                                     </span>
 
                                 </x-wirekit::table.td>
@@ -181,7 +181,7 @@
                                 {{-- Actions --}}
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs" href="{{ route('employee.show',$employee->id) }}" wire:navigate>
                                         Detail
                                     </x-wirekit::button>
 

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
+use App\Livewire\Page\Main\Employee\DetailEmployee;
 use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
@@ -34,12 +35,12 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/', Team::class)->name('team.view');
     });
 
-    Route::prefix('employees')->middleware(['permission:view-employee'])->group(function () {
+    Route::prefix('employees')->middleware(['permission:view-employee', 'permission:show-employee'])->group(function () {
         Route::get('/', Employee::class)->name('employee.view');
         // untuk menambahkan employee
         Route::get('/create', CreateEmployee::class)->middleware('permission:create-employee')->name('employee.create');
-        // untuk contract
-
+        // untuk detail
+        Route::get('/{employee}/detail', DetailEmployee::class)->name('employee.show');
     });
 
     Route::prefix('positions')->middleware(['permission:view-position'])->group(function () {
