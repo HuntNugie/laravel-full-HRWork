@@ -507,7 +507,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        Bank Central Asia
+                        {{ $employee->profile->bankAccount->bank->name }}
                     </p>
 
                 </div>
@@ -520,7 +520,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        1234567890
+                        {{ $employee->profile->bankAccount->account_number }}
                     </p>
 
                 </div>
@@ -533,7 +533,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        Nugie Pratama
+                        {{ $employee->profile->bankAccount->account_holder }}
                     </p>
 
                 </div>
@@ -579,7 +579,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        nugie@perusahaan.com
+                      {{$employee->user->email}}
                     </p>
 
                 </div>
@@ -592,7 +592,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        Employee
+                        {{ $employee->user->getRoleNames()->first() ?? "Belum ada role"}}
                     </p>
 
                 </div>
@@ -604,8 +604,11 @@
                         Status Akun
                     </span>
 
-                    <p class="mt-1 text-sm font-medium text-emerald-600">
-                        Active
+                    <p @class(['mt-1 text-sm font-medium ','text-emerald-600' => $employee->user->status === 'active',
+                    'text-red-600' => $employee->user->status === 'inactive',
+                    'text-yellow-600' => $employee->user->status === 'pending'
+                    ])>
+                        {{ $employee->user->status }}
                     </p>
 
                 </div>
@@ -618,23 +621,12 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        24 August 2026
+                        {{ $employee->user->created_at->format('d F Y') }}
                     </p>
 
                 </div>
 
-                {{-- Last Login --}}
-                <div>
 
-                    <span class="text-xs font-medium text-slate-400">
-                        Login Terakhir
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        24 August 2026, 09:42
-                    </p>
-
-                </div>
 
             </div>
 
