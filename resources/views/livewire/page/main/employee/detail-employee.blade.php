@@ -378,7 +378,7 @@
                                 Detail Contract
                             </x-wirekit::button>
                             @else
-                             <x-wirekit::button type="button" wire:navigate
+                             <x-wirekit::button type="button" wire:navigate href="{{ route('contract.create',$employee->id) }}"
                                 class="border border-blue-200 bg-white text-blue-700 hover:bg-blue-50">
                                 <x-wirekit::icon name="plus"/> Create Contract
                             </x-wirekit::button>
