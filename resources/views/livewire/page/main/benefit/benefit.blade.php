@@ -56,7 +56,7 @@
 
                 {{-- Search --}}
                 <div class="w-full sm:w-64">
-                    <x-wirekit::input placeholder="Cari nama benefit" name="search" class="text-black" />
+                    <x-wirekit::input placeholder="Cari nama benefit" name="search" wire:model.live.debounce.500ms="search" class="text-black" />
                 </div>
 
             </div>
@@ -86,10 +86,6 @@
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
-                                Status
-                            </x-wirekit::table.th>
-
-                            <x-wirekit::table.th>
                                 Actions
                             </x-wirekit::table.th>
 
@@ -99,33 +95,27 @@
 
                     <x-wirekit::table.body>
 
-                        {{-- Benefit 1 --}}
+                   @forelse ($benefits as $benefit)
+                    {{-- Benefit 1 --}}
                         <x-wirekit::table.row>
 
                             <x-wirekit::table.td>
                                 <div class="min-w-0">
                                     <p class="text-sm font-semibold text-slate-800">
-                                        Tunjangan Transport
+                                       {{$benefit->name}}
                                     </p>
                                 </div>
                             </x-wirekit::table.td>
 
                             <x-wirekit::table.td>
                                 <p class="max-w-md truncate text-sm text-slate-500">
-                                    Tunjangan untuk membantu biaya transportasi karyawan.
+                                    {{ $benefit->description }}
                                 </p>
                             </x-wirekit::table.td>
 
                             <x-wirekit::table.td>
                                 <span class="text-sm text-slate-700">
-                                    12 contracts
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-                                    Active
+                                   {{ $benefit->contracts_count  }}
                                 </span>
                             </x-wirekit::table.td>
 
@@ -137,161 +127,18 @@
 
                         </x-wirekit::table.row>
 
-
-                        {{-- Benefit 2 --}}
+                   @empty
                         <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-                                <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-800">
-                                        Tunjangan Makan
-                                    </p>
+                            <x-wirekit::table.td colspan="5">
+                                <div class="py-8 text-center text-sm text-slate-500">
+                                    Belum ada data benefit.
                                 </div>
                             </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <p class="max-w-md truncate text-sm text-slate-500">
-                                    Tunjangan untuk kebutuhan makan karyawan.
-                                </p>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span class="text-sm text-slate-700">
-                                    18 contracts
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-                            </x-wirekit::table.td>
-
                         </x-wirekit::table.row>
+                   @endforelse
 
 
-                        {{-- Benefit 3 --}}
-                        <x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
-                                <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-800">
-                                        Tunjangan Komunikasi
-                                    </p>
-                                </div>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <p class="max-w-md truncate text-sm text-slate-500">
-                                    Tunjangan untuk kebutuhan pulsa dan internet.
-                                </p>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span class="text-sm text-slate-700">
-                                    8 contracts
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- Benefit 4 --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-                                <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-800">
-                                        Tunjangan Jabatan
-                                    </p>
-                                </div>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <p class="max-w-md truncate text-sm text-slate-500">
-                                    Tunjangan tambahan berdasarkan jabatan tertentu.
-                                </p>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span class="text-sm text-slate-700">
-                                    5 contracts
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- Benefit 5 --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-                                <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-800">
-                                        Tunjangan Kesehatan
-                                    </p>
-                                </div>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <p class="max-w-md truncate text-sm text-slate-500">
-                                    Tunjangan untuk mendukung kebutuhan kesehatan karyawan.
-                                </p>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span class="text-sm text-slate-700">
-                                    15 contracts
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600">
-                                    Inactive
-                                </span>
-                            </x-wirekit::table.td>
-
-                            <x-wirekit::table.td>
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
 
                     </x-wirekit::table.body>
 

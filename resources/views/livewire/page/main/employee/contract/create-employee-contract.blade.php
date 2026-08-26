@@ -1,3 +1,4 @@
+```blade
 <x-wirekit::stack gap="md">
 
     {{-- =====================================================
@@ -6,7 +7,8 @@
     <x-wirekit::stack gap="sm">
 
         <a
-            href=""
+            href="{{ route('employee.view') }}"
+            wire:navigate
             class="inline-flex w-fit items-center gap-2 text-sm font-medium text-black transition hover:text-[#30AFFF]"
         >
             <span aria-hidden="true">&larr;</span>
@@ -75,14 +77,14 @@
                     </p>
                 </div>
 
-                {{-- Position --}}
+                {{-- Employee Status --}}
                 <div>
                     <span class="text-xs font-medium text-slate-400">
-                        Posisi
+                        Status Employee
                     </span>
 
-                    <p class="mt-1 text-sm font-semibold text-slate-800">
-                        Backend Developer
+                    <p class="mt-1 inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
+                        Active
                     </p>
                 </div>
 
@@ -107,13 +109,12 @@
                 </h2>
 
                 <p class="text-sm text-black/60">
-                    Tentukan informasi utama contract karyawan.
+                    Tentukan posisi, jenis employment, periode, dan gaji karyawan.
                 </p>
 
             </x-wirekit::stack>
 
         </x-wirekit::card.header>
-
 
         <x-wirekit::card.body>
 
@@ -126,6 +127,20 @@
                     name="contract_number"
                     value="CTR-2026-001"
                     placeholder="Contoh: CTR-2026-001"
+                />
+
+                {{-- Position --}}
+                <x-wirekit::select
+                    label="Position"
+                    name="position_id"
+                    placeholder="Pilih position..."
+                    :options="[
+                        '1' => 'Backend Developer',
+                        '2' => 'Frontend Developer',
+                        '3' => 'HR Staff',
+                        '4' => 'Project Manager',
+                    ]"
+                    value="1"
                 />
 
                 {{-- Employment Type --}}
@@ -204,6 +219,198 @@
 
 
     {{-- =====================================================
+        CONTRACT BENEFITS
+    ====================================================== --}}
+    <x-wirekit::card>
+
+        <x-wirekit::card.header>
+
+            <x-wirekit::stack gap="1">
+
+                <h2 class="text-lg font-semibold text-black">
+                    Tunjangan / Benefits
+                </h2>
+
+                <p class="text-sm text-black/60">
+                    Pilih tunjangan yang diberikan pada contract dan tentukan nominalnya.
+                </p>
+
+            </x-wirekit::stack>
+
+        </x-wirekit::card.header>
+
+
+        <x-wirekit::card.body>
+
+            <div class="space-y-3">
+
+                {{-- Benefit 1 --}}
+                <div class="rounded-lg border border-slate-200 bg-white p-4">
+
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                        <div class="flex flex-1 items-start gap-3">
+
+                            <x-wirekit::checkbox
+                                name="benefits[]"
+                                value="1"
+                            />
+
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">
+                                    Tunjangan Transport
+                                </p>
+
+                                <p class="mt-0.5 text-xs text-slate-500">
+                                    Tunjangan untuk biaya transportasi karyawan.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div class="w-full sm:w-56">
+                            <x-wirekit::input
+                                class="text-black"
+                                label="Amount"
+                                name="benefit_amount[1]"
+                                type="number"
+                                min="0"
+                                placeholder="Contoh: 500000"
+                            />
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Benefit 2 --}}
+                <div class="rounded-lg border border-slate-200 bg-white p-4">
+
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                        <div class="flex flex-1 items-start gap-3">
+
+                            <x-wirekit::checkbox
+                                name="benefits[]"
+                                value="2"
+                            />
+
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">
+                                    Tunjangan Makan
+                                </p>
+
+                                <p class="mt-0.5 text-xs text-slate-500">
+                                    Tunjangan untuk kebutuhan makan karyawan.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div class="w-full sm:w-56">
+                            <x-wirekit::input
+                                class="text-black"
+                                label="Amount"
+                                name="benefit_amount[2]"
+                                type="number"
+                                min="0"
+                                placeholder="Contoh: 300000"
+                            />
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Benefit 3 --}}
+                <div class="rounded-lg border border-slate-200 bg-white p-4">
+
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                        <div class="flex flex-1 items-start gap-3">
+
+                            <x-wirekit::checkbox
+                                name="benefits[]"
+                                value="3"
+                            />
+
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">
+                                    Tunjangan Komunikasi
+                                </p>
+
+                                <p class="mt-0.5 text-xs text-slate-500">
+                                    Tunjangan untuk kebutuhan pulsa dan internet.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div class="w-full sm:w-56">
+                            <x-wirekit::input
+                                class="text-black"
+                                label="Amount"
+                                name="benefit_amount[3]"
+                                type="number"
+                                min="0"
+                                placeholder="Contoh: 200000"
+                            />
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Benefit 4 --}}
+                <div class="rounded-lg border border-slate-200 bg-white p-4">
+
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                        <div class="flex flex-1 items-start gap-3">
+
+                            <x-wirekit::checkbox
+                                name="benefits[]"
+                                value="4"
+                            />
+
+                            <div>
+                                <p class="text-sm font-medium text-slate-800">
+                                    Tunjangan Jabatan
+                                </p>
+
+                                <p class="mt-0.5 text-xs text-slate-500">
+                                    Tunjangan tambahan berdasarkan jabatan.
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <div class="w-full sm:w-56">
+                            <x-wirekit::input
+                                class="text-black"
+                                label="Amount"
+                                name="benefit_amount[4]"
+                                type="number"
+                                min="0"
+                                placeholder="Contoh: 1000000"
+                            />
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </x-wirekit::card.body>
+
+    </x-wirekit::card>
+
+
+    {{-- =====================================================
         CONTRACT STATUS
     ====================================================== --}}
     <x-wirekit::card>
@@ -224,7 +431,6 @@
 
         </x-wirekit::card.header>
 
-
         <x-wirekit::card.body>
 
             <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
@@ -243,11 +449,7 @@
 
                     </div>
 
-                    <span
-                        class="inline-flex w-fit items-center rounded-full
-                               bg-slate-100 px-2.5 py-1
-                               text-xs font-medium text-slate-600"
-                    >
+                    <span class="inline-flex w-fit items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
                         Draft
                     </span>
 
@@ -282,3 +484,4 @@
     </div>
 
 </x-wirekit::stack>
+```

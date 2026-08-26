@@ -1,4 +1,4 @@
-<x-wirekit::modal name="create-position">
+<x-wirekit::modal name="create-benefit">
 
     <x-slot:trigger>
         {{ $slot }}
