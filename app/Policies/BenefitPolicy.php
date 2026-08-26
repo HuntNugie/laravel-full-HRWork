@@ -37,7 +37,7 @@ class BenefitPolicy
      */
     public function update(User $user, Benefit $benefit): bool
     {
-        return false;
+        return $user->can('update-benefit');
     }
 
     /**

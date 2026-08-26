@@ -120,7 +120,7 @@
                             </x-wirekit::table.td>
 
                             <x-wirekit::table.td>
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                <x-wirekit::button type="button" href="{{ route('benefit.show',$benefit->id) }}" wire:navigate class="px-3 py-1.5 text-xs">
                                     Detail
                                 </x-wirekit::button>
                             </x-wirekit::table.td>

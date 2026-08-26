@@ -4,6 +4,7 @@ use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Base\MyProfile;
 use App\Livewire\Page\Main\Benefit\Benefit;
+use App\Livewire\Page\Main\Benefit\DetailBenefit;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
@@ -52,6 +53,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('benefits')->middleware(['permission:view-benefit', 'permission:show-benefit'])->group(function () {
         Route::get('/', Benefit::class)->name('benefit.view');
+        Route::get('/{benefit}/detail', DetailBenefit::class)->name('benefit.show');
     });
 
     Route::prefix('positions')->middleware(['permission:view-position'])->group(function () {
