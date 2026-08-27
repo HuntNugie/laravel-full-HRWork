@@ -82,7 +82,7 @@
 
                         <x-wirekit::table.row>
 
-                          
+
 
                             <x-wirekit::table.th
                                 sortable
@@ -127,7 +127,7 @@
 
                             <x-wirekit::table.row>
 
-                            
+
                                 {{-- Division --}}
                                 <x-wirekit::table.td>
 
@@ -203,7 +203,7 @@
                                         @can('show-divisi')
 
                                             <x-wirekit::button
-                                                href="{{ route('divisi.name', $divisi->id) }}"
+                                                href="{{ route('divisi.show', $divisi->id) }}"
                                                 wire:navigate
                                                 type="button"
                                                 class="px-3 py-1.5 text-xs"

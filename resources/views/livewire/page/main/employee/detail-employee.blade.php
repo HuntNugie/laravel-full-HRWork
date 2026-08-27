@@ -405,7 +405,7 @@
                             </span>
 
                             <p class="mt-1 text-sm font-medium text-slate-800">
-                                PKWT
+                                {{ $employee->latestEmployeeContract->employement_type }}
                             </p>
 
                         </div>
@@ -418,7 +418,7 @@
                             </span>
 
                             <p class="mt-1 text-sm font-medium text-slate-800">
-                                CTR-2026-001
+                                {{ $employee->latestEmployeeContract->contract_number }}
                             </p>
 
                         </div>
@@ -431,7 +431,7 @@
                             </span>
 
                             <p class="mt-1 text-sm font-medium text-slate-800">
-                                01 September 2026
+                               {{$employee->latestEmployeeContract->start_date}}
                             </p>
 
                         </div>
@@ -444,7 +444,7 @@
                             </span>
 
                             <p class="mt-1 text-sm font-medium text-slate-800">
-                                31 August 2027
+                                {{$employee->latestEmployeeContract->end_date ?? "Pegawai Tetap"}}
                             </p>
 
                         </div>
@@ -456,11 +456,11 @@
                     <div class="mt-6 border-t border-slate-100 pt-6">
 
                         <span class="text-xs font-medium text-slate-400">
-                            Gaji Pokok
+                            Gaji Pokok / hari
                         </span>
 
                         <p class="mt-1 text-lg font-semibold text-slate-900">
-                            Rp 8.000.000
+                            Rp {{$employee->latestEmployeeContract->salary_daily}}
                         </p>
 
                     </div>

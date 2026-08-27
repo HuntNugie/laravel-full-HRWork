@@ -2,26 +2,26 @@
 
 namespace App\Policies;
 
-use App\Models\Position;
+use App\Models\EmployeeContract;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class PositionPolicy
+class EmployeeContractPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return $user->can("view-position");
+        return false;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Position $position): bool
+    public function view(User $user, EmployeeContract $employeeContract): bool
     {
-        return $user->can("show-position");
+        return false;
     }
 
     /**
@@ -29,21 +29,21 @@ class PositionPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create-position');
+        return $user->can('create-contract');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Position $position): bool
+    public function update(User $user, EmployeeContract $employeeContract): bool
     {
-        return $user->can('update-position');
+        return false;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Position $position): bool
+    public function delete(User $user, EmployeeContract $employeeContract): bool
     {
         return false;
     }
@@ -51,7 +51,7 @@ class PositionPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Position $position): bool
+    public function restore(User $user, EmployeeContract $employeeContract): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class PositionPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Position $position): bool
+    public function forceDelete(User $user, EmployeeContract $employeeContract): bool
     {
         return false;
     }

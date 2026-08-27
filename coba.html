@@ -1,0 +1,1008 @@
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Perjanjian Kerja - PT. Inovindo Digital Media</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            background-color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10.5pt;
+            line-height: 1.55;
+            color: #111111;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 18mm 22mm;
+            background-color: #ffffff;
+        }
+
+        /* =====================================================
+           KOP SURAT
+        ====================================================== */
+
+        .letter-header {
+            margin-bottom: 20px;
+        }
+
+        .company-brand {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .company-logo {
+            display: table-cell;
+            width: 78px;
+            vertical-align: middle;
+        }
+
+        .company-logo img {
+            display: block;
+            width: 62px;
+            height: auto;
+            max-height: 64px;
+            object-fit: contain;
+        }
+
+        .company-info {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            padding-right: 78px;
+        }
+
+        .company-info h1 {
+            margin-bottom: 4px;
+            font-size: 17pt;
+            font-weight: bold;
+            letter-spacing: 0.7px;
+            line-height: 1.2;
+        }
+
+        .company-info p {
+            margin: 2px 0;
+            font-size: 9pt;
+            line-height: 1.35;
+            color: #222222;
+        }
+
+        .separator {
+            margin: 0 5px;
+        }
+
+        .header-line {
+            height: 4px;
+            margin-top: 12px;
+            border-top: 2.5px solid #000000;
+            border-bottom: 1px solid #000000;
+        }
+
+        /* =====================================================
+           JUDUL DOKUMEN
+        ====================================================== */
+
+        .document-title {
+            margin: 22px 0 20px;
+            text-align: center;
+        }
+
+        .document-title h2 {
+            font-size: 15pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            line-height: 1.25;
+        }
+
+        .document-title p {
+            margin-top: 5px;
+            font-size: 10pt;
+        }
+
+        /* =====================================================
+           PEMBUKA
+        ====================================================== */
+
+        .intro {
+            margin-bottom: 17px;
+            text-align: justify;
+        }
+
+        .intro p {
+            margin-bottom: 8px;
+        }
+
+        /* =====================================================
+           IDENTITAS PIHAK
+        ====================================================== */
+
+        .party-section {
+            margin-bottom: 18px;
+        }
+
+        .party-label {
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        .party-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .party-table td {
+            padding: 3px 0;
+            vertical-align: top;
+        }
+
+        .party-table .label {
+            width: 125px;
+        }
+
+        .party-table .colon {
+            width: 15px;
+            text-align: center;
+        }
+
+        /* =====================================================
+           PASAL
+        ====================================================== */
+
+        .section {
+            margin-top: 17px;
+        }
+
+        .section-title {
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .section p {
+            margin-bottom: 8px;
+            text-align: justify;
+        }
+
+        .section ol {
+            margin: 7px 0 8px 24px;
+            padding: 0;
+        }
+
+        .section ol li {
+            margin-bottom: 5px;
+            padding-left: 4px;
+            text-align: justify;
+        }
+
+        /* =====================================================
+           TABEL KOMPENSASI
+        ====================================================== */
+
+        .compensation-table {
+            width: 100%;
+            margin: 10px 0 12px;
+            border-collapse: collapse;
+        }
+
+        .compensation-table th,
+        .compensation-table td {
+            padding: 7px 8px;
+            border: 1px solid #000000;
+            vertical-align: top;
+        }
+
+        .compensation-table th {
+            font-weight: bold;
+            text-align: left;
+            background-color: #f5f5f5;
+        }
+
+        .amount {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        /* =====================================================
+           CATATAN
+        ====================================================== */
+
+        .notes {
+            margin-top: 17px;
+            padding: 9px 10px;
+            border: 1px solid #bdbdbd;
+        }
+
+        .notes-title {
+            margin-bottom: 4px;
+            font-weight: bold;
+        }
+
+        /* =====================================================
+           TANDA TANGAN
+        ====================================================== */
+
+        .signature-wrapper {
+            margin-top: 42px;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .signature-table td {
+            width: 50%;
+            padding: 0 15px;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .signature-space {
+            height: 75px;
+        }
+
+        .signature-name {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .signature-role {
+            margin-top: 2px;
+            font-size: 9.5pt;
+        }
+
+        /* =====================================================
+           FOOTER
+        ====================================================== */
+
+        .document-footer {
+            margin-top: 25px;
+            padding-top: 8px;
+            border-top: 1px solid #dddddd;
+            color: #666666;
+            text-align: center;
+            font-size: 8pt;
+        }
+
+        /* =====================================================
+           PAGE BREAK
+        ====================================================== */
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* =====================================================
+           PRINT
+        ====================================================== */
+
+        @media print {
+            body {
+                background: none;
+            }
+
+            .page {
+                width: 210mm;
+                min-height: 297mm;
+                margin: 0;
+                padding: 18mm 22mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page">
+
+        <!-- =================================================
+             KOP SURAT
+        ================================================== -->
+
+        <header class="letter-header">
+
+            <div class="company-brand">
+
+                <div class="company-logo">
+                    <img
+                        src="logo-inovindo.webp"
+                        alt="Logo PT. Inovindo Digital Media">
+                </div>
+
+                <div class="company-info">
+
+                    <h1>PT. INOVINDO DIGITAL MEDIA</h1>
+
+                    <p>
+                        Komplek Buana Citra Ciwastra No. D3, Kabupaten Bandung
+                    </p>
+
+                    <p>
+                        WhatsApp: 0856-2251-196
+                        <span class="separator">|</span>
+                        Website: www.inovindo.co.id
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="header-line"></div>
+
+        </header>
+
+
+        <!-- =================================================
+             JUDUL DOKUMEN
+        ================================================== -->
+
+        <div class="document-title">
+
+            <h2>Perjanjian Kerja</h2>
+
+            <p>
+                Nomor:
+                <strong>CTR/2026/08/001</strong>
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PEMBUKA
+        ================================================== -->
+
+        <div class="intro">
+
+            <p>
+                Pada hari ini, <strong>Sabtu</strong>, tanggal
+                <strong>01 Agustus 2026</strong>, bertempat di
+                <strong>Bandung</strong>, telah dibuat dan disepakati
+                Perjanjian Kerja oleh dan antara pihak-pihak sebagaimana
+                diuraikan di bawah ini.
+            </p>
+
+            <p>
+                Perjanjian Kerja ini dibuat berdasarkan kesepakatan kedua
+                belah pihak untuk mengatur hubungan kerja, hak, kewajiban,
+                serta ketentuan kerja antara perusahaan dan pekerja.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PIHAK PERTAMA
+        ================================================== -->
+
+        <div class="party-section">
+
+            <div class="party-label">
+                PIHAK PERTAMA
+            </div>
+
+            <table class="party-table">
+
+                <tr>
+                    <td class="label">Nama Perusahaan</td>
+                    <td class="colon">:</td>
+                    <td>
+                        <strong>PT. Inovindo Digital Media</strong>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Alamat</td>
+                    <td class="colon">:</td>
+                    <td>
+                        Komplek Buana Citra Ciwastra No. D3,
+                        Kabupaten Bandung
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Diwakili Oleh</td>
+                    <td class="colon">:</td>
+                    <td>
+                        <strong>Novi Setia Nurviat</strong>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Jabatan</td>
+                    <td class="colon">:</td>
+                    <td>
+                        Direktur
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             PIHAK KEDUA
+        ================================================== -->
+
+        <div class="party-section">
+
+            <div class="party-label">
+                PIHAK KEDUA
+            </div>
+
+            <table class="party-table">
+
+                <tr>
+                    <td class="label">Nama</td>
+                    <td class="colon">:</td>
+                    <td>
+                        <strong>Andi Pratama</strong>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Employee Code</td>
+                    <td class="colon">:</td>
+                    <td>
+                        EMP-0001
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Tempat, Tanggal Lahir</td>
+                    <td class="colon">:</td>
+                    <td>
+                        Bandung, 15 Mei 2001
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Alamat</td>
+                    <td class="colon">:</td>
+                    <td>
+                        Jl. Contoh No. 123, Bandung
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Jabatan</td>
+                    <td class="colon">:</td>
+                    <td>
+                        Backend Developer
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Division</td>
+                    <td class="colon">:</td>
+                    <td>
+                        IT
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="label">Team</td>
+                    <td class="colon">:</td>
+                    <td>
+                        Backend
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             PERSETUJUAN
+        ================================================== -->
+
+        <div class="section">
+
+            <p>
+                Pihak Pertama dan Pihak Kedua selanjutnya secara bersama-sama
+                disebut sebagai <strong>Para Pihak</strong>. Para Pihak
+                menyatakan telah sepakat untuk mengikatkan diri dalam
+                hubungan kerja dengan ketentuan sebagaimana diatur dalam
+                Perjanjian Kerja ini.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 1
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 1 — Jenis dan Jangka Waktu Perjanjian
+            </div>
+
+            <p>
+                Perjanjian kerja ini merupakan
+                <strong>Perjanjian Kerja Waktu Tertentu (PKWT)</strong>
+                yang berlaku sejak
+                <strong>01 Agustus 2026</strong> sampai dengan
+                <strong>31 Juli 2027</strong>.
+            </p>
+
+            <p>
+                Perpanjangan atau perubahan terhadap Perjanjian Kerja ini
+                dilakukan berdasarkan kesepakatan Para Pihak dan ketentuan
+                peraturan perundang-undangan yang berlaku.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 2
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 2 — Jabatan dan Ruang Lingkup Pekerjaan
+            </div>
+
+            <p>
+                Pihak Kedua ditempatkan sebagai
+                <strong>Backend Developer</strong> pada
+                <strong>Division IT</strong> dan
+                <strong>Team Backend</strong>.
+            </p>
+
+            <p>
+                Pihak Kedua wajib melaksanakan pekerjaan sesuai dengan
+                tanggung jawab jabatan, target pekerjaan, arahan atasan,
+                serta kebutuhan operasional perusahaan.
+            </p>
+
+            <p>
+                Pihak Kedua dapat diberikan tugas lain yang masih berkaitan
+                dengan kepentingan pekerjaan dan kompetensinya berdasarkan
+                kebutuhan perusahaan.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 3
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 3 — Tempat dan Waktu Kerja
+            </div>
+
+            <p>
+                Pihak Kedua melaksanakan pekerjaan pada lokasi dan waktu kerja
+                yang ditetapkan oleh PT. Inovindo Digital Media sesuai dengan
+                kebijakan perusahaan.
+            </p>
+
+            <p>
+                Pihak Kedua wajib mengikuti ketentuan waktu kerja dan
+                melakukan presensi sesuai dengan sistem presensi yang
+                ditetapkan perusahaan.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 4
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 4 — Upah dan Tunjangan
+            </div>
+
+            <p>
+                Atas pelaksanaan pekerjaan, Pihak Kedua berhak menerima
+                kompensasi sesuai dengan ketentuan yang telah disepakati
+                Para Pihak.
+            </p>
+
+            <table class="compensation-table">
+
+                <thead>
+
+                    <tr>
+                        <th style="width: 65%;">
+                            Komponen
+                        </th>
+
+                        <th style="width: 35%;">
+                            Nilai
+                        </th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <tr>
+                        <td>
+                            Gaji Harian
+                        </td>
+
+                        <td class="amount">
+                            <strong>Rp250.000 / hari</strong>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            Tunjangan Transport
+                        </td>
+
+                        <td class="amount">
+                            <strong>Rp500.000 / bulan</strong>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            Tunjangan Makan
+                        </td>
+
+                        <td class="amount">
+                            <strong>Rp300.000 / bulan</strong>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong>Total Tunjangan</strong>
+                        </td>
+
+                        <td class="amount">
+                            <strong>Rp800.000 / bulan</strong>
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+            <p>
+                Pembayaran upah dilakukan berdasarkan ketentuan pembayaran
+                yang berlaku di perusahaan dengan memperhatikan kehadiran
+                dan ketentuan hubungan kerja.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 5
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 5 — Hak dan Kewajiban Pihak Kedua
+            </div>
+
+            <p>
+                Pihak Kedua memiliki hak dan kewajiban sebagai berikut:
+            </p>
+
+            <ol>
+
+                <li>
+                    Menerima upah dan tunjangan sesuai dengan ketentuan
+                    Perjanjian Kerja.
+                </li>
+
+                <li>
+                    Mendapatkan informasi dan arahan yang diperlukan
+                    untuk melaksanakan pekerjaan.
+                </li>
+
+                <li>
+                    Melaksanakan pekerjaan dengan penuh tanggung jawab.
+                </li>
+
+                <li>
+                    Mematuhi peraturan dan kebijakan perusahaan.
+                </li>
+
+                <li>
+                    Menjaga nama baik perusahaan.
+                </li>
+
+                <li>
+                    Menjaga kerahasiaan informasi dan data perusahaan.
+                </li>
+
+                <li>
+                    Melakukan presensi sesuai dengan ketentuan perusahaan.
+                </li>
+
+                <li>
+                    Menyelesaikan pekerjaan sesuai dengan target dan
+                    tenggat waktu yang telah ditetapkan.
+                </li>
+
+            </ol>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 6
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 6 — Hak dan Kewajiban Pihak Pertama
+            </div>
+
+            <p>
+                Pihak Pertama berkewajiban memberikan hak Pihak Kedua sesuai
+                dengan Perjanjian Kerja serta memberikan arahan dan lingkungan
+                kerja yang diperlukan untuk pelaksanaan pekerjaan.
+            </p>
+
+            <p>
+                Pihak Pertama berhak mengatur pekerjaan, memberikan arahan,
+                melakukan evaluasi kinerja, serta menerapkan ketentuan
+                perusahaan selama tidak bertentangan dengan peraturan yang
+                berlaku.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 7
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 7 — Kerahasiaan
+            </div>
+
+            <p>
+                Pihak Kedua wajib menjaga kerahasiaan seluruh informasi,
+                dokumen, data, sistem, kode sumber, informasi bisnis, serta
+                informasi lainnya yang diperoleh selama menjalankan hubungan
+                kerja.
+            </p>
+
+            <p>
+                Kewajiban menjaga kerahasiaan tetap berlaku sesuai dengan
+                ketentuan perusahaan dan peraturan yang berlaku.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 8
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 8 — Peraturan dan Kebijakan Perusahaan
+            </div>
+
+            <p>
+                Pihak Kedua wajib mematuhi seluruh peraturan perusahaan,
+                prosedur operasional, standar keamanan informasi, kebijakan
+                penggunaan fasilitas perusahaan, serta ketentuan internal
+                lainnya yang berlaku.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 9
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 9 — Pengakhiran Hubungan Kerja
+            </div>
+
+            <p>
+                Pengakhiran hubungan kerja dilaksanakan berdasarkan ketentuan
+                dalam Perjanjian Kerja dan peraturan perundang-undangan
+                yang berlaku.
+            </p>
+
+            <p>
+                Hak dan kewajiban Para Pihak akibat berakhirnya hubungan kerja
+                diselesaikan sesuai dengan ketentuan yang berlaku.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 10
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 10 — Perubahan Perjanjian
+            </div>
+
+            <p>
+                Setiap perubahan terhadap isi Perjanjian Kerja ini dilakukan
+                berdasarkan kesepakatan Para Pihak dan dituangkan dalam
+                dokumen perubahan atau perjanjian lain yang diperlukan.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             PASAL 11
+        ================================================== -->
+
+        <div class="section">
+
+            <div class="section-title">
+                Pasal 11 — Penutup
+            </div>
+
+            <p>
+                Perjanjian Kerja ini dibuat dan disepakati oleh Para Pihak
+                dalam keadaan sadar, tanpa adanya paksaan dari pihak manapun.
+            </p>
+
+            <p>
+                Dengan ditandatanganinya Perjanjian Kerja ini, Para Pihak
+                menyatakan telah membaca, memahami, dan menyetujui seluruh
+                ketentuan yang tercantum di dalamnya.
+            </p>
+
+            <p>
+                Perjanjian ini dibuat dalam rangkap yang diperlukan dan
+                masing-masing pihak memperoleh salinan sesuai dengan
+                kebutuhannya.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             CATATAN
+        ================================================== -->
+
+        <div class="notes">
+
+            <div class="notes-title">
+                Catatan
+            </div>
+
+            <p>
+                Dokumen ini merupakan simulasi template Perjanjian Kerja
+                untuk kebutuhan pengembangan sistem HRIS PT. Inovindo Digital
+                Media dan perlu disesuaikan dengan kebijakan perusahaan serta
+                ditinjau oleh pihak HR/legal sebelum digunakan sebagai
+                dokumen resmi.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+             TANDA TANGAN
+        ================================================== -->
+
+        <div class="signature-wrapper">
+
+            <table class="signature-table">
+
+                <tr>
+
+                    <td>
+
+                        <p>
+                            Bandung, 01 Agustus 2026
+                        </p>
+
+                        <p>
+                            <strong>PIHAK PERTAMA</strong>
+                        </p>
+
+                        <p>
+                            PT. Inovindo Digital Media
+                        </p>
+
+                        <div class="signature-space"></div>
+
+                        <p class="signature-name">
+                            Novi Setia Nurviat
+                        </p>
+
+                        <p class="signature-role">
+                            Direktur
+                        </p>
+
+                    </td>
+
+                    <td>
+
+                        <p>
+                            Bandung, 01 Agustus 2026
+                        </p>
+
+                        <p>
+                            <strong>PIHAK KEDUA</strong>
+                        </p>
+
+                        <p>
+                            Pekerja
+                        </p>
+
+                        <div class="signature-space"></div>
+
+                        <p class="signature-name">
+                            Andi Pratama
+                        </p>
+
+                        <p class="signature-role">
+                            EMP-0001
+                        </p>
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        </div>
+
+
+        <!-- =================================================
+             FOOTER
+        ================================================== -->
+
+        <div class="document-footer">
+            Nomor Contract:
+            <strong>CTR/2026/08/001</strong>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -105,7 +105,7 @@
                         POSITION 1
                         ================================================== --}}
                       @forelse ($positions as $position)
-                          
+
                       <x-wirekit::table.row>
 
                           {{-- Position --}}
@@ -126,7 +126,7 @@
                           </x-wirekit::table.td>
 
 
-                        
+
 
                           {{-- Minimum Salary --}}
                           <x-wirekit::table.td>
@@ -162,10 +162,12 @@
 
                           {{-- Actions --}}
                           <x-wirekit::table.td>
+                            @can("show-position")
 
                               <x-wirekit::button href="{{ route('position.show',$position->id) }}" type="button" class="px-3 py-1.5 text-xs" wire:navigate>
                                   Detail
                               </x-wirekit::button>
+                            @endcan
 
                           </x-wirekit::table.td>
 
@@ -179,7 +181,7 @@
                       @endforelse
 
 
-                  
+
                     </x-wirekit::table.body>
 
                 </x-wirekit::table>

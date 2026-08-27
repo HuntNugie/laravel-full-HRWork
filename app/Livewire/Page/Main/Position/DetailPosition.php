@@ -14,6 +14,7 @@ class DetailPosition extends Component
 
     public function mount(Position $position)
     {
+        $this->authorize("view", $position);
         $this->position = $position->load(['employees', 'jobdesk']);
         $this->dispatch('open-edit', id: $position->id);
     }
@@ -21,7 +22,7 @@ class DetailPosition extends Component
     #[On('updated-position')]
     public function updatedPage()
     {
-       $this->mount($this->position);
+        $this->mount($this->position);
     }
     public function render()
     {

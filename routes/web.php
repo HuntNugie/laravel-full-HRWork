@@ -29,35 +29,37 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/my-profile', MyProfile::class)->name('my-profile');
 
-    Route::prefix('divisions')->middleware(['permission:view-divisi', 'permission:show-divisi'])->group(function () {
-        Route::get('/', Divisi::class)->name('divisi.view');
-        Route::get('/{divisi}/detail', DetailDivisi::class)->name('divisi.name');
+    Route::prefix('divisi')->group(function () {
+        Route::get('/', Divisi::class)->middleware('permission:view-divisi')->name('divisi.view');
+        Route::get('/{divisi}/detail', DetailDivisi::class)->middleware('permission:show-divisi')->name('divisi.show');
     });
 
-    Route::prefix('teams')->middleware(['permission:view-team', 'permission:show-team'])->group(function () {
-        Route::get('/', Team::class)->name('team.view');
+    Route::prefix('teams')->group(function () {
+        Route::get('/', Team::class)->middleware('permission:view-team')->name('team.view');
+        // 'permission:show-team'
     });
 
-    Route::prefix('employees')->middleware(['permission:view-employee', 'permission:show-employee'])->group(function () {
-        Route::get('/', Employee::class)->name('employee.view');
+    Route::prefix('employees')->group(function () {
+        Route::get('/', Employee::class)->middleware('permission:view-employee')->name('employee.view');
         // untuk menambahkan employee
         Route::get('/create', CreateEmployee::class)->middleware('permission:create-employee')->name('employee.create');
         // untuk detail
-        Route::get('/{employee}/detail', DetailEmployee::class)->name('employee.show');
+        Route::get('/{employee}/detail', DetailEmployee::class)->middleware('permission:show-employee')->name('employee.show');
 
         // untuk contract
-        Route::prefix('contract')->middleware('permission:show-contract')->group(function () {
-            Route::get('/{employee}/create', CreateEmployeeContract::class)->middleware('permission:create-contract')->name('contract.create');
-        });
+
+        Route::get('/{employee}/contract/create', CreateEmployeeContract::class)->middleware('permission:create-contract')->name('contract.create');
+        // 'permission:show-contract'
+
     });
 
-    Route::prefix('benefits')->middleware(['permission:view-benefit', 'permission:show-benefit'])->group(function () {
-        Route::get('/', Benefit::class)->name('benefit.view');
-        Route::get('/{benefit}/detail', DetailBenefit::class)->name('benefit.show');
+    Route::prefix('benefits')->group(function () {
+        Route::get('/', Benefit::class)->middleware('permission:view-benefit')->name('benefit.view');
+        Route::get('/{benefit}/detail', DetailBenefit::class)->middleware('permission:show-benefit')->name('benefit.show');
     });
 
-    Route::prefix('positions')->middleware(['permission:view-position'])->group(function () {
-        Route::get('/', Position::class)->name('position.view');
-        Route::get('/{position}/detail', DetailPosition::class)->name('position.show');
+    Route::prefix('positions')->group(function () {
+        Route::get('/', Position::class)->middleware('permission:view-position')->name('position.view');
+        Route::get('/{position}/detail', DetailPosition::class)->middleware("permission:show-position")->name('position.show');
     });
 });
