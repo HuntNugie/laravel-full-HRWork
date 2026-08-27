@@ -209,6 +209,7 @@
                     </x-wirekit::table.body>
 
                 </x-wirekit::table>
+                {{ $employees->links() }}
 
             </div>
 

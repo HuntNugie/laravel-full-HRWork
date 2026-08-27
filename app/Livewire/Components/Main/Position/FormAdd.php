@@ -56,7 +56,7 @@ class FormAdd extends Component
 
         $this->dispatch('wirekit-modal-close', name: 'create-position');
         $this->dispatch('create-position');
-
+        $this->reset();
     }
     public function canSubmit()
     {

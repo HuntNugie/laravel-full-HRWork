@@ -27,7 +27,8 @@ class CreateEmployee extends Component
         $this->createUser();
         $this->createEmployee();
 
-        $this->redirectRoute('employee.view', navigate: true);
+        // setelah berhasil menambahkan user redirect ke create contract
+        $this->redirectRoute('contract.create', $this->user->employees->id, navigate: true);
     }
 
     protected function createUser()
