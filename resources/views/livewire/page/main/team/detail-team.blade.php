@@ -385,10 +385,20 @@
                 </x-wirekit::stack>
 
 
-                <div class="w-full sm:w-64">
+                <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
 
-                    <x-wirekit::input placeholder="Cari employee" name="search" class="text-black" />
+                    <div class="w-full sm:w-64">
 
+                        <x-wirekit::input placeholder="Cari employee" name="search" class="text-black" />
+
+                    </div>
+
+                    <livewire:components.main.team.form-assign-employee :teamId="$team->id">
+                        <x-wirekit::button type="button">
+                            <x-wirekit::icon name="plus" /> Masukkan Karyawan
+                        </x-wirekit::button>
+
+                    </livewire:components.main.team.form-assign-employee>
                 </div>
 
             </div>
