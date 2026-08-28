@@ -14,6 +14,7 @@ use App\Livewire\Page\Main\Employee\DetailEmployee;
 use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
+use App\Livewire\Page\Main\Team\DetailTeam;
 use App\Livewire\Page\Main\Team\Team;
 
 Route::get('/', function () {
@@ -37,6 +38,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('teams')->group(function () {
         Route::get('/', Team::class)->middleware('permission:view-team')->name('team.view');
         // 'permission:show-team'
+        Route::get('/{team}/detail', DetailTeam::class)->middleware('permission:show-team')->name('team.show');
     });
 
     Route::prefix('employees')->group(function () {

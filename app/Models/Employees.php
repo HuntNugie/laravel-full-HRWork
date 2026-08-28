@@ -49,4 +49,10 @@ class Employees extends Model
     {
         return $this->hasMany(EmployeeStatusHistory::class, 'employee_id');
     }
+
+    // relasi supervisor team
+    public function supervisorTeam()
+    {
+        return $this->hasOne(Team::class, 'supervisor_id');
+    }
 }

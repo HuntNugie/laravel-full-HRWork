@@ -6,6 +6,7 @@ use App\Models\Benefit;
 use App\Models\ContractSequence;
 use App\Models\EmployeeContract;
 use App\Models\Employees;
+use App\Models\EmployeeStatusHistory;
 use App\Models\Position;
 use App\Models\Team;
 use App\Service\ContractService;
@@ -137,6 +138,13 @@ class CreateEmployeeContract extends Component
                     'amount' => $benefit['amount'],
                 ]);
             }
+
+            $this->employee->update(['status_employee' => 'active', 'position_id' => $this->form->positionId]);
+            $this->employee->statusHistory()->create([
+                'new_status' => 'active',
+                'effective_date' => $this->form->start_date,
+                'reason' => 'Pembuatan Kontrak'
+            ]);
 
             return $contract;
         });

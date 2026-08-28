@@ -88,7 +88,7 @@
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th sortable column="manager">
-                                Manager
+                               Supervisor
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th sortable column="members">
@@ -120,7 +120,7 @@
 
                                 <div class="flex items-center gap-3">
 
-                                 
+
                                     <div class="min-w-0">
 
                                         <p class="truncate text-sm font-semibold text-slate-800">
@@ -148,7 +148,7 @@
                                 <div class="flex items-center gap-2">
 
                                     <span class="text-sm text-slate-700">
-                                        Andi Pratama
+                                       {{$team->supervisor->user->name ?? "Tidak ada supervisor"}}
                                     </span>
 
                                 </div>
@@ -157,16 +157,16 @@
 
 
                             <x-wirekit::table.td>
-                                8 employees
+                                {{ count($team->nonSupervisors) }} employees
                             </x-wirekit::table.td>
 
 
                             <x-wirekit::table.td>
 
                                 <span class="inline-flex items-center rounded-full
-                                           bg-emerald-50 px-2.5 py-1
-                                           text-xs font-medium text-emerald-600">
-                                    Active
+                                            px-2.5 py-1
+                                           text-xs font-medium {{ $team->is_active === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
+                                    {{ $team->is_active }}
                                 </span>
 
                             </x-wirekit::table.td>
@@ -176,7 +176,7 @@
 
                                 @can('show-team')
 
-                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs" href="{{ route('team.show',$team->id) }}" wire:navigate>
                                         Detail
                                     </x-wirekit::button>
 
@@ -202,7 +202,7 @@
                       @endforelse
 
 
-                    
+
 
                     </x-wirekit::table.body>
 

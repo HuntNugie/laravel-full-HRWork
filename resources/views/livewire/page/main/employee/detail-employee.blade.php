@@ -460,7 +460,7 @@
                         </span>
 
                         <p class="mt-1 text-lg font-semibold text-slate-900">
-                            Rp {{$employee->latestEmployeeContract->salary_daily}}
+                            Rp {{ number_format($employee->latestEmployeeContract->salary_daily)  }}
                         </p>
 
                     </div>
