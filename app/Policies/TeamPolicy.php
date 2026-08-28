@@ -29,7 +29,7 @@ class TeamPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create-divisi');
+        return $user->can('create-team');
     }
 
     /**
@@ -37,7 +37,7 @@ class TeamPolicy
      */
     public function update(User $user, Team $team): bool
     {
-        return false;
+        return $user->can('update-team');
     }
 
     /**

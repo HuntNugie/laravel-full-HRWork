@@ -32,14 +32,16 @@
 
         <div class="flex items-center gap-2">
 
-            <x-wirekit::button type="button" class="px-3 py-1.5 text-sm">
+            <livewire:components.main.team.form-edit>
+                <x-wirekit::button type="button" class="px-3 py-1.5 text-sm">
 
-                <x-wirekit::icon name="pencil" />
+                    <x-wirekit::icon name="pencil" />
 
-                Edit Team
+                    Edit Team
 
-            </x-wirekit::button>
+                </x-wirekit::button>
 
+            </livewire:components.main.team.form-edit>
         </div>
 
     </div>
@@ -328,8 +330,8 @@
                             </p>
 
                             <span
-                                class="mt-1 inline-flex items-center rounded-full  px-2.5 py-1 text-xs font-medium {{ $team->supervisor->status_employee === "active" ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
-                               {{$team->supervisor->status_employee}}
+                                class="mt-1 inline-flex items-center rounded-full  px-2.5 py-1 text-xs font-medium {{ $team->supervisor->status_employee === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
+                                {{ $team->supervisor->status_employee }}
                             </span>
 
                         </div>
