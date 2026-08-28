@@ -400,7 +400,7 @@
 
                     <div class="w-full sm:w-64">
 
-                        <x-wirekit::input placeholder="Cari employee" name="search" class="text-black" />
+                        <x-wirekit::input placeholder="Cari employee" name="search" class="text-black" wire:model.live.debounce.400ms="search" />
 
                     </div>
 
@@ -455,7 +455,7 @@
 
                     <x-wirekit::table.body>
 
-                        @forelse ($team->nonSupervisors as $employee)
+                        @forelse ($employees as $employee)
                             <x-wirekit::table.row>
 
                                 <x-wirekit::table.td>

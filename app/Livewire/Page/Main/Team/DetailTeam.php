@@ -11,9 +11,12 @@ use Livewire\Component;
 class DetailTeam extends Component
 {
     public Team $team;
+
+    public string $search = "";
+
     public function mount(Team $team)
     {
-        $this->team = $team->load(['employees', 'divisi', 'supervisor']);
+        $this->team = $team->load(['divisi', 'supervisor']);
         $this->dispatch('refresh-edit', id: $team->id);
     }
 
@@ -24,6 +27,11 @@ class DetailTeam extends Component
     }
     public function render()
     {
-        return view('livewire.page.main.team.detail-team');
+        $employees = $this->team->nonSupervisors()->with(['user', 'position'])->when($this->search, function ($q) {
+            return $q->whereHas("user", function ($qe) {
+                $qe->where("name", "like", "%" . $this->search . "%");
+            });
+        })->get();
+        return view('livewire.page.main.team.detail-team', compact("employees"));
     }
 }
