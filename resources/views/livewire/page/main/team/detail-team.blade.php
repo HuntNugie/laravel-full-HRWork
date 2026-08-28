@@ -71,6 +71,8 @@
                         Informasi utama mengenai team.
                     </p>
 
+
+
                 </x-wirekit::stack>
 
             </x-wirekit::card.header>
@@ -121,6 +123,7 @@
                         <p class="mt-1 text-sm font-semibold text-slate-800">
                             {{ $team->supervisor->user->name ?? 'Belum ada supervisor' }}
                         </p>
+
 
                     </div>
 
@@ -212,6 +215,7 @@
                             {{ $team->supervisor->user->name ?? 'Belum ada supervisor' }}
                         </p>
 
+
                     </div>
 
 
@@ -271,6 +275,13 @@
                 <p class="text-sm text-slate-500">
                     Informasi employee yang bertanggung jawab sebagai supervisor team.
                 </p>
+
+                <livewire:components.main.team.form-assign-supervisor :team="$team">
+                    <x-wirekit::button type="button" class="mt-3 px-3 py-1.5 text-sm">
+                        <x-wirekit::icon name="user" />
+                        {{ $team->supervisor ? 'Ganti supervisor' : 'Tambahkan supervisor' }}
+                    </x-wirekit::button>
+                </livewire:components.main.team.form-assign-supervisor>
 
             </x-wirekit::stack>
 

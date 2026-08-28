@@ -13,11 +13,6 @@ class FormEdit extends Component
 {
     public Team $team;
 
-    #[Validate(['required', 'exists:employees,id'], message: [
-        'supervisorId.required' => 'Supervisor wajib di isi',
-        'supervisorId.exists' => 'tidak ada di pilihan',
-    ])]
-    public $supervisorId = '';
 
 
     #[Validate(['required', 'exists:divisis,id'], message: [
@@ -50,7 +45,6 @@ class FormEdit extends Component
             'name' => $this->name,
             'description' => $this->desc,
             'is_active' => $this->isActive ? 'active' : 'inactive',
-            'supervisor_id' => $this->supervisorId,
             'divisi_id' => $this->divisiId
         ]);
 
@@ -60,7 +54,7 @@ class FormEdit extends Component
 
     public function canSubmit()
     {
-        return filled($this->divisiId) && filled($this->name) && filled($this->desc) && filled($this->supervisorId) && $this->getErrorBag()->isEmpty();
+        return filled($this->divisiId) && filled($this->name) && filled($this->desc)  && $this->getErrorBag()->isEmpty();
     }
 
     #[On('refresh-edit')]
@@ -70,15 +64,12 @@ class FormEdit extends Component
         $this->name = $this->team->name;
         $this->desc = $this->team->description;
         $this->isActive = $this->team->is_active === 'active' ? true : false;
-        $this->supervisorId = $this->team->supervisor_id;
         $this->divisiId = $this->team->divisi->id;
     }
     public function render()
     {
-        $supervisors = Employees::with('user')->whereHas('position', function ($q) {
-            return $q->where('name', '=', 'supervisor');
-        })->get()->pluck('user.name', 'id')->toArray();
+
         $divisis = Divisi::query()->pluck('name', 'id')->toArray();
-        return view('livewire.components.main.team.form-edit', compact(['divisis', 'supervisors']));
+        return view('livewire.components.main.team.form-edit', compact(['divisis']));
     }
 }

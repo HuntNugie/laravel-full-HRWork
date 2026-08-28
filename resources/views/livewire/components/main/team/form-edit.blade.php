@@ -100,35 +100,6 @@
 
 
 
-{{-- =================================================
-                SUPERVISOR
-                ================================================== --}}
-
-                <x-wirekit::field>
-
-                    <x-wirekit::label for="supervisor" class="text-black">
-
-                        Supervisor
-
-                    </x-wirekit::label>
-
-                    <x-wirekit::select
-                        id="supervisor"
-                        class="text-black"
-                        name="supervisorId"
-                        placeholder="Pilih Supervisor..."
-                        :options="$supervisors"
-                        wire:model.live="supervisorId"
-                    />
-
-                    <p class="mt-1 text-xs text-slate-400">
-
-                        Supervisor harus merupakan karyawan dengan jabatan Supervisor.
-
-                    </p>
-
-                </x-wirekit::field>
-
 
 
 {{-- =================================================

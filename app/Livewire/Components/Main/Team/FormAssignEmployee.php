@@ -17,12 +17,7 @@ class FormAssignEmployee extends Component
 
     public string $search = "";
 
-    public function saveEmployeeId(array $employeeId): void
-    {
-        foreach ($this->employeeId as $id) {
-        }
-        $this->employeeId = $employeeId;
-    }
+
 
     public function addEmployees()
     {
