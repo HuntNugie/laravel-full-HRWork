@@ -11,7 +11,7 @@
         </x-wirekit::sidebar.group>
 
 
-        <x-wirekit::sidebar.group label="Personal access">
+        <x-wirekit::sidebar.group label="Role dan sistem akses">
 
             <x-wirekit::sidebar.item href="#" icon="clock" wire:navigate>
                 Presensi
@@ -27,6 +27,22 @@
 
         </x-wirekit::sidebar.group>
 
+        @canany(['view-user'])
+            <x-wirekit::sidebar.group collapsible label="User dan hak akses">
+                @can('view-user')
+                    <x-wirekit::sidebar.item href="{{ route('user.view') }}"  icon="user" :active="request()->routeIs('user.view')" wire:navigate>
+                        Manajemen User
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+
+                <x-wirekit::sidebar.item href="#" icon="shield-check" wire:navigate>
+                    Manajemen Role
+                </x-wirekit::sidebar.item>
+
+
+            </x-wirekit::sidebar.group>
+        @endcanany
 
         @canany(['view-divisi', 'view-team', 'view-position'])
 
@@ -34,21 +50,21 @@
 
                 @can('view-divisi')
                     <x-wirekit::sidebar.item href="{{ route('divisi.view') }}" icon="building" :active="request()->routeIs('divisi.view')" wire:navigate>
-                       Manajemen Divisi
+                        Manajemen Divisi
                     </x-wirekit::sidebar.item>
                 @endcan
 
 
                 @can('view-team')
                     <x-wirekit::sidebar.item href="{{ route('team.view') }}" icon="user-group" :active="request()->routeIs('team.view')" wire:navigate>
-                       Manajemen Team
+                        Manajemen Team
                     </x-wirekit::sidebar.item>
                 @endcan
 
 
                 @can('view-position')
                     <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge" wire:navigate>
-                       Manajemen Jabatan
+                        Manajemen Jabatan
                     </x-wirekit::sidebar.item>
                 @endcan
 
@@ -62,7 +78,7 @@
 
                 @can('view-employee')
                     <x-wirekit::sidebar.item href="{{ route('employee.view') }}" :active="request()->routeIs('employee.view')" icon="users" wire:navigate>
-                       Manajemen Karyawan
+                        Manajemen Karyawan
                     </x-wirekit::sidebar.item>
                 @endcan
 
@@ -85,7 +101,7 @@
                 @can('view-benefit')
                     <x-wirekit::sidebar.item href="{{ route('benefit.view') }}" :active="request()->routeIs('benefit.view')" icon="rocket-launch"
                         wire:navigate>
-                       Manajemen Tunjangan
+                        Manajemen Tunjangan
                     </x-wirekit::sidebar.item>
                 @endcan
 

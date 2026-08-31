@@ -16,6 +16,7 @@ use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
 use App\Livewire\Page\Main\Team\DetailTeam;
 use App\Livewire\Page\Main\Team\Team;
+use App\Livewire\Page\Main\User\User;
 
 Route::get('/', function () {
     return redirect()->route("login");
@@ -53,6 +54,10 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/{employee}/contract/create', CreateEmployeeContract::class)->middleware('permission:create-contract')->name('contract.create');
         // 'permission:show-contract'
 
+    });
+
+    Route::prefix('user')->group(function () {
+        Route::get('/', User::class)->middleware('permission:view-user')->name('user.view');
     });
 
     Route::prefix('benefits')->group(function () {
