@@ -99,6 +99,22 @@
                         </p>
 
                     </div>
+                    <div>
+
+                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                            Status Benefit
+                        </p>
+
+
+                        <span
+                            class="inline-flex items-center rounded-full
+                                            px-2.5 py-1
+                                           text-xs font-medium {{ $benefit->status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
+                            {{ $benefit->status }}
+                        </span>
+
+
+                    </div>
 
                 </div>
 
@@ -139,7 +155,7 @@
                         </p>
 
                         <p class="mt-1 text-2xl font-bold text-slate-800">
-                           {{count($benefit->contracts)}}
+                            {{ count($benefit->contracts) }}
                         </p>
 
                     </div>
@@ -167,7 +183,7 @@
                         </p>
 
                         <p class="mt-1 text-sm text-slate-700">
-                          {{$benefit->updated_at->diffForHumans()}}
+                            {{ $benefit->updated_at->diffForHumans() }}
                         </p>
 
                     </div>
@@ -253,67 +269,67 @@
 
                         {{-- Employee 1 --}}
                         @forelse ($benefit->contracts as $ben)
+                            <x-wirekit::table.row>
 
-                        <x-wirekit::table.row>
+                                <x-wirekit::table.td>
 
-                            <x-wirekit::table.td>
+                                    <div class="flex items-center gap-3">
 
-                                <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
+                                            <span class="text-sm font-semibold text-sky-600">
+                                                NP
+                                            </span>
+                                        </div>
 
-                                    <div
-                                        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                        <span class="text-sm font-semibold text-sky-600">
-                                            NP
-                                        </span>
+                                        <div class="min-w-0">
+
+                                            <p class="truncate text-sm font-semibold text-slate-800">
+                                                {{ $ben->employees->user->name }}
+                                            </p>
+
+                                            <p class="truncate text-xs text-slate-400">
+                                                {{ $ben->employees->employee_code }}
+                                            </p>
+
+                                        </div>
+
                                     </div>
 
-                                    <div class="min-w-0">
-
-                                        <p class="truncate text-sm font-semibold text-slate-800">
-                                           {{$ben->employees->user->name}}
-                                        </p>
-
-                                        <p class="truncate text-xs text-slate-400">
-                                           {{$ben->employees->employee_code}}
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
-                                <span class="text-sm text-slate-700">
-                                   {{$ben->employees?->position->name ?? "Belum punya"}}
-                                </span>
-                            </x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <span class="text-sm text-slate-700">
+                                        {{ $ben->employees?->position->name ?? 'Belum punya' }}
+                                    </span>
+                                </x-wirekit::table.td>
 
 
 
-                            <x-wirekit::table.td>
-                                <span class="text-sm font-medium text-slate-700">
-                                    Rp{{ number_format($ben->benefits()->first()->pivot->amount) }}
-                                </span>
-                            </x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <span class="text-sm font-medium text-slate-700">
+                                        Rp{{ number_format($ben->benefits()->first()->pivot->amount) }}
+                                    </span>
+                                </x-wirekit::table.td>
 
 
 
-                            <x-wirekit::table.td>
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs" href="{{ route('employee.show',$ben->employees->id) }}" wire:navigate>
-                                    Detail
-                                </x-wirekit::button>
-                            </x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs"
+                                        href="{{ route('employee.show', $ben->employees->id) }}" wire:navigate>
+                                        Detail
+                                    </x-wirekit::button>
+                                </x-wirekit::table.td>
 
-                        </x-wirekit::table.row>
+                            </x-wirekit::table.row>
 
                         @empty
-                        <x-wirekit::table.row>
-                            <x-wirekit::table.td colspan="5" class="text-center text-sm text-slate-500">
-                                Tidak ada employee yang menggunakan benefit ini.
-                            </x-wirekit::table.td>
-                        </x-wirekit::table.row>
+                            <x-wirekit::table.row>
+                                <x-wirekit::table.td colspan="5" class="text-center text-sm text-slate-500">
+                                    Tidak ada employee yang menggunakan benefit ini.
+                                </x-wirekit::table.td>
+                            </x-wirekit::table.row>
                         @endforelse
 
                     </x-wirekit::table.body>

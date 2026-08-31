@@ -52,7 +52,7 @@ class CreateEmployeeContract extends Component
     {
         $this->employee = $employee->load(['user', 'profile']);
         $this->positions = Position::query()->where('is_active', 'active')->pluck('name', 'id')->toArray();
-        $this->benefits = Benefit::all();
+        $this->benefits = Benefit::where('status', '=', 'active')->get();
         $this->teams = Team::query()->pluck('name', 'id')->toArray();
 
         $this->contract_number = app(ContractService::class)->previewContractNumber();

@@ -56,7 +56,8 @@
 
                 {{-- Search --}}
                 <div class="w-full sm:w-64">
-                    <x-wirekit::input placeholder="Cari nama benefit" name="search" wire:model.live.debounce.500ms="search" class="text-black" />
+                    <x-wirekit::input placeholder="Cari nama benefit" name="search"
+                        wire:model.live.debounce.500ms="search" class="text-black" />
                 </div>
 
             </div>
@@ -84,6 +85,9 @@
                             <x-wirekit::table.th>
                                 Contracts
                             </x-wirekit::table.th>
+                            <x-wirekit::table.th>
+                                Status
+                            </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
                                 Actions
@@ -95,47 +99,57 @@
 
                     <x-wirekit::table.body>
 
-                   @forelse ($benefits as $benefit)
-                    {{-- Benefit 1 --}}
-                        <x-wirekit::table.row>
+                        @forelse ($benefits as $benefit)
+                            {{-- Benefit 1 --}}
+                            <x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
-                                <div class="min-w-0">
-                                    <p class="text-sm font-semibold text-slate-800">
-                                       {{$benefit->name}}
+                                <x-wirekit::table.td>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-semibold text-slate-800">
+                                            {{ $benefit->name }}
+                                        </p>
+                                    </div>
+                                </x-wirekit::table.td>
+
+                                <x-wirekit::table.td>
+                                    <p class="max-w-md truncate text-sm text-slate-500">
+                                        {{ $benefit->description }}
                                     </p>
-                                </div>
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
-                            <x-wirekit::table.td>
-                                <p class="max-w-md truncate text-sm text-slate-500">
-                                    {{ $benefit->description }}
-                                </p>
-                            </x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <span class="text-sm text-slate-700">
+                                        {{ $benefit->contracts_count }}
+                                    </span>
+                                </x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                            <x-wirekit::table.td>
-                                <span class="text-sm text-slate-700">
-                                   {{ $benefit->contracts_count  }}
+                                <span class="inline-flex items-center rounded-full
+                                            px-2.5 py-1
+                                           text-xs font-medium {{ $benefit->status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
+                                    {{ $benefit->status }}
                                 </span>
+
                             </x-wirekit::table.td>
 
-                            <x-wirekit::table.td>
-                                <x-wirekit::button type="button" href="{{ route('benefit.show',$benefit->id) }}" wire:navigate class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-                            </x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <x-wirekit::button type="button" href="{{ route('benefit.show', $benefit->id) }}"
+                                        wire:navigate class="px-3 py-1.5 text-xs">
+                                        Detail
+                                    </x-wirekit::button>
+                                </x-wirekit::table.td>
 
-                        </x-wirekit::table.row>
+                            </x-wirekit::table.row>
 
-                   @empty
-                        <x-wirekit::table.row>
-                            <x-wirekit::table.td colspan="5">
-                                <div class="py-8 text-center text-sm text-slate-500">
-                                    Belum ada data benefit.
-                                </div>
-                            </x-wirekit::table.td>
-                        </x-wirekit::table.row>
-                   @endforelse
+                        @empty
+                            <x-wirekit::table.row>
+                                <x-wirekit::table.td colspan="5">
+                                    <div class="py-8 text-center text-sm text-slate-500">
+                                        Belum ada data benefit.
+                                    </div>
+                                </x-wirekit::table.td>
+                            </x-wirekit::table.row>
+                        @endforelse
 
 
 

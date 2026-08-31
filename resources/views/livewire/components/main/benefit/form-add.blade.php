@@ -67,9 +67,50 @@
 
                 </x-wirekit::field>
 
+                <div class="flex items-center justify-between rounded-lg border border-slate-200 p-4">
+
+                    <div>
+
+                        <p class="text-sm font-medium text-slate-700">
+                            Status Benefit
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-400">
+                            Tentukan apakah benefit aktif digunakan.
+                        </p>
+
+                    </div>
+
+                    <label class="inline-flex cursor-pointer items-center">
+
+                        <input type="checkbox" wire:model="isActive" class="peer sr-only">
+
+                        <div
+                            class="relative h-6 w-11 rounded-full
+                                   bg-slate-200
+                                   after:absolute after:left-[2px]
+                                   after:top-[2px]
+                                   after:h-5 after:w-5
+                                   after:rounded-full
+                                   after:border after:border-slate-300
+                                   after:bg-white
+                                   after:transition-all
+                                   peer-checked:bg-[#30AFFF]
+                                   peer-checked:after:translate-x-full
+                                   peer-checked:after:border-white">
+                        </div>
+
+                    </label>
 
 
 
+                @error('is_active')
+                    <span class="text-xs text-red-500">
+                        {{ $message }}
+                    </span>
+                @enderror
+
+                </div>
                 {{-- =================================================
                 FOOTER
                 ================================================== --}}

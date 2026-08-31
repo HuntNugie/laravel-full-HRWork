@@ -21,12 +21,14 @@ class FormEdit extends Component
     ])]
     public string $desc = '';
 
+    public bool $isActive = false;
     #[On('refresh-edit')]
     public function refresh(int $id)
     {
         $this->benefit = Benefit::findOrFail($id);
         $this->name = $this->benefit->name;
         $this->desc = $this->benefit->description;
+        $this->isActive = $this->benefit->status === 'active' ? true : false;
     }
 
 
@@ -41,6 +43,7 @@ class FormEdit extends Component
         $this->benefit->update([
             'name' => $this->name,
             'description' => $this->desc,
+            'status' => $this->isActive ? 'active' : 'inactive',
         ]);
 
         $this->dispatch('wirekit-modal-close', name: 'edit-benefit');
