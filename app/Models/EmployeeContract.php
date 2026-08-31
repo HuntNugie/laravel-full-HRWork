@@ -17,6 +17,6 @@ class EmployeeContract extends Model
     // relasi ke benefit
     public function benefits()
     {
-        return $this->belongsToMany(Benefit::class, 'contract_benefits', 'employee_contract_id', 'benefit_id')->withPivot('amount', 'type');
+        return $this->belongsToMany(Benefit::class, 'contract_benefits', 'employee_contract_id', 'benefit_id')->withPivot('amount');
     }
 }

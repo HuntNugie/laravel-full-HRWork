@@ -7,18 +7,20 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-#[Layout('layouts.main',['title' => 'Detail Divisi'])]
+#[Layout('layouts.main', ['title' => 'Detail Divisi'])]
 class DetailDivisi extends Component
 {
     public Divisi $divisi;
 
-    public function mount(Divisi $divisi){
-        $this->authorize('view',$divisi);
+    public function mount(Divisi $divisi)
+    {
+        $this->authorize('view', $divisi);
         $this->divisi = $divisi->load('team');
     }
 
     #[On('update-divisi')]
-    public function refreshDivisi(){
+    public function refreshDivisi()
+    {
         $this->divisi->load('team');
     }
     public function render()

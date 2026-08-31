@@ -22,12 +22,8 @@ class Team extends Model
 
     public function nonSupervisors()
     {
-        return $this->hasMany(Employees::class)
-            ->whereHas(
-                'position',
-                fn($query) =>
-                $query->where('name', "!=", "supervisor")
-            );
+        return $this->hasMany(Employees::class, 'team_id')
+            ->where('id', '!=', $this->supervisor_id);
     }
 
     public function supervisor()

@@ -13,6 +13,7 @@ class DashboardService
             $user->hasRole('HR') => 'livewire.page.main.dashboard.human-resource',
             $user->hasRole('Manager') => 'livewire.page.main.dashboard.manager',
             $user->hasRole('Employee') => 'livewire.page.main.dashboard.employee',
+            $user->hasRole('super-admin') => 'livewire.page.main.dashboard.super-admin',
             default => 'livewire.page.main.dashboard.dashboard'
         };
     }

@@ -400,7 +400,8 @@
 
                     <div class="w-full sm:w-64">
 
-                        <x-wirekit::input placeholder="Cari employee" name="search" class="text-black" wire:model.live.debounce.400ms="search" />
+                        <x-wirekit::input placeholder="Cari employee" name="search" class="text-black"
+                            wire:model.live.debounce.400ms="search" />
 
                     </div>
 
@@ -515,12 +516,20 @@
 
                                 <x-wirekit::table.td>
 
-                                    @can('show-employee')
-                                        <x-wirekit::button type="button" class="px-3 py-1.5 text-xs"
-                                            href="{{ route('employee.show', $employee->id) }}" wire:navigate>
-                                            Detail
-                                        </x-wirekit::button>
-                                    @endcan
+                                    <x-wirekit::stack gap="sm">
+                                        @can('show-employee')
+                                            <x-wirekit::button type="button" class="px-3 py-1.5 text-xs"
+                                                href="{{ route('employee.show', $employee->id) }}" wire:navigate>
+                                                Detail
+                                            </x-wirekit::button>
+                                        @endcan
+
+                                        <livewire:components.main.team.remove-employee :employee="$employee">
+                                            <x-wirekit::button type="button" class="px-3 py-1.5 text-xs bg-red-500">
+                                                Keluarkan
+                                            </x-wirekit::button>
+                                        </livewire:components.main.team.remove-employee>
+                                    </x-wirekit::stack>
 
                                 </x-wirekit::table.td>
 

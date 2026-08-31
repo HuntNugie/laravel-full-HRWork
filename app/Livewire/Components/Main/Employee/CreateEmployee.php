@@ -50,7 +50,7 @@ class CreateEmployee extends Component
         $employee = $this->user->employees()->create();
 
         $employee->update(['employee_code' => 'EMP-' . $employee->id]);
-
+        $this->user->assignRole("Employee");
         //    isi profile nya
         $profile =  $employee->profile()->create([
             'gender' => $this->form->gender,

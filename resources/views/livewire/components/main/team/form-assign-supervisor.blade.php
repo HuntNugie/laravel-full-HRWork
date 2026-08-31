@@ -80,7 +80,7 @@
                     {{-- Search --}}
                     <div class="relative">
 
-                        <input id="supervisor-search" type="text" placeholder="Cari nama atau NIK..."
+                        <input id="supervisor-search" type="text" placeholder="Cari nama atau Kode Pegawai atau jabatan..."
                             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm
                                text-slate-900 outline-none transition
                                placeholder:text-slate-400
@@ -91,32 +91,61 @@
 
 
                     {{-- Supervisor List --}}
-                    <div class="mt-2 max-h-52 overflow-y-auto rounded-lg border border-slate-200 bg-white">
+                    <div class="mt-2 max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white">
 
-                        @foreach ($supervisors as $supervisor)
+                        @forelse ($supervisors as $supervisor)
                             <label
-                                class="flex cursor-pointer items-center gap-3 border-b border-slate-100
-                               px-3 py-3 hover:bg-slate-50">
+                                class="flex cursor-pointer items-center gap-3
+                   border-b border-slate-100 px-3 py-3
+                   hover:bg-slate-50">
 
                                 <input type="radio" name="supervisor" wire:model.live="employeeId"
                                     value="{{ $supervisor->id }}"
                                     class="h-4 w-4 border-slate-300 text-sky-500
-                                   focus:ring-sky-400">
+                       focus:ring-sky-400">
 
                                 <div class="min-w-0 flex-1">
 
-                                    <p class="text-sm font-medium text-slate-700">
-                                        {{ $supervisor->user->name }}
-                                    </p>
+                                    <div class="flex items-center gap-2">
+
+                                        <p class="truncate text-sm font-medium text-slate-700">
+                                            {{ $supervisor->user->name }}
+                                        </p>
+
+                                        @if ($supervisor->position?->name === 'supervisor')
+                                            <span
+                                                class="rounded-full bg-sky-50 px-2 py-0.5
+                                   text-[10px] font-medium text-sky-600">
+                                                Supervisor
+                                            </span>
+                                        @endif
+
+                                    </div>
 
                                     <p class="text-xs text-slate-400">
-                                        kode Pegawai: {{ $supervisor->employee_code }}
+                                        {{ $supervisor->position?->name }}
+                                        ·
+                                        Kode Pegawai: {{ $supervisor->employee_code }}
                                     </p>
 
                                 </div>
 
                             </label>
-                        @endforeach
+
+                        @empty
+
+                            <div class="px-4 py-8 text-center">
+
+                                <p class="text-sm font-medium text-slate-500">
+                                    Tidak ada kandidat supervisor
+                                </p>
+
+                                <p class="mt-1 text-xs text-slate-400">
+                                    Tidak ada employee yang tersedia untuk dipilih.
+                                </p>
+
+                            </div>
+                        @endforelse
 
                     </div>
 
@@ -176,7 +205,7 @@
 
 
                     <x-wirekit::button type="submit" size="sm" class="bg-[#30AFFF] text-white hover:bg-sky-500">
-                        {{ $team->supervisor ? "Ubah" : "Tambah" }} Supervisor
+                        {{ $team->supervisor ? 'Ubah' : 'Tambah' }} Supervisor
                     </x-wirekit::button>
 
                 </div>

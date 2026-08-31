@@ -239,13 +239,6 @@
                                 Benefit Amount
                             </x-wirekit::table.th>
 
-                            <x-wirekit::table.th sortable column="type">
-                                Calculation
-                            </x-wirekit::table.th>
-
-                            <x-wirekit::table.th sortable column="status">
-                                Contract Status
-                            </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
                                 Actions
@@ -259,6 +252,8 @@
                     <x-wirekit::table.body>
 
                         {{-- Employee 1 --}}
+                        @forelse ($benefit->contracts as $ben)
+
                         <x-wirekit::table.row>
 
                             <x-wirekit::table.td>
@@ -275,11 +270,11 @@
                                     <div class="min-w-0">
 
                                         <p class="truncate text-sm font-semibold text-slate-800">
-                                            Nugie Pratama
+                                           {{$ben->employees->user->name}}
                                         </p>
 
                                         <p class="truncate text-xs text-slate-400">
-                                            EMP-001
+                                           {{$ben->employees->employee_code}}
                                         </p>
 
                                     </div>
@@ -291,41 +286,35 @@
 
                             <x-wirekit::table.td>
                                 <span class="text-sm text-slate-700">
-                                    Backend Developer
+                                   {{$ben->employees?->position->name ?? "Belum punya"}}
                                 </span>
                             </x-wirekit::table.td>
+
 
 
                             <x-wirekit::table.td>
                                 <span class="text-sm font-medium text-slate-700">
-                                    Rp500.000
+                                    Rp{{ number_format($ben->benefits()->first()->pivot->amount) }}
                                 </span>
                             </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
-                                <span class="text-sm capitalize text-slate-700">
-                                    Fixed
-                                </span>
-                            </x-wirekit::table.td>
-
 
                             <x-wirekit::table.td>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs" href="{{ route('employee.show',$ben->employees->id) }}" wire:navigate>
                                     Detail
                                 </x-wirekit::button>
                             </x-wirekit::table.td>
 
                         </x-wirekit::table.row>
 
+                        @empty
+                        <x-wirekit::table.row>
+                            <x-wirekit::table.td colspan="5" class="text-center text-sm text-slate-500">
+                                Tidak ada employee yang menggunakan benefit ini.
+                            </x-wirekit::table.td>
+                        </x-wirekit::table.row>
+                        @endforelse
 
                     </x-wirekit::table.body>
 

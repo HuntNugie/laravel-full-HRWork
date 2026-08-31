@@ -60,14 +60,6 @@
                         </livewire:components.main.divisi.form-edit>
                     @endcan
 
-                    @can('delete-divisi')
-                        <livewire:components.main.divisi.delete>
-                            <x-wirekit::button type="button" intent="danger" wire:click="$dispatch('open-delete',{id:{{ $divisi->id }}})" class="text-white hover:bg-black-500">
-                                Delete Divisi
-                            </x-wirekit::button>
-                        </livewire:components.main.divisi.delete>
-                    @endcan
-
                     <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
                         + Add Team
                     </x-wirekit::button>
@@ -204,7 +196,7 @@
                 TEAM 1
                 ================================================== --}}
                 @forelse ($divisi->team as $team)
-                    <x-wirekit::card class="transition hover:-translate-y-0.5 hover:shadow-md">
+                    <x-wirekit::card class="transition hover:-translate-y-0.5 hover:shadow-md" href="{{ route('team.show',$team->id) }}" wire:navigate>
 
                         <x-wirekit::card.body>
 
@@ -214,9 +206,9 @@
 
 
                                     <span class="inline-flex items-center rounded-full
-                                                                   bg-emerald-50 px-2.5 py-1
-                                                                   text-xs font-medium text-emerald-600">
-                                        Active
+                                                                    px-2.5 py-1
+                                                                   text-xs font-medium {{ $team->is_active === 'active' ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50' }}">
+                                        {{ $team->is_active }}
                                     </span>
 
                                 </div>
@@ -225,12 +217,11 @@
                                 <x-wirekit::stack gap="1">
 
                                     <h3 class="text-base font-semibold text-slate-900">
-                                        Backend Team
+                                        {{ $team->name }} Team
                                     </h3>
 
                                     <p class="text-sm leading-5 text-slate-500">
-                                        Mengembangkan dan memelihara layanan backend
-                                        serta API perusahaan.
+                                        {{$team->description}}
                                     </p>
 
                                 </x-wirekit::stack>
@@ -243,7 +234,7 @@
                                     </span>
 
                                     <span class="text-sm font-semibold text-slate-700">
-                                        8
+                                        {{ count($team->employees) }}
                                     </span>
 
                                 </div>
