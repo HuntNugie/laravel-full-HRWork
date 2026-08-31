@@ -349,7 +349,7 @@
 
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::button type="button" href="#" class="px-3 py-1.5 text-xs">
+                                    <x-wirekit::button type="button" href="{{ route('user.show',$user->id) }}" wire:navigate class="px-3 py-1.5 text-xs">
                                         Detail
                                     </x-wirekit::button>
 
