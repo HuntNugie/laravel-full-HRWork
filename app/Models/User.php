@@ -13,25 +13,27 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'status'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable,HasRoles;
+    use HasFactory, Notifiable, HasRoles;
     use InteractsWithMedia;
     /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
      */
-    public function registerMediaCollections():void{
+    public function registerMediaCollections(): void
+    {
         $this->addMediaCollection('avatar')->singleFile();
     }
 
     // relasi ke table employees
-    public function employees(){
-        return $this->hasOne(Employees::class,'user_id');
+    public function employees()
+    {
+        return $this->hasOne(Employees::class, 'user_id');
     }
     protected function casts(): array
     {

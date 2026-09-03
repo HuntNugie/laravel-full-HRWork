@@ -60,11 +60,15 @@
 
                         <div class="mt-2 flex flex-wrap items-center gap-2">
 
-                            <span
-                                class="inline-flex items-center rounded-full
-                                       bg-emerald-50 px-2.5 py-1
-                                       text-xs font-medium text-emerald-600">
-                                Active
+                            <span @class([
+                                "inline-flex items-center rounded-full
+                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                       text-xs font-medium ",
+                                'bg-emerald-50 text-emerald-600' => $user->status === 'active',
+                                'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
+                                'bg-red-50 text-red-600' => $user->status === 'inactive',
+                            ])>
+                                {{ $user->status }}
                             </span>
 
                             <span
@@ -84,10 +88,17 @@
                 {{-- Account Action --}}
                 <div class="flex shrink-0">
 
-                    <x-wirekit::button type="button" class="bg-red-500 text-white hover:bg-red-600">
-                        Deactivate Account
-                    </x-wirekit::button>
 
+
+
+                    <x-wirekit::button type="button" wire:click="actionStatusAccount" @class([
+                        'text-white ',
+                        'bg-green-500 hover:bg-green-600' =>
+                            $user->status === 'inactive' || $user->status === 'pending',
+                        'bg-red-500 hover:bg-red-600' => $user->status === 'active',
+                    ]) >
+                        {{ $user->status === 'active' ? 'Deactivate' : 'Activate' }} Account
+                    </x-wirekit::button>
                 </div>
 
             </div>
@@ -160,8 +171,8 @@
                         </p>
                         <span @class([
                             "inline-flex items-center rounded-full
-                                                                                            px-2.5 py-1
-                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                    px-2.5 py-1
+                                                                                                                                                                                                                   text-xs font-medium ",
                             'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                             'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                             'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -501,8 +512,8 @@
 
                 <span @class([
                     "inline-flex items-center rounded-full
-                                                            px-2.5 py-1
-                                                           text-xs font-medium ",
+                                                                                                                                            px-2.5 py-1
+                                                                                                                                           text-xs font-medium ",
                     'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                     'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                     'bg-red-50 text-red-600' => $user->status === 'inactive',

@@ -14,6 +14,16 @@ class DetailUser extends Component
     {
         $this->user = $user->load(['employees']);
     }
+
+    public function actionStatusAccount()
+    {
+        $user = $this->user->update([
+            'status' => $this->user->status === 'active'
+                ? 'inactive'
+                : 'active',
+        ]);
+    }
+
     public function render()
     {
         return view('livewire.page.main.user.detail-user');
