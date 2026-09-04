@@ -27,7 +27,7 @@
 
         </x-wirekit::sidebar.group>
 
-        @canany(['view-user'])
+        @canany(['view-user','view-role'])
             <x-wirekit::sidebar.group collapsible label="User dan hak akses">
                 @can('view-user')
                     <x-wirekit::sidebar.item href="{{ route('user.view') }}"  icon="user" :active="request()->routeIs('user.view')" wire:navigate>
@@ -36,9 +36,12 @@
                 @endcan
 
 
-                <x-wirekit::sidebar.item href="#" icon="shield-check" wire:navigate>
-                    Manajemen Role
-                </x-wirekit::sidebar.item>
+                @can('view-role')
+                    <x-wirekit::sidebar.item href="{{ route('role.view') }}" icon="shield-check" :active="request()->routeIs('role.view')" wire:navigate>
+                        Manajemen Role
+                    </x-wirekit::sidebar.item>
+                @endcan
+
 
 
             </x-wirekit::sidebar.group>
