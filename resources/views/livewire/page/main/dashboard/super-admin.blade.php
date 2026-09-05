@@ -1,9 +1,13 @@
 <x-wirekit::stack gap="md">
 
     {{-- =========================================================
-        PAGE HEADING
+        1. PAGE HEADING
+        ---------------------------------------------------------
+        Nanti digunakan untuk:
+        - Identitas Super Admin Dashboard
+        - Menjelaskan bahwa halaman berfokus pada administrasi
+          dan kondisi sistem secara keseluruhan
     ========================================================== --}}
-
     <x-wirekit::stack gap="sm">
 
         <span class="text-sm font-medium text-[#30AFFF]">
@@ -15,17 +19,22 @@
         </h1>
 
         <p class="text-sm text-slate-500">
-            Ringkasan keseluruhan sistem HRWork, pengguna, organisasi,
-            keamanan akses, dan aktivitas terbaru.
+            Ringkasan sistem, akses pengguna, organisasi, keamanan,
+            dan aktivitas terbaru HRWork.
         </p>
 
     </x-wirekit::stack>
 
 
     {{-- =========================================================
-        SYSTEM STATISTICS
+        2. SYSTEM OVERVIEW
+        ---------------------------------------------------------
+        Nanti digunakan untuk statistik utama sistem:
+        - Total Users
+        - Active Employees
+        - Total Roles
+        - Pending Actions
     ========================================================== --}}
-
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
         {{-- Total Users --}}
@@ -33,7 +42,7 @@
 
             <x-wirekit::card.body>
 
-                <x-wirekit::stack gap="3">
+                <x-wirekit::stack gap="sm">
 
                     <div class="flex items-center justify-between">
 
@@ -41,10 +50,7 @@
                             Total Users
                         </span>
 
-                        <span
-                            class="h-2.5 w-2.5 rounded-full
-                                   bg-[#30AFFF]"
-                        ></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-[#30AFFF]"></span>
 
                     </div>
 
@@ -68,7 +74,7 @@
 
             <x-wirekit::card.body>
 
-                <x-wirekit::stack gap="3">
+                <x-wirekit::stack gap="sm">
 
                     <div class="flex items-center justify-between">
 
@@ -76,10 +82,7 @@
                             Active Employees
                         </span>
 
-                        <span
-                            class="h-2.5 w-2.5 rounded-full
-                                   bg-[#C4F7CA]"
-                        ></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-[#C4F7CA]"></span>
 
                     </div>
 
@@ -103,7 +106,7 @@
 
             <x-wirekit::card.body>
 
-                <x-wirekit::stack gap="3">
+                <x-wirekit::stack gap="sm">
 
                     <div class="flex items-center justify-between">
 
@@ -111,10 +114,7 @@
                             Roles
                         </span>
 
-                        <span
-                            class="h-2.5 w-2.5 rounded-full
-                                   bg-[#92EEFF]"
-                        ></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-[#92EEFF]"></span>
 
                     </div>
 
@@ -123,7 +123,7 @@
                     </span>
 
                     <span class="text-xs text-slate-400">
-                        Role aktif dalam sistem
+                        Role yang tersedia
                     </span>
 
                 </x-wirekit::stack>
@@ -138,7 +138,7 @@
 
             <x-wirekit::card.body>
 
-                <x-wirekit::stack gap="3">
+                <x-wirekit::stack gap="sm">
 
                     <div class="flex items-center justify-between">
 
@@ -146,10 +146,7 @@
                             Pending Actions
                         </span>
 
-                        <span
-                            class="h-2.5 w-2.5 rounded-full
-                                   bg-[#FFA239]"
-                        ></span>
+                        <span class="h-2.5 w-2.5 rounded-full bg-[#FFA239]"></span>
 
                     </div>
 
@@ -171,9 +168,15 @@
 
 
     {{-- =========================================================
-        USER ACCESS + ORGANIZATION
-    ========================================================== --}}
+        3. ACCESS & ORGANIZATION
+        ---------------------------------------------------------
+        Nanti digunakan untuk:
+        - Melihat kondisi akun user berdasarkan status
+        - Melihat struktur organisasi secara ringkas
 
+        Tidak mengandalkan nama role tertentu karena role dapat
+        bertambah di kemudian hari.
+    ========================================================== --}}
     <div class="grid gap-6 xl:grid-cols-3">
 
         {{-- User & Access Overview --}}
@@ -181,134 +184,97 @@
 
             <x-wirekit::card.header>
 
-                <x-wirekit::stack gap="1">
+                <x-wirekit::stack gap="sm">
 
                     <h2 class="text-lg font-semibold text-slate-900">
                         User & Access Overview
                     </h2>
 
                     <p class="text-sm text-slate-500">
-                        Distribusi akun berdasarkan role dan status akses
-                        dalam sistem.
+                        Ringkasan akun dan status akses pengguna.
                     </p>
 
                 </x-wirekit::stack>
 
             </x-wirekit::card.header>
 
-
             <x-wirekit::card.body>
 
-                <x-wirekit::stack gap="4">
+                <x-wirekit::stack gap="lg">
 
-                    {{-- Employee --}}
+                    {{-- Active Users --}}
                     <div>
 
                         <div class="mb-2 flex items-center justify-between">
 
                             <span class="text-sm font-medium text-slate-700">
-                                Employee
+                                Active Users
                             </span>
 
                             <span class="text-sm font-semibold text-slate-900">
-                                78
+                                84
                             </span>
 
                         </div>
 
                         <div class="h-2 overflow-hidden rounded-full bg-slate-100">
 
-                            <div
-                                class="h-full w-[81%] rounded-full bg-[#30AFFF]"
-                            ></div>
+                            <div class="h-full w-[88%] rounded-full bg-[#30AFFF]"></div>
 
                         </div>
 
                     </div>
 
 
-                    {{-- HR --}}
+                    {{-- Pending Users --}}
                     <div>
 
                         <div class="mb-2 flex items-center justify-between">
 
                             <span class="text-sm font-medium text-slate-700">
-                                HR
+                                Pending Users
                             </span>
 
                             <span class="text-sm font-semibold text-slate-900">
-                                5
+                                8
                             </span>
 
                         </div>
 
                         <div class="h-2 overflow-hidden rounded-full bg-slate-100">
 
-                            <div
-                                class="h-full w-[35%] rounded-full bg-[#92EEFF]"
-                            ></div>
+                            <div class="h-full w-[8%] rounded-full bg-[#92EEFF]"></div>
 
                         </div>
 
                     </div>
 
 
-                    {{-- Administrator --}}
+                    {{-- Inactive Users --}}
                     <div>
 
                         <div class="mb-2 flex items-center justify-between">
 
                             <span class="text-sm font-medium text-slate-700">
-                                Administrator
+                                Inactive Users
                             </span>
 
                             <span class="text-sm font-semibold text-slate-900">
-                                2
+                                4
                             </span>
 
                         </div>
 
                         <div class="h-2 overflow-hidden rounded-full bg-slate-100">
 
-                            <div
-                                class="h-full w-[20%] rounded-full bg-[#C4F7CA]"
-                            ></div>
+                            <div class="h-full w-[4%] rounded-full bg-[#FFA239]"></div>
 
                         </div>
 
                     </div>
 
 
-                    {{-- Super Admin --}}
-                    <div>
-
-                        <div class="mb-2 flex items-center justify-between">
-
-                            <span class="text-sm font-medium text-slate-700">
-                                Super Admin
-                            </span>
-
-                            <span class="text-sm font-semibold text-slate-900">
-                                1
-                            </span>
-
-                        </div>
-
-                        <div class="h-2 overflow-hidden rounded-full bg-slate-100">
-
-                            <div
-                                class="h-full w-[10%] rounded-full bg-[#FFA239]"
-                            ></div>
-
-                        </div>
-
-                    </div>
-
-
-                    <x-wirekit::button
-                        type="button"
-                        class="w-full"
-                    >
+                    <x-wirekit::button type="button" class="w-full">
                         Manage Users & Roles
                     </x-wirekit::button>
 
@@ -319,29 +285,28 @@
         </x-wirekit::card>
 
 
-        {{-- Organization Summary --}}
+        {{-- Organization --}}
         <x-wirekit::card>
 
             <x-wirekit::card.header>
 
-                <x-wirekit::stack gap="1">
+                <x-wirekit::stack gap="sm">
 
                     <h2 class="text-lg font-semibold text-slate-900">
                         Organization
                     </h2>
 
                     <p class="text-sm text-slate-500">
-                        Struktur organisasi yang terdaftar.
+                        Ringkasan struktur organisasi.
                     </p>
 
                 </x-wirekit::stack>
 
             </x-wirekit::card.header>
 
-
             <x-wirekit::card.body>
 
-                <x-wirekit::stack gap="4">
+                <x-wirekit::stack gap="md">
 
                     <div class="flex items-center justify-between">
 
@@ -355,7 +320,6 @@
 
                     </div>
 
-
                     <div class="flex items-center justify-between">
 
                         <span class="text-sm text-slate-500">
@@ -367,7 +331,6 @@
                         </span>
 
                     </div>
-
 
                     <div class="flex items-center justify-between">
 
@@ -381,7 +344,6 @@
 
                     </div>
 
-
                     <div class="flex items-center justify-between">
 
                         <span class="text-sm text-slate-500">
@@ -394,11 +356,7 @@
 
                     </div>
 
-
-                    <x-wirekit::button
-                        type="button"
-                        class="w-full"
-                    >
+                    <x-wirekit::button type="button" class="w-full">
                         Open Organization
                     </x-wirekit::button>
 
@@ -412,43 +370,47 @@
 
 
     {{-- =========================================================
-        SYSTEM + HR MODULES
+        4. SYSTEM HEALTH
+        ---------------------------------------------------------
+        Nanti digunakan untuk melihat kondisi modul utama sistem:
+        - User Management
+        - Role & Permission
+        - HR Management
+        - Attendance
+        - Payroll
+
+        Fokusnya adalah status sistem, bukan detail operasional.
     ========================================================== --}}
+    <x-wirekit::card>
 
-    <div class="grid gap-6 xl:grid-cols-2">
+        <x-wirekit::card.header>
 
-        {{-- System Overview --}}
-        <x-wirekit::card>
+            <x-wirekit::stack gap="sm">
 
-            <x-wirekit::card.header>
+                <h2 class="text-lg font-semibold text-slate-900">
+                    System Health
+                </h2>
 
-                <x-wirekit::stack gap="1">
+                <p class="text-sm text-slate-500">
+                    Kondisi modul utama dalam sistem HRWork.
+                </p>
 
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        System Overview
-                    </h2>
+            </x-wirekit::stack>
 
-                    <p class="text-sm text-slate-500">
-                        Kondisi modul utama dan konfigurasi sistem.
-                    </p>
+        </x-wirekit::card.header>
 
-                </x-wirekit::stack>
+        <x-wirekit::card.body>
 
-            </x-wirekit::card.header>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
 
+                {{-- User Management --}}
+                <div class="rounded-lg border border-slate-200 p-4">
 
-            <x-wirekit::card.body>
-
-                <x-wirekit::stack gap="4">
-
-                    <div class="flex items-center justify-between">
+                    <x-wirekit::stack gap="sm">
 
                         <div class="flex items-center gap-3">
 
-                            <span
-                                class="h-2.5 w-2.5 rounded-full
-                                       bg-[#C4F7CA]"
-                            ></span>
+                            <span class="h-2.5 w-2.5 rounded-full bg-[#C4F7CA]"></span>
 
                             <span class="text-sm font-medium text-slate-700">
                                 User Management
@@ -460,17 +422,19 @@
                             Operational
                         </span>
 
-                    </div>
+                    </x-wirekit::stack>
+
+                </div>
 
 
-                    <div class="flex items-center justify-between">
+                {{-- Role & Permission --}}
+                <div class="rounded-lg border border-slate-200 p-4">
+
+                    <x-wirekit::stack gap="sm">
 
                         <div class="flex items-center gap-3">
 
-                            <span
-                                class="h-2.5 w-2.5 rounded-full
-                                       bg-[#C4F7CA]"
-                            ></span>
+                            <span class="h-2.5 w-2.5 rounded-full bg-[#C4F7CA]"></span>
 
                             <span class="text-sm font-medium text-slate-700">
                                 Role & Permission
@@ -482,17 +446,19 @@
                             Operational
                         </span>
 
-                    </div>
+                    </x-wirekit::stack>
+
+                </div>
 
 
-                    <div class="flex items-center justify-between">
+                {{-- HR Management --}}
+                <div class="rounded-lg border border-slate-200 p-4">
+
+                    <x-wirekit::stack gap="sm">
 
                         <div class="flex items-center gap-3">
 
-                            <span
-                                class="h-2.5 w-2.5 rounded-full
-                                       bg-[#C4F7CA]"
-                            ></span>
+                            <span class="h-2.5 w-2.5 rounded-full bg-[#C4F7CA]"></span>
 
                             <span class="text-sm font-medium text-slate-700">
                                 HR Management
@@ -504,17 +470,19 @@
                             Operational
                         </span>
 
-                    </div>
+                    </x-wirekit::stack>
+
+                </div>
 
 
-                    <div class="flex items-center justify-between">
+                {{-- Attendance --}}
+                <div class="rounded-lg border border-slate-200 p-4">
+
+                    <x-wirekit::stack gap="sm">
 
                         <div class="flex items-center gap-3">
 
-                            <span
-                                class="h-2.5 w-2.5 rounded-full
-                                       bg-[#C4F7CA]"
-                            ></span>
+                            <span class="h-2.5 w-2.5 rounded-full bg-[#C4F7CA]"></span>
 
                             <span class="text-sm font-medium text-slate-700">
                                 Attendance
@@ -526,17 +494,19 @@
                             Operational
                         </span>
 
-                    </div>
+                    </x-wirekit::stack>
+
+                </div>
 
 
-                    <div class="flex items-center justify-between">
+                {{-- Payroll --}}
+                <div class="rounded-lg border border-slate-200 p-4">
+
+                    <x-wirekit::stack gap="sm">
 
                         <div class="flex items-center gap-3">
 
-                            <span
-                                class="h-2.5 w-2.5 rounded-full
-                                       bg-[#FFA239]"
-                            ></span>
+                            <span class="h-2.5 w-2.5 rounded-full bg-[#FFA239]"></span>
 
                             <span class="text-sm font-medium text-slate-700">
                                 Payroll
@@ -548,392 +518,287 @@
                             Processing
                         </span>
 
-                    </div>
+                    </x-wirekit::stack>
 
+                </div>
 
-                    <x-wirekit::button
-                        type="button"
-                        class="w-full"
-                    >
-                        System Settings
-                    </x-wirekit::button>
+            </div>
 
-                </x-wirekit::stack>
+        </x-wirekit::card.body>
 
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-
-        {{-- HR Module Overview --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <x-wirekit::stack gap="1">
-
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        HR Module Overview
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Ringkasan aktivitas penting pada modul HR.
-                    </p>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-
-                <x-wirekit::stack gap="4">
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Active Employees
-                        </span>
-
-                        <span class="text-sm font-semibold text-slate-900">
-                            84
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Active Contracts
-                        </span>
-
-                        <span class="text-sm font-semibold text-slate-900">
-                            79
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Pending Leave
-                        </span>
-
-                        <span class="text-sm font-semibold text-[#C77A00]">
-                            7
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Attendance Today
-                        </span>
-
-                        <span class="text-sm font-semibold text-emerald-600">
-                            96%
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Payroll Status
-                        </span>
-
-                        <span
-                            class="rounded-full bg-[#FFF3DE]
-                                   px-2.5 py-1 text-xs font-medium
-                                   text-[#C77A00]"
-                        >
-                            Processing
-                        </span>
-
-                    </div>
-
-
-                    <x-wirekit::button
-                        type="button"
-                        class="w-full"
-                    >
-                        Open HR Management
-                    </x-wirekit::button>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-    </div>
+    </x-wirekit::card>
 
 
     {{-- =========================================================
-        SECURITY + ACTIVITY
+        5. SECURITY OVERVIEW
+        ---------------------------------------------------------
+        Nanti digunakan untuk ringkasan keamanan sistem:
+        - Active Sessions
+        - Failed Logins
+        - Inactive Users
+        - Permission Changes
+
+        Detail log keamanan dapat dibuka dari tombol di bawah.
     ========================================================== --}}
-
-    <div class="grid gap-6 xl:grid-cols-3">
-
-        {{-- Security Overview --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <x-wirekit::stack gap="1">
-
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Security Overview
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Ringkasan keamanan dan akses sistem.
-                    </p>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-
-                <x-wirekit::stack gap="4">
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Active Sessions
-                        </span>
-
-                        <span class="font-semibold text-slate-900">
-                            18
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Failed Logins
-                        </span>
-
-                        <span class="font-semibold text-[#FF5656]">
-                            3
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Inactive Users
-                        </span>
-
-                        <span class="font-semibold text-[#C77A00]">
-                            4
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm text-slate-500">
-                            Permission Changes
-                        </span>
-
-                        <span class="font-semibold text-slate-900">
-                            6
-                        </span>
-
-                    </div>
-
-
-                    <x-wirekit::button
-                        type="button"
-                        class="w-full"
-                    >
-                        Security Logs
-                    </x-wirekit::button>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-
-        {{-- Recent System Activity --}}
-        <x-wirekit::card class="xl:col-span-2">
-
-            <x-wirekit::card.header>
-
-                <x-wirekit::stack gap="1">
-
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Recent System Activity
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Aktivitas terbaru pada sistem HRWork.
-                    </p>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-
-                <x-wirekit::stack gap="4">
-
-                    {{-- Activity 1 --}}
-                    <div class="flex items-start gap-3">
-
-                        <span
-                            class="mt-1.5 h-2.5 w-2.5 shrink-0
-                                   rounded-full bg-[#30AFFF]"
-                        ></span>
-
-                        <div>
-
-                            <p class="text-sm font-medium text-slate-800">
-                                Role Supervisor ditambahkan ke user Budi Santoso.
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-400">
-                                12 menit lalu · Administrator
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Activity 2 --}}
-                    <div class="flex items-start gap-3">
-
-                        <span
-                            class="mt-1.5 h-2.5 w-2.5 shrink-0
-                                   rounded-full bg-[#92EEFF]"
-                        ></span>
-
-                        <div>
-
-                            <p class="text-sm font-medium text-slate-800">
-                                Team baru berhasil dibuat pada Division Technology.
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-400">
-                                28 menit lalu · HR
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Activity 3 --}}
-                    <div class="flex items-start gap-3">
-
-                        <span
-                            class="mt-1.5 h-2.5 w-2.5 shrink-0
-                                   rounded-full bg-[#C4F7CA]"
-                        ></span>
-
-                        <div>
-
-                            <p class="text-sm font-medium text-slate-800">
-                                Payroll periode Agustus berhasil diproses.
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-400">
-                                1 jam lalu · HR
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Activity 4 --}}
-                    <div class="flex items-start gap-3">
-
-                        <span
-                            class="mt-1.5 h-2.5 w-2.5 shrink-0
-                                   rounded-full bg-[#FFA239]"
-                        ></span>
-
-                        <div>
-
-                            <p class="text-sm font-medium text-slate-800">
-                                Permission employee.update diperbarui.
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-400">
-                                2 jam lalu · Super Admin
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Activity 5 --}}
-                    <div class="flex items-start gap-3">
-
-                        <span
-                            class="mt-1.5 h-2.5 w-2.5 shrink-0
-                                   rounded-full bg-[#30AFFF]"
-                        ></span>
-
-                        <div>
-
-                            <p class="text-sm font-medium text-slate-800">
-                                Employee baru berhasil ditambahkan ke sistem.
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-400">
-                                3 jam lalu · HR
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <x-wirekit::button
-                        type="button"
-                        class="w-full"
-                    >
-                        View System Activity
-                    </x-wirekit::button>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-    </div>
-
-
-    {{-- =========================================================
-        QUICK ACTIONS
-    ========================================================== --}}
-
     <x-wirekit::card>
 
         <x-wirekit::card.header>
 
-            <x-wirekit::stack gap="1">
+            <x-wirekit::stack gap="sm">
+
+                <h2 class="text-lg font-semibold text-slate-900">
+                    Security Overview
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Ringkasan keamanan dan akses sistem.
+                </p>
+
+            </x-wirekit::stack>
+
+        </x-wirekit::card.header>
+
+        <x-wirekit::card.body>
+
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Active Sessions
+                    </p>
+
+                    <p class="mt-1 text-2xl font-semibold text-slate-900">
+                        18
+                    </p>
+
+                </div>
+
+
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Failed Logins
+                    </p>
+
+                    <p class="mt-1 text-2xl font-semibold text-[#FF5656]">
+                        3
+                    </p>
+
+                </div>
+
+
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Inactive Users
+                    </p>
+
+                    <p class="mt-1 text-2xl font-semibold text-[#C77A00]">
+                        4
+                    </p>
+
+                </div>
+
+
+                <div>
+
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Permission Changes
+                    </p>
+
+                    <p class="mt-1 text-2xl font-semibold text-slate-900">
+                        6
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="mt-5">
+
+                <x-wirekit::button type="button" class="w-full">
+                    Security Logs
+                </x-wirekit::button>
+
+            </div>
+
+        </x-wirekit::card.body>
+
+    </x-wirekit::card>
+
+
+    {{-- =========================================================
+        6. RECENT SYSTEM ACTIVITY
+        ---------------------------------------------------------
+        Nanti digunakan sebagai ringkasan aktivitas penting sistem:
+        - Perubahan role
+        - Perubahan permission
+        - User baru
+        - Perubahan organisasi
+        - Aktivitas administratif penting
+
+        Idealnya nanti berasal dari audit / activity log.
+    ========================================================== --}}
+    <x-wirekit::card>
+
+        <x-wirekit::card.header>
+
+            <x-wirekit::stack gap="sm">
+
+                <h2 class="text-lg font-semibold text-slate-900">
+                    Recent System Activity
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Aktivitas terbaru yang terjadi dalam sistem HRWork.
+                </p>
+
+            </x-wirekit::stack>
+
+        </x-wirekit::card.header>
+
+        <x-wirekit::card.body>
+
+            <x-wirekit::stack gap="md">
+
+                {{-- Activity 1 --}}
+                <div class="flex items-start gap-3">
+
+                    <span
+                        class="mt-1.5 h-2.5 w-2.5 shrink-0
+                               rounded-full bg-[#30AFFF]"></span>
+
+                    <div>
+
+                        <p class="text-sm font-medium text-slate-800">
+                            Role Supervisor ditambahkan ke user Budi Santoso.
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-400">
+                            12 menit lalu · Administrator
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Activity 2 --}}
+                <div class="flex items-start gap-3">
+
+                    <span
+                        class="mt-1.5 h-2.5 w-2.5 shrink-0
+                               rounded-full bg-[#92EEFF]"></span>
+
+                    <div>
+
+                        <p class="text-sm font-medium text-slate-800">
+                            Team baru berhasil dibuat pada Division Technology.
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-400">
+                            28 menit lalu · HR
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Activity 3 --}}
+                <div class="flex items-start gap-3">
+
+                    <span
+                        class="mt-1.5 h-2.5 w-2.5 shrink-0
+                               rounded-full bg-[#C4F7CA]"></span>
+
+                    <div>
+
+                        <p class="text-sm font-medium text-slate-800">
+                            Payroll periode Agustus berhasil diproses.
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-400">
+                            1 jam lalu · HR
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Activity 4 --}}
+                <div class="flex items-start gap-3">
+
+                    <span
+                        class="mt-1.5 h-2.5 w-2.5 shrink-0
+                               rounded-full bg-[#FFA239]"></span>
+
+                    <div>
+
+                        <p class="text-sm font-medium text-slate-800">
+                            Permission employee.update diperbarui.
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-400">
+                            2 jam lalu · Super Admin
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                {{-- Activity 5 --}}
+                <div class="flex items-start gap-3">
+
+                    <span
+                        class="mt-1.5 h-2.5 w-2.5 shrink-0
+                               rounded-full bg-[#30AFFF]"></span>
+
+                    <div>
+
+                        <p class="text-sm font-medium text-slate-800">
+                            Employee baru berhasil ditambahkan ke sistem.
+                        </p>
+
+                        <p class="mt-1 text-xs text-slate-400">
+                            3 jam lalu · HR
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <x-wirekit::button type="button" class="w-full">
+                    View System Activity
+                </x-wirekit::button>
+
+            </x-wirekit::stack>
+
+        </x-wirekit::card.body>
+
+    </x-wirekit::card>
+
+
+    {{-- =========================================================
+        7. QUICK ACTIONS
+        ---------------------------------------------------------
+        Nanti digunakan sebagai shortcut ke area administrasi
+        yang paling sering digunakan:
+        - Manage Users
+        - Manage Roles
+        - Organization
+        - System Settings
+    ========================================================== --}}
+    <x-wirekit::card>
+
+        <x-wirekit::card.header>
+
+            <x-wirekit::stack gap="sm">
 
                 <h2 class="text-lg font-semibold text-slate-900">
                     Quick Actions
@@ -947,39 +812,26 @@
 
         </x-wirekit::card.header>
 
-
         <x-wirekit::card.body>
 
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
 
-                <x-wirekit::button
-                    type="button"
-                    class="w-full"
-                >
+                <x-wirekit::button type="button" class="w-full">
                     Manage Users
                 </x-wirekit::button>
 
 
-                <x-wirekit::button
-                    type="button"
-                    class="w-full"
-                >
+                <x-wirekit::button type="button" class="w-full">
                     Manage Roles
                 </x-wirekit::button>
 
 
-                <x-wirekit::button
-                    type="button"
-                    class="w-full"
-                >
+                <x-wirekit::button type="button" class="w-full">
                     Organization
                 </x-wirekit::button>
 
 
-                <x-wirekit::button
-                    type="button"
-                    class="w-full"
-                >
+                <x-wirekit::button type="button" class="w-full">
                     System Settings
                 </x-wirekit::button>
 
