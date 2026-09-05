@@ -19,6 +19,12 @@ class Roles extends Component
     {
         $this->resetPage();
     }
+
+    public function mount()
+    {
+        $this->authorize("viewAny", Role::class);
+    }
+
     #[On('delete-role')]
     public function notifDelete()
     {
