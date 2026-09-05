@@ -6,13 +6,17 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
 
 #[Layout('layouts.main', ['title' => 'Halaman Detail Role'])]
 class DetailRole extends Component
 {
+    use WithPagination;
+
     public Role $role;
 
+    public string $search = '';
     #[Computed]
     public function getPermissions()
     {
@@ -35,8 +39,19 @@ class DetailRole extends Component
         $this->mount($this->role);
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
-        return view('livewire.page.main.roles.detail-role');
+        $users = $this->role->users()
+            ->when($this->search, function ($query) {
+                $query->where('name', 'like', "%{$this->search}%")
+                    ->orWhere('email', 'like', "%{$this->search}%");
+            })
+            ->paginate(5);
+        return view('livewire.page.main.roles.detail-role', compact('users'));
     }
 }

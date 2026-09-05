@@ -273,6 +273,7 @@
 
 
     {{-- ASSIGNED USERS --}}
+
     <x-wirekit::card>
 
         <x-wirekit::card.header>
@@ -292,30 +293,41 @@
                 </x-wirekit::stack>
 
                 <livewire:components.main.roles.assign-user :role="$role" :key="$role->id">
+
                     <x-wirekit::button type="button" size="sm">
                         + Assign User
                     </x-wirekit::button>
+
                 </livewire:components.main.roles.assign-user>
 
             </div>
 
         </x-wirekit::card.header>
 
+
         <x-wirekit::card.body>
 
             <x-wirekit::stack gap="sm">
 
-                @forelse($role->users as $user)
+                {{-- Search --}}
+                <x-wirekit::input type="search" placeholder="Search users..." wire:model.live.debounce.400ms="search"
+                    name="search" />
+
+
+                @forelse($users as $user)
                     <div class="flex items-center justify-between gap-4 py-3">
 
                         <div class="flex min-w-0 items-center gap-3">
 
                             <div
                                 class="flex size-9 shrink-0 items-center
-                                   justify-center rounded-full bg-sky-100">
+
+                               justify-center rounded-full bg-sky-100">
+
                                 <span class="text-sm font-semibold text-sky-600">
                                     AF
                                 </span>
+
                             </div>
 
                             <div class="min-w-0">
@@ -339,13 +351,14 @@
                     </div>
 
                     <x-wirekit::divider />
+
                 @empty
+
                     <p class="text-sm text-slate-500">
                         Role ini belum memiliki user yang menggunakan role ini.
                     </p>
                 @endforelse
-
-
+                {{ $users->links() }}
             </x-wirekit::stack>
 
         </x-wirekit::card.body>
