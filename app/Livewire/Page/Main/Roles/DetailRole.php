@@ -44,6 +44,22 @@ class DetailRole extends Component
         $this->resetPage();
     }
 
+    public function removeUser($userId)
+    {
+        $user = $this->role->users()->find($userId);
+        if ($user) {
+            $user->removeRole($this->role);
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'success',
+                title: 'Saved',
+                message: "Berhasil menghapus user dari role "
+            );
+        } else {
+            session()->flash('error', 'User tidak ditemukan atau tidak memiliki role ini');
+        }
+    }
+
     public function render()
     {
         $users = $this->role->users()

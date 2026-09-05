@@ -344,7 +344,8 @@
 
                         </div>
 
-                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
+                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost"
+                            wire:click="removeUser({{ $user->id }})">
                             Remove
                         </x-wirekit::button>
 
