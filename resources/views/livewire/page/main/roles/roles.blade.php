@@ -108,7 +108,7 @@
 
                                 <x-wirekit::table.td align="right">
                                     <x-wirekit::stack gap="sm" align="center" justify="end" class="flex-wrap">
-                                        <x-wirekit::button size="sm" intent="neutral" surface="outline">
+                                        <x-wirekit::button size="sm" intent="neutral" surface="outline" href="{{ route('role.show',$role->id) }}" wire:navigate>
                                             View
                                         </x-wirekit::button>
                                         <livewire:components.main.roles.modal-delete :role="$role" :key="$role->id">
