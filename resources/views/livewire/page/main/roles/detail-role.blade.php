@@ -61,7 +61,8 @@
 
                 <div class="flex shrink-0 items-center gap-2">
 
-                    <x-wirekit::button type="button" size="sm" href="{{ route('role.edit', $role->id) }}" wire:navigate>
+                    <x-wirekit::button type="button" size="sm" href="{{ route('role.edit', $role->id) }}"
+                        wire:navigate>
                         Edit Role
                     </x-wirekit::button>
 
@@ -290,9 +291,11 @@
 
                 </x-wirekit::stack>
 
-                <x-wirekit::button type="button" size="sm">
-                    + Assign User
-                </x-wirekit::button>
+                <livewire:components.main.roles.assign-user :role="$role" :key="$role->id">
+                    <x-wirekit::button type="button" size="sm">
+                        + Assign User
+                    </x-wirekit::button>
+                </livewire:components.main.roles.assign-user>
 
             </div>
 
@@ -302,46 +305,45 @@
 
             <x-wirekit::stack gap="sm">
 
-            @forelse($role->users as $user)
+                @forelse($role->users as $user)
+                    <div class="flex items-center justify-between gap-4 py-3">
 
-                <div class="flex items-center justify-between gap-4 py-3">
+                        <div class="flex min-w-0 items-center gap-3">
 
-                    <div class="flex min-w-0 items-center gap-3">
-
-                        <div
-                            class="flex size-9 shrink-0 items-center
+                            <div
+                                class="flex size-9 shrink-0 items-center
                                    justify-center rounded-full bg-sky-100">
-                            <span class="text-sm font-semibold text-sky-600">
-                                AF
-                            </span>
+                                <span class="text-sm font-semibold text-sky-600">
+                                    AF
+                                </span>
+                            </div>
+
+                            <div class="min-w-0">
+
+                                <p class="truncate text-sm font-medium text-slate-900">
+                                    {{ $user->name }}
+                                </p>
+
+                                <p class="truncate text-xs text-slate-500">
+                                    {{ $user->email }}
+                                </p>
+
+                            </div>
+
                         </div>
 
-                        <div class="min-w-0">
-
-                            <p class="truncate text-sm font-medium text-slate-900">
-                                {{ $user->name }}
-                            </p>
-
-                            <p class="truncate text-xs text-slate-500">
-                                {{ $user->email }}
-                            </p>
-
-                        </div>
+                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
+                            Remove
+                        </x-wirekit::button>
 
                     </div>
 
-                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                        Remove
-                    </x-wirekit::button>
-
-                </div>
-
-                <x-wirekit::divider />
-            @empty
-                <p class="text-sm text-slate-500">
-                    Role ini belum memiliki user yang menggunakan role ini.
-                </p>
-            @endforelse
+                    <x-wirekit::divider />
+                @empty
+                    <p class="text-sm text-slate-500">
+                        Role ini belum memiliki user yang menggunakan role ini.
+                    </p>
+                @endforelse
 
 
             </x-wirekit::stack>
@@ -350,14 +352,5 @@
 
     </x-wirekit::card>
 
-
-    {{-- FOOTER --}}
-    <x-wirekit::row justify="end">
-
-        <x-wirekit::button type="button" intent="neutral" surface="outline" href="#">
-            Kembali ke Roles
-        </x-wirekit::button>
-
-    </x-wirekit::row>
 
 </x-wirekit::stack>

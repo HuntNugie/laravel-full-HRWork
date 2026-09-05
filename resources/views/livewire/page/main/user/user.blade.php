@@ -50,7 +50,7 @@
                     </div>
 
                     <span class="text-3xl font-bold text-slate-900">
-                      {{$this->totalUser()}}
+                        {{ $this->totalUser() }}
                     </span>
 
                     <span class="text-xs text-slate-400">
@@ -114,7 +114,7 @@
                     </div>
 
                     <span class="text-3xl font-bold text-slate-900">
-                     {{$this->totalPending}}
+                        {{ $this->totalPending }}
                     </span>
 
                     <span class="text-xs text-amber-600">
@@ -187,8 +187,8 @@
 
                 <div class="w-full lg:w-72">
 
-                    <x-wirekit::input placeholder="Cari nama, email, atau employee code" name="search" wire:model.live.debounce.400ms="search"
-                        class="text-black" />
+                    <x-wirekit::input placeholder="Cari nama, email, atau employee code" name="search"
+                        wire:model.live.debounce.400ms="search" class="text-black" />
 
                 </div>
 
@@ -299,11 +299,11 @@
                                             @foreach ($user->getRoleNames() as $role)
                                                 <span @class([
                                                     'rounded-full px-2.5 py-1 text-xs font-medium',
-                                                    'text-olive-600 bg-olive-100' => $role === 'Employee',
+                                                    'text-olive-600 bg-olive-100' => $role === 'employee',
                                                     'text-purple-600 bg-purple-100' => $role === 'super-admin',
-                                                    'text-sky-600 bg-sky-100' => $role === 'Supervisor',
-                                                    'text-red-600 bg-red-100' => $role === 'HR',
-                                                    'text-blue-600 bg-blue-100' => $role === 'Administrator',
+                                                    'text-sky-600 bg-sky-100' => $role === 'supervisor',
+                                                    'text-red-600 bg-red-100' => $role === 'hr',
+                                                    'text-blue-600 bg-blue-100' => $role === 'administrator',
                                                 ])>
                                                     {{ $role }}
                                                 </span>
@@ -324,14 +324,14 @@
 
                                 <x-wirekit::table.td>
 
-                                    <span
-                                        @class(["inline-flex items-center rounded-full
-                                            px-2.5 py-1
-                                           text-xs font-medium ",
-                                           "bg-emerald-50 text-emerald-600" => $user->status === "active",
-                                           "bg-yellow-50 text-yellow-600" => $user->status === "pending",
-                                           "bg-red-50 text-red-600" => $user->status === "inactive",
-                                           ])>
+                                    <span @class([
+                                        "inline-flex items-center rounded-full
+                                                                                                                    px-2.5 py-1
+                                                                                                                   text-xs font-medium ",
+                                        'bg-emerald-50 text-emerald-600' => $user->status === 'active',
+                                        'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
+                                        'bg-red-50 text-red-600' => $user->status === 'inactive',
+                                    ])>
                                         {{ $user->status }}
                                     </span>
 
@@ -341,7 +341,7 @@
                                 <x-wirekit::table.td>
 
                                     <span class="text-sm text-slate-500">
-                                       {{$user->updated_at->diffForHumans()}}
+                                        {{ $user->updated_at->diffForHumans() }}
                                     </span>
 
                                 </x-wirekit::table.td>
@@ -349,7 +349,8 @@
 
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::button type="button" href="{{ route('user.show',$user->id) }}" wire:navigate class="px-3 py-1.5 text-xs">
+                                    <x-wirekit::button type="button" href="{{ route('user.show', $user->id) }}"
+                                        wire:navigate class="px-3 py-1.5 text-xs">
                                         Detail
                                     </x-wirekit::button>
 

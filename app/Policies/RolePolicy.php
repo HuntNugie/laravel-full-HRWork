@@ -64,4 +64,9 @@ class RolePolicy
     {
         return false;
     }
+
+    public function assignUser(User $user, Role $role): bool
+    {
+        return $user->can('assign-role');
+    }
 }
