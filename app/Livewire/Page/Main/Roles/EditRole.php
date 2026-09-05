@@ -8,6 +8,7 @@ use Livewire\Component;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 
 #[Layout('layouts.main', ['title' => 'Halaman Edit Role'])]
@@ -17,11 +18,11 @@ class EditRole extends Component
 
 
     public string $roleName = '';
-
+    public Role $role;
 
     public function mount(Role $role)
     {
-        $this->authorize("update", $role);
+        $this->role = $role;
         $this->roleName = $role->name;
         $this->permissionsValue = $role->permissions()->pluck('name')->toArray();
     }
@@ -81,16 +82,24 @@ class EditRole extends Component
 
     public function submit()
     {
+        $this->authorize("update", $this->role);
+
         $this->validate([
             'permissionsValue' => ['required', 'array'],
             'permissionsValue.*' => ['exists:permissions,name'],
-            'roleName' => ['required', 'string', 'max:255', 'unique:roles,name'],
+            'roleName' => ['required', 'string', 'max:255', Rule::unique('roles', 'name')->ignore($this->role->id)],
         ]);
 
         //   disini untuk update
 
+        $this->role->update([
+            'name' => Str::slug($this->roleName)
+        ]);
+
+        $this->role->syncPermissions($this->permissionsValue);
+
         session()->flash('success', 'Role berhasil diupdate.');
-        return $this->redirectRoute('role.view', navigate: true);
+        return $this->redirectRoute('role.show', $this->role->id, navigate: true);
     }
 
     public function render()

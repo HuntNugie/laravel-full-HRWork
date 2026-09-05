@@ -84,6 +84,7 @@ class CreateRole extends Component
 
     public function submit()
     {
+        $this->authorize("create", Role::class);
         $this->validate([
             'permissionsValue' => ['required', 'array'],
             'permissionsValue.*' => ['exists:permissions,name'],
