@@ -2,6 +2,18 @@
 
 <x-layouts::app :title="$title">
 <x-wirekit::toast-region />
+@if (session('success'))
+    <div
+        x-data
+        x-init="
+            $dispatch('wirekit-toast', {
+                variant: 'success',
+                title: 'Saved',
+                message: @js(session('success'))
+            })
+        "
+    ></div>
+@endif
     <x-wirekit::app-shell>
 
         {{-- =========================================================

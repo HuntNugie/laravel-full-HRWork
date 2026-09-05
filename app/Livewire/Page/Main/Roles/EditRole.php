@@ -3,32 +3,28 @@
 namespace App\Livewire\Page\Main\Roles;
 
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
 
-#[Layout('layouts.main', ['title' => 'Halaman Create Role'])]
-class CreateRole extends Component
+#[Layout('layouts.main', ['title' => 'Halaman Edit Role'])]
+class EditRole extends Component
 {
-
     public array $permissionsValue = [];
 
-    #[Validate([
-        'required',
-        'string',
-        'max:255',
-        'unique:roles,name'
-    ], message: [
-        'roleName.required' => 'Role name wajib di isi',
-        'roleName.string' => 'Role name harus berupa string',
-        'roleName.max' => 'Role name maksimal 255 karakter',
-        'roleName.unique' => 'Role name sudah ada',
-    ])]
+
     public string $roleName = '';
 
+
+    public function mount(Role $role)
+    {
+        $this->authorize("update", $role);
+        $this->roleName = $role->name;
+        $this->permissionsValue = $role->permissions()->pluck('name')->toArray();
+    }
 
     #[Computed]
     public function getPermissions()
@@ -42,6 +38,7 @@ class CreateRole extends Component
                     ->headline();
             });
     }
+
 
     public function selectAllPermissions()
     {
@@ -87,20 +84,17 @@ class CreateRole extends Component
         $this->validate([
             'permissionsValue' => ['required', 'array'],
             'permissionsValue.*' => ['exists:permissions,name'],
+            'roleName' => ['required', 'string', 'max:255', 'unique:roles,name'],
         ]);
 
-        $role = Role::create([
-            'name' => Str::slug($this->roleName)
-        ]);
+        //   disini untuk update
 
-        $role->syncPermissions($this->permissionsValue);
-
-        session()->flash('success', 'Role berhasil Di tambahkan.');
+        session()->flash('success', 'Role berhasil diupdate.');
         return $this->redirectRoute('role.view', navigate: true);
     }
 
     public function render()
     {
-        return view('livewire.page.main.roles.create-role');
+        return view('livewire.page.main.roles.edit-role');
     }
 }

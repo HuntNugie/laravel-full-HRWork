@@ -61,7 +61,7 @@
 
                 <div class="flex shrink-0 items-center gap-2">
 
-                    <x-wirekit::button type="button" size="sm">
+                    <x-wirekit::button type="button" size="sm" href="{{ route('role.edit', $role->id) }}" wire:navigate>
                         Edit Role
                     </x-wirekit::button>
 

@@ -16,6 +16,7 @@ use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
 use App\Livewire\Page\Main\Roles\CreateRole;
 use App\Livewire\Page\Main\Roles\DetailRole;
+use App\Livewire\Page\Main\Roles\EditRole;
 use App\Livewire\Page\Main\Roles\Roles;
 use App\Livewire\Page\Main\Team\DetailTeam;
 use App\Livewire\Page\Main\Team\Team;
@@ -79,5 +80,6 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/', Roles::class)->middleware('permission:view-role')->name('role.view');
         Route::get('/create', CreateRole::class)->middleware('permission:create-role')->name('role.create');
         Route::get('/{role}/detail', DetailRole::class)->middleware('permission:show-role')->name('role.show');
+        Route::get('/{role}/edit', EditRole::class)->middleware('permission:update-role')->name('role.edit');
     });
 });
