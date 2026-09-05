@@ -4,15 +4,31 @@ namespace App\Livewire\Page\Main\Roles;
 
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Spatie\Permission\Models\Permission;
-
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
 
 #[Layout('layouts.main', ['title' => 'Halaman Create Role'])]
 class CreateRole extends Component
 {
 
     public array $permissionsValue = [];
+
+    #[Validate([
+        'required',
+        'string',
+        'max:255',
+        'unique:roles,name'
+    ], message: [
+        'roleName.required' => 'Role name wajib di isi',
+        'roleName.string' => 'Role name harus berupa string',
+        'roleName.max' => 'Role name maksimal 255 karakter',
+        'roleName.unique' => 'Role name sudah ada',
+    ])]
+    public string $roleName = '';
+
 
     #[Computed]
     public function getPermissions()
@@ -72,17 +88,22 @@ class CreateRole extends Component
             'permissionsValue' => ['required', 'array'],
             'permissionsValue.*' => ['exists:permissions,name'],
         ]);
-        dd($this->permissionsValue);
 
-        // $role = \Spatie\Permission\Models\Role::create([
-        //     'name' => ,
-        // ]);
+        $role = Role::create([
+            'name' => Str::slug($this->roleName)
+        ]);
 
-        // $role->syncPermissions($this->permissionsValue);
+        $role->syncPermissions($this->permissionsValue);
 
-        // session()->flash('success', 'Role berhasil dibuat');
-        // return redirect()->route('role.view');
+        $this->dispatch(
+            'wirekit-toast',
+            variant: 'success',
+            title: 'Saved',
+            message: 'Berhasil menambahkan role baru'
+        );
+        return $this->redirectRoute('role.view', navigate: true);
     }
+
     public function render()
     {
         return view('livewire.page.main.roles.create-role');

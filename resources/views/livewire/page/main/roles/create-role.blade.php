@@ -31,47 +31,51 @@
         {{-- ===================================================== --}}
         {{-- ROLE INFORMATION --}}
         {{-- ===================================================== --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-                <x-wirekit::stack gap="1">
-
-                    <h2 class="text-sm font-semibold text-slate-900">
-                        Role Information
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Define the name of this role.
-                    </p>
-
-                </x-wirekit::stack>
-            </x-wirekit::card.header>
-
-            <x-wirekit::card.body>
-
-                <div class="max-w-xl">
-
-                    <x-wirekit::input label="Role Name" placeholder="e.g. hr" />
-
-                    <p class="mt-2 text-xs text-slate-500">
-                        Use a unique role name such as
-                        <span class="font-medium text-slate-700">hr</span>,
-                        <span class="font-medium text-slate-700">admin</span>,
-                        or
-                        <span class="font-medium text-slate-700">employee</span>.
-                    </p>
-
-                </div>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-
-        {{-- ===================================================== --}}
-        {{-- PERMISSIONS --}}
-        {{-- ===================================================== --}}
         <x-wirekit::form wire:submit="submit">
+
+            <x-wirekit::card class="mb-4">
+
+                <x-wirekit::card.header>
+                    <x-wirekit::stack gap="1">
+
+                        <h2 class="text-sm font-semibold text-slate-900">
+                            Role Information
+                        </h2>
+
+                        <p class="text-sm text-slate-500">
+                            Define the name of this role.
+                        </p>
+
+                    </x-wirekit::stack>
+                </x-wirekit::card.header>
+
+                <x-wirekit::card.body>
+
+                    <div class="max-w-xl">
+
+                        <x-wirekit::input label="Role Name" placeholder="e.g. hr" wire:model.live.debounce.400ms="roleName" name="roleName" />
+
+
+
+                        <p class="mt-2 text-xs text-slate-500">
+                            Use a unique role name such as
+                            <span class="font-medium text-slate-700">hr</span>,
+                            <span class="font-medium text-slate-700">admin</span>,
+                            or
+                            <span class="font-medium text-slate-700">employee</span>.
+                        </p>
+
+                    </div>
+
+                </x-wirekit::card.body>
+
+            </x-wirekit::card>
+
+
+            {{-- ===================================================== --}}
+            {{-- PERMISSIONS --}}
+            {{-- ===================================================== --}}
+
 
             <x-wirekit::card>
 
@@ -91,7 +95,8 @@
 
                         </x-wirekit::stack>
 
-                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="outline" wire:click="selectAllPermissions">
+                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="outline"
+                            wire:click="selectAllPermissions">
                             Select All
                         </x-wirekit::button>
 

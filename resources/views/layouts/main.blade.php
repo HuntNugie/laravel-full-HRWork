@@ -1,7 +1,7 @@
 {{-- resources/views/livewire/page/main/dashboard.blade.php --}}
 
 <x-layouts::app :title="$title">
-
+<x-wirekit::toast-region />
     <x-wirekit::app-shell>
 
         {{-- =========================================================
@@ -39,7 +39,7 @@
                     </x-wirekit::stack>
 
                     {{-- ini tempat ntar gambar --}}
-                  
+
                     <x-wirekit::dropdown>
                         <x-wirekit::dropdown.trigger>
                              <x-wirekit::image class="flex h-9 w-9 items-center justify-center
