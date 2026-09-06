@@ -33,7 +33,7 @@
                 <x-wirekit::stack gap="xs">
 
                     <h2 class="text-lg font-semibold text-slate-900">
-                        Hari Libur 2026
+                        Hari Libur {{ now()->year }}
                     </h2>
 
                     <p class="text-sm text-slate-500">
@@ -68,24 +68,6 @@
         <x-wirekit::card.body>
 
             <x-wirekit::row gap="sm" align="end">
-
-                <div class="w-full max-w-[180px]">
-
-                    <x-wirekit::select label="Tahun" name="year" value="2026">
-                        <option value="2026">
-                            2026
-                        </option>
-
-                        <option value="2025">
-                            2025
-                        </option>
-
-                        <option value="2024">
-                            2024
-                        </option>
-                    </x-wirekit::select>
-
-                </div>
 
 
                 <div class="w-full max-w-sm">
@@ -165,13 +147,20 @@
                             {{-- ACTION --}}
 
                             <x-wirekit::stack gap="sm">
-                                <x-wirekit::button intent="primary">
-                                    Edit
-                                </x-wirekit::button>
+                                @can('update-holiday')
+                                    <livewire:components.main.holiday.form-edit :holiday="$holiday">
+                                        <x-wirekit::button intent="primary">
+                                            Edit
+                                        </x-wirekit::button>
+                                    </livewire:components.main.holiday.form-edit>
+                                @endcan
 
-                                <x-wirekit::button intent="danger">
-                                    Hapus
-                                </x-wirekit::button>
+                                @can('delete-holiday')
+                                    <x-wirekit::button intent="danger">
+                                        Hapus
+                                    </x-wirekit::button>
+                                @endcan
+
 
                             </x-wirekit::stack>
 
@@ -211,7 +200,7 @@
             <x-wirekit::row justify="between" align="center">
 
                 <p class="text-sm text-slate-500">
-                    {{ $holidays->count() }} hari libur terdaftar pada tahun 2026.
+                    {{ $holidays->count() }} hari libur terdaftar pada tahun {{ now()->year }}.
                 </p>
 
             </x-wirekit::row>

@@ -37,7 +37,7 @@ class HolidaysPolicy
      */
     public function update(User $user, Holidays $holidays): bool
     {
-        return false;
+        return $user->can('update-holiday');
     }
 
     /**

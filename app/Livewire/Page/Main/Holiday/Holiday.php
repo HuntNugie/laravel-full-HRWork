@@ -24,7 +24,7 @@ class Holiday extends Component
 
     public function render()
     {
-        $holidays = Holidays::query()->when($this->search, function ($q) {
+        $holidays = Holidays::query()->whereYear('date', now()->year)->when($this->search, function ($q) {
             $q->where('name', 'like', '%' . $this->search . '%');
         })->orderBy('date', 'asc')->get();
         return view('livewire.page.main.holiday.holiday', compact('holidays'));

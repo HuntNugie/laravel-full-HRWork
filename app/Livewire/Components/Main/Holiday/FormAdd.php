@@ -28,7 +28,7 @@ class FormAdd extends Component
 
     public function store()
     {
-        $this->authorize('create-holiday', Holidays::class);
+        $this->authorize('create', Holidays::class);
         $this->validate();
         Holidays::create([
             'name' => $this->name,
