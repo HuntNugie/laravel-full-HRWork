@@ -20,6 +20,7 @@ use App\Livewire\Page\Main\Roles\EditRole;
 use App\Livewire\Page\Main\Roles\Roles;
 use App\Livewire\Page\Main\Team\DetailTeam;
 use App\Livewire\Page\Main\Team\Team;
+use App\Livewire\Page\Main\Time\Time;
 use App\Livewire\Page\Main\User\DetailUser;
 use App\Livewire\Page\Main\User\User;
 
@@ -81,5 +82,9 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/create', CreateRole::class)->middleware('permission:create-role')->name('role.create');
         Route::get('/{role}/detail', DetailRole::class)->middleware('permission:show-role')->name('role.show');
         Route::get('/{role}/edit', EditRole::class)->middleware('permission:update-role')->name('role.edit');
+    });
+
+    Route::prefix('time')->group(function () {
+        Route::get('/', Time::class)->middleware('permission:view-work-time')->name('time.view');
     });
 });

@@ -27,6 +27,19 @@
 
         </x-wirekit::sidebar.group>
 
+        @canany(['view-work-time'])
+            <x-wirekit::sidebar.group collapsible label="Pengaturan">
+
+                @can('view-work-time')
+                    <x-wirekit::sidebar.item href="{{ route('time.view') }}" :active="request()->routeIs('time.view')" icon="clock" wire:navigate>
+                        Waktu Kerja
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+            </x-wirekit::sidebar.group>
+        @endcanany
+
+
         @canany(['view-user', 'view-role'])
             <x-wirekit::sidebar.group collapsible label="User dan hak akses">
                 @can('view-user')

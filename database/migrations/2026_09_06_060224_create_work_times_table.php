@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('work_times', function (Blueprint $table) {
             $table->id();
+            $table->enum('day_of_week', ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu']);
             $table->time('start_time');
             $table->time('end_time');
+            $table->boolean('is_working_day')->default(true);
             $table->timestamps();
         });
     }
