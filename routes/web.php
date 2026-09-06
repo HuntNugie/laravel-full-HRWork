@@ -12,7 +12,7 @@ use App\Livewire\Page\Main\Divisi\Divisi;
 use App\Livewire\Page\Main\Employee\Contract\CreateEmployeeContract;
 use App\Livewire\Page\Main\Employee\DetailEmployee;
 use App\Livewire\Page\Main\Employee\Employee;
-use App\Livewire\Page\Main\Holiday;
+use App\Livewire\Page\Main\Holiday\Holiday;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
 use App\Livewire\Page\Main\Roles\CreateRole;

@@ -37,7 +37,7 @@
                 @endcan
                 @can('view-holiday')
                     <x-wirekit::sidebar.item href="{{ route('holiday.view') }}" :active="request()->routeIs('holiday.view')" icon="sun" wire:navigate>
-                        Tanggal Libur
+                        Hari Libur
                     </x-wirekit::sidebar.item>
                 @endcan
 
