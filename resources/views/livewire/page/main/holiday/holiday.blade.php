@@ -156,9 +156,11 @@
                                 @endcan
 
                                 @can('delete-holiday')
-                                    <x-wirekit::button intent="danger">
-                                        Hapus
-                                    </x-wirekit::button>
+                                    <livewire:components.main.holiday.modal-delete :holiday="$holiday">
+                                        <x-wirekit::button intent="danger">
+                                            Hapus
+                                        </x-wirekit::button>
+                                    </livewire:components.main.holiday.modal-delete>
                                 @endcan
 
 

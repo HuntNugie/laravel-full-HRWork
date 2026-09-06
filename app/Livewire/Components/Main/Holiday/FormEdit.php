@@ -51,7 +51,7 @@ class FormEdit extends Component
             'wirekit-toast',
             variant: 'success',
             title: 'Edit jadwal libur',
-            message: 'Jadwal berhasil di di update.'
+            message: 'Jadwal berhasil di update.'
         );
         $this->dispatch('refreshPage');
     }

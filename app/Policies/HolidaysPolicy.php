@@ -45,7 +45,7 @@ class HolidaysPolicy
      */
     public function delete(User $user, Holidays $holidays): bool
     {
-        return false;
+        return $user->can('delete-holiday');
     }
 
     /**
