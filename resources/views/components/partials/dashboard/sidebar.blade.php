@@ -11,23 +11,20 @@
         </x-wirekit::sidebar.group>
 
 
-        <x-wirekit::sidebar.group label="Layanan Karyawan">
+        @canany(['view-attendance'])
+            <x-wirekit::sidebar.group label="Layanan Karyawan">
 
-            <x-wirekit::sidebar.item href="#" icon="clock" wire:navigate>
-                Presensi
-            </x-wirekit::sidebar.item>
+                <x-wirekit::sidebar.item href="{{ route('attendance.view') }}" :active="request()->routeIs('attendance.view')" icon="finger-print"
+                    wire:navigate>
+                    Presensi
+                </x-wirekit::sidebar.item>
 
-            <x-wirekit::sidebar.item href="#" icon="shield-check" wire:navigate>
-                Roles
-            </x-wirekit::sidebar.item>
 
-            <x-wirekit::sidebar.item href="#" icon="key" wire:navigate>
-                Permissions
-            </x-wirekit::sidebar.item>
+            </x-wirekit::sidebar.group>
+        @endcanany
 
-        </x-wirekit::sidebar.group>
 
-        @canany(['view-work-time'])
+        @canany(['view-work-time', 'view-holiday'])
             <x-wirekit::sidebar.group collapsible label="Jadwal kerja">
 
                 @can('view-work-time')

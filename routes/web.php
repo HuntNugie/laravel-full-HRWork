@@ -2,6 +2,7 @@
 
 use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
+use App\Livewire\Page\Main\Attendances\Attendances;
 use App\Livewire\Page\Main\Base\MyProfile;
 use App\Livewire\Page\Main\Benefit\Benefit;
 use App\Livewire\Page\Main\Benefit\DetailBenefit;
@@ -91,5 +92,9 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('holiday')->group(function () {
         Route::get("/", Holiday::class)->middleware("permission:view-holiday")->name("holiday.view");
+    });
+
+    Route::prefix('attendance')->group(function () {
+        Route::get('/', Attendances::class)->middleware('permission:view-attendance')->name('attendance.view');
     });
 });

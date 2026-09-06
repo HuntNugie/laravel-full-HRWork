@@ -55,4 +55,10 @@ class Employees extends Model
     {
         return $this->hasOne(Team::class, 'supervisor_id');
     }
+
+    // relasi ke attendances
+    public function attendances()
+    {
+        return $this->hasMany(Attendances::class, "employee_id");
+    }
 }
