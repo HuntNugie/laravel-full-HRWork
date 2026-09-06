@@ -42,15 +42,18 @@
                     </x-wirekit::stack>
 
 
-                    <x-wirekit::button variant="outline" size="sm" wire:click="toggleEdit">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16.862 4.487l1.651-1.651a2.1 2.1 0 013 3l-1.651 1.651M16.862 4.487L7.5 13.849V17h3.151l9.362-9.362m-3-3L21.5 7.5" />
-                        </svg>
+                    @can('update-work-time')
+                        <x-wirekit::button variant="outline" size="sm" wire:click="toggleEdit">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M16.862 4.487l1.651-1.651a2.1 2.1 0 013 3l-1.651 1.651M16.862 4.487L7.5 13.849V17h3.151l9.362-9.362m-3-3L21.5 7.5" />
+                            </svg>
 
-                        Edit Jadwal
-                    </x-wirekit::button>
+                            Edit Jadwal
+                        </x-wirekit::button>
+                    @endcan
+
 
                 </x-wirekit::row>
 
@@ -109,17 +112,21 @@
 
 
             {{-- FOOTER --}}
-            <x-wirekit::card.footer>
+            @can('update-work-time')
+                <x-wirekit::card.footer>
 
-                <x-wirekit::row justify="end" align="center" gap="sm">
+                    <x-wirekit::row justify="end" align="center" gap="sm">
 
-                    <x-wirekit::button type="submit" :disabled="!$is_edit">
-                        Simpan Perubahan
-                    </x-wirekit::button>
 
-                </x-wirekit::row>
+                        <x-wirekit::button type="submit" :disabled="!$is_edit">
+                            Simpan Perubahan
+                        </x-wirekit::button>
 
-            </x-wirekit::card.footer>
+                    </x-wirekit::row>
+
+                </x-wirekit::card.footer>
+            @endcan
+
 
         </x-wirekit::card>
     </x-wirekit::form>

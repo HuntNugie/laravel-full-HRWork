@@ -28,7 +28,7 @@
         </x-wirekit::sidebar.group>
 
         @canany(['view-work-time'])
-            <x-wirekit::sidebar.group collapsible label="Pengaturan">
+            <x-wirekit::sidebar.group collapsible label="Jadwal kerja">
 
                 @can('view-work-time')
                     <x-wirekit::sidebar.item href="{{ route('time.view') }}" :active="request()->routeIs('time.view')" icon="clock" wire:navigate>
