@@ -11,7 +11,7 @@
         </x-wirekit::sidebar.group>
 
 
-        <x-wirekit::sidebar.group label="Role dan sistem akses">
+        <x-wirekit::sidebar.group label="Layanan Karyawan">
 
             <x-wirekit::sidebar.item href="#" icon="clock" wire:navigate>
                 Presensi
@@ -27,17 +27,18 @@
 
         </x-wirekit::sidebar.group>
 
-        @canany(['view-user','view-role'])
+        @canany(['view-user', 'view-role'])
             <x-wirekit::sidebar.group collapsible label="User dan hak akses">
                 @can('view-user')
-                    <x-wirekit::sidebar.item href="{{ route('user.view') }}"  icon="user" :active="request()->routeIs('user.view')" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('user.view') }}" icon="user" :active="request()->routeIs('user.view')" wire:navigate>
                         Manajemen User
                     </x-wirekit::sidebar.item>
                 @endcan
 
 
                 @can('view-role')
-                    <x-wirekit::sidebar.item href="{{ route('role.view') }}" icon="shield-check" :active="request()->routeIs('role.view')" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('role.view') }}" icon="shield-check" :active="request()->routeIs('role.view')"
+                        wire:navigate>
                         Manajemen Role
                     </x-wirekit::sidebar.item>
                 @endcan
