@@ -17,14 +17,17 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        host: "0.0.0.0",
-        port: 5173,
-
-        origin: "http://192.168.1.100:5173",
-
-        hmr: {
-            host: "192.168.1.100",
-            port: 5173,
+        watch: {
+            ignored: ["**/storage/framework/views/**"],
         },
+        // host: "0.0.0.0",
+        // port: 5173,
+
+        // origin: "http://192.168.1.100:5173",
+
+        // hmr: {
+        //     host: "192.168.1.100",
+        //     port: 5173,
+        // },
     },
 });

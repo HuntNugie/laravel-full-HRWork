@@ -43,10 +43,9 @@
                     </x-wirekit::stack>
 
 
-                    <span
-                        class="hidden rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-slate-500 shadow-sm sm:inline-flex">
-                        Waktu Lokal
-                    </span>
+                    <x-wirekit::button intent="primary">
+                        Riwayat Presensi
+                    </x-wirekit::button>
 
                 </x-wirekit::row>
 
@@ -132,7 +131,8 @@
                                         </p>
 
                                         <p class="mt-1 text-base font-semibold text-slate-900">
-                                            09:00 - 17:00
+                                            {{ \Carbon\Carbon::parse($workTime->start_time)->format('H:i') }} -
+                                            {{ \Carbon\Carbon::parse($workTime->end_time)->format('H:i') }}
                                         </p>
                                     </div>
 
@@ -147,29 +147,54 @@
 
 
                                 <x-wirekit::divider />
-
-
-                                <x-wirekit::row justify="between" align="center">
+                                <x-wirekit::row justify="between" align="center" gap="md">
 
                                     <div>
-
                                         <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                            Status
+                                            Status pekerjaan hari ini
                                         </p>
 
-                                        <p class="mt-1 text-sm font-medium text-slate-700">
-                                            Anda belum melakukan presensi hari ini.
+                                        <p class="mt-1 text-base font-semibold text-slate-900">
+                                            {{ $isHoliday ? $messageHoliday : 'Ada jadwal kerja' }}
                                         </p>
-
                                     </div>
 
 
-                                    <span
-                                        class="shrink-0 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-700">
-                                        Belum Presensi
-                                    </span>
+                                    <div class="flex size-11 items-center justify-center rounded-xl bg-[#92EEFF]/60">
+
+                                        <x-wirekit::icon name="calendar" class="size-5 text-cyan-700" />
+
+                                    </div>
 
                                 </x-wirekit::row>
+
+
+                                <x-wirekit::divider />
+
+
+                                @if (!$isHoliday)
+                                    <x-wirekit::row justify="between" align="center">
+
+                                        <div>
+
+                                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                Status
+                                            </p>
+
+                                            <p class="mt-1 text-sm font-medium text-slate-700">
+                                                {{ $attendance ? 'Sudah melakukan presensi' : 'Belum melakukan presensi' }}
+                                            </p>
+
+                                        </div>
+
+
+                                        <span
+                                            class="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium bg-amber-50 text-amber-700">
+                                            Belum Presensi
+                                        </span>
+
+                                    </x-wirekit::row>
+                                @endif
 
                             </x-wirekit::stack>
 
@@ -185,21 +210,28 @@
                                 @click="
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                console.log(position.coords.latitude);
-                console.log(position.coords.longitude);
-                console.log('Accuracy:', position.coords.accuracy, 'meters');
+                $wire.checkIn(
+                    position.coords.latitude,
+                    position.coords.longitude,
+                );
             },
             (error) => {
                 console.error(error);
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 15000,
             }
         )
-    ">
+    "
+                                :disabled="$isHoliday">
                                 <x-wirekit::icon name="finger-print" />
                                 Check In
                             </x-wirekit::button>
 
 
-                            <x-wirekit::button variant="outline" size="md">
+                            <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday">
 
                                 <x-wirekit::icon name="document-text" />
 
@@ -228,72 +260,8 @@
     {{-- =====================================================
         INFORMASI HARI INI
     ====================================================== --}}
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div class="grid grid-cols-1 gap-6 ">
 
-        {{-- JADWAL --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <x-wirekit::stack gap="xs">
-
-                    <h2 class="text-base font-semibold text-slate-900">
-                        Jadwal Hari Ini
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Informasi jam kerja yang berlaku hari ini.
-                    </p>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-
-                <x-wirekit::stack gap="md">
-
-                    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-
-                        <x-wirekit::row justify="between" align="center">
-
-                            <div>
-                                <p class="text-sm font-medium text-slate-900">
-                                    Senin
-                                </p>
-
-                                <p class="mt-1 text-xs text-slate-500">
-                                    Hari kerja
-                                </p>
-                            </div>
-
-                            <p class="text-base font-semibold text-slate-900">
-                                09:00 - 17:00
-                            </p>
-
-                        </x-wirekit::row>
-
-                    </div>
-
-
-                    <div class="rounded-xl border border-[#92EEFF]/50 bg-[#92EEFF]/20 px-4 py-3">
-
-                        <p class="text-sm font-medium text-slate-900">
-                            Waktu kerja hari ini adalah 8 jam.
-                        </p>
-
-                        <p class="mt-1 text-xs text-slate-600">
-                            Pastikan melakukan check in dan check out sesuai jadwal.
-                        </p>
-
-                    </div>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
 
 
         {{-- RINGKASAN --}}

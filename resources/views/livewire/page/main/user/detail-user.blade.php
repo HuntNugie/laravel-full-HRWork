@@ -62,8 +62,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                       text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                                 'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                                 'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -75,7 +75,7 @@
                                 class="inline-flex items-center rounded-full
                                        bg-slate-100 px-2.5 py-1
                                        text-xs font-medium text-slate-600">
-                                {{ $user->employees->employee_code }}
+                                {{ $user->employees?->employee_code ?? 'Tidak ada' }}
                             </span>
 
                         </div>
@@ -96,7 +96,7 @@
                         'bg-green-500 hover:bg-green-600' =>
                             $user->status === 'inactive' || $user->status === 'pending',
                         'bg-red-500 hover:bg-red-600' => $user->status === 'active',
-                    ]) >
+                    ])>
                         {{ $user->status === 'active' ? 'Deactivate' : 'Activate' }} Account
                     </x-wirekit::button>
                 </div>
@@ -171,8 +171,8 @@
                         </p>
                         <span @class([
                             "inline-flex items-center rounded-full
-                                                                                                                                                                                                                    px-2.5 py-1
-                                                                                                                                                                                                                   text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                    px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                   text-xs font-medium ",
                             'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                             'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                             'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -318,7 +318,8 @@
 
                     </x-wirekit::stack>
 
-                    <x-wirekit::button type="button" size="sm">
+                    <x-wirekit::button type="button" size="sm"
+                        href="{{ route('employee.show', $user->employees->id) }}" wire:navigate>
                         View Employee
                     </x-wirekit::button>
 
@@ -338,7 +339,7 @@
                         </p>
 
                         <p class="mt-1 text-sm font-semibold text-slate-800">
-                            {{ $user->employees->employee_code }}
+                            {{ $user->employees->employee_code ?? 'Tidak ada' }}
                         </p>
 
                     </div>
@@ -512,8 +513,8 @@
 
                 <span @class([
                     "inline-flex items-center rounded-full
-                                                                                                                                            px-2.5 py-1
-                                                                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                                            px-2.5 py-1
+                                                                                                                                                                                                                                           text-xs font-medium ",
                     'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                     'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                     'bg-red-50 text-red-600' => $user->status === 'inactive',
