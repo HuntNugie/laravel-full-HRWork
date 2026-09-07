@@ -190,10 +190,10 @@
 
                                         <span @class([
                                             'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium',
-                                            'bg-amber-50 text-amber-700' => !$att || !$att->check_in_at,
-                                            'bg-emerald-50 text-emerald-700' => $att && !$att->check_out_at,
+                                            'bg-amber-50 text-amber-700' => !$att || !$att?->check_in_at,
+                                            'bg-emerald-50 text-emerald-700' => $att && !$att?->check_out_at,
                                         ])>
-                                            {{ !$att || !$att->check_in_at ? 'Belum presensi' : 'Sudah presensi' }}
+                                            {{ !$att || !$att?->check_in_at ? 'Belum presensi' : 'Sudah presensi' }}
                                         </span>
 
                                     </x-wirekit::row>
@@ -209,7 +209,7 @@
                         ================================== --}}
                         <x-wirekit::stack gap="sm" align="center">
 
-                            @if (!$att || !$att->check_in_at)
+                            @if (!$att || !$att?->check_in_at)
                                 <x-wirekit::button x-data
                                     @click="
         navigator.geolocation.getCurrentPosition(
@@ -261,7 +261,7 @@
                                 </x-wirekit::button>
                             @endif
 
-                            <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday || $att->check_in_at">
+                            <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday || $att?->check_in_at">
 
                                 <x-wirekit::icon name="document-text" />
 

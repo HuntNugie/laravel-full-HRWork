@@ -9,6 +9,7 @@ use App\Models\WorkTime;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Layout("layouts.main", ['title' => "Halaman presensi"])]
@@ -63,10 +64,10 @@ class Attendances extends Component
 
         $lateLimit = $startTime->copy()
             ->addMinutes($this->setting->late_tolerance_minutes);
-        dd($lateLimit);
         $checkIn = now();
 
         $isLate = $checkIn->greaterThan($lateLimit);
+
         $lateMinutes = $isLate
             ? $startTime->diffInMinutes($checkIn)
             : 0;
@@ -83,11 +84,20 @@ class Attendances extends Component
 
         if ($user->status === "late") {
             $this->dispatch('wirekit-toast', variant: "warning", title: "Berhasil presensi", message: "Terlambat presensi!");
-            return;
+        } else {
+            $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil presensi", message: "Terima kasih sudah presensi tepat waktu");
+            $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil presensi", message: "Terima kasih sudah presensi tepat waktu");
         }
-        $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil presensi", message: "Terima kasih sudah presensi tepat waktu");
+
+
+        $this->dispatch("update-data");
     }
 
+    #[On("update-data")]
+    public function refreshPage()
+    {
+        $this->att = ModelsAttendances::where('employee_id', '=', Auth::user()->employees->id)->whereDate('date', '=', today())->first();
+    }
     public function render()
     {
         return view('livewire.page.main.attendances.attendances');
