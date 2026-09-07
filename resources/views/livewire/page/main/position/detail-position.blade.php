@@ -208,7 +208,7 @@
             <div class="space-y-4">
 
                 <p class="text-sm leading-6 text-slate-600">
-                    {{$position->description}}
+                    {{ $position->description }}
                 </p>
 
                 <div>
@@ -229,7 +229,6 @@
                                 -
 
                             </li>
-
                         @endforelse
 
 
@@ -317,75 +316,76 @@
                     <x-wirekit::table.body>
 
                         @forelse ($position->employees  as $employee)
-                                    {{-- Employee 1 --}}
-                        <x-wirekit::table.row>
+                            {{-- Employee 1 --}}
+                            <x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <div class="flex items-center gap-3">
+                                    <div class="flex items-center gap-3">
 
-                                    <div
-                                        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                        <span class="text-sm font-semibold text-sky-600">
-                                            AP
-                                        </span>
+                                        <div
+                                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
+                                            <span class="text-sm font-semibold text-sky-600">
+                                                AP
+                                            </span>
+                                        </div>
+
+                                        <div class="min-w-0">
+
+                                            <p class="truncate text-sm font-semibold text-slate-800">
+                                                {{ $employee->user->name }}
+                                            </p>
+
+                                            <p class="truncate text-xs text-slate-400">
+                                                {{ $employee->employee_code }}
+                                            </p>
+
+                                        </div>
+
                                     </div>
 
-                                    <div class="min-w-0">
-
-                                        <p class="truncate text-sm font-semibold text-slate-800">
-                                            {{ $employee->user->name }}
-                                        </p>
-
-                                        <p class="truncate text-xs text-slate-400">
-                                            {{ $employee->employee_code }}
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <span class="text-sm text-slate-700">
-                                    {{ $employee->team->name }}
-                                </span>
+                                    <span class="text-sm text-slate-700">
+                                        {{ $employee->team->name ?? 'Belum ada team' }}
+                                    </span>
 
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm font-medium text-slate-700">
-                                    Rp300.000
-                                </span>
-
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <span class="inline-flex items-center rounded-full
+                                    <span class="text-sm font-medium text-slate-700">
+                                        Rp300.000
+                                    </span>
+
+                                </x-wirekit::table.td>
+
+
+                                <x-wirekit::table.td>
+
+                                    <span
+                                        class="inline-flex items-center rounded-full
                                 bg-emerald-50 px-2.5 py-1
                                 text-xs font-medium text-emerald-600">
-                                    Active
-                                </span>
+                                        Active
+                                    </span>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
+                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                        Detail
+                                    </x-wirekit::button>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
-                        </x-wirekit::table.row>
+                            </x-wirekit::table.row>
                         @empty
                             <x-wirekit::table.row>
                                 <x-wirekit::table.td colspan="5">

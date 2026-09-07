@@ -182,15 +182,18 @@
                                             </p>
 
                                             <p class="mt-1 text-sm font-medium text-slate-700">
-                                                {{ $attendance ? 'Sudah melakukan presensi' : 'Belum melakukan presensi' }}
+                                                {{ $att ? 'Sudah melakukan presensi' : 'Belum melakukan presensi' }}
                                             </p>
 
                                         </div>
 
 
-                                        <span
-                                            class="shrink-0 rounded-full px-3 py-1.5 text-xs font-medium bg-amber-50 text-amber-700">
-                                            Belum Presensi
+                                        <span @class([
+                                            'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium',
+                                            'bg-amber-50 text-amber-700' => !$att || !$att->check_in_at,
+                                            'bg-emerald-50 text-emerald-700' => $att && !$att->check_out_at,
+                                        ])>
+                                            {{ !$att || !$att->check_in_at ? 'Belum presensi' : 'Sudah presensi' }}
                                         </span>
 
                                     </x-wirekit::row>
@@ -206,8 +209,9 @@
                         ================================== --}}
                         <x-wirekit::stack gap="sm" align="center">
 
-                            <x-wirekit::button x-data
-                                @click="
+                            @if (!$att || !$att->check_in_at)
+                                <x-wirekit::button x-data
+                                    @click="
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 $wire.checkIn(
@@ -225,13 +229,39 @@
             }
         )
     "
-                                :disabled="$isHoliday">
-                                <x-wirekit::icon name="finger-print" />
-                                Check In
-                            </x-wirekit::button>
+                                    :disabled="$isHoliday">
+                                    <x-wirekit::icon name="finger-print" />
+                                    Rekam Masuk
+                                </x-wirekit::button>
+                            @endif
 
+                            @if ($att && !$att->check_out_at)
+                                <x-wirekit::button x-data
+                                    @click="
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                $wire.checkIn(
+                    position.coords.latitude,
+                    position.coords.longitude,
+                );
+            },
+            (error) => {
+                console.error(error);
+            },
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 15000,
+            }
+        )
+    "
+                                    :disabled="$isHoliday">
+                                    <x-wirekit::icon name="finger-print" />
+                                    Rekam keluar
+                                </x-wirekit::button>
+                            @endif
 
-                            <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday">
+                            <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday || $att->check_in_at">
 
                                 <x-wirekit::icon name="document-text" />
 

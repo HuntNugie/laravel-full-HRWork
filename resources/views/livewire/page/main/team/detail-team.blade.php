@@ -516,7 +516,7 @@
 
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::stack gap="sm">
+                                    <div class="flex items-center gap-2">
                                         @can('show-employee')
                                             <x-wirekit::button type="button" class="px-3 py-1.5 text-xs"
                                                 href="{{ route('employee.show', $employee->id) }}" wire:navigate>
@@ -529,7 +529,7 @@
                                                 Keluarkan
                                             </x-wirekit::button>
                                         </livewire:components.main.team.remove-employee>
-                                    </x-wirekit::stack>
+                                    </div>
 
                                 </x-wirekit::table.td>
 
