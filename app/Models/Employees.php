@@ -61,4 +61,10 @@ class Employees extends Model
     {
         return $this->hasMany(Attendances::class, "employee_id");
     }
+
+    // relasi ke employee_absence_request untuk sakit atau izin
+    public function employeeAbsenceRequest()
+    {
+        return $this->hasMany(EmployeeAbsenceRequest::class, "employee_id");
+    }
 }

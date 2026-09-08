@@ -35,6 +35,12 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->hasOne(Employees::class, 'user_id');
     }
+
+    // relasi ke employee_absence_request untuk yang approve sakit atau izin nya
+    public function employeeAbsenceRequest()
+    {
+        return $this->hasMany(EmployeeAbsenceRequest::class, 'user_id');
+    }
     protected function casts(): array
     {
         return [
