@@ -24,6 +24,8 @@ class Attendances extends Component
     public string $messageHoliday = "";
     public WorkTime $workTime;
 
+    public bool $isCanCheckIn = false;
+    public bool $isAbsenceRequest = false;
     public AttedanceSetting $setting;
     public function mount()
     {
@@ -38,7 +40,9 @@ class Attendances extends Component
             $this->messageHoliday = "Libur {$this->holiday->name}";
         }
 
+        $this->isAbsenceRequest = Auth::user()->employees->employeeAbsenceRequest()->whereDate('date', today())->exists();
         $this->setting = AttedanceSetting::first();
+        $this->isCanCheckIn = now()->format('H:i:s') > $this->workTime->end_time;
     }
 
     public function checkIn(float $latitude, float $longitude)
@@ -59,6 +63,11 @@ class Attendances extends Component
             $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "Anda sudah melakukan check in");
             return;
         }
+        if ($this->isAbsenceRequest) {
+            $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "Anda sudah izin/sakit untuk hari ini");
+            return;
+        }
+
 
         $startTime = today()->setTimeFromTimeString($this->workTime->start_time);
 
@@ -70,6 +79,11 @@ class Attendances extends Component
         $lateMinutes = $isLate
             ? $startTime->diffInMinutes($checkIn)
             : 0;
+
+        if ($this->isCanCheckIn) {
+            $this->dispatch("wirekit-toast", variant: "danger", title: "Terlambat!!", message: "Anda sudah tidak bisa checkIn untuk hari ini");
+            return;
+        }
 
         // tambah disini
         $user = Auth::user()->employees->attendances()->create([
@@ -93,6 +107,7 @@ class Attendances extends Component
     public function refreshPage()
     {
         $this->att = ModelsAttendances::where('employee_id', '=', Auth::user()->employees->id)->whereDate('date', '=', today())->first();
+        $this->isAbsenceRequest = true;
     }
 
     public function checkOut(float $latitude, float $longitude)
@@ -112,6 +127,11 @@ class Attendances extends Component
 
         if ($this->att && $this->att->check_out_at) {
             $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "Anda sudah melakukan check out");
+            return;
+        }
+
+        if ($this->isAbsenceRequest) {
+            $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "Anda sudah izin/sakit untuk hari ini");
             return;
         }
 

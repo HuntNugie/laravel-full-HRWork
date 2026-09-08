@@ -210,9 +210,10 @@
                         <x-wirekit::stack gap="sm" align="center">
 
                             @if (!$att || !$att?->check_in_at)
-                                <x-wirekit::button x-data="{ loading: false }" x-bind:disabled="loading"
+                                <x-wirekit::button x-data="{ loading: false }" :disabled="$isAbsenceRequest || $isCanCheckIn"
                                     @click="
         loading = true;
+
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -299,13 +300,25 @@
                                 </x-wirekit::button>
                             @endif
 
-                            <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday || $att?->check_in_at">
+                            @if ($isAbsenceRequest || $att?->check_in_at)
+                                <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday || $att?->check_in_at || $isAbsenceRequest">
 
-                                <x-wirekit::icon name="document-text" />
+                                    <x-wirekit::icon name="document-text" />
 
-                                Sakit / Izin
+                                    Sakit / Izin
 
-                            </x-wirekit::button>
+                                </x-wirekit::button>
+                            @else
+                                <livewire:components.main.attendances.modal-izin>
+                                    <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday || $att?->check_in_at || $isAbsenceRequest">
+
+                                        <x-wirekit::icon name="document-text" />
+
+                                        Sakit / Izin
+
+                                    </x-wirekit::button>
+                                </livewire:components.main.attendances.modal-izin>
+                            @endif
 
 
                             <p class="text-xs text-slate-500">

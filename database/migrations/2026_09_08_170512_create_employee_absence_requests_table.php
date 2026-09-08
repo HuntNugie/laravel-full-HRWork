@@ -17,9 +17,9 @@ return new class extends Migration
             $table->date("date");
             $table->enum("type", ['sakit', 'izin']);
             $table->text("reason")->nullable();
-            $table->enum("status", ["pending", "approved", "rejected"]);
-            $table->foreignId("approved_by")->constrained("users")->cascadeOnDelete();
-            $table->datetime("approved_at");
+            $table->enum("status", ["pending", "approved", "rejected"])->default('pending');
+            $table->foreignId("approved_by")->nullable()->constrained("users")->cascadeOnDelete();
+            $table->datetime("approved_at")->nullable();
             $table->timestamps();
 
             $table->unique(['employee_id', 'date']);
