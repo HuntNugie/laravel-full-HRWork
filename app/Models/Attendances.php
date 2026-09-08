@@ -17,6 +17,8 @@ class Attendances extends Model
     {
         return [
             'date' => 'date',
+            'check_in_at' => 'datetime',
+            'check_out_at' => 'datetime',
         ];
     }
 }

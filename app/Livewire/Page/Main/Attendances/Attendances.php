@@ -115,26 +115,21 @@ class Attendances extends Component
             return;
         }
 
-
-
-        $startTime = today()->setTimeFromTimeString($this->workTime->end_time);
-
         $checkOut = now();
+        $checkIn = $this->att->check_in_at;
+        $workDuration = $checkIn->diffInMinutes($checkOut);
 
-
-        // tambah disini
-        $user = Auth::user()->employees->attendances()->update([
+        // update disini
+        $this->att->update([
             "check_out_at" => $checkOut,
             "check_out_latitude" => $latitude,
             "check_out_longitude" => $longitude,
-
+            "work_duration" => intval($workDuration)
         ]);
 
-        if ($user->status === "late") {
-            $this->dispatch('wirekit-toast', variant: "warning", title: "Berhasil presensi", message: "Terlambat presensi!");
-        } else {
-            $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil presensi", message: "Terima kasih sudah presensi tepat waktu");
-        }
+
+        $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil rekam keluar presensi", message: "Terima kasih berkerja selamat istirahat");
+
         $this->dispatch("update-data");
     }
 

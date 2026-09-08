@@ -68,4 +68,8 @@ class AttendancesPolicy
     {
         return $user->can("check-in-attendance");
     }
+    public function checkOut(User $user)
+    {
+        return $user->can("check-out-attendance");
+    }
 }

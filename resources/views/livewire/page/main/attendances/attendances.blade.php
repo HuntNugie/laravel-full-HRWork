@@ -219,7 +219,6 @@
                 $wire.checkIn(
                     position.coords.latitude,
                     position.coords.longitude,
-                    position.coords.accuracy
                 ).finally(() => {
                     loading = false;
                 });
@@ -256,16 +255,21 @@
                             @endif
 
                             @if ($att && !$att->check_out_at)
-                                <x-wirekit::button x-data
+                                <x-wirekit::button x-data="{ loading: false }" x-bind:disabled="loading"
                                     @click="
+        loading = true;
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                $wire.checkIn(
+                $wire.checkOut(
                     position.coords.latitude,
                     position.coords.longitude,
-                );
+                ).finally(() => {
+                    loading = false;
+                });
             },
             (error) => {
+                loading = false;
                 console.error(error);
             },
             {
@@ -273,11 +277,25 @@
                 maximumAge: 0,
                 timeout: 15000,
             }
-        )
-    "
-                                    :disabled="$isHoliday">
-                                    <x-wirekit::icon name="finger-print" />
-                                    Rekam keluar
+        );
+    ">
+                                    <span x-show="!loading" class="flex items-center gap-2">
+                                        <x-wirekit::icon name="finger-print" />
+                                        Rekam keluar
+                                    </span>
+
+                                    <span x-show="loading" class="flex items-center gap-2">
+                                        <svg class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                stroke="currentColor" stroke-width="4" />
+
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                        </svg>
+
+                                        Memproses...
+                                    </span>
                                 </x-wirekit::button>
                             @endif
 
@@ -308,153 +326,108 @@
 
 
     {{-- =====================================================
-        INFORMASI HARI INI
-    ====================================================== --}}
-    <div class="grid grid-cols-1 gap-6 ">
-
-
-
-        {{-- RINGKASAN --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <x-wirekit::stack gap="xs">
-
-                    <h2 class="text-base font-semibold text-slate-900">
-                        Ringkasan Bulan Ini
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Ringkasan kehadiran Anda pada bulan berjalan.
-                    </p>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-
-                <div class="grid grid-cols-2 gap-3">
-
-                    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-
-                        <p class="text-xs text-slate-500">
-                            Hadir
-                        </p>
-
-                        <p class="mt-2 text-2xl font-semibold text-slate-900">
-                            20
-                        </p>
-
-                        <p class="mt-1 text-xs text-slate-400">
-                            hari
-                        </p>
-
-                    </div>
-
-
-                    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-
-                        <p class="text-xs text-slate-500">
-                            Terlambat
-                        </p>
-
-                        <p class="mt-2 text-2xl font-semibold text-slate-900">
-                            3
-                        </p>
-
-                        <p class="mt-1 text-xs text-slate-400">
-                            hari
-                        </p>
-
-                    </div>
-
-
-                    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-
-                        <p class="text-xs text-slate-500">
-                            Hari Libur
-                        </p>
-
-                        <p class="mt-2 text-2xl font-semibold text-slate-900">
-                            2
-                        </p>
-
-                        <p class="mt-1 text-xs text-slate-400">
-                            hari
-                        </p>
-
-                    </div>
-
-
-                    <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-
-                        <p class="text-xs text-slate-500">
-                            Rata-rata
-                        </p>
-
-                        <p class="mt-2 text-2xl font-semibold text-slate-900">
-                            8j
-                        </p>
-
-                        <p class="mt-1 text-xs text-slate-400">
-                            per hari
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-    </div>
-
-
-    {{-- =====================================================
-        LOCATION INFORMATION
-    ====================================================== --}}
+    INFORMASI PRESENSI HARI INI
+====================================================== --}}
     <x-wirekit::card>
 
+        <x-wirekit::card.header>
+            <x-wirekit::stack gap="xs">
+                <h2 class="text-base font-semibold text-slate-900">
+                    Informasi Presensi Hari Ini
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Detail rekaman presensi Anda hari ini.
+                </p>
+            </x-wirekit::stack>
+        </x-wirekit::card.header>
+
         <x-wirekit::card.body>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-            <div class="flex items-start gap-3">
+                {{-- REKAM MASUK --}}
+                <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Rekam Masuk
+                    </p>
 
-                <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#92EEFF]">
+                    <p class="mt-2 text-xl font-semibold text-slate-900">
+                        {{ $att?->check_in_at?->format('H:i') ?? '-' }}
+                    </p>
 
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-cyan-700" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 21s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" />
-
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 11a2 2 0 100-4 2 2 0 000 4z" />
-
-                    </svg>
-
+                    <p class="mt-1 text-xs text-slate-400">
+                        {{ $att?->check_in_at?->format('d M Y') ?? 'Belum direkam' }}
+                    </p>
                 </div>
 
-
-                <div>
-
-                    <p class="text-sm font-medium text-slate-900">
-                        Lokasi Presensi
+                {{-- REKAM KELUAR --}}
+                <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Rekam Keluar
                     </p>
 
-                    <p class="mt-1 text-sm leading-6 text-slate-500">
-                        Lokasi perangkat akan dicatat ketika Anda melakukan
-                        check in dan check out. Lokasi tidak digunakan untuk
-                        membatasi tempat Anda melakukan presensi.
+                    <p class="mt-2 text-xl font-semibold text-slate-900">
+                        {{ $att?->check_out_at?->format('H:i') ?? '-' }}
                     </p>
 
+                    <p class="mt-1 text-xs text-slate-400">
+                        {{ $att?->check_out_at?->format('d M Y') ?? 'Belum direkam' }}
+                    </p>
+                </div>
+
+                {{-- STATUS PRESENSI --}}
+                <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Status Presensi
+                    </p>
+
+                    <div class="mt-2">
+                        <span @class([
+                            'inline-flex rounded-full px-3 py-1.5 text-xs font-medium',
+                            'bg-amber-50 text-amber-700' => !$att?->check_in_at,
+                            'bg-cyan-50 text-cyan-700' => $att?->check_in_at && !$att?->check_out_at,
+                            'bg-emerald-50 text-emerald-700' =>
+                                $att?->check_in_at && $att?->check_out_at,
+                        ])>
+                            @if (!$att?->check_in_at)
+                                Belum Presensi
+                            @elseif (!$att?->check_out_at)
+                                Sedang Bekerja
+                            @else
+                                Selesai
+                            @endif
+                        </span>
+                    </div>
+
+                    <p class="mt-2 text-xs text-slate-400">
+                        Status presensi hari ini
+                    </p>
+                </div>
+
+                {{-- WAKTU KERJA --}}
+                <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                        Waktu Kerja
+                    </p>
+
+                    <p class="mt-2 text-xl font-semibold text-slate-900">
+                        @if ($att?->check_in_at && $att?->check_out_at)
+                            {{ intdiv($att->work_duration, 60) }}j
+                            {{ $att->work_duration % 60 }}m
+                        @else
+                            -
+                        @endif
+                    </p>
+
+                    <p class="mt-1 text-xs text-slate-400">
+                        Durasi kerja hari ini
+                    </p>
                 </div>
 
             </div>
-
         </x-wirekit::card.body>
 
     </x-wirekit::card>
+
 
 </div>
