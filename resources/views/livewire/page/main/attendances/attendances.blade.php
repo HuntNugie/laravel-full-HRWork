@@ -43,7 +43,7 @@
                     </x-wirekit::stack>
 
 
-                    <x-wirekit::button intent="primary">
+                    <x-wirekit::button intent="primary" href="{{ route('history.view') }}" wire:navigate>
                         Riwayat Presensi
                     </x-wirekit::button>
 

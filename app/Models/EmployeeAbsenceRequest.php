@@ -19,4 +19,11 @@ class EmployeeAbsenceRequest extends Model
     {
         return $this->belongsTo(User::class, "approved_by");
     }
+
+    protected function casts(): array
+    {
+        return [
+            'date' => 'date',
+        ];
+    }
 }
