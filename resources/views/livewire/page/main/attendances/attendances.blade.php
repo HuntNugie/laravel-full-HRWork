@@ -210,16 +210,22 @@
                         <x-wirekit::stack gap="sm" align="center">
 
                             @if (!$att || !$att?->check_in_at)
-                                <x-wirekit::button x-data
+                                <x-wirekit::button x-data="{ loading: false }" x-bind:disabled="loading"
                                     @click="
+        loading = true;
+
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 $wire.checkIn(
                     position.coords.latitude,
                     position.coords.longitude,
-                );
+                    position.coords.accuracy
+                ).finally(() => {
+                    loading = false;
+                });
             },
             (error) => {
+                loading = false;
                 console.error(error);
             },
             {
@@ -227,11 +233,25 @@
                 maximumAge: 0,
                 timeout: 15000,
             }
-        )
-    "
-                                    :disabled="$isHoliday">
-                                    <x-wirekit::icon name="finger-print" />
-                                    Rekam Masuk
+        );
+    ">
+                                    <span x-show="!loading" class="flex items-center gap-2">
+                                        <x-wirekit::icon name="finger-print" />
+                                        Rekam masuk
+                                    </span>
+
+                                    <span x-show="loading" class="flex items-center gap-2">
+                                        <svg class="size-4 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                stroke="currentColor" stroke-width="4" />
+
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                                        </svg>
+
+                                        Memproses...
+                                    </span>
                                 </x-wirekit::button>
                             @endif
 

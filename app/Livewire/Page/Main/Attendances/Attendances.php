@@ -67,7 +67,6 @@ class Attendances extends Component
         $checkIn = now();
 
         $isLate = $checkIn->greaterThan($lateLimit);
-
         $lateMinutes = $isLate
             ? $startTime->diffInMinutes($checkIn)
             : 0;
@@ -86,10 +85,7 @@ class Attendances extends Component
             $this->dispatch('wirekit-toast', variant: "warning", title: "Berhasil presensi", message: "Terlambat presensi!");
         } else {
             $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil presensi", message: "Terima kasih sudah presensi tepat waktu");
-            $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil presensi", message: "Terima kasih sudah presensi tepat waktu");
         }
-
-
         $this->dispatch("update-data");
     }
 
@@ -98,6 +94,50 @@ class Attendances extends Component
     {
         $this->att = ModelsAttendances::where('employee_id', '=', Auth::user()->employees->id)->whereDate('date', '=', today())->first();
     }
+
+    public function checkOut(float $latitude, float $longitude)
+    {
+        $this->authorize("checkOut", ModelsAttendances::class);
+
+        if (!$latitude || !$longitude) {
+            $this->dispatch('wirekit-toast', variant: "warning", title: "Ada sesuatu yang salah", message: "lokasi belum terdeteksi");
+            return;
+        }
+        // validasi
+        if ($this->isHoliday) {
+            $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "tidak ada jadwal kerja hari ini");
+            return;
+        }
+
+
+        if ($this->att && $this->att->check_out_at) {
+            $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "Anda sudah melakukan check out");
+            return;
+        }
+
+
+
+        $startTime = today()->setTimeFromTimeString($this->workTime->end_time);
+
+        $checkOut = now();
+
+
+        // tambah disini
+        $user = Auth::user()->employees->attendances()->update([
+            "check_out_at" => $checkOut,
+            "check_out_latitude" => $latitude,
+            "check_out_longitude" => $longitude,
+
+        ]);
+
+        if ($user->status === "late") {
+            $this->dispatch('wirekit-toast', variant: "warning", title: "Berhasil presensi", message: "Terlambat presensi!");
+        } else {
+            $this->dispatch('wirekit-toast', variant: "success", title: "Berhasil presensi", message: "Terima kasih sudah presensi tepat waktu");
+        }
+        $this->dispatch("update-data");
+    }
+
     public function render()
     {
         return view('livewire.page.main.attendances.attendances');
