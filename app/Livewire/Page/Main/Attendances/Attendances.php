@@ -49,27 +49,38 @@ class Attendances extends Component
     {
         $this->authorize("checkIn", ModelsAttendances::class);
 
+        // jika tidak ada lokasi
         if (!$latitude || !$longitude) {
             $this->dispatch('wirekit-toast', variant: "warning", title: "Ada sesuatu yang salah", message: "lokasi belum terdeteksi");
             return;
         }
-        // validasi
+        // jika hari ini hari libur
         if ($this->isHoliday) {
             $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "tidak ada jadwal kerja hari ini");
             return;
         }
 
+        // jika sudah melakukan check in
         if ($this->att && $this?->att->check_in_at) {
             $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "Anda sudah melakukan check in");
             return;
         }
+
+        // jika sudah izin untuk hari ini
         if ($this->isAbsenceRequest) {
             $this->dispatch('wirekit-toast', variant: "danger", title: "Ada sesuatu yang salah", message: "Anda sudah izin/sakit untuk hari ini");
             return;
         }
 
+        // waktu nya sekarang tidak melebihi akhir waktu
+        if ($this->isCanCheckIn) {
+            $this->dispatch("wirekit-toast", variant: "danger", title: "Terlambat!!", message: "Anda sudah tidak bisa checkIn untuk hari ini");
+            return;
+        }
 
         $startTime = today()->setTimeFromTimeString($this->workTime->start_time);
+
+        $startRuleTime = $startTime->copy()->format('H:i:s');
 
         $lateLimit = $startTime->copy()
             ->addMinutes($this->setting->late_tolerance_minutes);
@@ -80,8 +91,9 @@ class Attendances extends Component
             ? $startTime->diffInMinutes($checkIn)
             : 0;
 
-        if ($this->isCanCheckIn) {
-            $this->dispatch("wirekit-toast", variant: "danger", title: "Terlambat!!", message: "Anda sudah tidak bisa checkIn untuk hari ini");
+        // jika waktu nya belum memulai untuk presensi
+        if (now()->format('H:i:s') < $startRuleTime) {
+            $this->dispatch("wirekit-toast", variant: "danger", title: "Tidak bisa presensi", message: "Presensi baru bisa di lakukan jam $startRuleTime");
             return;
         }
 

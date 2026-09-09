@@ -3,7 +3,7 @@
 namespace App\Livewire\Page\Main\Time;
 
 use App\Models\WorkTime;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -25,15 +25,24 @@ class Time extends Component
 
     public function mount()
     {
-        $this->times = WorkTime::all();
+        $this->times = WorkTime::get()->mapWithKeys(function ($time) {
+            return [
+                $time->id => [
+                    'day_of_week' => $time->day_of_week,
+                    'start_time' => $time->start_time,
+                    'end_time' => $time->end_time,
+                    'is_working_day' => $time->is_working_day,
+                ]
+            ];
+        });
         $this->updateWorkTime = $this->times->toArray();
     }
 
     public function submit()
     {
         $this->authorize('update', WorkTime::class);
-        foreach ($this->updateWorkTime as $workTime) {
-            WorkTime::find($workTime['id'])->update([
+        foreach ($this->updateWorkTime as $id => $workTime) {
+            WorkTime::find($id)->update([
                 'start_time' => $workTime['start_time'],
                 'end_time' => $workTime['end_time'],
             ]);
@@ -49,7 +58,6 @@ class Time extends Component
     }
     public function render()
     {
-
 
         return view('livewire.page.main.time.time');
     }
