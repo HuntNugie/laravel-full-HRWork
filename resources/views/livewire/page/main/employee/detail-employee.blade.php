@@ -62,8 +62,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                px-2.5 py-1
-                                                                                               text-xs font-medium ",
+                                                                                                                                                                                                                                            px-2.5 py-1
+                                                                                                                                                                                                                                           text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' => $employee?->status === 'active',
                                 'bg-red-50 text-red-600' =>
                                     $employee?->status === 'inactive' || $employee?->status === 'resign',
@@ -102,9 +102,12 @@
                         Edit Employee
                     </x-wirekit::button>
 
-                    <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
-                        Edit Contract
-                    </x-wirekit::button>
+                    @if ($employee?->latestEmployeeContract)
+                        <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500"
+                            href="{{ route('contract.create', $employee->id) }}" wire:navigate>
+                            Buat Contract baru
+                        </x-wirekit::button>
+                    @endif
 
                 </div>
 
@@ -255,29 +258,28 @@
 
 
 
-            {{-- Team & Position --}}
-            <x-wirekit::card>
+        {{-- Team & Position --}}
+        <x-wirekit::card>
 
-                <x-wirekit::card.header>
+            <x-wirekit::card.header>
 
-                    <x-wirekit::stack gap="1">
+                <x-wirekit::stack gap="1">
 
-                        <h2 class="text-lg font-semibold text-slate-900">
-                            Penempatan Kerja
-                        </h2>
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Penempatan Kerja
+                    </h2>
 
-                        <p class="text-sm text-slate-500">
-                            Informasi posisi dan tim karyawan.
-                        </p>
+                    <p class="text-sm text-slate-500">
+                        Informasi posisi dan tim karyawan.
+                    </p>
 
-                    </x-wirekit::stack>
+                </x-wirekit::stack>
 
-                </x-wirekit::card.header>
+            </x-wirekit::card.header>
 
 
-                <x-wirekit::card.body>
-                    @if ($employee?->team || $employee?->position)
-
+            <x-wirekit::card.body>
+                @if ($employee?->team || $employee?->position)
                     <div class="grid gap-6 sm:grid-cols-2">
 
                         {{-- Team --}}
@@ -329,73 +331,79 @@
                         </div>
 
                     </div>
-                    @else
+                @else
                     <div>
                         Belum di tempatkan kerja
                     </div>
+                @endif
+            </x-wirekit::card.body>
 
-                    @endif
-                </x-wirekit::card.body>
-
-            </x-wirekit::card>
+        </x-wirekit::card>
         {{-- Contract --}}
 
-            <x-wirekit::card>
+        <x-wirekit::card>
 
-                <x-wirekit::card.header>
+            <x-wirekit::card.header>
 
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-                        <x-wirekit::stack gap="1">
+                    <x-wirekit::stack gap="1">
 
-                            <h2 class="text-lg font-semibold text-slate-900">
-                                Contract
-                            </h2>
+                        <h2 class="text-lg font-semibold text-slate-900">
+                            Contract
+                        </h2>
 
-                            <p class="text-sm text-slate-500">
-                                Informasi kontrak kerja karyawan.
-                            </p>
+                        <p class="text-sm text-slate-500">
+                            Informasi kontrak kerja karyawan.
+                        </p>
 
-                        </x-wirekit::stack>
+                    </x-wirekit::stack>
 
-                        <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2">
 
-                            <span
-                                @class(['inline-flex items-center rounded-full
-                        px-2.5 py-1
-                       text-xs font-medium','bg-emerald-50 text-emerald-600' => $employee?->latestEmployeeContract?->status == 'active',
-                        'bg-slate-50 text-slate-600' => $employee?->latestEmployeeContract?->status == 'draft',
-                        'bg-yellow-50 text-yellow-600' => $employee?->latestEmployeeContract?->status == 'expired',
-                        'bg-red-50 text-red-600' => $employee?->latestEmployeeContract?->status == 'terminated',
-                        'bg-orange-50 text-orange-600' => $employee?->latestEmployeeContract?->status == null,
-                       ])>
-                              {{$employee?->latestEmployeeContract?->status ?? "Belum membuat contract"}}
-                            </span>
+                        <span @class([
+                            'inline-flex items-center rounded-full
+                                                                                                                                                px-2.5 py-1
+                                                                                                                                               text-xs font-medium',
+                            'bg-emerald-50 text-emerald-600' =>
+                                $employee?->latestEmployeeContract?->status == 'active',
+                            'bg-slate-50 text-slate-600' =>
+                                $employee?->latestEmployeeContract?->status == 'draft',
+                            'bg-yellow-50 text-yellow-600' =>
+                                $employee?->latestEmployeeContract?->status == 'expired',
+                            'bg-red-50 text-red-600' =>
+                                $employee?->latestEmployeeContract?->status == 'terminated',
+                            'bg-orange-50 text-orange-600' =>
+                                $employee?->latestEmployeeContract?->status == null,
+                        ])>
+                            {{ $employee?->latestEmployeeContract?->status ?? 'Belum membuat contract' }}
+                        </span>
 
-                            @if ($employee?->latestEmployeeContract)
-                                 <x-wirekit::button type="button" wire:navigate
+                        @if ($employee?->latestEmployeeContract)
+                            <x-wirekit::button type="button" wire:navigate
                                 class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
                                 Detail Contract
                             </x-wirekit::button>
-                            @else
-                             <x-wirekit::button type="button" wire:navigate href="{{ route('contract.create',$employee->id) }}"
+                        @else
+                            <x-wirekit::button type="button" wire:navigate
+                                href="{{ route('contract.create', $employee->id) }}"
                                 class="border border-blue-200 bg-white text-blue-700 hover:bg-blue-50">
-                                <x-wirekit::icon name="plus"/> Create Contract
+                                <x-wirekit::icon name="plus" /> Create Contract
                             </x-wirekit::button>
-                            @endif
+                        @endif
 
-
-                        </div>
 
                     </div>
 
-                </x-wirekit::card.header>
+                </div>
+
+            </x-wirekit::card.header>
 
 
-                <x-wirekit::card.body>
+            <x-wirekit::card.body>
 
-                  @if (count($employee->employeeContract))
-                        <div class="grid gap-6 sm:grid-cols-2">
+                @if (count($employee->employeeContract))
+                    <div class="grid gap-6 sm:grid-cols-2">
 
                         {{-- Contract Type --}}
                         <div>
@@ -431,7 +439,7 @@
                             </span>
 
                             <p class="mt-1 text-sm font-medium text-slate-800">
-                               {{$employee->latestEmployeeContract->start_date}}
+                                {{ $employee->latestEmployeeContract->start_date }}
                             </p>
 
                         </div>
@@ -444,7 +452,7 @@
                             </span>
 
                             <p class="mt-1 text-sm font-medium text-slate-800">
-                                {{$employee->latestEmployeeContract->end_date ?? "Pegawai Tetap"}}
+                                {{ $employee->latestEmployeeContract->end_date ?? 'Pegawai Tetap' }}
                             </p>
 
                         </div>
@@ -460,15 +468,15 @@
                         </span>
 
                         <p class="mt-1 text-lg font-semibold text-slate-900">
-                            Rp {{ number_format($employee->latestEmployeeContract->salary_daily)  }}
+                            Rp {{ number_format($employee->latestEmployeeContract->salary_daily) }}
                         </p>
 
                     </div>
-                  @endif
+                @endif
 
-                </x-wirekit::card.body>
+            </x-wirekit::card.body>
 
-            </x-wirekit::card>
+        </x-wirekit::card>
 
     </div>
 
@@ -579,7 +587,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                      {{$employee->user->email}}
+                        {{ $employee->user->email }}
                     </p>
 
                 </div>
@@ -592,7 +600,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->getRoleNames()->first() ?? "Belum ada role"}}
+                        {{ $employee->user->getRoleNames()->first() ?? 'Belum ada role' }}
                     </p>
 
                 </div>
@@ -604,9 +612,11 @@
                         Status Akun
                     </span>
 
-                    <p @class(['mt-1 text-sm font-medium ','text-emerald-600' => $employee->user->status === 'active',
-                    'text-red-600' => $employee->user->status === 'inactive',
-                    'text-yellow-600' => $employee->user->status === 'pending'
+                    <p @class([
+                        'mt-1 text-sm font-medium ',
+                        'text-emerald-600' => $employee->user->status === 'active',
+                        'text-red-600' => $employee->user->status === 'inactive',
+                        'text-yellow-600' => $employee->user->status === 'pending',
                     ])>
                         {{ $employee->user->status }}
                     </p>

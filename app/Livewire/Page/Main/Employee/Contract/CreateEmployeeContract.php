@@ -86,6 +86,7 @@ class CreateEmployeeContract extends Component
         $this->validate();
 
         $this->createContract();
+        session()->flash('success', 'Berhasil membuat contract baru');
         $this->redirectRoute('employee.show', $this->employee->id, navigate: true);
     }
 
@@ -95,15 +96,18 @@ class CreateEmployeeContract extends Component
 
         DB::transaction(function () {
 
+            // ambil tahun dan bulan sekarang
             $year = now()->year;
             $month = now()->month;
 
+            // mendapatkan jumlah dari nomor surat
             $sequence = ContractSequence::query()
                 ->where('year', $year)
                 ->where('month', $month)
                 ->lockForUpdate()
                 ->first();
 
+            // cek untuk nomor surat
             if ($sequence) {
                 $sequence->increment('last_number');
                 $number = $sequence->last_number;
@@ -117,11 +121,19 @@ class CreateEmployeeContract extends Component
                 ]);
             }
 
+            // membuat string untuk nomor surat
             $contractNumber = 'CTR/'
                 . $year . '/'
                 . str_pad($month, 2, '0', STR_PAD_LEFT) . '/'
                 . str_pad($number, 3, '0', STR_PAD_LEFT);
 
+            // ubah contract lama menjadi terminated
+            if ($this->employee?->latestEmployeeContract->status === 'active') {
+                $this->employee->latestEmployeeContract->status = 'terminated';
+                $this->employee->latestEmployeeContract->save();
+            }
+
+            // membuat contract baru
             $contract = $this->employee->employeeContract()->create([
                 'contract_number' => $contractNumber,
                 'position_name' => $this->position_name,

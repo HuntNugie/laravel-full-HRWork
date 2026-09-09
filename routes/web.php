@@ -58,8 +58,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         // untuk detail
         Route::get('/{employee}/detail', DetailEmployee::class)->middleware('permission:show-employee')->name('employee.show');
 
-        // untuk contract
-
+        // untuk buat contract
         Route::get('/{employee}/contract/create', CreateEmployeeContract::class)->middleware('permission:create-contract')->name('contract.create');
         // 'permission:show-contract'
 

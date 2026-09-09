@@ -5,7 +5,7 @@
     ====================================================== --}}
     <x-wirekit::stack gap="sm">
 
-        <a href="{{ route('employee.view') }}" wire:navigate
+        <a href="{{ route('employee.show', $employee->id) }}" wire:navigate
             class="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-[#30AFFF]">
             <span aria-hidden="true">&larr;</span>
             Kembali
@@ -186,17 +186,17 @@
 
                                     <div x-data="{
                                         value: @entangle('form.salary_daily').live,
-
+                                    
                                         format(value) {
                                             if (!value) return '';
-
+                                    
                                             return new Intl.NumberFormat('id-ID').format(value);
                                         },
-
+                                    
                                         parse(value) {
                                             return value.replace(/\D/g, '');
                                         },
-
+                                    
                                         onlyNumber(event) {
                                             const allowedKeys = [
                                                 'Backspace',
@@ -209,7 +209,7 @@
                                                 'Home',
                                                 'End'
                                             ];
-
+                                    
                                             if (
                                                 allowedKeys.includes(event.key) ||
                                                 event.ctrlKey ||
@@ -217,7 +217,7 @@
                                             ) {
                                                 return;
                                             }
-
+                                    
                                             if (!/^[0-9]$/.test(event.key)) {
                                                 event.preventDefault();
                                             }
@@ -573,11 +573,6 @@
         FORM ACTION
     ====================================================== --}}
                             <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
-
-                                <x-wirekit::button type="button"
-                                    class="border border-slate-200 bg-white text-black hover:bg-slate-50">
-                                    Batal
-                                </x-wirekit::button>
 
                                 <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-sky-500">
                                     Buat Contract
