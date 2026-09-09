@@ -37,7 +37,7 @@ class EmployeesPolicy
      */
     public function update(User $user, Employees $employees): bool
     {
-        return false;
+        return $user->can('update-employee');
     }
 
     /**

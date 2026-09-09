@@ -62,8 +62,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                               text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' => $employee?->status === 'active',
                                 'bg-red-50 text-red-600' =>
                                     $employee?->status === 'inactive' || $employee?->status === 'resign',
@@ -97,7 +97,7 @@
                 {{-- Actions --}}
                 <div class="flex flex-wrap gap-2">
 
-                    <x-wirekit::button type="button"
+                    <x-wirekit::button type="button" href="{{ route('employee.edit', $employee->id) }}" wire:navigate
                         class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
                         Edit Employee
                     </x-wirekit::button>
@@ -363,8 +363,8 @@
 
                         <span @class([
                             'inline-flex items-center rounded-full
-                                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                                       text-xs font-medium',
+                                                                                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                                                                                       text-xs font-medium',
                             'bg-emerald-50 text-emerald-600' =>
                                 $employee?->latestEmployeeContract?->status == 'active',
                             'bg-slate-50 text-slate-600' =>
