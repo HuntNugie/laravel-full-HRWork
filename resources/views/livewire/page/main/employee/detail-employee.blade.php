@@ -62,8 +62,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                            px-2.5 py-1
-                                                                                                                                                                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                               text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' => $employee?->status === 'active',
                                 'bg-red-50 text-red-600' =>
                                     $employee?->status === 'inactive' || $employee?->status === 'resign',
@@ -363,8 +363,8 @@
 
                         <span @class([
                             'inline-flex items-center rounded-full
-                                                                                                                                                px-2.5 py-1
-                                                                                                                                               text-xs font-medium',
+                                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                                       text-xs font-medium',
                             'bg-emerald-50 text-emerald-600' =>
                                 $employee?->latestEmployeeContract?->status == 'active',
                             'bg-slate-50 text-slate-600' =>
@@ -381,6 +381,10 @@
 
                         @if ($employee?->latestEmployeeContract)
                             <x-wirekit::button type="button" wire:navigate
+                                href="{{ route('contract.show', [
+                                    'employee' => $employee->id,
+                                    'contract' => $employee->latestEmployeeContract->id,
+                                ]) }}"
                                 class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
                                 Detail Contract
                             </x-wirekit::button>

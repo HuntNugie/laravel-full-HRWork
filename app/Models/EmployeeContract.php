@@ -19,4 +19,12 @@ class EmployeeContract extends Model
     {
         return $this->belongsToMany(Benefit::class, 'contract_benefits', 'employee_contract_id', 'benefit_id')->withPivot('amount');
     }
+
+    public function casts()
+    {
+        return [
+            'start_date' => 'date',
+            'end_date' => 'date'
+        ];
+    }
 }

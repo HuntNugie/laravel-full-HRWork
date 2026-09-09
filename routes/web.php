@@ -12,6 +12,7 @@ use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
 use App\Livewire\Page\Main\Employee\Contract\CreateEmployeeContract;
+use App\Livewire\Page\Main\Employee\Contract\DetailEmployeeContract;
 use App\Livewire\Page\Main\Employee\DetailEmployee;
 use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Holiday\Holiday;
@@ -61,7 +62,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         // untuk buat contract
         Route::get('/{employee}/contract/create', CreateEmployeeContract::class)->middleware('permission:create-contract')->name('contract.create');
         // 'permission:show-contract'
-
+        Route::get('/{employee}/contract/{contract}/detail', DetailEmployeeContract::class)->middleware('permission:show-contract')->name('contract.show');
     });
 
     Route::prefix('user')->group(function () {
