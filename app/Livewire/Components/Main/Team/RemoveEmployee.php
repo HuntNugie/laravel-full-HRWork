@@ -11,6 +11,7 @@ class RemoveEmployee extends Component
 
     public function removeEmployee()
     {
+        $this->authorize('removeTeam', Employees::class);
         $this->employee->update([
             'team_id' => null
         ]);

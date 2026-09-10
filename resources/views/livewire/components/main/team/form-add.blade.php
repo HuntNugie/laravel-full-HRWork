@@ -8,7 +8,7 @@
 
 
 
-{{-- =====================================================
+    {{-- =====================================================
     HEADER
 ====================================================== --}}
 
@@ -34,7 +34,7 @@
 
 
 
-{{-- =====================================================
+    {{-- =====================================================
     BODY
 ====================================================== --}}
 
@@ -44,7 +44,7 @@
 
             <x-wirekit::stack gap="md">
 
-{{-- =================================================
+                {{-- =================================================
                 NAME
                 ================================================== --}}
 
@@ -57,7 +57,6 @@
                     </x-wirekit::label>
 
                     <x-wirekit::input id="division-name" type="text" name="name" class="text-black"
-
                         wire:model.live.debounce.500ms="name" placeholder="Contoh: Human Resources" />
 
 
@@ -66,7 +65,7 @@
 
 
 
-{{-- =================================================
+                {{-- =================================================
                 DESCRIPTION
                 ================================================== --}}
 
@@ -79,7 +78,6 @@
                     </x-wirekit::label>
 
                     <x-wirekit::textarea id="Team-description" wire:model.live.debounce.500ms="desc" name="desc"
-
                         class="text-black" rows="4" placeholder="Deskripsi mengenai team..." />
 
 
@@ -90,17 +88,18 @@
 
                     <x-wirekit::label for="divisi" class="text-black">
 
-                         Divisi
+                        Divisi
 
                     </x-wirekit::label>
 
-                    <x-wirekit::select id="divisi" class="text-black" name="Divisi" placeholder="Pilih Divisi..." :options="$divisis" wire:model.live="divisiId" />
+                    <x-wirekit::select id="divisi" class="text-black" name="Divisi" placeholder="Pilih Divisi..."
+                        :options="$divisis" wire:model.live="divisiId" />
 
                 </x-wirekit::field>
 
 
 
-{{-- =================================================
+                {{-- =================================================
                 SUPERVISOR
                 ================================================== --}}
 
@@ -112,18 +111,12 @@
 
                     </x-wirekit::label>
 
-                    <x-wirekit::select
-                        id="supervisor"
-                        class="text-black"
-                        name="supervisorId"
-                        placeholder="Pilih Supervisor..."
-                        :options="$supervisors"
-                        wire:model.live="supervisorId"
-                    />
+                    <x-wirekit::select id="supervisor" class="text-black" name="supervisorId"
+                        placeholder="Pilih Supervisor..." :options="$supervisors" wire:model.live="supervisorId" />
 
                     <p class="mt-1 text-xs text-slate-400">
 
-                        Supervisor harus merupakan karyawan dengan jabatan Supervisor.
+                        Supervisor utamakan yang supervisor terlebih dahulu jika tidak ada baru pilih yang lain.
 
                     </p>
 
@@ -131,7 +124,7 @@
 
 
 
-{{-- =================================================
+                {{-- =================================================
                 STATUS
                 ================================================== --}}
 
@@ -157,7 +150,8 @@
 
                         <input type="checkbox" wire:model="isActive" class="peer sr-only">
 
-                        <div class="relative h-6 w-11 rounded-full
+                        <div
+                            class="relative h-6 w-11 rounded-full
                                    bg-slate-200
                                    after:absolute after:left-[2px]
                                    after:top-[2px]
@@ -168,25 +162,24 @@
                                    after:transition-all
                                    peer-checked:bg-[#30AFFF]
                                    peer-checked:after:translate-x-full
-                                   peer-checked:after:border-white"></div>
+                                   peer-checked:after:border-white">
+                        </div>
 
                     </label>
 
                 </div>
 
                 @error('is_active')
-
                     <span class="text-xs text-red-500">
 
                         {{ $message }}
 
                     </span>
-
                 @enderror
 
 
 
-{{-- =================================================
+                {{-- =================================================
                 FOOTER
                 ================================================== --}}
 
@@ -205,7 +198,6 @@
 
 
                     <x-wirekit::button type="submit" wire:loading.attr="disabled" wire:target="store" size="sm"
-
                         class="bg-[#30AFFF] text-white hover:bg-sky-500" :disabled="!$this->canSubmit()">
 
                         <span wire:loading.remove wire:target="store">

@@ -21,6 +21,7 @@ class FormAssignEmployee extends Component
 
     public function addEmployees()
     {
+        $this->authorize('assignTeam', Employees::class);
         $this->validate([
             "employeeId" => "required|exists:employees,id"
         ]);

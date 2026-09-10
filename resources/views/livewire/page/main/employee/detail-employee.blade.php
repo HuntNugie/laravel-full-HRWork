@@ -62,16 +62,20 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium ",
-                                'bg-emerald-50 text-emerald-600' => $employee?->status === 'active',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   text-xs font-medium ",
+                                'bg-emerald-50 text-emerald-600' =>
+                                    $employee?->status_employee === 'active',
                                 'bg-red-50 text-red-600' =>
-                                    $employee?->status === 'inactive' || $employee?->status === 'resign',
-                                'bg-yellow-50 text-yellow-600' => $employee?->status === 'onboarding',
-                                'bg-slate-50 text-slate-600' => $employee?->status === 'terminated',
-                                'bg-sky-50 text-sky-600' => $employee?->status === null,
+                                    $employee?->status_employee === 'inactive' ||
+                                    $employee?->status_employee === 'resign',
+                                'bg-yellow-50 text-yellow-600' =>
+                                    $employee?->status_employee === 'onboarding',
+                                'bg-slate-50 text-slate-600' =>
+                                    $employee?->status_employee === 'terminated',
+                                'bg-sky-50 text-sky-600' => $employee?->status_employee === null,
                             ])>
-                                {{ $employee?->status ?? 'Belum di ketahui' }}
+                                {{ $employee?->status_employee ?? 'Belum di ketahui' }}
                             </span>
 
                             <span
@@ -273,6 +277,17 @@
                         Informasi posisi dan tim karyawan.
                     </p>
 
+
+                    @if (!$employee?->supervisorTeam)
+                        <livewire:components.main.employee.modal-add-team :employee="$employee">
+                            <x-wirekit::button>
+                                <x-wirekit::icon name="{{ $employee?->team ? 'paint-brush' : 'plus' }}"
+                                    intent="primary" />
+                                {{ $employee?->team ? ' Ubah' : ' Tambahkan' }} team karyawan
+                            </x-wirekit::button>
+                        </livewire:components.main.employee.modal-add-team>
+                    @endif
+
                 </x-wirekit::stack>
 
             </x-wirekit::card.header>
@@ -289,8 +304,13 @@
                                 Team
                             </span>
 
+
                             <p class="mt-1 text-sm font-medium text-slate-800">
                                 {{ $employee?->team->name ?? 'Belum di tambahkan' }}
+
+                                @if ($employee?->supervisorTeam)
+                                    <x-wirekit::badge intent="success">Supervisor</x-wirekit::badge>
+                                @endif
                             </p>
 
                         </div>
@@ -313,20 +333,26 @@
                         <div>
 
                             <span class="text-xs font-medium text-slate-400">
-                                Status
+                                Status karyawan
                             </span>
 
-                            <p @class([
-                                'mt-1 text-sm font-medium ',
-                                'bg-emerald-50 text-emerald-600' => $employee?->status === 'active',
+                            <span @class([
+                                "inline-flex items-center rounded-full
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   text-xs font-medium ",
+                                'bg-emerald-50 text-emerald-600' =>
+                                    $employee?->status_employee === 'active',
                                 'bg-red-50 text-red-600' =>
-                                    $employee?->status === 'inactive' || $employee?->status === 'resign',
-                                'bg-yellow-50 text-yellow-600' => $employee?->status === 'onboarding',
-                                'bg-slate-50 text-slate-600' => $employee?->status === 'terminated',
-                                'bg-sky-50 text-sky-600' => $employee?->status === null,
+                                    $employee?->status_employee === 'inactive' ||
+                                    $employee?->status_employee === 'resign',
+                                'bg-yellow-50 text-yellow-600' =>
+                                    $employee?->status_employee === 'onboarding',
+                                'bg-slate-50 text-slate-600' =>
+                                    $employee?->status_employee === 'terminated',
+                                'bg-sky-50 text-sky-600' => $employee?->status_employee === null,
                             ])>
-                                {{ $employee?->status ?? 'Belum di atur' }}
-                            </p>
+                                {{ $employee?->status_employee ?? 'Belum di ketahui' }}
+                            </span>
 
                         </div>
 
@@ -363,8 +389,8 @@
 
                         <span @class([
                             'inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                                                                                       text-xs font-medium',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium',
                             'bg-emerald-50 text-emerald-600' =>
                                 $employee?->latestEmployeeContract?->status == 'active',
                             'bg-slate-50 text-slate-600' =>
@@ -564,7 +590,7 @@
 
         <x-wirekit::card.header>
 
-            <x-wirekit::stack gap="1">
+            <x-wirekit::stack gap="xs">
 
                 <h2 class="text-lg font-semibold text-slate-900">
                     Informasi Akun
@@ -573,8 +599,15 @@
                 <p class="text-sm text-slate-500">
                     Informasi akun yang digunakan untuk mengakses sistem.
                 </p>
-
             </x-wirekit::stack>
+
+            <div class="flex items-center gap-2">
+                <x-wirekit::button type="button" href="{{ route('user.show', $employee->user->id) }}" wire:navigate
+                    class="border border-white-200 bg-red-400 text-white-700 hover:bg-white-50">
+                    Detail Akun User
+                </x-wirekit::button>
+            </div>
+
 
         </x-wirekit::card.header>
 

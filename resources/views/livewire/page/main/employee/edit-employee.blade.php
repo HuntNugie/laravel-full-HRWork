@@ -5,7 +5,7 @@
     ====================================================== --}}
     <x-wirekit::stack gap="sm">
 
-        <a href="{{ route('employee.view') }}" wire:navigate
+        <a href="{{ route('employee.show', $employee->id) }}" wire:navigate
             class="inline-flex w-fit items-center gap-2 text-sm font-medium text-black transition hover:text-[#30AFFF]">
             <span aria-hidden="true">&larr;</span>
             Kembali

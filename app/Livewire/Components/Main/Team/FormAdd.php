@@ -63,12 +63,31 @@ class FormAdd extends Component
     {
         return filled($this->divisiId) && filled($this->name) && filled($this->desc) && filled($this->supervisorId) && $this->getErrorBag()->isEmpty();
     }
+
     public function render()
     {
-        $supervisors = Employees::with('user')->whereHas('position', function ($q) {
-            return $q->where('name', '=', 'supervisor');
-        })->get()->pluck('user.name', 'id')->toArray();
-        $divisis = Divisi::query()->pluck('name', 'id')->toArray();
+        $baseQuery = Employees::with(['user', 'position'])
+            ->whereDoesntHave('team')
+            ->where('status_employee', 'active')
+            ->whereHas('position');
+
+        $supervisors = (clone $baseQuery)
+            ->whereHas('position', function ($query) {
+                $query->where('name', 'Supervisor');
+            })
+            ->get();
+
+        if ($supervisors->isEmpty()) {
+            $supervisors = $baseQuery->get();
+        }
+
+        $supervisors = $supervisors->mapWithKeys(function ($employee) {
+            return [
+                $employee->id => "{$employee->user->name} - {$employee->position->name}",
+            ];
+        });
+
+        $divisis = Divisi::query()->where('is_active', 'active')->pluck('name', 'id')->toArray();
         return view('livewire.components.main.team.form-add', [
             'divisis' => $divisis,
             'supervisors' => $supervisors,
