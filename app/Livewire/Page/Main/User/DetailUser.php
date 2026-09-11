@@ -4,6 +4,7 @@ namespace App\Livewire\Page\Main\User;
 
 use App\Models\User;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Layout('layouts.main', ['title' => 'Halaman Detail User'])]
@@ -22,6 +23,12 @@ class DetailUser extends Component
                 ? 'inactive'
                 : 'active',
         ]);
+    }
+
+    #[On('change-user')]
+    public function changeUser()
+    {
+        $this->user->load(['employees']);
     }
 
     public function render()
