@@ -62,8 +62,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                                 'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                                 'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -171,8 +171,8 @@
                         </p>
                         <span @class([
                             "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
                             'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                             'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                             'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -226,9 +226,12 @@
                     </x-wirekit::stack>
 
 
-                    <x-wirekit::button type="button" size="sm">
-                        Edit Roles
-                    </x-wirekit::button>
+                    <livewire:components.main.user.modal-edit-role>
+                        <x-wirekit::button variant="outline" size="sm">
+                            <x-wirekit::icon name="shield-check" />
+                            Ubah Role
+                        </x-wirekit::button>
+                    </livewire:components.main.user.modal-edit-role>
 
                 </div>
 
@@ -515,8 +518,8 @@
 
                 <span @class([
                     "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                            px-2.5 py-1
-                                                                                                                                                                                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
                     'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                     'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                     'bg-red-50 text-red-600' => $user->status === 'inactive',
