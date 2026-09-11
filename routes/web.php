@@ -26,6 +26,7 @@ use App\Livewire\Page\Main\Roles\Roles;
 use App\Livewire\Page\Main\Team\DetailTeam;
 use App\Livewire\Page\Main\Team\Team;
 use App\Livewire\Page\Main\Time\Time;
+use App\Livewire\Page\Main\User\DetailRolePermission;
 use App\Livewire\Page\Main\User\DetailUser;
 use App\Livewire\Page\Main\User\User;
 
@@ -72,6 +73,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('user')->group(function () {
         Route::get('/', User::class)->middleware('permission:view-user')->name('user.view');
         Route::get('/{user}/detail', DetailUser::class)->middleware('permission:show-user')->name('user.show');
+        Route::get('/{user}/role/detail', DetailRolePermission::class)->middleware('permission:show-user')->name('user.role.show');
     });
 
     Route::prefix('benefits')->group(function () {

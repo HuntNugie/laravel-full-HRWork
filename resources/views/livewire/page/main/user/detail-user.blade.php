@@ -62,8 +62,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                                 'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                                 'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -171,8 +171,8 @@
                         </p>
                         <span @class([
                             "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   text-xs font-medium ",
                             'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                             'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                             'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -276,17 +276,14 @@
                             <div>
 
                                 <p class="text-sm font-medium text-slate-800">
-                                    Effective Permissions
-                                </p>
-
-                                <p class="mt-1 text-xs leading-5 text-slate-500">
                                     Permission user berasal dari role yang dimilikinya.
                                 </p>
 
                             </div>
 
-                            <x-wirekit::button type="button" size="sm">
-                                View Permissions
+                            <x-wirekit::button type="button" size="sm"
+                                href="{{ route('user.role.show', $user->id) }}" wire:navigate>
+                                Detail Role & Permission
                             </x-wirekit::button>
 
                         </div>
@@ -524,8 +521,8 @@
 
                 <span @class([
                     "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
                     'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                     'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                     'bg-red-50 text-red-600' => $user->status === 'inactive',
