@@ -248,9 +248,11 @@
                 </div>
 
 
-                <x-wirekit::button type="button" variant="ghost">
-                    Ubah Password
-                </x-wirekit::button>
+                <livewire:components.main.my-profile.modal-change-password :user="$user">
+                    <x-wirekit::button type="button" variant="ghost" intent="danger">
+                        Ubah Password
+                    </x-wirekit::button>
+                </livewire:components.main.my-profile.modal-change-password>
 
             </div>
 
