@@ -24,37 +24,28 @@
              {{-- PREVIEW --}}
              <div
                  class="flex size-28 shrink-0 items-center justify-center
-                           rounded-full bg-slate-100">
-                 <span class="text-4xl font-semibold text-slate-400">
-                     N
-                 </span>
+           overflow-hidden rounded-full bg-slate-100">
+                 @if ($photo)
+                     <img src="{{ $photo->temporaryUrl() }}" alt="Preview foto profil" class="size-full object-cover">
+                 @elseif (auth()->user()->hasMedia('avatar'))
+                     <img src="{{ asset(auth()->user()->getFirstMediaUrl('avatar')) }}"
+                         alt="Foto profil {{ auth()->user()->name }}" class="size-full object-cover">
+                 @else
+                     <img src="{{ asset('assets/nonProfile.jpg') }}" alt="Preview foto profil"
+                         class="size-full object-cover">
+                 @endif
              </div>
 
 
              <div class="flex-1">
 
-                 <label
-                     class="flex cursor-pointer flex-col items-center justify-center
-                               rounded-xl border-2 border-dashed border-slate-200
-                               bg-slate-50 px-4 py-6 text-center
-                               transition hover:border-[#30AFFF] hover:bg-sky-50">
-
-                     <span class="text-sm font-medium text-slate-700">
-                         Pilih Foto
-                     </span>
-
-                     <span class="mt-1 text-xs text-slate-400">
-                         JPG, JPEG, PNG atau WEBP · Maks. 2MB
-                     </span>
-
-                     <input type="file" class="hidden" accept="image/jpeg,image/png,image/webp">
-
-                 </label>
+                 <x-wirekit::file-upload name="photo" accept="image/jpeg,image/png,image/webp" wire:model='photo'
+                     hint="Max 5 MB — JPG, JPEG, PNG, or WEBP" m />
 
              </div>
 
 
-             <x-wirekit::button type="button">
+             <x-wirekit::button type="button" wire:click='save' :disabled="!$this->canSubmit()">
                  Simpan Foto
              </x-wirekit::button>
 

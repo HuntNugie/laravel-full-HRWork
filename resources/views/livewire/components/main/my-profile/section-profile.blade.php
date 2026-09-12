@@ -19,38 +19,41 @@
 
     <x-wirekit::card.body>
 
-        <x-wirekit::stack gap="md">
+        <x-wirekit::form wire:submit='update'>
+            <x-wirekit::stack gap="md">
 
-            {{-- NAMA --}}
-            <x-wirekit::input label="Nama Lengkap" placeholder="Masukkan nama lengkap" value="Nugie" />
-
-
-            {{-- EMAIL PRIBADI --}}
-            <x-wirekit::input type="email" label="Email Pribadi" placeholder="Masukkan email pribadi"
-                value="nugie.personal@email.com" />
+                {{-- NAMA --}}
+                <x-wirekit::input label="Nama Lengkap" placeholder="Masukkan nama lengkap" name="name"
+                    wire:model.live.debounce.400ms='name' />
 
 
-            {{-- NOMOR TELEPON --}}
-            <x-wirekit::input type="tel" label="Nomor Telepon" placeholder="08xxxxxxxxxx" value="081234567890" />
+                {{-- EMAIL PRIBADI --}}
+                <x-wirekit::input type="email" label="Email Pribadi" placeholder="Masukkan email pribadi"
+                    value="nugie.personal@email.com" wire:model.live.debounce.400ms='email' disabled readonly />
 
 
-            {{-- JENIS KELAMIN --}}
-            <x-wirekit::select label="Jenis Kelamin" placeholder="Pilih jenis kelamin" :options="[
-                'male' => 'Laki-laki',
-                'female' => 'Perempuan',
-            ]"
-                value="male" />
+                {{-- NOMOR TELEPON --}}
+                <x-wirekit::input type="tel" label="Nomor Telepon" placeholder="08xxxxxxxxxx"
+                    wire:model.live.debounce.400ms='noHp' name="noHp" />
 
 
-            <div class="flex justify-end pt-2">
+                {{-- JENIS KELAMIN --}}
+                <x-wirekit::select label="Jenis Kelamin" placeholder="Pilih jenis kelamin" :options="[
+                    'male' => 'Laki-laki',
+                    'female' => 'Perempuan',
+                ]"
+                    wire:model.live='gender' name="gender" />
 
-                <x-wirekit::button type="button">
-                    Simpan Perubahan
-                </x-wirekit::button>
 
-            </div>
+                <div class="flex justify-end pt-2">
 
-        </x-wirekit::stack>
+                    <x-wirekit::button type="submit">
+                        Simpan Perubahan
+                    </x-wirekit::button>
+
+                </div>
+            </x-wirekit::stack>
+        </x-wirekit::form>
 
     </x-wirekit::card.body>
 

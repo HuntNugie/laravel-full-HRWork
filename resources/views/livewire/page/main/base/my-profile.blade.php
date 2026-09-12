@@ -30,9 +30,8 @@
                     <div
                         class="flex size-16 shrink-0 items-center justify-center
                                rounded-full bg-sky-100">
-                        <span class="text-xl font-semibold text-sky-600">
-                            N
-                        </span>
+                        <img src="{{ asset($user->getFirstMediaUrl('avatar')) }}" alt="Foto profil {{ $user->name }}"
+                            class="size-full object-cover rounded-full">
                     </div>
 
                     <div class="min-w-0">
@@ -40,27 +39,27 @@
                         <div class="flex flex-wrap items-center gap-2">
 
                             <h2 class="text-xl font-semibold text-slate-900">
-                                {{ auth()->user()->name }}
+                                {{ $user?->name }}
                             </h2>
 
                             <x-wirekit::badge variant="success">
-                                {{ auth()->user()->status }}
+                                {{ $user?->status }}
                             </x-wirekit::badge>
 
                         </div>
 
                         <p class="mt-1 text-sm text-slate-500">
-                            {{ auth()->user()->email }}
+                            {{ $user?->email }}
                         </p>
 
                         <div class="mt-2 flex flex-wrap gap-2">
 
-                            @foreach (auth()->user()?->roles as $role)
+                            @foreach ($user?->roles as $role)
                                 <span
                                     class="inline-flex items-center rounded-full
                                        bg-sky-50 px-2.5 py-1
                                        text-xs font-medium text-sky-600">
-                                    {{ strtoupper($role->name) }}
+                                    {{ strtoupper($role?->name) }}
                                 </span>
                             @endforeach
 
@@ -69,7 +68,7 @@
                                 class="inline-flex items-center rounded-full
                                        bg-slate-100 px-2.5 py-1
                                        text-xs font-medium text-slate-600">
-                                akun dibuat sejak {{ auth()->user()->created_at->format('d F Y') }}
+                                akun dibuat sejak {{ $user->created_at->format('d F Y') }}
                             </span>
 
                         </div>
