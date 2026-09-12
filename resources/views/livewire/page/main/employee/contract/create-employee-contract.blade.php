@@ -406,9 +406,14 @@
 
                                 <div class="flex size-11 shrink-0 items-center justify-center rounded-full bg-sky-100">
 
-                                    <span class="text-sm font-semibold text-sky-600">
-                                        NP
-                                    </span>
+                                    @if ($employee->user->getFirstMediaUrl('avatar'))
+                                        <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
+                                            alt="gambar dari {{ $employee->user->name }}"
+                                            class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                    @else
+                                        <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
+                                            class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                    @endif
 
                                 </div>
 

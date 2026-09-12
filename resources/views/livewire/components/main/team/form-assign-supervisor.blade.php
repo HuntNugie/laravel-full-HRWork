@@ -43,13 +43,17 @@
 
                         <div class="flex items-center gap-3">
 
-                            {{-- Avatar --}}
-                            <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full
-                               bg-sky-100 text-sm font-semibold text-sky-600">
-                                AP
+                            <div class="flex size-11 shrink-0 items-center justify-center rounded-full bg-sky-100">
+                                {{-- Avatar --}}
+                                @if ($team->supervisor->user->getFirstMediaUrl('avatar'))
+                                    <img src="{{ $team->supervisor->user->getFirstMediaUrl('avatar') }}"
+                                        alt="gambar dari {{ $team->supervisor->user->name }}"
+                                        class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                @else
+                                    <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
+                                        class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                @endif
                             </div>
-
                             <div class="min-w-0">
 
                                 <p class="truncate text-sm font-semibold text-slate-800">
@@ -80,7 +84,8 @@
                     {{-- Search --}}
                     <div class="relative">
 
-                        <input id="supervisor-search" type="text" placeholder="Cari nama atau Kode Pegawai atau jabatan..."
+                        <input id="supervisor-search" type="text"
+                            placeholder="Cari nama atau Kode Pegawai atau jabatan..."
                             class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm
                                text-slate-900 outline-none transition
                                placeholder:text-slate-400

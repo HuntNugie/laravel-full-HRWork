@@ -249,11 +249,16 @@
                                     <div class="flex items-center gap-3">
 
                                         <div
-                                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
+                                            class="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sky-100">
 
-                                            <span class="text-sm font-semibold text-sky-600">
-                                                BS
-                                            </span>
+                                            @if ($user->getFirstMediaUrl('avatar'))
+                                                <img src="{{ $user->getFirstMediaUrl('avatar') }}"
+                                                    alt="gambar dari {{ $user->name }}"
+                                                    class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                            @else
+                                                <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
+                                                    class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                            @endif
 
                                         </div>
 
@@ -326,8 +331,8 @@
 
                                     <span @class([
                                         "inline-flex items-center rounded-full
-                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                       text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium ",
                                         'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                                         'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                                         'bg-red-50 text-red-600' => $user->status === 'inactive',

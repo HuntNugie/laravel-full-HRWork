@@ -325,9 +325,14 @@
 
                                         <div
                                             class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                            <span class="text-sm font-semibold text-sky-600">
-                                                AP
-                                            </span>
+                                            @if ($employee->user->getFirstMediaUrl('avatar'))
+                                                <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
+                                                    alt="gambar dari {{ $employee->user->name }}"
+                                                    class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                            @else
+                                                <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
+                                                    class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                            @endif
                                         </div>
 
                                         <div class="min-w-0">
@@ -379,7 +384,8 @@
 
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs"
+                                        href="{{ route('employee.show', $employee->id) }}" wire:navigate>
                                         Detail
                                     </x-wirekit::button>
 

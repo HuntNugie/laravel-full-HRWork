@@ -53,7 +53,8 @@
                 {{-- Search --}}
                 <div class="w-full sm:w-64">
 
-                    <x-wirekit::input placeholder="Cari nama employee" wire:model.live.debounce.500ms="search" name="search" class="text-black" />
+                    <x-wirekit::input placeholder="Cari nama employee" wire:model.live.debounce.500ms="search"
+                        name="search" class="text-black" />
 
                 </div>
 
@@ -113,15 +114,20 @@
 
                                         <div
                                             class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                            <span class="text-sm font-semibold text-sky-600">
-                                                AP
-                                            </span>
+                                            @if ($employee->user->getFirstMediaUrl('avatar'))
+                                                <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
+                                                    alt="gambar dari {{ $employee->user->name }}"
+                                                    class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                            @else
+                                                <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
+                                                    class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                            @endif
                                         </div>
 
                                         <div class="min-w-0">
 
                                             <p class="truncate text-sm font-semibold text-slate-800">
-                                              {{$employee->user->name}}
+                                                {{ $employee->user->name }}
                                             </p>
 
                                             <p class="truncate text-xs text-slate-400">
@@ -139,7 +145,7 @@
                                 <x-wirekit::table.td>
 
                                     <span class="text-sm text-slate-700">
-                                        {{ $employee->position?->name ?? "Belum di ketahui" }}
+                                        {{ $employee->position?->name ?? 'Belum di ketahui' }}
                                     </span>
 
                                 </x-wirekit::table.td>
@@ -149,7 +155,7 @@
                                 <x-wirekit::table.td>
 
                                     <span class="text-sm text-slate-700">
-                                        {{ $employee->team?->name ?? "Belum di ketahui"}}
+                                        {{ $employee->team?->name ?? 'Belum di ketahui' }}
                                     </span>
 
                                 </x-wirekit::table.td>
@@ -172,7 +178,7 @@
                                         class="inline-flex items-center rounded-full
                               px-2.5 py-1
                                 text-xs font-medium   {{ $employee->statusHistory()->latest()->first()?->new_status == 'active' ? 'bg-emerald-50  text-emerald-600' : 'bg-red-50  text-red-600' }}">
-                                        {{ $employee->statusHistory()->latest()->first()->new_status ?? "Belum di ketahui"}}
+                                        {{ $employee->statusHistory()->latest()->first()->new_status ?? 'Belum di ketahui' }}
                                     </span>
 
                                 </x-wirekit::table.td>
@@ -181,7 +187,8 @@
                                 {{-- Actions --}}
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs" href="{{ route('employee.show',$employee->id) }}" wire:navigate>
+                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs"
+                                        href="{{ route('employee.show', $employee->id) }}" wire:navigate>
                                         Detail
                                     </x-wirekit::button>
 
