@@ -19,56 +19,71 @@
 
     <x-wirekit::card.body>
 
-        <x-wirekit::stack gap="md">
+        <x-wirekit::form wire:submit='save'>
+            <x-wirekit::stack gap="md">
 
-            {{-- PROVINSI --}}
-            <x-wirekit::select label="Provinsi" :options="[
-                'jabar' => 'Jawa Barat',
-                'jkt' => 'DKI Jakarta',
-                'jateng' => 'Jawa Tengah',
-            ]" value="jabar" />
+                <div class="grid gap-5 md:grid-cols-2">
 
-
-            {{-- KABUPATEN / KOTA --}}
-            <x-wirekit::select label="Kabupaten / Kota" :options="[
-                'bandung' => 'Kota Bandung',
-                'cimahi' => 'Kota Cimahi',
-                'kab-bandung' => 'Kabupaten Bandung',
-            ]" value="bandung" />
+                    {{-- =================================================
+                        Provinsi
+                        ================================================== --}}
+                    <x-wirekit::select label="Provinsi" name="province_code" wire:model.live="provinceCode"
+                        placeholder="Pilih provinsi..." :options="$this->provinceOptions()" />
 
 
-            {{-- KECAMATAN --}}
-            <x-wirekit::select label="Kecamatan" :options="[
-                'sukasari' => 'Sukasari',
-                'coblong' => 'Coblong',
-                'antapani' => 'Antapani',
-            ]" value="sukasari" />
+                    {{-- =================================================
+                        Kabupaten / Kota
+                        ================================================== --}}
+                    <x-wirekit::select label="Kabupaten/Kota" name="regency_code" wire:model.live="regencyCode"
+                        placeholder="Pilih kabupaten/kota..." :options="$this->regencyOptions()" />
 
 
-            {{-- KELURAHAN --}}
-            <x-wirekit::select label="Kelurahan / Desa" :options="[
-                'geger-kalong' => 'Gegerkalong',
-                'sukagalih' => 'Sukagalih',
-                'sarijadi' => 'Sarijadi',
-            ]" value="geger-kalong" />
+                    {{-- =================================================
+                        Kecamatan
+                        ================================================== --}}
+                    <x-wirekit::select label="Kecamatan" name="district_code" wire:model.live="districtCode"
+                        placeholder="Pilih kecamatan..." :options="$this->districtOptions()" />
 
 
-            {{-- ALAMAT LENGKAP --}}
-            <x-wirekit::textarea label="Alamat Lengkap" placeholder="Masukkan alamat lengkap">
-                Jl. Contoh No. 123, Bandung
-            </x-wirekit::textarea>
+                    {{-- =================================================
+                        Kelurahan / Desa
+                        ================================================== --}}
+                    <x-wirekit::select label="Kelurahan/Desa" name="village_code" wire:model.live="villageCode"
+                        placeholder="Pilih kelurahan/desa..." :options="$this->villageOptions()" />
 
 
-            <div class="flex justify-end pt-2">
+                    {{-- =================================================
+                        Alamat Lengkap
+                        ================================================== --}}
+                    <div class="md:col-span-2">
 
-                <x-wirekit::button type="button">
-                    Simpan Perubahan
-                </x-wirekit::button>
+                        <div>
 
-            </div>
+                            <x-wirekit::textarea class="text-black" label="Alamat Lengkap" name="detailAddress"
+                                wire:model.live.debounce.500ms="detailAddress" maxlength="255"
+                                placeholder="Contoh: Jl. Sukajadi No. 10 RT 03/RW 05" />
 
-        </x-wirekit::stack>
+                        </div>
 
+                    </div>
+
+                </div>
+                <div class="flex justify-end pt-2">
+
+                    <x-wirekit::button type="submit">
+                        <span wire:loading.remove wire:target='save'>
+                            Simpan Perubahan
+                        </span>
+                        <span wire:loading wire:target='save'>
+                            <x-wirekit::spinner />
+                            Tunggu Sebentar
+                        </span>
+                    </x-wirekit::button>
+
+                </div>
+
+            </x-wirekit::stack>
+        </x-wirekit::form>
     </x-wirekit::card.body>
 
 </x-wirekit::card>

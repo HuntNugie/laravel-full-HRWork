@@ -93,7 +93,7 @@
 
 
     {{-- ADDRESS --}}
-    <livewire:components.main.my-profile.section-address-profile />
+    <livewire:components.main.my-profile.section-address-profile :user="$user" />
 
 
     {{-- EMPLOYMENT INFORMATION --}}
