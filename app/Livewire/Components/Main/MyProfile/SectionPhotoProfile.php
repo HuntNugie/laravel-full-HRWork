@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Components\Main\MyProfile;
 
+use App\Livewire\Components\Partials\Dashboard\Navbar;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
