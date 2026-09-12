@@ -128,7 +128,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        3273XXXXXXXXXXXX
+                        {{ $user->employees->profile->nik }}
                     </p>
 
                 </div>
@@ -142,7 +142,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        Backend Developer
+                        {{ $user->employees?->position?->name ?? 'Belum mempunyai jabatan' }}
                     </p>
 
                 </div>
@@ -156,7 +156,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        Engineering
+                        {{ $user->employees?->team?->name ?? 'Belum mempunyai team' }}
                     </p>
 
                 </div>
@@ -170,7 +170,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        Technology
+                        {{ $user->employees?->team?->divisi?->name ?? 'Tidak ada divisi' }}
                     </p>
 
                 </div>
@@ -183,8 +183,9 @@
                         Status Kepegawaian
                     </p>
 
-                    <p class="mt-1 text-sm font-medium text-emerald-600">
-                        Aktif
+                    <p
+                        class="mt-1 text-sm font-medium {{ $user->employees->status_employee === 'active' ? 'text-emerald-600' : 'text-danger-600' }}">
+                        {{ $user->employees->status_employee }}
                     </p>
 
                 </div>
@@ -194,11 +195,11 @@
                 <div>
 
                     <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                        Tanggal Bergabung
+                        Tanggal Akun dibuat
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        12 Agustus 2025
+                        {{ $user->created_at->format('d F Y') }}
                     </p>
 
                 </div>
