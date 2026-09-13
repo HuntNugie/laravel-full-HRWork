@@ -60,9 +60,7 @@
                         </livewire:components.main.divisi.form-edit>
                     @endcan
 
-                    <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
-                        + Add Team
-                    </x-wirekit::button>
+
 
                 </div>
 
@@ -131,7 +129,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{count($divisi->team)}}
+                        {{ count($divisi->team) }}
                     </p>
                 </div>
 
@@ -144,7 +142,7 @@
                     </span>
 
                     <p class="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
-                        {{$divisi->description}}
+                        {{ $divisi->description }}
                     </p>
 
                 </div>
@@ -196,7 +194,8 @@
                 TEAM 1
                 ================================================== --}}
                 @forelse ($divisi->team as $team)
-                    <x-wirekit::card class="transition hover:-translate-y-0.5 hover:shadow-md" href="{{ route('team.show',$team->id) }}" wire:navigate>
+                    <x-wirekit::card class="transition hover:-translate-y-0.5 hover:shadow-md"
+                        href="{{ route('team.show', $team->id) }}" wire:navigate>
 
                         <x-wirekit::card.body>
 
@@ -205,7 +204,8 @@
                                 <div class="flex items-start justify-between">
 
 
-                                    <span class="inline-flex items-center rounded-full
+                                    <span
+                                        class="inline-flex items-center rounded-full
                                                                     px-2.5 py-1
                                                                    text-xs font-medium {{ $team->is_active === 'active' ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50' }}">
                                         {{ $team->is_active }}
@@ -221,7 +221,7 @@
                                     </h3>
 
                                     <p class="text-sm leading-5 text-slate-500">
-                                        {{$team->description}}
+                                        {{ $team->description }}
                                     </p>
 
                                 </x-wirekit::stack>

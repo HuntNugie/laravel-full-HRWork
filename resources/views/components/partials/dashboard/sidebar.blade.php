@@ -92,12 +92,18 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-employee'])
+        @canany(['view-employee', 'view-contract'])
             <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-employee')
                     <x-wirekit::sidebar.item href="{{ route('employee.view') }}" :active="request()->routeIs('employee.view')" icon="users" wire:navigate>
                         Manajemen Karyawan
+                    </x-wirekit::sidebar.item>
+                @endcan
+                @can('view-contract')
+                    <x-wirekit::sidebar.item href="{{ route('contract.view') }}" :active="request()->routeIs('contract.view')" icon="file-text"
+                        wire:navigate>
+                        Manajemen kontrak
                     </x-wirekit::sidebar.item>
                 @endcan
 

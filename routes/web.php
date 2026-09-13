@@ -8,6 +8,7 @@ use App\Livewire\Page\Main\Attendances\HistoryAttendances;
 use App\Livewire\Page\Main\Base\MyProfile;
 use App\Livewire\Page\Main\Benefit\Benefit;
 use App\Livewire\Page\Main\Benefit\DetailBenefit;
+use App\Livewire\Page\Main\Contract\Contract;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('print')->group(function () {
         Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');
     });
+
     Route::prefix('divisi')->group(function () {
         Route::get('/', Divisi::class)->middleware('permission:view-divisi')->name('divisi.view');
         Route::get('/{divisi}/detail', DetailDivisi::class)->middleware('permission:show-divisi')->name('divisi.show');
@@ -108,5 +110,9 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('attendance')->group(function () {
         Route::get('/', Attendances::class)->middleware('permission:view-attendance')->name('attendance.view');
         Route::get('/history', HistoryAttendances::class)->middleware('permission:view-attendance')->name('history.view');
+    });
+
+    Route::prefix('contract')->group(function () {
+        Route::get('/', Contract::class)->middleware('permission:view-contract')->name('contract.view');
     });
 });
