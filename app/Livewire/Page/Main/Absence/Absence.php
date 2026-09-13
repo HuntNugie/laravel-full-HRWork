@@ -4,6 +4,7 @@ namespace App\Livewire\Page\Main\Absence;
 
 use App\Models\EmployeeAbsenceRequest;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -15,6 +16,8 @@ class Absence extends Component
     public string $segment = '';
     public string $typeLeave = '';
 
+    #[On('update-absence')]
+    public function refreshAbsence() {}
 
     public function render()
     {

@@ -190,10 +190,11 @@
                                 {{-- Aksi --}}
                                 <x-wirekit::table.td align="right">
 
-                                    <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                        Detail
-                                    </x-wirekit::button>
-
+                                    <livewire:components.main.absence.modal-detail :absence="$absence">
+                                        <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
+                                            Detail
+                                        </x-wirekit::button>
+                                    </livewire:components.main.absence.modal-detail>
                                 </x-wirekit::table.td>
 
                             </x-wirekit::table.row>
