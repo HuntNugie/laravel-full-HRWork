@@ -3,6 +3,8 @@
 use App\Http\Controllers\PrintContractEmployeeController;
 use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
+use App\Livewire\Page\Main\Absence\Absence;
+use App\Livewire\Page\Main\Attendances\ApprovedAbsence;
 use App\Livewire\Page\Main\Attendances\Attendances;
 use App\Livewire\Page\Main\Attendances\HistoryAttendanceManage;
 use App\Livewire\Page\Main\Attendances\HistoryAttendances;
@@ -115,6 +117,10 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/monitoring', MonitorAttendance::class)->middleware('permission:view-monitor-attendance')->name('attendance.monitor.view');
         Route::get('/manage/history', HistoryAttendanceManage::class)->middleware('permission:history-attendance')->name('attendance.history.view');
         Route::get('/history', HistoryAttendances::class)->middleware('permission:view-attendance')->name('history.view');
+    });
+
+    Route::prefix('leave')->group(function () {
+        Route::get('/absence', Absence::class)->middleware('permission:view-manage-absence')->name('absence.view');
     });
 
     Route::prefix('contract')->group(function () {

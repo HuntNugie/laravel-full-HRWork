@@ -119,7 +119,7 @@
 
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-monitor-attendance'])
+        @canany(['view-monitor-attendance', 'history-attendance '])
 
             <x-wirekit::sidebar.group collapsible label="Presensi">
 
@@ -130,12 +130,34 @@
                         Monitoring Presensi
                     </x-wirekit::sidebar.item>
                 @endcan
-                @can('view-monitor-attendance')
+                @can('history-attendance ')
                     <x-wirekit::sidebar.item href="{{ route('attendance.history.view') }}" :active="request()->routeIs('attendance.history.view')" icon="calendar"
                         wire:navigate>
                         Riwayat Presensi
                     </x-wirekit::sidebar.item>
                 @endcan
+
+
+                {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
+                Training & TNA
+            </x-wirekit::sidebar.item> --}}
+
+
+
+            </x-wirekit::sidebar.group>
+        @endcanany
+        @canany(['view-manage-absence'])
+
+            <x-wirekit::sidebar.group collapsible label="Pengajuan ketidakhadiran">
+
+
+                @can('view-manage-absence')
+                    <x-wirekit::sidebar.item href="{{ route('absence.view') }}" :active="request()->routeIs('absence.view')" icon="cloud"
+                        wire:navigate>
+                        Pengajuan izin dan sakit
+                    </x-wirekit::sidebar.item>
+                @endcan
+
 
 
                 {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
