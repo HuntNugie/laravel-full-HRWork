@@ -26,12 +26,26 @@ class PrintContractEmployeeController extends Controller
         $employee->loadMissing([
             'user',
             'profile',
-            'profile.addressProfile',
+            'profile.addressProfile.village.district.regency.province',
         ]);
+
 
         $contract->loadMissing([
             'benefits',
         ]);
+
+        // alamat
+        $employeeAddress = $employee->profile?->addressProfile;
+
+        $fullEmployeeAddress = collect([
+            $employeeAddress?->full_address,
+            $employeeAddress?->village?->name,
+            $employeeAddress?->village?->district?->name,
+            $employeeAddress?->village?->district?->regency?->name,
+            $employeeAddress?->village?->district?->regency?->province?->name,
+        ])
+            ->filter()
+            ->implode(', ');
 
         /*
         |--------------------------------------------------------------------------
@@ -141,12 +155,13 @@ class PrintContractEmployeeController extends Controller
             'employee' => $employee,
             'contract' => $contract,
 
+            'employeeAddress' => $employeeAddress,
+            'fullEmployeeAddress' => $fullEmployeeAddress,
             'employeeProfile' =>
             $employee->profile,
 
             'companyBusinessType' => $companyBusinessType,
-            'employeeAddress' =>
-            $employee->profile?->addressProfile,
+
 
             'benefits' =>
             $benefits,

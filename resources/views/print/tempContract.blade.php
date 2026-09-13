@@ -357,12 +357,13 @@
                 <tr>
                     <td class="label">Tanggal Lahir</td>
                     <td class="colon">:</td>
-                    <td>{{ $employeeProfile->tanggal_lahir ?? '-' }}</td>
+                    <td>{{ $employeeProfile?->birth_address ?? '-' }},
+                        {{ $employeeProfile?->birth_date->format('d F Y') ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Alamat</td>
                     <td class="colon">:</td>
-                    <td>{{ $employeeAddress->full_address ?? '-' }}</td>
+                    <td>{{ $fullEmployeeAddress ?: '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Jabatan / Pekerjaan</td>

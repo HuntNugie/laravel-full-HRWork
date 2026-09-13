@@ -25,4 +25,11 @@ class Employee_profile extends Model
     {
         return $this->hasOne(EmployeeProfileAddress::class, 'employee_profile_id');
     }
+
+    public function casts(): array
+    {
+        return [
+            'birth_date' => 'date'
+        ];
+    }
 }

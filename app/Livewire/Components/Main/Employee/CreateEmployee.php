@@ -7,6 +7,7 @@ use App\Models\Employees;
 use App\Models\Position;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -47,29 +48,33 @@ class CreateEmployee extends Component
     protected function createEmployee()
     {
         $this->authorize('create', Employees::class);
-        $employee = $this->user->employees()->create();
+        DB::transaction(function () {
+            $employee = $this->user->employees()->create();
 
-        $employee->update(['employee_code' => 'EMP-' . $employee->id]);
-        $this->user->assignRole("employee");
-        //    isi profile nya
-        $profile =  $employee->profile()->create([
-            'gender' => $this->form->gender,
-            'phone_number' => $this->form->phone,
-            'nik' => $this->form->nik,
-        ]);
+            $employee->update(['employee_code' => 'EMP-' . $employee->id]);
+            $this->user->assignRole("employee");
+            //    isi profile nya
+            $profile =  $employee->profile()->create([
+                'gender' => $this->form->gender,
+                'phone_number' => $this->form->phone,
+                'nik' => $this->form->nik,
+                'birth_date' => $this->form->birthDate,
+                'birth_address' => $this->form->birthAddress,
+            ]);
 
-        //    isi profile address
-        $profile->addressProfile()->create([
-            'full_address' => $this->form->detailAddress,
-            'village_code' => $this->form->villageCode
-        ]);
+            //    isi profile address
+            $profile->addressProfile()->create([
+                'full_address' => $this->form->detailAddress,
+                'village_code' => $this->form->villageCode
+            ]);
 
-        //    isi bank
-        $profile->bankAccount()->create([
-            'bank_id' => $this->form->bankId,
-            'account_number' => $this->form->accountNumber,
-            'account_holder' => $this->form->accountHolder,
-        ]);
+            //    isi bank
+            $profile->bankAccount()->create([
+                'bank_id' => $this->form->bankId,
+                'account_number' => $this->form->accountNumber,
+                'account_holder' => $this->form->accountHolder,
+            ]);
+        });
     }
     public function render()
     {

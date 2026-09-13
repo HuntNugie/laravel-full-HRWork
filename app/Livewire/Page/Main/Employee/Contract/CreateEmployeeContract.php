@@ -128,7 +128,7 @@ class CreateEmployeeContract extends Component
                 . str_pad($number, 3, '0', STR_PAD_LEFT);
 
             // ubah contract lama menjadi terminated
-            if ($this->employee?->latestEmployeeContract->status === 'active') {
+            if ($this->employee?->latestEmployeeContract && $this->employee?->latestEmployeeContract->status === 'active') {
                 $this->employee->latestEmployeeContract->status = 'terminated';
                 $this->employee->latestEmployeeContract->save();
             }

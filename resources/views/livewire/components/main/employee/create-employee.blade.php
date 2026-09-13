@@ -187,14 +187,30 @@
                         ================================================== --}}
                         <x-wirekit::select label="Jenis Kelamin" name="form.gender" wire:model.live="form.gender"
                             placeholder="Pilih jenis kelamin..." :options="[
-        'male' => 'Laki-laki',
-        'female' => 'Perempuan',
-    ]" />
+                                'male' => 'Laki-laki',
+                                'female' => 'Perempuan',
+                            ]" />
 
 
+
+                        <div>
+                            <x-wirekit::input class="text-black" label="Alamat lahir" name="form.birthAddress"
+                                type="text" wire:model.live.debounce.500ms="form.birthAddress"
+                                placeholder="Alamat lahir" />
+
+
+                        </div>
                         {{-- =================================================
-                        Phone Number
+                        Birth Date
                         ================================================== --}}
+                        <div>
+
+                            <x-wirekit::input class="text-black" label="Tanggal Lahir" name="form.birthDate"
+                                type="date" wire:model.live.debounce.500ms="form.birthDate"
+                                placeholder="Pilih tanggal lahir" />
+
+
+                        </div>
                         <div>
 
                             <x-wirekit::input class="text-black" label="Nomor Telepon" name="form.phone" x-model="text"
@@ -238,9 +254,9 @@
                                 {{-- Detail Alamat --}}
                                 <div class="md:col-span-2">
 
-                                    <x-wirekit::input class="text-black" label="Detail Alamat" name="form.detailAddress"
-                                        wire:model.live.debounce.500ms="form.detailAddress" maxlength="255"
-                                        placeholder="Contoh: Jl. Sukajadi No. 10" />
+                                    <x-wirekit::input class="text-black" label="Detail Alamat"
+                                        name="form.detailAddress" wire:model.live.debounce.500ms="form.detailAddress"
+                                        maxlength="255" placeholder="Contoh: Jl. Sukajadi No. 10" />
 
                                 </div>
 
@@ -346,8 +362,9 @@
 
                             <div x-data="{ text: '', max: 100, min: 3 }">
 
-                                <x-wirekit::input class="text-black" label="Nama Pemilik Rekening" name="form.accountHolder"
-                                    x-model="text" wire:model.live.debounce.500ms="form.accountHolder" maxlength="100"
+                                <x-wirekit::input class="text-black" label="Nama Pemilik Rekening"
+                                    name="form.accountHolder" x-model="text"
+                                    wire:model.live.debounce.500ms="form.accountHolder" maxlength="100"
                                     placeholder="Nama yang terdaftar pada rekening" />
 
                                 <div
@@ -388,8 +405,8 @@
             ================================================== --}}
             <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
 
-                <x-wirekit::button type="button" class="border border-slate-200 bg-white text-black hover:bg-slate-50"
-                    wire:click="cancel">
+                <x-wirekit::button type="button"
+                    class="border border-slate-200 bg-white text-black hover:bg-slate-50" wire:click="cancel">
                     Batal
                 </x-wirekit::button>
 
