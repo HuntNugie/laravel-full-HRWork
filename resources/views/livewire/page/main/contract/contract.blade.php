@@ -231,7 +231,12 @@
                                     <div class="flex items-center gap-2">
 
                                         @can('show-contract')
-                                            <x-wirekit::button type="button" class="px-3 py-1.5 text-xs">
+                                            <x-wirekit::button
+                                                href="{{ route('contract.show', [
+                                                    'employee' => $employee->id,
+                                                    'contract' => $employee->latestEmployeeContract->id,
+                                                ]) }}"
+                                                type="button" class="px-3 py-1.5 text-xs">
                                                 Detail
                                             </x-wirekit::button>
                                         @endcan
