@@ -457,17 +457,21 @@
                                 {{-- ACTIONS --}}
                                 <x-wirekit::table.td>
 
-                                    @if ($attendance)
-                                        @can('show-attendance')
-                                            <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                                Detail
-                                            </x-wirekit::button>
-                                        @endcan
-                                    @else
-                                        <span class="text-xs text-slate-400">
-                                            —
-                                        </span>
-                                    @endif
+                                    @can('show-attendance')
+                                        @if ($attendance?->id)
+                                            <livewire:components.main.attendances.modal-detail-attendance :attendance-id="$attendance->id"
+                                                :key="'attendance-detail-' . $attendance->id">
+                                                <x-wirekit::button type="button" variant="outline"
+                                                    class="px-3 py-1.5 text-xs">
+                                                    Detail
+                                                </x-wirekit::button>
+                                            </livewire:components.main.attendances.modal-detail-attendance>
+                                        @else
+                                            <span class="text-xs text-slate-400">
+                                                —
+                                            </span>
+                                        @endif
+                                    @endcan
 
                                 </x-wirekit::table.td>
 
