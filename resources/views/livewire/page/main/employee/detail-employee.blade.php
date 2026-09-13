@@ -87,8 +87,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' =>
                                     $employee?->status_employee === 'active',
                                 'bg-red-50 text-red-600' =>
@@ -213,7 +213,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee?->profile->birth_date->format('d F Y') ?? 'Belum di ketahui' }}
+                        {{ $employee?->profile?->birth_date?->format('d F Y') ?? 'Belum di ketahui' }}
                     </p>
                 </div>
 
@@ -301,7 +301,191 @@
 
     </x-wirekit::card>
 
+    {{-- =====================================================
+        BANK ACCOUNT
+    ====================================================== --}}
+    <x-wirekit::card>
 
+        <x-wirekit::card.header>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                <x-wirekit::stack gap="sm">
+
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Rekening Bank
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Informasi rekening yang digunakan untuk kebutuhan penggajian.
+                    </p>
+
+                </x-wirekit::stack>
+
+                <div class="flex items-center gap-2">
+
+                    <livewire:components.main.employee.modal-edit-rekening :employee="$employee">
+                        <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500">
+                            Edit Rekening
+                        </x-wirekit::button>
+                    </livewire:components.main.employee.modal-edit-rekening>
+
+
+                </div>
+
+            </div>
+        </x-wirekit::card.header>
+
+
+        <x-wirekit::card.body>
+
+            <div class="grid gap-6 md:grid-cols-3">
+
+                {{-- Bank --}}
+                <div>
+
+                    <span class="text-xs font-medium text-slate-400">
+                        Bank
+                    </span>
+
+                    <p class="mt-1 text-sm font-medium text-slate-800">
+                        {{ $employee->profile->bankAccount->bank->name }}
+                    </p>
+
+                </div>
+
+                {{-- Account Number --}}
+                <div>
+
+                    <span class="text-xs font-medium text-slate-400">
+                        Nomor Rekening
+                    </span>
+
+                    <p class="mt-1 text-sm font-medium text-slate-800">
+                        {{ $employee->profile->bankAccount->account_number }}
+                    </p>
+
+                </div>
+
+                {{-- Account Holder --}}
+                <div>
+
+                    <span class="text-xs font-medium text-slate-400">
+                        Nama Pemilik Rekening
+                    </span>
+
+                    <p class="mt-1 text-sm font-medium text-slate-800">
+                        {{ $employee->profile->bankAccount->account_holder }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </x-wirekit::card.body>
+
+    </x-wirekit::card>
+
+    {{-- =====================================================
+        ACCOUNT INFORMATION
+    ====================================================== --}}
+    <x-wirekit::card>
+
+        <x-wirekit::card.header>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <x-wirekit::stack gap="xs">
+
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Informasi Akun
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Informasi akun yang digunakan untuk mengakses sistem.
+                    </p>
+                </x-wirekit::stack>
+
+                <div class="flex items-center gap-2">
+                    <x-wirekit::button type="button" href="{{ route('user.show', $employee->user->id) }}"
+                        wire:navigate class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                        Detail Akun User
+                    </x-wirekit::button>
+                </div>
+
+            </div>
+
+
+
+
+        </x-wirekit::card.header>
+
+
+        <x-wirekit::card.body>
+
+            <div class="grid gap-6 sm:grid-cols-3">
+
+                {{-- Username / Email --}}
+                <div>
+
+                    <span class="text-xs font-medium text-slate-400">
+                        Email Akun
+                    </span>
+
+                    <p class="mt-1 text-sm font-medium text-slate-800">
+                        {{ $employee->user->email }}
+                    </p>
+
+                </div>
+
+                {{-- Role --}}
+                <div>
+
+                    <span class="text-xs font-medium text-slate-400">
+                        Role
+                    </span>
+
+                    <p class="mt-1 text-sm font-medium text-slate-800">
+                        {{ $employee->user->getRoleNames()->first() ?? 'Belum ada role' }}
+                    </p>
+
+                </div>
+
+                {{-- Account Status --}}
+                <div>
+
+                    <span class="text-xs font-medium text-slate-400">
+                        Status Akun
+                    </span>
+
+                    <p @class([
+                        'mt-1 text-sm font-medium ',
+                        'text-emerald-600' => $employee->user->status === 'active',
+                        'text-red-600' => $employee->user->status === 'inactive',
+                        'text-yellow-600' => $employee->user->status === 'pending',
+                    ])>
+                        {{ $employee->user->status }}
+                    </p>
+
+                </div>
+
+                {{-- Joined --}}
+                <div>
+
+                    <span class="text-xs font-medium text-slate-400">
+                        Dibuat Pada
+                    </span>
+
+                    <p class="mt-1 text-sm font-medium text-slate-800">
+                        {{ $employee->user->created_at->format('d F Y') }}
+                    </p>
+
+                </div>
+
+
+
+            </div>
+
+        </x-wirekit::card.body>
+
+    </x-wirekit::card>
     {{-- =====================================================
         EMPLOYMENT INFORMATION
     ====================================================== --}}
@@ -385,8 +569,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' =>
                                     $employee?->status_employee === 'active',
                                 'bg-red-50 text-red-600' =>
@@ -436,8 +620,8 @@
 
                         <span @class([
                             'inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium',
                             'bg-emerald-50 text-emerald-600' =>
                                 $employee?->latestEmployeeContract?->status == 'active',
                             'bg-slate-50 text-slate-600' =>
@@ -451,7 +635,6 @@
                         ])>
                             {{ $employee?->latestEmployeeContract?->status ?? 'Belum membuat contract' }}
                         </span>
-
 
                         @if ($employee?->latestEmployeeContract)
                             @can('show-contract')
@@ -557,195 +740,113 @@
             </x-wirekit::card.body>
 
         </x-wirekit::card>
+        <x-wirekit::card>
+
+            <x-wirekit::card.header>
+
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Riwayat Contract
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Riwayat kontrak kerja karyawan dari waktu ke waktu.
+                    </p>
+                </x-wirekit::stack>
+
+            </x-wirekit::card.header>
+
+
+            <x-wirekit::card.body>
+
+                <x-wirekit::timeline>
+
+                   @foreach ($employee->employeeContract as $contract)
+
+    <x-wirekit::timeline.item
+        :icon="$contract->status === 'active'
+            ? 'check'
+            : ($contract->status === 'terminated'
+                ? 'close'
+                : 'warning')"
+        :intent="$contract->status === 'active'
+            ? 'success'
+            : ($contract->status === 'terminated'
+                ? 'danger'
+                : 'warning')"
+        :time="$contract->start_date->format('d M Y') . ' — ' . ($contract->end_date
+            ? $contract->end_date->format('d M Y')
+            : 'Sekarang')"
+    >
+
+        <x-slot:title>
+            {{ $contract->contract_number }}
+        </x-slot:title>
+
+        <div class="mt-1 space-y-1">
+
+            <p class="text-sm text-slate-700">
+                {{ $contract->position_name ?? 'Belum diketahui' }}
+                ·
+                {{ $contract->employement_type }}
+            </p>
+
+            <p class="text-xs text-slate-500">
+                @switch($contract->status)
+                    @case('active')
+                        Kontrak aktif
+                        @break
+
+                    @case('terminated')
+                        Kontrak dihentikan
+                        @break
+
+                    @case('expired')
+                        Kontrak telah berakhir
+                        @break
+
+                    @default
+                        {{ ucfirst($contract->status) }}
+                @endswitch
+            </p>
+
+        </div>
+
+        <div class="mt-3">
+
+            @can('show-contract')
+                <x-wirekit::button
+                    type="button"
+                    variant="outline"
+                    class="px-3 py-1.5 text-xs"
+                    href="{{ route('contract.show', [
+                        'employee' => $employee->id,
+                        'contract' => $contract->id,
+                    ]) }}"
+                    wire:navigate
+                >
+                    Detail Contract
+                </x-wirekit::button>
+            @endcan
+
+        </div>
+
+    </x-wirekit::timeline.item>
+
+@endforeach
+
+                </x-wirekit::timeline>
+
+            </x-wirekit::card.body>
+
+        </x-wirekit::card>
 
     </div>
 
 
-    {{-- =====================================================
-        BANK ACCOUNT
-    ====================================================== --}}
-    <x-wirekit::card>
-
-        <x-wirekit::card.header>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                <x-wirekit::stack gap="sm">
-
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Rekening Bank
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Informasi rekening yang digunakan untuk kebutuhan penggajian.
-                    </p>
-
-                </x-wirekit::stack>
-
-                <div class="flex items-center gap-2">
-
-                    <livewire:components.main.employee.modal-edit-rekening :employee="$employee">
-                        <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500">
-                            Edit Rekening
-                        </x-wirekit::button>
-                    </livewire:components.main.employee.modal-edit-rekening>
-
-
-                </div>
-
-            </div>
-        </x-wirekit::card.header>
-
-
-        <x-wirekit::card.body>
-
-            <div class="grid gap-6 md:grid-cols-3">
-
-                {{-- Bank --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Bank
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->profile->bankAccount->bank->name }}
-                    </p>
-
-                </div>
-
-                {{-- Account Number --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Nomor Rekening
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->profile->bankAccount->account_number }}
-                    </p>
-
-                </div>
-
-                {{-- Account Holder --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Nama Pemilik Rekening
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->profile->bankAccount->account_holder }}
-                    </p>
-
-                </div>
-
-            </div>
-
-        </x-wirekit::card.body>
-
-    </x-wirekit::card>
-
-
-    {{-- =====================================================
-        ACCOUNT INFORMATION
-    ====================================================== --}}
-    <x-wirekit::card>
-
-        <x-wirekit::card.header>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <x-wirekit::stack gap="xs">
-
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Informasi Akun
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Informasi akun yang digunakan untuk mengakses sistem.
-                    </p>
-                </x-wirekit::stack>
-
-                <div class="flex items-center gap-2">
-                    <x-wirekit::button type="button" href="{{ route('user.show', $employee->user->id) }}"
-                        wire:navigate class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
-                        Detail Akun User
-                    </x-wirekit::button>
-                </div>
-
-            </div>
 
 
 
 
-        </x-wirekit::card.header>
-
-
-        <x-wirekit::card.body>
-
-            <div class="grid gap-6 sm:grid-cols-3">
-
-                {{-- Username / Email --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Email Akun
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->email }}
-                    </p>
-
-                </div>
-
-                {{-- Role --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Role
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->getRoleNames()->first() ?? 'Belum ada role' }}
-                    </p>
-
-                </div>
-
-                {{-- Account Status --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Status Akun
-                    </span>
-
-                    <p @class([
-                        'mt-1 text-sm font-medium ',
-                        'text-emerald-600' => $employee->user->status === 'active',
-                        'text-red-600' => $employee->user->status === 'inactive',
-                        'text-yellow-600' => $employee->user->status === 'pending',
-                    ])>
-                        {{ $employee->user->status }}
-                    </p>
-
-                </div>
-
-                {{-- Joined --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Dibuat Pada
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->created_at->format('d F Y') }}
-                    </p>
-
-                </div>
-
-
-
-            </div>
-
-        </x-wirekit::card.body>
-
-    </x-wirekit::card>
 
 </x-wirekit::stack>
