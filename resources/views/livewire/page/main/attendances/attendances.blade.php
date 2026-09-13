@@ -300,7 +300,7 @@
                                 </x-wirekit::button>
                             @endif
 
-                            @if ($isAbsenceRequest || $att?->check_in_at)
+                            @if ($isAbsenceRequest || $att?->check_in_at || !$workTime->is_working_day)
                                 <x-wirekit::button variant="outline" size="md" :disabled="$isHoliday || $att?->check_in_at || $isAbsenceRequest">
 
                                     <x-wirekit::icon name="document-text" />

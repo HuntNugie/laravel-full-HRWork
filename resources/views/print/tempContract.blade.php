@@ -358,7 +358,7 @@
                     <td class="label">Tanggal Lahir</td>
                     <td class="colon">:</td>
                     <td>{{ $employeeProfile?->birth_address ?? '-' }},
-                        {{ $employeeProfile?->birth_date->format('d F Y') ?? '-' }}</td>
+                        {{ $employeeProfile?->birth_date?->format('d F Y') ?? '-' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Alamat</td>

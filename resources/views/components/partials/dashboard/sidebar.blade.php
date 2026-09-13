@@ -100,6 +100,12 @@
                         Manajemen Karyawan
                     </x-wirekit::sidebar.item>
                 @endcan
+                @can('view-monitor-attendance')
+                    <x-wirekit::sidebar.item href="{{ route('attendance.monitor.view') }}" :active="request()->routeIs('attendance.monitor.view')" icon="star"
+                        wire:navigate>
+                        Monitoring Presensi
+                    </x-wirekit::sidebar.item>
+                @endcan
                 @can('view-contract')
                     <x-wirekit::sidebar.item href="{{ route('contract.view') }}" :active="request()->routeIs('contract.view')" icon="file-text"
                         wire:navigate>

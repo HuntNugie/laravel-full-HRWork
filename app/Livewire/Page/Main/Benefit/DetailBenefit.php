@@ -13,7 +13,13 @@ class DetailBenefit extends Component
     public Benefit $benefit;
     public function mount(Benefit $benefit)
     {
-        $this->benefit = $benefit->load('contracts');
+        $this->benefit = $benefit->load([
+            'contracts' => function ($query) {
+                $query->where('status', 'active')
+                    ->with('employees.user');
+            },
+        ]);
+
         $this->dispatch('refresh-edit', id: $benefit->id);
     }
 

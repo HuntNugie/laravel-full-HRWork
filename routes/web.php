@@ -5,6 +5,7 @@ use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Attendances\Attendances;
 use App\Livewire\Page\Main\Attendances\HistoryAttendances;
+use App\Livewire\Page\Main\Attendances\MonitorAttendance;
 use App\Livewire\Page\Main\Base\MyProfile;
 use App\Livewire\Page\Main\Benefit\Benefit;
 use App\Livewire\Page\Main\Benefit\DetailBenefit;
@@ -110,6 +111,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('attendance')->group(function () {
         Route::get('/', Attendances::class)->middleware('permission:view-attendance')->name('attendance.view');
+        Route::get('/monitoring', MonitorAttendance::class)->middleware('permission:view-monitor-attendance')->name('attendance.monitor.view');
         Route::get('/history', HistoryAttendances::class)->middleware('permission:view-attendance')->name('history.view');
     });
 

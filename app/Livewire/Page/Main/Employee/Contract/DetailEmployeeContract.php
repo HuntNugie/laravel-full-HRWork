@@ -19,7 +19,7 @@ class DetailEmployeeContract extends Component
     {
         $this->employee = $employee;
         $this->contract = $contract;
-        $this->benefits = $this->contract->benefits;
+        $this->benefits = $this->contract->benefits()->where('status', 'active')->get();
     }
 
     #[Computed]

@@ -31,7 +31,9 @@ class PrintContractEmployeeController extends Controller
 
 
         $contract->loadMissing([
-            'benefits',
+            'benefits' => function ($q) {
+                $q->where('status', 'active');
+            },
         ]);
 
         // alamat
