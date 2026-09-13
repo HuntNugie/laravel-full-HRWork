@@ -19,7 +19,7 @@ class EditEmployee extends Component
         $this->form->nik = $employee->profile->nik;
         $this->form->gender = $employee->profile->gender;
         $this->form->phone = $employee->profile->phone_number;
-        $this->form->birthDate = $employee->profile->birth_date;
+        $this->form->birthDate = $employee->profile->birth_date->format('Y-m-d');
         $this->form->birthAddress = $employee->profile->birth_address;
         $this->form->provinceCode = $employee->profile->addressProfile->village->district->regency->province->code;
         $this->form->regencyCode = $employee->profile->addressProfile->village->district->regency->code;

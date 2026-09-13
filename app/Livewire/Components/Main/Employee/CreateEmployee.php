@@ -10,10 +10,14 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Layout('layouts.main', ['title' => 'Halaman Buat akun karyawan'])]
 class CreateEmployee extends Component
 {
+    use WithFileUploads;
+
+
     public ?User $user;
     public CreateEmployeeForm $form;
     public array $banks = [];
@@ -41,8 +45,14 @@ class CreateEmployee extends Component
             'email' => $this->form->email,
             'password' => bcrypt($this->form->password),
         ];
+        DB::transaction(function () use ($user) {
 
-        $this->user = User::create($user);
+            $this->user = User::create($user);
+
+            if ($this->form?->photo) {
+                $this->user->addMedia($this->form->photo)->toMediaCollection('avatar');
+            }
+        });
     }
 
     protected function createEmployee()

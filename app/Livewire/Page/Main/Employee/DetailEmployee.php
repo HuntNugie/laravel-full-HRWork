@@ -22,6 +22,12 @@ class DetailEmployee extends Component
         $this->employee->load(['user', 'position', 'team', 'employeeContract', 'profile']);
     }
 
+    #[On('change-photo')]
+    public function updateOnChangeProfile()
+    {
+        $this->employee->load(['user', 'position', 'team', 'employeeContract', 'profile']);
+    }
+
     public function render()
     {
         return view('livewire.page.main.employee.detail-employee');

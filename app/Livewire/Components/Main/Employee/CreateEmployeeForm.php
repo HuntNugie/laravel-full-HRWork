@@ -4,6 +4,7 @@ namespace App\Livewire\Components\Main\Employee;
 
 use Aliziodev\Wilayah\Facades\Wilayah;
 use Livewire\Attributes\Validate;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\Form;
 
 class CreateEmployeeForm extends Form
@@ -91,6 +92,13 @@ class CreateEmployeeForm extends Form
 
     #[Validate(['required'], message: ['birthAddress.required' => 'Alamat tempat lahir wajib di isi'])]
     public string $birthAddress = '';
+
+    #[Validate(['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], message: [
+        'photo.image' => 'Photo harus berupa gambar',
+        'photo.mimes' => 'Photo harus berupa jpg,jpeg,png,webp',
+        'photo.max' => 'maximal gambar 5mb',
+    ])]
+    public ?TemporaryUploadedFile $photo = null;
 
     public function provinceOptions(): array
     {

@@ -220,6 +220,37 @@
 
                         </div>
 
+                        {{-- Foto Karyawan --}}
+                        <div class="md:col-span-2">
+                            <div class="space-y-3">
+
+
+
+                                {{-- Preview --}}
+                                <div>
+                                    <p class="mb-1.5 text-sm font-medium text-black">
+                                        Preview Foto
+                                    </p>
+
+                                    <div
+                                        class="flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg bg-slate-100 ring-1 ring-slate-200">
+                                        @if ($form->photo)
+                                            {{-- Preview foto baru --}}
+                                            <img src="{{ $form->photo->temporaryUrl() }}" alt="Preview foto karyawan"
+                                                class="h-full w-full object-cover">
+                                        @else
+                                            {{-- Belum ada foto --}}
+                                            <img src="{{ asset('assets/nonProfile.jpg') }}" alt="Preview foto karyawan"
+                                                class="h-full w-full object-cover">
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <x-wirekit::file-upload wire:model="form.photo" label="Foto Karyawan"
+                                    accept=".jpeg,.png,.webp,.jpg" hint="JPG, JPEG, PNG, atau WebP. Maksimal 5 MB." />
+
+                            </div>
+                        </div>
                         <div class="md:col-span-2">
 
                             <div class="grid gap-5 md:grid-cols-2">

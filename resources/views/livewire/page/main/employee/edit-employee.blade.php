@@ -123,6 +123,7 @@
                             <x-wirekit::input class="text-black" label="Tanggal Lahir" name="form.birthDate"
                                 type="date" wire:model.live.debounce.500ms="form.birthDate"
                                 placeholder="Pilih tanggal lahir" />
+
                         </div>
                         {{-- =================================================
                         Nomor Telepon
