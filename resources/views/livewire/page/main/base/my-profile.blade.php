@@ -128,7 +128,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $user->employees->profile->nik }}
+                        {{ $user?->employees->profile->nik ?? 'Tidak ada ' }}
                     </p>
 
                 </div>
@@ -156,7 +156,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $user->employees?->team?->name ?? 'Belum mempunyai team' }}
+                        {{ $user?->employees?->team?->name ?? 'Belum mempunyai team' }}
                     </p>
 
                 </div>
@@ -170,7 +170,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $user->employees?->team?->divisi?->name ?? 'Tidak ada divisi' }}
+                        {{ $user?->employees?->team?->divisi?->name ?? 'Tidak ada divisi' }}
                     </p>
 
                 </div>
@@ -184,8 +184,8 @@
                     </p>
 
                     <p
-                        class="mt-1 text-sm font-medium {{ $user->employees->status_employee === 'active' ? 'text-emerald-600' : 'text-danger-600' }}">
-                        {{ $user->employees->status_employee }}
+                        class="mt-1 text-sm font-medium {{ $user?->employees?->status_employee === 'active' ? 'text-emerald-600' : 'text-danger-600' }}">
+                        {{ $user?->employees?->status_employee }}
                     </p>
 
                 </div>

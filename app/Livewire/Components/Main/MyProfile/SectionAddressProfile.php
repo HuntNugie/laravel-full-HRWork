@@ -21,11 +21,11 @@ class SectionAddressProfile extends Component
 
     public function mount()
     {
-        $this->provinceCode = $this->user->employees->profile->addressProfile->village->district->regency->province->code;
-        $this->regencyCode = $this->user->employees->profile->addressProfile->village->district->regency->code;
-        $this->districtCode = $this->user->employees->profile->addressProfile->village->district->code;
-        $this->villageCode = $this->user->employees->profile->addressProfile->village->code;
-        $this->detailAddress = $this->user->employees->profile->addressProfile->full_address;
+        $this->provinceCode = $this->user?->employees?->profile?->addressProfile?->village->district->regency->province->code;
+        $this->regencyCode = $this->user?->employees?->profile?->addressProfile?->village->district->regency->code;
+        $this->districtCode = $this->user?->employees?->profile?->addressProfile?->village->district->code;
+        $this->villageCode = $this->user?->employees?->profile?->addressProfile?->village->code;
+        $this->detailAddress = $this->user?->employees?->profile?->addressProfile?->full_address;
     }
 
     public function canSubmit()

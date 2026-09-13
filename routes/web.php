@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PrintContractEmployeeController;
 use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Attendances\Attendances;
@@ -41,8 +42,11 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
-    Route::get('/my-profile', MyProfile::class)->name('my-profile');
+    Route::get('/my-profile', MyProfile::class)->middleware("gateMyProfile")->name('my-profile');
 
+    Route::prefix('print')->group(function () {
+        Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');
+    });
     Route::prefix('divisi')->group(function () {
         Route::get('/', Divisi::class)->middleware('permission:view-divisi')->name('divisi.view');
         Route::get('/{divisi}/detail', DetailDivisi::class)->middleware('permission:show-divisi')->name('divisi.show');
