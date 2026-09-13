@@ -51,6 +51,12 @@ class EditEmployeeForm extends Form
     public string $detailAddress = '';
 
 
+    #[Validate(['required', 'date'], message: ['birthDate.required' => 'Tanggal lahir wajib di isi', 'birhtDate.date' => 'Tanggal lahir harus berupa tanggal'])]
+    public ?string $birthDate = '';
+
+    #[Validate(['required'], message: ['birthAddress.required' => 'Alamat tempat lahir wajib di isi'])]
+    public ?string $birthAddress = '';
+
     public function provinceOptions(): array
     {
         return collect(

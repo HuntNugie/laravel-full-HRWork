@@ -108,7 +108,22 @@
                                 'female' => 'Perempuan',
                             ]" />
 
+                        <div>
+                            <x-wirekit::input class="text-black" label="Alamat lahir" name="form.birthAddress"
+                                type="text" wire:model.live.debounce.500ms="form.birthAddress"
+                                placeholder="Alamat lahir" />
 
+
+                        </div>
+                        {{-- =================================================
+                        Birth Date
+                        ================================================== --}}
+                        <div>
+
+                            <x-wirekit::input class="text-black" label="Tanggal Lahir" name="form.birthDate"
+                                type="date" wire:model.live.debounce.500ms="form.birthDate"
+                                placeholder="Pilih tanggal lahir" />
+                        </div>
                         {{-- =================================================
                         Nomor Telepon
                         ================================================== --}}

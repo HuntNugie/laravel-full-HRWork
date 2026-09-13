@@ -19,6 +19,8 @@ class EditEmployee extends Component
         $this->form->nik = $employee->profile->nik;
         $this->form->gender = $employee->profile->gender;
         $this->form->phone = $employee->profile->phone_number;
+        $this->form->birthDate = $employee->profile->birth_date;
+        $this->form->birthAddress = $employee->profile->birth_address;
         $this->form->provinceCode = $employee->profile->addressProfile->village->district->regency->province->code;
         $this->form->regencyCode = $employee->profile->addressProfile->village->district->regency->code;
         $this->form->districtCode = $employee->profile->addressProfile->village->district->code;
@@ -43,6 +45,8 @@ class EditEmployee extends Component
                 'nik' => $this->form->nik,
                 'gender' => $this->form->gender,
                 'phone_number' => $this->form->phone,
+                'birth_date' => $this->form->birthDate,
+                'birth_address' => $this->form->birthAddress,
             ]);
 
             // update address
