@@ -31,7 +31,7 @@
                 <x-wirekit::stack gap="1">
 
                     <p class="text-sm font-medium text-slate-900">
-                        Hari Ini
+                        Hari Ini - toleransi {{ $attedanceSetting->late_tolerance_minutes }} menit
                     </p>
 
                     <p class="text-sm text-slate-500">
@@ -41,16 +41,25 @@
                 </x-wirekit::stack>
 
 
-                <x-wirekit::button type="button" variant="outline" wire:click="$refresh"
-                    class="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
-                    <x-wirekit::icon name="refresh" />
-                    <span wire:loading.remove wire:target='$refresh'>
-                        Refresh
-                    </span>
-                    <span wire:loading wire:target='$refresh'>
-                        Tunggu sebentar
-                    </span>
-                </x-wirekit::button>
+                <div class="flex gap-2">
+                    <x-wirekit::button type="button" variant="outline" wire:click="$refresh"
+                        class="border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
+                        <x-wirekit::icon name="refresh" />
+                        <span wire:loading.remove wire:target='$refresh'>
+                            Refresh
+                        </span>
+                        <span wire:loading wire:target='$refresh'>
+                            Tunggu sebentar
+                        </span>
+                    </x-wirekit::button>
+                    <livewire:components.main.attendances.modal-setting :attedanceSetting="$attedanceSetting">
+                        <x-wirekit::button type="button" variant="outline"
+                            class="border-slate-200 bg-yellow-500 text-slate-700 hover:bg-slate-50">
+                            <x-wirekit::icon name="gear" />
+                            Setting
+                        </x-wirekit::button>
+                    </livewire:components.main.attendances.modal-setting>
+                </div>
 
             </div>
 

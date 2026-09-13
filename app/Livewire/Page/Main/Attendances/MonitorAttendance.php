@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Page\Main\Attendances;
 
+use App\Models\AttedanceSetting;
 use App\Models\Employees;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Layout('layouts.main', ['title' => 'Halaman monitoring presensi'])]
@@ -11,7 +13,19 @@ class MonitorAttendance extends Component
 {
     public string $status = '';
     public string $search = '';
+    public AttedanceSetting $attedanceSetting;
 
+    public function mount()
+    {
+        $this->attedanceSetting = AttedanceSetting::first();
+    }
+
+
+    #[On('change-tolerance')]
+    public function refreshPage()
+    {
+        $this->attedanceSetting = AttedanceSetting::first();
+    }
 
     public function render()
     {
