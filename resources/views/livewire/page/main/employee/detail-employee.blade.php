@@ -87,8 +87,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' =>
                                     $employee?->status_employee === 'active',
                                 'bg-red-50 text-red-600' =>
@@ -569,8 +569,8 @@
 
                             <span @class([
                                 "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium ",
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   text-xs font-medium ",
                                 'bg-emerald-50 text-emerald-600' =>
                                     $employee?->status_employee === 'active',
                                 'bg-red-50 text-red-600' =>
@@ -620,8 +620,8 @@
 
                         <span @class([
                             'inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       text-xs font-medium',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium',
                             'bg-emerald-50 text-emerald-600' =>
                                 $employee?->latestEmployeeContract?->status == 'active',
                             'bg-slate-50 text-slate-600' =>
@@ -740,102 +740,211 @@
             </x-wirekit::card.body>
 
         </x-wirekit::card>
+
+
         <x-wirekit::card>
 
             <x-wirekit::card.header>
 
-                <x-wirekit::stack gap="1">
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Riwayat Contract
-                    </h2>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-                    <p class="text-sm text-slate-500">
-                        Riwayat kontrak kerja karyawan dari waktu ke waktu.
-                    </p>
-                </x-wirekit::stack>
+                    <x-wirekit::stack gap="1">
+
+                        <h2 class="text-lg font-semibold text-slate-900">
+                            Riwayat Presensi
+                        </h2>
+
+                        <p class="text-sm text-slate-500">
+                            Riwayat kehadiran karyawan berdasarkan bulan.
+                        </p>
+
+                    </x-wirekit::stack>
+
+                    {{-- FILTER BULAN --}}
+                    <div class="w-full sm:w-52">
+
+                        <x-wirekit::select wire:model.live="attendanceMonth">
+
+                            <option value="2026-09">
+                                September 2026
+                            </option>
+
+                            <option value="2026-08">
+                                Agustus 2026
+                            </option>
+
+                            <option value="2026-07">
+                                Juli 2026
+                            </option>
+
+                            <option value="2026-06">
+                                Juni 2026
+                            </option>
+
+                            <option value="2026-05">
+                                Mei 2026
+                            </option>
+
+                            <option value="2026-04">
+                                April 2026
+                            </option>
+
+                            <option value="2026-03">
+                                Maret 2026
+                            </option>
+
+                            <option value="2026-02">
+                                Februari 2026
+                            </option>
+
+                            <option value="2026-01">
+                                Januari 2026
+                            </option>
+
+                        </x-wirekit::select>
+
+                    </div>
+
+                </div>
 
             </x-wirekit::card.header>
 
 
             <x-wirekit::card.body>
 
-                <x-wirekit::timeline>
+                <div class="overflow-hidden rounded-xl border border-slate-200">
 
-                   @foreach ($employee->employeeContract as $contract)
+                    <div class="wk-scrollbar max-h-[500px] overflow-auto">
 
-    <x-wirekit::timeline.item
-        :icon="$contract->status === 'active'
-            ? 'check'
-            : ($contract->status === 'terminated'
-                ? 'close'
-                : 'warning')"
-        :intent="$contract->status === 'active'
-            ? 'success'
-            : ($contract->status === 'terminated'
-                ? 'danger'
-                : 'warning')"
-        :time="$contract->start_date->format('d M Y') . ' — ' . ($contract->end_date
-            ? $contract->end_date->format('d M Y')
-            : 'Sekarang')"
-    >
+                        <x-wirekit::table hoverable>
 
-        <x-slot:title>
-            {{ $contract->contract_number }}
-        </x-slot:title>
+                            <x-wirekit::table.head>
 
-        <div class="mt-1 space-y-1">
+                                <x-wirekit::table.row>
 
-            <p class="text-sm text-slate-700">
-                {{ $contract->position_name ?? 'Belum diketahui' }}
-                ·
-                {{ $contract->employement_type }}
-            </p>
+                                    <x-wirekit::table.th>
+                                        Tanggal
+                                    </x-wirekit::table.th>
 
-            <p class="text-xs text-slate-500">
-                @switch($contract->status)
-                    @case('active')
-                        Kontrak aktif
-                        @break
+                                    <x-wirekit::table.th>
+                                        Check In
+                                    </x-wirekit::table.th>
 
-                    @case('terminated')
-                        Kontrak dihentikan
-                        @break
+                                    <x-wirekit::table.th>
+                                        Check Out
+                                    </x-wirekit::table.th>
 
-                    @case('expired')
-                        Kontrak telah berakhir
-                        @break
+                                    <x-wirekit::table.th>
+                                        Durasi
+                                    </x-wirekit::table.th>
 
-                    @default
-                        {{ ucfirst($contract->status) }}
-                @endswitch
-            </p>
+                                    <x-wirekit::table.th>
+                                        Status
+                                    </x-wirekit::table.th>
 
-        </div>
+                                    <x-wirekit::table.th>
+                                        Aksi
+                                    </x-wirekit::table.th>
 
-        <div class="mt-3">
+                                </x-wirekit::table.row>
 
-            @can('show-contract')
-                <x-wirekit::button
-                    type="button"
-                    variant="outline"
-                    class="px-3 py-1.5 text-xs"
-                    href="{{ route('contract.show', [
-                        'employee' => $employee->id,
-                        'contract' => $contract->id,
-                    ]) }}"
-                    wire:navigate
-                >
-                    Detail Contract
-                </x-wirekit::button>
-            @endcan
+                            </x-wirekit::table.head>
 
-        </div>
 
-    </x-wirekit::timeline.item>
+                            <x-wirekit::table.body>
 
-@endforeach
+                                @forelse ($attendanceHistory as $attendance)
+                                    <x-wirekit::table.row>
 
-                </x-wirekit::timeline>
+                                        <x-wirekit::table.td>
+                                            <span class="text-sm font-medium text-slate-800">
+                                                {{ $attendance['date'] }}
+                                            </span>
+                                        </x-wirekit::table.td>
+
+                                        <x-wirekit::table.td>
+                                            <span class="text-sm text-slate-700">
+                                                {{ $attendance['check_in'] ?? '—' }}
+                                            </span>
+                                        </x-wirekit::table.td>
+
+                                        <x-wirekit::table.td>
+                                            <span class="text-sm text-slate-700">
+                                                {{ $attendance['check_out'] ?? '—' }}
+                                            </span>
+                                        </x-wirekit::table.td>
+
+                                        <x-wirekit::table.td>
+                                            <span class="text-sm text-slate-700">
+                                                {{ $attendance['duration'] ?? '—' }}
+                                            </span>
+                                        </x-wirekit::table.td>
+
+                                        <x-wirekit::table.td>
+
+                                            @if ($attendance['status'] === 'present')
+                                                <x-wirekit::badge variant="success">
+                                                    Hadir
+                                                </x-wirekit::badge>
+                                            @elseif ($attendance['status'] === 'late')
+                                                <x-wirekit::badge variant="warning">
+                                                    Terlambat
+                                                </x-wirekit::badge>
+                                            @else
+                                                <x-wirekit::badge variant="outline">
+                                                    Belum Hadir
+                                                </x-wirekit::badge>
+                                            @endif
+
+                                        </x-wirekit::table.td>
+
+                                        <x-wirekit::table.td>
+
+                                            @if ($attendance['attendance_id'])
+                                                <livewire:components.main.attendances.modal-detail-attendance
+                                                    :attendance-id="$attendance['attendance_id']" :key="'employee-attendance-detail-' .
+                                                        $attendance['attendance_id']">
+
+                                                    <x-wirekit::button type="button" variant="outline"
+                                                        class="px-3 py-1.5 text-xs">
+                                                        Detail
+                                                    </x-wirekit::button>
+
+                                                </livewire:components.main.attendances.modal-detail-attendance>
+                                            @else
+                                                <span class="text-sm text-slate-400">
+                                                    —
+                                                </span>
+                                            @endif
+
+                                        </x-wirekit::table.td>
+
+                                    </x-wirekit::table.row>
+
+                                @empty
+
+                                    <x-wirekit::table.row>
+
+                                        <x-wirekit::table.td colspan="6">
+
+                                            <div class="py-10 text-center">
+                                                <span class="text-sm text-slate-500">
+                                                    Tidak ada data presensi.
+                                                </span>
+                                            </div>
+
+                                        </x-wirekit::table.td>
+
+                                    </x-wirekit::table.row>
+                                @endforelse
+
+                            </x-wirekit::table.body>
+
+                        </x-wirekit::table>
+
+                    </div>
+
+                </div>
 
             </x-wirekit::card.body>
 
