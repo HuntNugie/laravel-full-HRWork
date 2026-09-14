@@ -3,6 +3,7 @@
 namespace App\Livewire\Components\Main\Absence;
 
 use App\Models\EmployeeAbsenceRequest;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class ModalDetail extends Component
@@ -11,8 +12,11 @@ class ModalDetail extends Component
 
     public function reject()
     {
-        $this->absence->status = 'rejected';
-        $this->absence->save();
+        $this->absence->update([
+            'status' => 'rejected',
+            'approved_by' => Auth::user()->id,
+            'approved_at' => now()
+        ]);
 
         $this->dispatch('wirekit-modal-close', name: 'detail-absence');
         $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil Menolak Pengajuan', message: "anda berhasil menolak pengajuan {$this->absence->employees->user->name}");
@@ -20,8 +24,12 @@ class ModalDetail extends Component
     }
     public function approve()
     {
-        $this->absence->status = 'approved';
-        $this->absence->save();
+        $this->absence->update([
+            'status' => 'approved',
+            'approved_by' => Auth::user()->id,
+            'approved_at' => now()
+        ]);
+
 
         $this->dispatch('wirekit-modal-close', name: 'detail-absence');
         $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil Menerima Pengajuan', message: "anda berhasil menerima pengajuan {$this->absence->employees->user->name}");

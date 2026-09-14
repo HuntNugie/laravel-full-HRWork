@@ -180,9 +180,19 @@
                                 {{-- Status --}}
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::badge variant="warning">
-                                        {{ $absence->status }}
-                                    </x-wirekit::badge>
+                                    @if ($absence->status === 'pending')
+                                        <x-wirekit::badge variant="warning" intent="warning">
+                                            {{ $absence->status }}
+                                        </x-wirekit::badge>
+                                    @elseif ($absence->status === 'approved')
+                                        <x-wirekit::badge variant="warning" intent="success">
+                                            {{ $absence->status }}
+                                        </x-wirekit::badge>
+                                    @else
+                                        <x-wirekit::badge variant="warning" intent="danger">
+                                            {{ $absence->status }}
+                                        </x-wirekit::badge>
+                                    @endif
 
                                 </x-wirekit::table.td>
 

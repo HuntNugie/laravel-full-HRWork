@@ -231,4 +231,280 @@
 
     </x-wirekit::card>
 
+    {{-- =====================================================
+    ABSENCE HISTORY
+====================================================== --}}
+    <x-wirekit::card>
+
+        <x-wirekit::card.header>
+
+            <x-wirekit::stack gap="xs">
+
+                <h2 class="text-base font-semibold text-slate-900">
+                    Riwayat Izin & Sakit
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Riwayat pengajuan izin dan sakit Anda.
+                </p>
+
+            </x-wirekit::stack>
+
+        </x-wirekit::card.header>
+
+
+        <x-wirekit::card.body>
+
+            <div class="wk-scrollbar max-h-[500px] overflow-auto">
+
+                <x-wirekit::table hoverable table-label="Riwayat izin dan sakit">
+
+                    <x-wirekit::table.head>
+
+                        <x-wirekit::table.row>
+
+                            <x-wirekit::table.th>
+                                Jenis
+                            </x-wirekit::table.th>
+
+                            <x-wirekit::table.th>
+                                Periode
+                            </x-wirekit::table.th>
+
+                            <x-wirekit::table.th>
+                                Durasi
+                            </x-wirekit::table.th>
+
+                            <x-wirekit::table.th>
+                                Alasan
+                            </x-wirekit::table.th>
+
+                            <x-wirekit::table.th>
+                                Status
+                            </x-wirekit::table.th>
+
+                        </x-wirekit::table.row>
+
+                    </x-wirekit::table.head>
+
+
+                    <x-wirekit::table.body>
+
+                        {{-- =================================================
+                        ROW 1
+                    ================================================== --}}
+                        <x-wirekit::table.row>
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="info">
+                                    Izin
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    15 September 2026
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    1 Hari
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-600">
+                                    Keperluan keluarga
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="warning">
+                                    Menunggu
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+                        </x-wirekit::table.row>
+
+
+                        {{-- =================================================
+                        ROW 2
+                    ================================================== --}}
+                        <x-wirekit::table.row>
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="warning">
+                                    Sakit
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    10 — 11 September 2026
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    2 Hari
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-600">
+                                    Demam dan perlu istirahat
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="success">
+                                    Disetujui
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+                        </x-wirekit::table.row>
+
+
+                        {{-- =================================================
+                        ROW 3
+                    ================================================== --}}
+                        <x-wirekit::table.row>
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="info">
+                                    Izin
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    03 September 2026
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    1 Hari
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-600">
+                                    Urusan keluarga
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="success">
+                                    Disetujui
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+                        </x-wirekit::table.row>
+
+
+                        {{-- =================================================
+                        ROW 4
+                    ================================================== --}}
+                        <x-wirekit::table.row>
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="warning">
+                                    Sakit
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    28 Agustus 2026
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-700">
+                                    1 Hari
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <span class="text-sm text-slate-600">
+                                    Kondisi kesehatan
+                                </span>
+
+                            </x-wirekit::table.td>
+
+
+                            <x-wirekit::table.td>
+
+                                <x-wirekit::badge variant="danger">
+                                    Ditolak
+                                </x-wirekit::badge>
+
+                            </x-wirekit::table.td>
+
+                        </x-wirekit::table.row>
+
+                    </x-wirekit::table.body>
+
+                </x-wirekit::table>
+
+            </div>
+
+        </x-wirekit::card.body>
+
+    </x-wirekit::card>
+
 </div>
