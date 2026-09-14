@@ -148,11 +148,17 @@
         @endcanany
         @canany(['view-manage-absence'])
 
-            <x-wirekit::sidebar.group collapsible label="Pengajuan ketidakhadiran">
+            <x-wirekit::sidebar.group collapsible label="Cuti dan izin">
 
 
                 @can('view-manage-absence')
                     <x-wirekit::sidebar.item href="{{ route('absence.view') }}" :active="request()->routeIs('absence.view')" icon="cloud"
+                        wire:navigate>
+                        Pengajuan izin dan sakit
+                    </x-wirekit::sidebar.item>
+                @endcan
+                @can('view-type-leave')
+                    <x-wirekit::sidebar.item href="{{ route('leave.type.view') }}" :active="request()->routeIs('leave.type.view')" icon="tag"
                         wire:navigate>
                         Pengajuan izin dan sakit
                     </x-wirekit::sidebar.item>
