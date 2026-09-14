@@ -24,6 +24,7 @@ class EmployeeAbsenceRequest extends Model
     {
         return [
             'date' => 'date',
+            'approved_at' => 'date',
         ];
     }
 }
