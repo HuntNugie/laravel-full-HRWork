@@ -19,18 +19,14 @@
                 <div class="flex items-center gap-3">
 
                     <h1 class="text-2xl font-semibold text-slate-900">
-                        Cuti Tahunan
+                        {{ $leaveType->name }}
                     </h1>
 
-                    <x-wirekit::badge intent="success">
-                        Aktif
+                    <x-wirekit::badge intent="{{ $leaveType->status === 'active' ? 'success' : 'danger' }}">
+                        {{ $leaveType->status }}
                     </x-wirekit::badge>
 
                 </div>
-
-                <p class="text-sm text-slate-500">
-                    Cuti tahunan yang diberikan kepada seluruh karyawan.
-                </p>
 
             </x-wirekit::stack>
 
@@ -84,7 +80,7 @@
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-900">
-                        Cuti Tahunan
+                        {{ $leaveType->name }}
                     </p>
                 </div>
 
@@ -92,11 +88,11 @@
                 {{-- Jatah Minimum --}}
                 <div>
                     <p class="text-sm text-slate-500">
-                        Jatah Minimum
+                        Jatah Default/Minimum
                     </p>
 
                     <p class="mt-1 text-sm font-medium text-slate-900">
-                        12 Hari
+                        {{ $leaveType->default_days }} Hari
                     </p>
 
                     <p class="mt-0.5 text-xs text-slate-400">
@@ -111,9 +107,19 @@
                         Berlaku Untuk
                     </p>
 
-                    <p class="mt-1 text-sm font-medium text-slate-900">
-                        Semua Karyawan
-                    </p>
+                    @if ($leaveType->gender === 'all')
+                        <p class="mt-1 text-sm font-medium text-slate-900">
+                            Semua Karyawan
+                        </p>
+                    @elseif ($leaveType->gender === 'male')
+                        <p class="mt-1 text-sm font-medium text-slate-900">
+                            Laki Laki
+                        </p>
+                    @else
+                        <p class="mt-1 text-sm font-medium text-slate-900">
+                            Perempuan
+                        </p>
+                    @endif
                 </div>
 
 
@@ -124,9 +130,15 @@
                     </p>
 
                     <div class="mt-1">
-                        <x-wirekit::badge intent="success">
-                            Aktif
-                        </x-wirekit::badge>
+                        @if ($leaveType->status === 'active')
+                            <x-wirekit::badge intent="success">
+                                Aktif
+                            </x-wirekit::badge>
+                        @else
+                            <x-wirekit::badge intent="danger">
+                                Tidak aktif
+                            </x-wirekit::badge>
+                        @endif
                     </div>
                 </div>
 
@@ -141,8 +153,7 @@
                 </p>
 
                 <p class="mt-2 text-sm leading-6 text-slate-700">
-                    Cuti tahunan merupakan hak cuti yang diberikan kepada
-                    karyawan sesuai dengan ketentuan dan kebijakan perusahaan.
+                    {{ $leaveType->description }}
                 </p>
 
             </div>

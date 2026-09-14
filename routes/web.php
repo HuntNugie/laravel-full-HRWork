@@ -123,7 +123,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('leave')->group(function () {
         Route::get('/type', LeaveType::class)->middleware('permission:view-type-leave')->name('leave.type.view');
-        Route::get('/type/{typeleave}', DetailLeaveType::class)->middleware('permission:show-type-leave')->name('leave.type.show');
+        Route::get('/type/{leavetype}', DetailLeaveType::class)->middleware('permission:show-type-leave')->name('leave.type.show');
         Route::get('/absence', Absence::class)->middleware('permission:view-manage-absence')->name('absence.view');
     });
 
