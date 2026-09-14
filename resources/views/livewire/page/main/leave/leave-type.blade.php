@@ -81,7 +81,8 @@
 
                 </div>
 
-                <x-wirekit::input type="text" name="search" placeholder="Cari nama cuti" />
+                <x-wirekit::input type="text" name="search" placeholder="Cari nama cuti"
+                    wire:model.live.debounce.500ms='search' />
 
             </div>
 
@@ -132,194 +133,99 @@
                     ================================================== --}}
                     <x-wirekit::table.body>
 
-                        {{-- =================================================
-                            CUTI TAHUNAN
-                        ================================================== --}}
-                        <x-wirekit::table.row>
+                        @forelse ($leaveTypes as $leave)
+                            <x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <div>
-                                    <p class="text-sm font-medium text-slate-900">
-                                        Cuti Tahunan
-                                    </p>
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-900">
+                                            {{ $leave->name }}
+                                        </p>
 
-                                    <p class="mt-0.5 text-xs text-slate-500">
-                                        Cuti tahunan karyawan.
-                                    </p>
-                                </div>
+                                        <p class="mt-0.5 text-xs text-slate-500">
+                                            {{ $leave->description }}.
+                                        </p>
+                                    </div>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <span class="text-sm font-medium text-slate-800">
-                                    12 Hari
-                                </span>
+                                    <span class="text-sm font-medium text-slate-800">
+                                        {{ $leave->description }} Hari
+                                    </span>
 
-                                <span class="ml-1 text-xs text-slate-400">
-                                    / tahun
-                                </span>
+                                    <span class="ml-1 text-xs text-slate-400">
+                                        / tahun
+                                    </span>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <x-wirekit::badge>
-                                    Semua Karyawan
-                                </x-wirekit::badge>
+                                    @if ($leave->gender === 'female')
+                                        <x-wirekit::badge>
+                                            Perempuan
+                                        </x-wirekit::badge>
+                                    @elseif ($leave->gender === 'male')
+                                        <x-wirekit::badge>
+                                            Laki-Laki
+                                        </x-wirekit::badge>
+                                    @else
+                                        <x-wirekit::badge>
+                                            Semua karyawan
+                                        </x-wirekit::badge>
+                                    @endif
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <x-wirekit::badge variant="success">
-                                    Aktif
-                                </x-wirekit::badge>
+                                    <x-wirekit::badge intent="{{ $leave->status === 'active' ? 'success' : 'danger' }}">
+                                        {{ $leave->status === 'active' ? 'Aktif' : 'Tidak aktif' }}
+                                    </x-wirekit::badge>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td align="right">
+                                <x-wirekit::table.td align="right">
 
-                                <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
+                                    <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
+                                        Detail
+                                    </x-wirekit::button>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
-                        </x-wirekit::table.row>
+                            </x-wirekit::table.row>
+                        @empty
+                            <x-wirekit::table.row>
+                                <x-wirekit::table.td colspan="5">
+                                    <div class="py-8 text-center">
+                                        <p class="text-sm font-medium text-slate-700">
+                                            Belum ada jenis cuti
+                                        </p>
 
+                                        <p class="mt-1 text-sm text-slate-500">
+                                            Tambahkan jenis cuti untuk mulai mengelola data cuti.
+                                        </p>
+                                    </div>
+                                </x-wirekit::table.td>
+                            </x-wirekit::table.row>
+                        @endforelse
 
-                        {{-- =================================================
-                            CUTI KHUSUS
-                        ================================================== --}}
-                        <x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
 
-                                <div>
-                                    <p class="text-sm font-medium text-slate-900">
-                                        Cuti Khusus
-                                    </p>
 
-                                    <p class="mt-0.5 text-xs text-slate-500">
-                                        Cuti untuk kebutuhan khusus karyawan.
-                                    </p>
-                                </div>
 
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm font-medium text-slate-800">
-                                    3 Hari
-                                </span>
-
-                                <span class="ml-1 text-xs text-slate-400">
-                                    / tahun
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge>
-                                    Semua Karyawan
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="success">
-                                    Aktif
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td align="right">
-
-                                <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- =================================================
-                            CUTI MELAHIRKAN
-                        ================================================== --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <div>
-                                    <p class="text-sm font-medium text-slate-900">
-                                        Cuti Melahirkan
-                                    </p>
-
-                                    <p class="mt-0.5 text-xs text-slate-500">
-                                        Cuti yang diberikan kepada karyawan perempuan.
-                                    </p>
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm font-medium text-slate-800">
-                                    90 Hari
-                                </span>
-
-                                <span class="ml-1 text-xs text-slate-400">
-                                    / pengajuan
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="warning">
-                                    Perempuan
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="success">
-                                    Aktif
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td align="right">
-
-                                <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
 
                     </x-wirekit::table.body>
 
                 </x-wirekit::table>
+                {{ $leaveTypes->links() }}
 
             </div>
 

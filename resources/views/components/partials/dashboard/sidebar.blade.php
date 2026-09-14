@@ -160,7 +160,7 @@
                 @can('view-type-leave')
                     <x-wirekit::sidebar.item href="{{ route('leave.type.view') }}" :active="request()->routeIs('leave.type.view')" icon="tag"
                         wire:navigate>
-                        Pengajuan izin dan sakit
+                        Jenis cuti
                     </x-wirekit::sidebar.item>
                 @endcan
 
