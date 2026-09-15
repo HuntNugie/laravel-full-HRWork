@@ -20,6 +20,11 @@ class EmployeeContract extends Model
         return $this->belongsToMany(Benefit::class, 'contract_benefits', 'employee_contract_id', 'benefit_id')->withPivot('amount');
     }
 
+    public function contractLeave()
+    {
+        return $this->hasMany(ContractLeaveEntitlements::class, 'employee_contract_id');
+    }
+
     public function casts()
     {
         return [

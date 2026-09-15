@@ -36,13 +36,12 @@
         {{-- ACTION --}}
         <div class="flex items-center gap-2">
 
-            <x-wirekit::button type="button" variant="outline" icon="pencil">
-                Edit
-            </x-wirekit::button>
-
-            <x-wirekit::button type="button" variant="danger" icon="power">
-                Nonaktifkan
-            </x-wirekit::button>
+            <livewire:components.main.leave.type-form-edit :leaveType="$leaveType">
+                <x-wirekit::button type="button" variant="outline">
+                    <x-wirekit::icon name="pencil" />
+                    Edit
+                </x-wirekit::button>
+            </livewire:components.main.leave.type-form-edit>
 
         </div>
 
