@@ -54,4 +54,6 @@ class CreateEmployeeContractForm extends Form
 
     ])]
     public string $note = "";
+
+    public ?array $dayLeave = [];
 }

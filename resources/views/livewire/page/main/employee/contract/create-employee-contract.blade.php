@@ -50,7 +50,7 @@
                         <x-wirekit::stack gap="1">
 
                             <h2 class="text-lg font-semibold text-slate-900">
-                                Position
+                                Jabatan
                             </h2>
 
                             <p class="text-sm text-slate-500">
@@ -69,8 +69,8 @@
                             {{-- Position --}}
                             <div class="space-y-2">
 
-                                <x-wirekit::select label="Position" name="form.positionId"
-                                    wire:model.live="form.positionId" placeholder="Pilih position..."
+                                <x-wirekit::select label="Jabatan" name="form.positionId"
+                                    wire:model.live="form.positionId" placeholder="Pilih jabatan..."
                                     :options="$positions" />
 
                                 <div class="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2">
@@ -186,17 +186,17 @@
 
                                     <div x-data="{
                                         value: @entangle('form.salary_daily').live,
-                                    
+
                                         format(value) {
                                             if (!value) return '';
-                                    
+
                                             return new Intl.NumberFormat('id-ID').format(value);
                                         },
-                                    
+
                                         parse(value) {
                                             return value.replace(/\D/g, '');
                                         },
-                                    
+
                                         onlyNumber(event) {
                                             const allowedKeys = [
                                                 'Backspace',
@@ -209,7 +209,7 @@
                                                 'Home',
                                                 'End'
                                             ];
-                                    
+
                                             if (
                                                 allowedKeys.includes(event.key) ||
                                                 event.ctrlKey ||
@@ -217,7 +217,7 @@
                                             ) {
                                                 return;
                                             }
-                                    
+
                                             if (!/^[0-9]$/.test(event.key)) {
                                                 event.preventDefault();
                                             }
@@ -335,6 +335,111 @@
                     </x-wirekit::card.body>
                 </x-wirekit::card>
 
+                {{-- =====================================================
+    HAK CUTI
+====================================================== --}}
+                <x-wirekit::card>
+
+                    <x-wirekit::card.header>
+
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-900">
+                                Hak Cuti
+                            </h2>
+
+                            <p class="mt-1 text-sm text-slate-500">
+                                Tentukan jumlah hari cuti yang diberikan pada kontrak ini.
+                                Jenis cuti ditampilkan berdasarkan gender dan status aktif.
+                            </p>
+                        </div>
+
+                    </x-wirekit::card.header>
+
+
+                    <x-wirekit::card.body>
+
+                        <div class="space-y-5">
+
+                            @forelse ($leaveType as $leave)
+                                <div class="rounded-lg border border-slate-200 p-4">
+
+                                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+                                        <div class="space-y-1">
+
+                                            <div class="flex items-center gap-2">
+
+                                                <p class="text-sm font-semibold text-slate-900">
+                                                    {{ $leave->name }}
+                                                </p>
+
+                                            </div>
+
+                                            <p class="text-sm text-slate-500">
+                                                {{ $leave->description }}
+                                            </p>
+
+                                            <p class="text-xs text-slate-400">
+                                                Jatah minimum: {{ $leave->default_days }} hari
+                                            </p>
+
+                                        </div>
+
+
+                                        <div class="w-full sm:w-40">
+
+                                            <x-wirekit::input type="number" label="Jatah Cuti" suffix="Hari"
+                                                min="{{ $leave->default_days }}"
+                                                wire:model='form.dayLeave.{{ $leave->id }}' />
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            @empty
+                                <div
+                                    class="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                                    <p class="text-sm font-medium text-slate-700">
+                                        Tidak ada hak cuti yang bisa dimasukkan.
+                                    </p>
+                                    <p class="mt-1 text-sm text-slate-500">
+                                        Silakan cek kriteria gender, status aktif, atau konfigurasi jenis cuti.
+                                    </p>
+                                </div>
+                            @endforelse
+
+
+                        </div>
+
+
+                        {{-- =================================================
+            INFORMATION
+        ================================================== --}}
+                        <div class="mt-5 flex items-start gap-3 rounded-lg bg-sky-50 p-4">
+
+                            <x-wirekit::icon name="information-circle" class="mt-0.5 size-5 shrink-0 text-sky-500" />
+
+                            <div>
+
+                                <p class="text-sm font-medium text-slate-800">
+                                    Aturan Jatah Cuti
+                                </p>
+
+                                <p class="mt-1 text-sm leading-6 text-slate-600">
+                                    Jatah yang diberikan tidak boleh lebih kecil dari
+                                    jatah minimum yang ditetapkan pada jenis cuti.
+                                    Jatah dapat diberikan lebih besar sesuai kebijakan perusahaan.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </x-wirekit::card.body>
+
+                </x-wirekit::card>
+
                 {{-- =============================================
                 NOTES
             ============================================== --}}
@@ -359,13 +464,14 @@
 
                     <x-wirekit::card.body>
 
-                        <x-wirekit::textarea class="text-black" label="Catatan Contract" name="notes" rows="4"
-                            wire:model.live.500ms="form.note"
+                        <x-wirekit::textarea class="text-black" label="Catatan Contract" name="notes"
+                            rows="4" wire:model.live.500ms="form.note"
                             placeholder="Tambahkan catatan mengenai contract..."></x-wirekit::textarea>
 
                     </x-wirekit::card.body>
 
                 </x-wirekit::card>
+
 
             </div>
 
@@ -390,7 +496,7 @@
                             </h2>
 
                             <p class="text-sm text-slate-500">
-                                Informasi karyawan.
+                                Informasi karyawan dan kontrak sebelumnya.
                             </p>
 
                         </x-wirekit::stack>
@@ -400,69 +506,256 @@
 
                     <x-wirekit::card.body>
 
-                        <div class="space-y-4">
+                        <div class="space-y-6">
 
-                            <div class="flex items-center gap-3">
+                            {{-- =====================================================
+                EMPLOYEE INFORMATION
+            ====================================================== --}}
+                            <div class="space-y-4">
 
-                                <div class="flex size-11 shrink-0 items-center justify-center rounded-full bg-sky-100">
+                                <div class="flex items-center gap-3">
 
-                                    @if ($employee->user->getFirstMediaUrl('avatar'))
-                                        <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
-                                            alt="gambar dari {{ $employee->user->name }}"
-                                            class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
-                                    @else
-                                        <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
-                                            class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
-                                    @endif
+                                    <div
+                                        class="flex size-11 shrink-0 items-center justify-center rounded-full bg-sky-100">
 
-                                </div>
-
-                                <div class="min-w-0">
-
-                                    <p class="truncate text-sm font-semibold text-slate-800">
-                                        {{ $employee->user->name }}
-                                    </p>
-
-                                    <p class="truncate text-xs text-slate-400">
-                                        {{ $employee->employee_code }}
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="border-t border-slate-100 pt-4">
-
-                                <div class="grid grid-cols-2 gap-4">
-
-                                    <div>
-
-                                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                            Gender
-                                        </p>
-
-                                        <p class="mt-1 text-sm font-medium text-slate-700">
-                                            {{ $employee->profile->gender }}
-                                        </p>
+                                        @if ($employee->user->getFirstMediaUrl('avatar'))
+                                            <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
+                                                alt="gambar dari {{ $employee->user->name }}"
+                                                class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                        @else
+                                            <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
+                                                class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
+                                        @endif
 
                                     </div>
 
-                                    <div>
+                                    <div class="min-w-0">
 
-                                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                            Phone number
+                                        <p class="truncate text-sm font-semibold text-slate-800">
+                                            {{ $employee->user->name }}
                                         </p>
 
-                                        <p class="mt-1 text-sm font-medium text-slate-700">
-                                            {{ $employee->profile->phone_number }}
+                                        <p class="truncate text-xs text-slate-400">
+                                            {{ $employee->employee_code }}
                                         </p>
 
                                     </div>
 
                                 </div>
 
+
+                                <div class="border-t border-slate-100 pt-4">
+
+                                    <div class="grid grid-cols-2 gap-4">
+
+                                        <div>
+                                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                Gender
+                                            </p>
+
+                                            <p class="mt-1 text-sm font-medium text-slate-700">
+                                                {{ $employee->profile->gender }}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                Phone Number
+                                            </p>
+
+                                            <p class="mt-1 text-sm font-medium text-slate-700">
+                                                {{ $employee->profile->phone_number }}
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
                             </div>
+
+
+                            {{-- =====================================================
+                PREVIOUS CONTRACT
+            ====================================================== --}}
+                            @if ($employee?->latestEmployeeContract)
+                                <div class="border-t border-slate-100 pt-6">
+
+                                    <x-wirekit::stack gap="xs">
+
+                                        <h3 class="text-base font-semibold text-slate-900">
+                                            Kontrak Sebelumnya
+                                        </h3>
+
+                                        <p class="text-sm text-slate-500">''
+                                            Informasi kontrak terakhir yang dimiliki karyawan.
+                                        </p>
+
+                                    </x-wirekit::stack>
+
+
+                                    <div class="mt-4 space-y-5">
+
+
+                                        {{-- CONTRACT INFORMATION --}}
+                                        <div>
+
+                                            <div class="mb-3 flex items-center justify-between">
+
+                                                <p class="text-sm font-medium text-slate-700">
+                                                    Informasi Kontrak
+                                                </p>
+
+                                                @if ($employee?->latestEmployeeContract?->status === 'active')
+                                                    <x-wirekit::badge intent="success">
+                                                        Aktif
+                                                    </x-wirekit::badge>
+                                                @elseif ($employee?->latestEmployeeContract?->status === 'expired')
+                                                    <x-wirekit::badge intent="warning">
+                                                        Kadaluarsa
+                                                    </x-wirekit::badge>
+                                                @elseif ($employee?->latestEmployeeContract?->status === 'terminated')
+                                                    <x-wirekit::badge intent="danger">
+                                                        Di hentikan
+                                                    </x-wirekit::badge>
+                                                @endif
+
+                                            </div>
+
+
+                                            <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+
+                                                <div>
+                                                    <p
+                                                        class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                        Tipe Kontrak
+                                                    </p>
+
+                                                    <p class="mt-1 text-sm font-medium text-slate-700">
+                                                        {{ $employee?->latestEmployeeContract?->employement_type }}
+                                                    </p>
+                                                </div>
+
+
+                                                <div>
+                                                    <p
+                                                        class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                        Periode
+                                                    </p>
+
+                                                    <p class="mt-1 text-sm font-medium text-slate-700">
+                                                        {{ $employee?->latestEmployeeContract?->start_date?->format('d F Y') }}
+                                                    </p>
+
+                                                    <p class="text-xs text-slate-400">
+                                                        s.d.
+                                                        {{ $employee?->latestEmployeeContract?->end_date?->format('d F Y') ?? 'Waktu yang tida di tentukan' }}
+                                                    </p>
+                                                </div>
+
+
+                                                <div>
+                                                    <p
+                                                        class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                        Posisi
+                                                    </p>
+
+                                                    <p class="mt-1 text-sm font-medium text-slate-700">
+                                                        {{ strtoupper($employee?->position?->name) }}
+                                                    </p>
+                                                </div>
+
+
+                                                <div>
+                                                    <p
+                                                        class="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                                        Gaji Harian
+                                                    </p>
+
+                                                    <p class="mt-1 text-sm font-medium text-slate-700">
+                                                        Rp.{{ number_format($employee?->latestEmployeeContract?->salary_daily) }}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {{-- BENEFITS --}}
+                                        <div class="border-t border-slate-100 pt-5">
+
+                                            <p class="mb-3 text-sm font-medium text-slate-700">
+                                                Tunjangan
+                                            </p>
+
+
+                                            <div class="space-y-2">
+                                                @forelse ($employee?->latestEmployeeContract?->benefits  as $benefit)
+                                                    <div
+                                                        class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
+
+                                                        <span class="text-sm text-slate-600">
+                                                            Tunjangan {{ $benefit->name }}
+                                                        </span>
+
+                                                        <span class="text-sm font-medium text-slate-800">
+                                                            Rp.{{ number_format($benefit->pivot->amount) }}
+                                                        </span>
+
+                                                    </div>
+                                                @empty
+                                                    <div
+                                                        class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500">
+                                                        Tidak ada tunjangan
+                                                    </div>
+                                                @endforelse
+
+                                            </div>
+
+                                        </div>
+
+
+                                        {{-- LEAVE ENTITLEMENTS --}}
+                                        <div class="border-t border-slate-100 pt-5">
+
+                                            <p class="mb-3 text-sm font-medium text-slate-700">
+                                                Hak Cuti
+                                            </p>
+
+
+                                            <div class="space-y-2">
+
+                                                @forelse ($employee?->latestEmployeeContract?->contractLeave as $leave)
+                                                    <div
+                                                        class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
+
+                                                        <span class="text-sm text-slate-600">
+                                                            {{ $leave?->leaveType?->name }}
+                                                        </span>
+
+                                                        <span class="text-sm font-medium text-slate-800">
+                                                            {{ $leave?->days }} Hari
+                                                        </span>
+
+                                                    </div>
+                                                @empty
+                                                    <div
+                                                        class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500">
+                                                        Tidak ada hak cuti
+                                                    </div>
+                                                @endforelse
+
+
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+                            @endif
 
                         </div>
 

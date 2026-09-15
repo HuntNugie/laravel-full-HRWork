@@ -7,6 +7,7 @@ use App\Models\ContractSequence;
 use App\Models\EmployeeContract;
 use App\Models\Employees;
 use App\Models\EmployeeStatusHistory;
+use App\Models\LeaveType;
 use App\Models\Position;
 use App\Models\Team;
 use App\Service\ContractService;
@@ -26,6 +27,7 @@ class CreateEmployeeContract extends Component
     public CreateEmployeeContractForm $form;
     public bool $is_active = false;
     public EmployeeContract $contract;
+    public Collection $leaveType;
 
     public string $position_name = '';
 
@@ -56,6 +58,11 @@ class CreateEmployeeContract extends Component
         $this->teams = Team::query()->pluck('name', 'id')->toArray();
 
         $this->contract_number = app(ContractService::class)->previewContractNumber();
+
+        $this->leaveType = LeaveType::query()->where('status', 'active')->where(function ($q) {
+            $q->where('gender', $this->employee->profile->gender)->orWhere('gender', 'all');
+        })->get();
+        $this->form->dayLeave = $this?->leaveType?->pluck('default_days', 'id')->toArray();
     }
 
     #[Computed]
@@ -151,6 +158,13 @@ class CreateEmployeeContract extends Component
                 ]);
             }
 
+            foreach ($this->form->dayLeave as $dayLeaveId => $dayLeave) {
+                $contract->contractLeave()->create([
+                    'leave_type_id' => $dayLeaveId,
+                    'days' => $dayLeave,
+                ]);
+            }
+
             $this->employee->update(['status_employee' => 'active', 'position_id' => $this->form->positionId]);
             $this->employee->statusHistory()->create([
                 'new_status' => 'active',
@@ -164,7 +178,6 @@ class CreateEmployeeContract extends Component
 
     public function render()
     {
-
         return view('livewire.page.main.employee.contract.create-employee-contract');
     }
 }

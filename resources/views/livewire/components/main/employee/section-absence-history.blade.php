@@ -19,7 +19,7 @@
                     <button type="button"
                         class="self-start rounded-md border border-white-300 px-3 py-2 text-sm font-medium text-white  bg-red-500 hover:bg-white-50"
                         wire:click="$set('from', null); $set('to', null); $set('segment', '')">
-                        Resetz
+                        Reset
                     </button>
 
                 </x-wirekit::stack>
