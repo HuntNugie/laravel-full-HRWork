@@ -65,9 +65,26 @@ class EditEmployeeContract extends Component
     // untuk save
     public function save()
     {
+        $this->authorize('update', $this->contract);
         $this->validate();
 
         DB::transaction(function () {
+
+            $previousActiveContract = $this->employee->employeeContract()
+                ->where('status', 'active')
+                ->whereKeyNot($this->contract->id)
+                ->latest('id')
+                ->first();
+
+            if (
+                $this->form->statusContract !== 'draft'
+                && $previousActiveContract
+            ) {
+                $previousActiveContract->update([
+                    'status' => 'terminated',
+                ]);
+            }
+
             $this->employee?->latestEmployeeContract()->update([
                 'employement_type' => $this->form->contractType,
                 'start_date' => $this->form->start_date,
