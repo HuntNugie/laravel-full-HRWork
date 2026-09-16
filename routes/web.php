@@ -26,6 +26,7 @@ use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Employee\HistoryContract;
 use App\Livewire\Page\Main\Holiday\Holiday;
 use App\Livewire\Page\Main\Leave\DetailLeaveType;
+use App\Livewire\Page\Main\Leave\LeaveRequest;
 use App\Livewire\Page\Main\Leave\LeaveType;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
@@ -127,6 +128,8 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     });
 
     Route::prefix('leave')->group(function () {
+        Route::get('/', LeaveRequest::class)->middleware('permission:view-leave')->name('leave.view');
+
         Route::get('/type', LeaveType::class)->middleware('permission:view-type-leave')->name('leave.type.view');
         Route::get('/type/{leavetype}', DetailLeaveType::class)->middleware('permission:show-type-leave')->name('leave.type.show');
         Route::get('/absence', Absence::class)->middleware('permission:view-manage-absence')->name('absence.view');

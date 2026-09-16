@@ -11,13 +11,22 @@
         </x-wirekit::sidebar.group>
 
 
-        @canany(['view-attendance'])
+        @canany(['view-attendance', 'view-leave'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
 
-                <x-wirekit::sidebar.item href="{{ route('attendance.view') }}" :active="request()->routeIs('attendance.view')" icon="finger-print"
-                    wire:navigate>
-                    Presensi
-                </x-wirekit::sidebar.item>
+                @can('view-attendance')
+                    <x-wirekit::sidebar.item href="{{ route('attendance.view') }}" :active="request()->routeIs('attendance.view')" icon="finger-print"
+                        wire:navigate>
+                        Presensi
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+                @can('view-leave')
+                    <x-wirekit::sidebar.item href="{{ route('leave.view') }}" :active="request()->routeIs('leave.view')" icon="book" wire:navigate>
+                        Pengajuan cuti
+                    </x-wirekit::sidebar.item>
+                @endcan
+
 
 
             </x-wirekit::sidebar.group>
@@ -96,7 +105,8 @@
             <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-employee')
-                    <x-wirekit::sidebar.item href="{{ route('employee.view') }}" :active="request()->routeIs('employee.view')" icon="users" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('employee.view') }}" :active="request()->routeIs('employee.view')" icon="users"
+                        wire:navigate>
                         Manajemen Karyawan
                     </x-wirekit::sidebar.item>
                 @endcan

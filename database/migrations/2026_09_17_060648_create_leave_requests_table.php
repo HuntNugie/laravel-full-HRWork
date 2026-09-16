@@ -30,7 +30,6 @@ return new class extends Migration
             $table->unsignedInteger('total_days');
 
             $table->text('reason')->nullable();
-            $table->string('attachment')->nullable();
 
             $table->enum('status', [
                 'pending',
