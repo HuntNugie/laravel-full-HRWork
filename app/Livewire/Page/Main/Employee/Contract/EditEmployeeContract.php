@@ -70,17 +70,17 @@ class EditEmployeeContract extends Component
 
         DB::transaction(function () {
 
-            $previousActiveContract = $this->employee->employeeContract()
-                ->where('status', 'active')
-                ->whereKeyNot($this->contract->id)
-                ->latest('id')
-                ->first();
-
             if (
-                $this->form->statusContract !== 'draft'
-                && $previousActiveContract
+                $this->contract->status === 'draft'
+                && $this->form->statusContract === 'active'
             ) {
-                $previousActiveContract->update([
+                $previousActiveContract = $this->employee->employeeContract()
+                    ->where('status', 'active')
+                    ->whereKeyNot($this->contract->id)
+                    ->latest('id')
+                    ->first();
+
+                $previousActiveContract?->update([
                     'status' => 'terminated',
                 ]);
             }

@@ -67,4 +67,10 @@ class Employees extends Model
     {
         return $this->hasMany(EmployeeAbsenceRequest::class, "employee_id");
     }
+
+    // relasi ke leaveRequest
+    public function leaveRequest()
+    {
+        return $this->hasMany(LeaveRequest::class, 'employee_id');
+    }
 }

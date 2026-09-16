@@ -12,4 +12,9 @@ class LeaveType extends Model
     {
         return $this->hasMany(ContractLeaveEntitlements::class, 'leave_type_id');
     }
+
+    public function leaveRequest()
+    {
+        return $this->hasMany(LeaveRequest::class, 'leave_type_id');
+    }
 }

@@ -25,6 +25,11 @@ class EmployeeContract extends Model
         return $this->hasMany(ContractLeaveEntitlements::class, 'employee_contract_id');
     }
 
+    public function leaveRequest()
+    {
+        return $this->hasMany(LeaveRequest::class, 'employee_contract_id');
+    }
+
     public function casts()
     {
         return [
