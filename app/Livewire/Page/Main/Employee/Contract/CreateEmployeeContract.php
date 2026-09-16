@@ -107,40 +107,56 @@ class CreateEmployeeContract extends Component
             $year = now()->year;
             $month = now()->month;
 
-            // mendapatkan jumlah dari nomor surat
+            // mendapatkan sequence nomor contract
             $sequence = ContractSequence::query()
                 ->where('year', $year)
                 ->where('month', $month)
                 ->lockForUpdate()
                 ->first();
 
-            // cek untuk nomor surat
             if ($sequence) {
                 $sequence->increment('last_number');
                 $number = $sequence->last_number;
             } else {
                 $number = 1;
 
-                $sequence = ContractSequence::create([
+                ContractSequence::create([
                     'year' => $year,
                     'month' => $month,
                     'last_number' => $number,
                 ]);
             }
 
-            // membuat string untuk nomor surat
+            // membuat nomor contract
             $contractNumber = 'CTR/'
                 . $year . '/'
                 . str_pad($month, 2, '0', STR_PAD_LEFT) . '/'
                 . str_pad($number, 3, '0', STR_PAD_LEFT);
 
-            // ubah contract lama menjadi terminated
-            if ($this->employee?->latestEmployeeContract && $this->employee?->latestEmployeeContract->status === 'active') {
-                $this->employee->latestEmployeeContract->status = 'terminated';
-                $this->employee->latestEmployeeContract->save();
+
+            // =========================================================
+            // SIMPAN CONTRACT LAMA
+            // =========================================================
+            $latestContract = $this->employee?->latestEmployeeContract;
+
+
+            // =========================================================
+            // TERMINATE CONTRACT LAMA
+            // Hanya jika contract baru langsung active
+            // =========================================================
+            if (
+                $latestContract?->status === 'active'
+                && $this->form->statusContract !== 'draft'
+            ) {
+                $latestContract->update([
+                    'status' => 'terminated',
+                ]);
             }
 
-            // membuat contract baru
+
+            // =========================================================
+            // BUAT CONTRACT BARU
+            // =========================================================
             $contract = $this->employee->employeeContract()->create([
                 'contract_number' => $contractNumber,
                 'position_name' => $this->position_name,
@@ -152,25 +168,85 @@ class CreateEmployeeContract extends Component
                 'notes' => $this->form->note,
             ]);
 
+
+            // =========================================================
+            // BENEFITS
+            // =========================================================
             foreach ($this->form->benefitSelect as $benefitId => $benefit) {
                 $contract->benefits()->attach($benefitId, [
                     'amount' => $benefit['amount'],
                 ]);
             }
 
-            foreach ($this->form->dayLeave as $dayLeaveId => $dayLeave) {
+
+            // =========================================================
+            // LEAVE ENTITLEMENTS
+            // =========================================================
+            foreach ($this->form->dayLeave as $leaveTypeId => $days) {
                 $contract->contractLeave()->create([
-                    'leave_type_id' => $dayLeaveId,
-                    'days' => $dayLeave,
+                    'leave_type_id' => $leaveTypeId,
+                    'days' => $days,
                 ]);
             }
 
-            $this->employee->update(['status_employee' => 'active', 'position_id' => $this->form->positionId]);
-            $this->employee->statusHistory()->create([
-                'new_status' => 'active',
-                'effective_date' => $this->form->start_date,
-                'reason' => 'Pembuatan Kontrak'
-            ]);
+
+            // =========================================================
+            // EMPLOYEE STATUS
+            // =========================================================
+
+            // =========================================================
+            // 1. CONTRACT DRAFT
+            // =========================================================
+            if ($contract->status === 'draft') {
+
+                // Employee baru / belum punya contract sebelumnya
+                if (!$latestContract) {
+
+                    $oldStatus = $this->employee->status_employee;
+                    $newStatus = 'inactive';
+
+                    $this->employee->update([
+                        'status_employee' => $newStatus,
+                        'position_id' => $this->form->positionId,
+                    ]);
+
+                    // Buat history hanya jika status berubah
+                    if ($oldStatus !== $newStatus) {
+                        $this->employee->statusHistory()->create([
+                            'old_status' => $oldStatus,
+                            'new_status' => $newStatus,
+                            'effective_date' => $contract->start_date,
+                            'reason' => 'Pembuatan Kontrak',
+                        ]);
+                    }
+                }
+            }
+
+
+            // =========================================================
+            // 2. CONTRACT ACTIVE
+            // =========================================================
+            else {
+
+                $oldStatus = $this->employee->status_employee;
+                $newStatus = 'active';
+
+                $this->employee->update([
+                    'status_employee' => $newStatus,
+                    'position_id' => $this->form->positionId,
+                ]);
+
+                // Buat history hanya jika status berubah
+                if ($oldStatus !== $newStatus) {
+                    $this->employee->statusHistory()->create([
+                        'old_status' => $oldStatus,
+                        'new_status' => $newStatus,
+                        'effective_date' => $contract->start_date,
+                        'reason' => 'Pembuatan Kontrak',
+                    ]);
+                }
+            }
+
 
             return $contract;
         });

@@ -637,6 +637,17 @@
                         </span>
 
                         @if ($employee?->latestEmployeeContract)
+                            @if($employee?->latestEmployeeContract?->status === 'draft')
+                            @can('update-contract')
+                                <x-wirekit::button type="button" wire:navigate
+                                    href="{{ route('contract.edit', [
+                                        'employee' => $employee->id,
+                                    ]) }}"
+                                    class="border border-white bg-sky-500 text-white hover:bg-sky-500">
+                                    Edit Contract Draft
+                                </x-wirekit::button>
+                            @endcan
+                            @endif
                             @can('show-contract')
                                 <x-wirekit::button type="button" wire:navigate
                                     href="{{ route('contract.show', [
@@ -740,7 +751,112 @@
             </x-wirekit::card.body>
 
         </x-wirekit::card>
+
     </div>
+
+        <x-wirekit::card>
+
+            <x-wirekit::card.header>
+
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Riwayat Contract
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Riwayat kontrak kerja karyawan dari waktu ke waktu.
+                    </p>
+                </x-wirekit::stack>
+
+            </x-wirekit::card.header>
+
+
+            <x-wirekit::card.body>
+
+                <x-wirekit::timeline>
+
+                   @foreach ($employee->employeeContract as $contract)
+
+    <x-wirekit::timeline.item
+        :icon="$contract->status === 'active'
+            ? 'check'
+            : ($contract->status === 'terminated'
+                ? 'close'
+                : 'warning')"
+        :intent="$contract->status === 'active'
+            ? 'success'
+            : ($contract->status === 'terminated'
+                ? 'danger'
+                : 'warning')"
+        :time="$contract->start_date->format('d M Y') . ' — ' . ($contract->end_date
+            ? $contract->end_date->format('d M Y')
+            : 'Sekarang')"
+    >
+
+        <x-slot:title>
+            {{ $contract->contract_number }}
+        </x-slot:title>
+
+        <div class="mt-1 space-y-1">
+
+            <p class="text-sm text-slate-700">
+                {{ $contract->position_name ?? 'Belum diketahui' }}
+                ·
+                {{ $contract->employement_type }}
+            </p>
+
+            <p class="text-xs text-slate-500">
+                @switch($contract->status)
+                    @case('active')
+                        Kontrak aktif
+                        @break
+
+                    @case('terminated')
+                        Kontrak dihentikan
+                        @break
+
+                    @case('expired')
+                        Kontrak telah berakhir
+                        @break
+
+                    @default
+                        {{ ucfirst($contract->status) }}
+                @endswitch
+            </p>
+
+        </div>
+
+        <div class="mt-3">
+
+            @can('show-contract')
+                <x-wirekit::button
+                    type="button"
+                    variant="outline"
+                    class="px-3 py-1.5 text-xs"
+                    href="{{ route('contract.show', [
+                        'employee' => $employee->id,
+                        'contract' => $contract->id,
+                    ]) }}"
+                    wire:navigate
+                >
+                    Detail Contract
+                </x-wirekit::button>
+            @endcan
+
+
+
+        </div>
+
+    </x-wirekit::timeline.item>
+
+@endforeach
+
+                </x-wirekit::timeline>
+
+            </x-wirekit::card.body>
+
+        </x-wirekit::card>
+
 
     <livewire:components.main.employee.section-attendance-history :employee="$employee" />
 

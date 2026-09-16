@@ -236,7 +236,7 @@
                                                     'employee' => $employee->id,
                                                     'contract' => $employee->latestEmployeeContract->id,
                                                 ]) }}"
-                                                type="button" class="px-3 py-1.5 text-xs">
+                                                type="button" class="px-3 py-1.5 text-xs" wire:navigate>
                                                 Detail
                                             </x-wirekit::button>
                                         @endcan

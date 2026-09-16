@@ -37,7 +37,15 @@ class EmployeeContractPolicy
      */
     public function update(User $user, EmployeeContract $employeeContract): bool
     {
-        return false;
+        if (!$user->can('update-contract')) {
+            return false;
+        }
+
+        if ($employeeContract->status !== 'draft') {
+            return false;
+        }
+
+        return true;
     }
 
     /**
