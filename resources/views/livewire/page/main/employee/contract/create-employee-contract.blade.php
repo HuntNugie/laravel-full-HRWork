@@ -186,17 +186,17 @@
 
                                     <div x-data="{
                                         value: @entangle('form.salary_daily').live,
-
+                                    
                                         format(value) {
                                             if (!value) return '';
-
+                                    
                                             return new Intl.NumberFormat('id-ID').format(value);
                                         },
-
+                                    
                                         parse(value) {
                                             return value.replace(/\D/g, '');
                                         },
-
+                                    
                                         onlyNumber(event) {
                                             const allowedKeys = [
                                                 'Backspace',
@@ -209,7 +209,7 @@
                                                 'Home',
                                                 'End'
                                             ];
-
+                                    
                                             if (
                                                 allowedKeys.includes(event.key) ||
                                                 event.ctrlKey ||
@@ -217,7 +217,7 @@
                                             ) {
                                                 return;
                                             }
-
+                                    
                                             if (!/^[0-9]$/.test(event.key)) {
                                                 event.preventDefault();
                                             }
@@ -587,7 +587,7 @@
                                             Kontrak Sebelumnya
                                         </h3>
 
-                                        <p class="text-sm text-slate-500">''
+                                        <p class="text-sm text-slate-500">
                                             Informasi kontrak terakhir yang dimiliki karyawan.
                                         </p>
 

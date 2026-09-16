@@ -29,7 +29,7 @@
     {{-- =====================================================
         MAIN CONTENT
     ====================================================== --}}
-    <x-wirekit::form>
+    <x-wirekit::form wire:submit='save'>
 
         <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
 
@@ -680,7 +680,7 @@
                                         </p>
 
                                         <p class="mt-1 text-sm font-medium text-slate-700">
-                                            {{ $employee?->latestEmployeeContract?->start_date->format('d F Y') }}
+                                            {{ $employee?->latestEmployeeContract?->start_date?->format('d F Y') ?? 'Belum di pastikan' }}
                                         </p>
 
                                     </div>
@@ -693,7 +693,7 @@
                                         </p>
 
                                         <p class="mt-1 text-sm font-medium text-slate-700">
-                                            {{ $employee?->latestEmployeeContract?->end_date->format('d F Y') }}
+                                            {{ $employee?->latestEmployeeContract?->end_date?->format('d F Y') ?? 'Belum di pastikan' }}
                                         </p>
 
                                     </div>
@@ -1074,7 +1074,13 @@
                             <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
 
                                 <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-sky-500">
-                                    Simpan Perubahan
+                                    <span wire:loading.remove wire:target='save'>
+                                        Simpan Perubahan
+                                    </span>
+                                    <span wire:loading wire:target='save'>
+                                        <x-wirekit::spinner />
+                                        Tunggu sebentar
+                                    </span>
                                 </x-wirekit::button>
 
                             </div>

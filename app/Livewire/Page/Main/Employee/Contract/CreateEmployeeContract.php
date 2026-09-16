@@ -172,11 +172,14 @@ class CreateEmployeeContract extends Component
             // =========================================================
             // BENEFITS
             // =========================================================
-            foreach ($this->form->benefitSelect as $benefitId => $benefit) {
-                $contract->benefits()->attach($benefitId, [
-                    'amount' => $benefit['amount'],
-                ]);
+            if (count($this->form->benefitSelect)) {
+                foreach ($this->form->benefitSelect as $benefitId => $benefit) {
+                    $contract->benefits()->attach($benefitId, [
+                        'amount' => $benefit['amount'],
+                    ]);
+                }
             }
+
 
 
             // =========================================================

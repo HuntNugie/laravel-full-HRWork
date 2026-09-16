@@ -9,6 +9,7 @@ use App\Models\LeaveType;
 use App\Models\Position;
 use App\Service\ContractService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -38,9 +39,9 @@ class EditEmployeeContract extends Component
         $this->contract_number = $this->contract->contract_number;
         $this->form->positionId = $employee?->position?->id;
         $this->form->salary_position = $employee?->position?->min_salary_daily;
-        $this->form->salary_daily = $this->contract->salary_daily;
-        $this->form->contractType = $this->contract->employement_type;
-        $this->is_active = $this->form->contractType === 'pkwtt';
+        $this->form->salary_daily = $this->contract?->salary_daily;
+        $this->form->contractType = $this->contract?->employement_type;
+        $this->is_active = $this->form?->contractType === 'pkwtt';
         $this->form->start_date = $this->contract->start_date->format('Y-m-d');
         $this->form->end_date = $this->is_active ? null : $this->contract->end_date?->format('Y-m-d');
         $this->form->statusContract = $this->contract->status;
@@ -59,6 +60,70 @@ class EditEmployeeContract extends Component
         })->get();
         $this->form->dayLeave = $this->contract?->contractLeave ? $this->contract?->contractLeave()->pluck('days', 'leave_type_id')->toArray() : $this?->leaveType?->pluck('default_days', 'id')->toArray();
         $this->form->note = $this->contract->notes;
+    }
+
+    // untuk save
+    public function save()
+    {
+        $this->validate();
+
+        DB::transaction(function () {
+            $this->employee?->latestEmployeeContract()->update([
+                'employement_type' => $this->form->contractType,
+                'start_date' => $this->form->start_date,
+                'end_date' => $this->form->end_date,
+                'salary_daily' => $this->form->salary_daily,
+                'status' => $this->form->statusContract,
+                'notes' => $this->form->note,
+                'contract_number' => $this->contract_number,
+            ]);
+
+            // untuk tunjangan
+            $benefits = [];
+            foreach ($this->form->benefitSelect as $benefitId => $benefit) {
+                if ($benefit['selected'] ?? false) {
+                    $benefits[$benefitId] = [
+                        'amount' => $benefit['amount'],
+                    ];
+                }
+            }
+            $this->contract->benefits()->sync($benefits);
+
+            // untuk cuti
+            foreach ($this->form->dayLeave as $leaveTypeId => $days) {
+
+                $this->contract->contractLeave()->updateOrCreate(
+                    [
+                        'leave_type_id' => $leaveTypeId,
+                    ],
+                    [
+                        'days' => $days,
+                    ]
+                );
+            }
+
+            // jika active
+            if ($this->form->statusContract === 'active') {
+                $oldStatus = $this->employee->status_employee;
+                $newStatus = 'active';
+                // ubah status employee
+                $this->employee->update([
+                    'status_employee' => $newStatus,
+                ]);
+
+                // ubah history
+                if ($oldStatus === $newStatus) {
+                    $this->employee->statusHistory()->create([
+                        'old_status' => $oldStatus,
+                        'new_status' => $newStatus,
+                        'effective_date' => $this->form->start_date,
+                        'reason' => 'Update kontrak draft',
+                    ]);
+                }
+            }
+        });
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Berhasil mengedit kontrak draft');
+        $this->redirectRoute('employee.show', $this->employee->id, navigate: true);
     }
 
     #[Computed]

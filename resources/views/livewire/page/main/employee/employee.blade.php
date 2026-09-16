@@ -177,8 +177,8 @@
                                     <span
                                         class="inline-flex items-center rounded-full
                               px-2.5 py-1
-                                text-xs font-medium   {{ $employee->statusHistory()->latest()->first()?->new_status == 'active' ? 'bg-emerald-50  text-emerald-600' : 'bg-red-50  text-red-600' }}">
-                                        {{ $employee->statusHistory()->latest()->first()->new_status ?? 'Belum di ketahui' }}
+                                text-xs font-medium   {{ $employee->status_employee == 'active' ? 'bg-emerald-50  text-emerald-600' : 'bg-red-50  text-red-600' }}">
+                                        {{ $employee->status_employee ?? 'Belum di ketahui' }}
                                     </span>
 
                                 </x-wirekit::table.td>
