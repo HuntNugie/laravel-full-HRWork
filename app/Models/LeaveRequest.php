@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Guarded('id')]
 class LeaveRequest extends Model
 {
-    public function employee()
+    public function employees()
     {
         return $this->belongsTo(Employees::class, 'employee_id');
     }

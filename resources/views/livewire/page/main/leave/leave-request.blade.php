@@ -457,10 +457,13 @@
 
                                     <div class="flex justify-end gap-2">
 
-                                        {{-- DETAIL --}}
-                                        <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                            Detail
-                                        </x-wirekit::button>
+                                        <livewire:components.main.leave.modal-detail-leave-request :request="$request"
+                                            :key="'detail-leave-' . $request->id">
+                                            <x-wirekit::button type="button" variant="outline"
+                                                class="px-3 py-1.5 text-xs">
+                                                Detail
+                                            </x-wirekit::button>
+                                        </livewire:components.main.leave.modal-detail-leave-request>
 
 
                                         {{-- BATALKAN --}}

@@ -16,6 +16,7 @@ class ModalCancelLeave extends Component
         ]);
 
         $this->dispatch('wirekit-modal-close', name: 'cancel-leave');
+        $this->dispatch('wirekit-modal-close', name: 'detail-leave');
         $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'berhasil membatalkan cuti');
         $this->dispatch('leave-request');
     }
