@@ -17,9 +17,10 @@ class PrintContractEmployeeController extends Controller
         abort_if($contract->employee_id !== $employee->id, 404);
 
         $companyBusinessType = "Industri pengembangan perangkat lunak";
+
         /*
         |--------------------------------------------------------------------------
-        | Load relasi
+        | Load relasi employee
         |--------------------------------------------------------------------------
         */
 
@@ -30,13 +31,27 @@ class PrintContractEmployeeController extends Controller
         ]);
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Load relasi contract
+        |--------------------------------------------------------------------------
+        */
+
         $contract->loadMissing([
             'benefits' => function ($q) {
                 $q->where('status', 'active');
             },
+
+            'contractLeave.leaveType',
         ]);
 
-        // alamat
+
+        /*
+        |--------------------------------------------------------------------------
+        | Alamat Employee
+        |--------------------------------------------------------------------------
+        */
+
         $employeeAddress = $employee->profile?->addressProfile;
 
         $fullEmployeeAddress = collect([
@@ -49,20 +64,22 @@ class PrintContractEmployeeController extends Controller
             ->filter()
             ->implode(', ');
 
+
         /*
         |--------------------------------------------------------------------------
-        | Gaji pokok harian
+        | Gaji Pokok Harian
         |--------------------------------------------------------------------------
         */
 
         $dailySalary = (float) $contract->salary_daily;
 
+
         /*
         |--------------------------------------------------------------------------
-        | Bulan acuan
+        | Bulan Acuan
         |--------------------------------------------------------------------------
         |
-        | Untuk "1 bulan penuh", kita menggunakan bulan dari start_date
+        | Untuk "1 bulan penuh", menggunakan bulan dari start_date
         | dan menghitung seluruh hari Senin-Sabtu.
         |
         */
@@ -83,6 +100,7 @@ class PrintContractEmployeeController extends Controller
             )
             ->count();
 
+
         /*
         |--------------------------------------------------------------------------
         | Benefit
@@ -96,7 +114,8 @@ class PrintContractEmployeeController extends Controller
         $benefits = $contract->benefits->map(
             function ($benefit) {
                 return [
-                    'name' => $benefit->name,
+                    'name' =>
+                    $benefit->name,
 
                     'description' =>
                     $benefit->description,
@@ -109,9 +128,10 @@ class PrintContractEmployeeController extends Controller
             }
         );
 
+
         /*
         |--------------------------------------------------------------------------
-        | Total benefit
+        | Total Benefit
         |--------------------------------------------------------------------------
         */
 
@@ -120,9 +140,10 @@ class PrintContractEmployeeController extends Controller
         $monthlyBenefitTotal =
             $dailyBenefitTotal * $workingDaysPerMonth;
 
+
         /*
         |--------------------------------------------------------------------------
-        | Total gaji
+        | Total Gaji
         |--------------------------------------------------------------------------
         */
 
@@ -134,6 +155,29 @@ class PrintContractEmployeeController extends Controller
 
         $monthlyTotalCompensation =
             $dailyTotalCompensation * $workingDaysPerMonth;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Jatah Cuti Contract
+        |--------------------------------------------------------------------------
+        |
+        | Mengambil jenis cuti yang memang diberikan pada contract
+        | beserta jumlah hari/jatahnya.
+        |
+        */
+
+        $leaveEntitlements = $contract->contractLeave
+            ->map(function ($entitlement) {
+                return [
+                    'name' =>
+                    $entitlement->leaveType?->name ?? 'Jenis Cuti',
+
+                    'days' =>
+                    (int) $entitlement->days,
+                ];
+            });
+
 
         /*
         |--------------------------------------------------------------------------
@@ -147,6 +191,7 @@ class PrintContractEmployeeController extends Controller
             $contract->contract_number
         ) . '.pdf';
 
+
         /*
         |--------------------------------------------------------------------------
         | PDF
@@ -154,19 +199,29 @@ class PrintContractEmployeeController extends Controller
         */
 
         return Pdf::view('print.tempContract', [
-            'employee' => $employee,
-            'contract' => $contract,
+            'employee' =>
+            $employee,
 
-            'employeeAddress' => $employeeAddress,
-            'fullEmployeeAddress' => $fullEmployeeAddress,
+            'contract' =>
+            $contract,
+
+            'employeeAddress' =>
+            $employeeAddress,
+
+            'fullEmployeeAddress' =>
+            $fullEmployeeAddress,
+
             'employeeProfile' =>
             $employee->profile,
 
-            'companyBusinessType' => $companyBusinessType,
-
+            'companyBusinessType' =>
+            $companyBusinessType,
 
             'benefits' =>
             $benefits,
+
+            'leaveEntitlements' =>
+            $leaveEntitlements,
 
             'dailySalary' =>
             $dailySalary,

@@ -616,22 +616,96 @@
         </section>
 
         <section class="article">
-            <p class="article-title">PASAL 6 — WAKTU ISTIRAHAT DAN CUTI</p>
-            <p>
-                Pihak Kedua memperoleh waktu istirahat dan cuti sesuai peraturan perundang-undangan,
-                Peraturan Perusahaan, dan/atau Perjanjian Kerja Bersama yang berlaku.
+
+            <p class="article-title">
+                PASAL 6 — WAKTU ISTIRAHAT DAN CUTI
             </p>
+
             <p>
-                Pelaksanaan cuti tahunan dilakukan melalui prosedur perusahaan dan disesuaikan dengan kebutuhan
-                operasional.
-                Untuk pengaturan operasional internal, pengajuan cuti tahunan reguler pada bulan berjalan dapat dibatasi
-                paling banyak <strong>1 (satu) hari kerja per bulan</strong>, sepanjang tidak menghapus atau mengurangi
-                hak minimum cuti tahunan yang diberikan oleh peraturan perundang-undangan.
+                Pihak Kedua memperoleh waktu istirahat dan cuti sesuai peraturan
+                perundang-undangan, Peraturan Perusahaan, dan/atau Perjanjian Kerja
+                Bersama yang berlaku.
             </p>
+
             <p>
-                Ketentuan tersebut tidak membatasi hak atas sakit, izin karena alasan penting, cuti khusus,
-                atau keadaan lain yang berdasarkan hukum dan kebijakan perusahaan diperlakukan secara tersendiri.
+                Pelaksanaan cuti tahunan dilakukan melalui prosedur perusahaan dan
+                disesuaikan dengan kebutuhan operasional.
+                Untuk pengaturan operasional internal, pengajuan cuti tahunan reguler
+                pada bulan berjalan dapat dibatasi paling banyak
+                <strong>1 (satu) hari kerja per bulan</strong>, sepanjang tidak
+                menghapus atau mengurangi hak minimum cuti tahunan yang diberikan
+                oleh peraturan perundang-undangan.
             </p>
+
+
+            {{-- =====================================================
+        JATAH CUTI CONTRACT
+    ====================================================== --}}
+
+            @if ($leaveEntitlements->isNotEmpty())
+
+                <p style="margin-top: 10px;">
+                    Berdasarkan contract ini, Pihak Kedua memperoleh hak cuti
+                    sebagai berikut:
+                </p>
+
+                <table class="schedule-table">
+
+                    <thead>
+                        <tr>
+                            <th style="width: 70%;">
+                                Jenis Cuti
+                            </th>
+
+                            <th style="width: 30%; text-align: center;">
+                                Jatah
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach ($leaveEntitlements as $leave)
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ $leave['name'] }}
+                                    </strong>
+                                </td>
+
+                                <td style="text-align: center;">
+                                    <strong>
+                                        {{ $leave['days'] }} Hari
+                                    </strong>
+                                </td>
+
+                            </tr>
+                        @endforeach
+
+                    </tbody>
+
+                </table>
+
+                <p class="small muted">
+                    Jatah cuti sebagaimana tercantum di atas merupakan hak cuti
+                    yang diberikan berdasarkan contract ini dan pengelolaannya
+                    mengikuti ketentuan perusahaan serta peraturan yang berlaku.
+                </p>
+            @else
+                <p class="small muted">
+                    Contract ini tidak memiliki jatah cuti yang tercatat pada sistem.
+                </p>
+
+            @endif
+
+
+            <p>
+                Ketentuan tersebut tidak membatasi hak atas sakit, izin karena alasan
+                penting, cuti khusus, atau keadaan lain yang berdasarkan hukum dan
+                kebijakan perusahaan diperlakukan secara tersendiri.
+            </p>
+
         </section>
 
         <section class="article">
