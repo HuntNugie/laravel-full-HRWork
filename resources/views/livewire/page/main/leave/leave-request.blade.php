@@ -21,12 +21,14 @@
 
         </x-wirekit::stack>
 
-
         {{-- Ajukan Cuti --}}
-        <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
-            <x-wirekit::icon name="plus" />
-            Ajukan Cuti
-        </x-wirekit::button>
+        <livewire:components.main.leave.modal-leave-request>
+            <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
+                <x-wirekit::icon name="plus" />
+                Ajukan Cuti
+            </x-wirekit::button>
+        </livewire:components.main.leave.modal-leave-request>
+
 
     </div>
 
@@ -36,130 +38,97 @@
     ====================================================== --}}
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 
-        {{-- =================================================
-            CUTI TAHUNAN
-        ================================================== --}}
-        <x-wirekit::card>
+        @forelse ($entitlements as $leav)
+            @php
+                $used = $this->usedLeave($leav->leave_type_id);
+                $remaining = $this->remainingLeave($leav);
+            @endphp
 
-            <x-wirekit::card.body>
+            <x-wirekit::card>
 
-                <div class="space-y-5">
+                <x-wirekit::card.body>
 
-                    <div class="flex items-start justify-between gap-4">
+                    <div class="space-y-5">
 
-                        <div>
-                            <p class="text-sm font-medium text-slate-600">
-                                Cuti Tahunan
-                            </p>
+                        <div class="flex items-start justify-between gap-4">
 
-                            <p class="mt-1 text-2xl font-bold text-slate-900">
-                                10 Hari
-                            </p>
+                            <div>
 
-                            <p class="mt-0.5 text-xs text-slate-400">
-                                Sisa cuti
-                            </p>
+                                <p class="text-sm font-medium text-slate-600">
+                                    {{ $leav->leaveType?->name }}
+                                </p>
+
+                                <p class="mt-1 text-2xl font-bold text-slate-900">
+                                    {{ $remaining }} Hari
+                                </p>
+
+                                <p class="mt-0.5 text-xs text-slate-400">
+                                    Sisa cuti
+                                </p>
+
+                            </div>
+
+                            <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
+                                <x-wirekit::icon name="calendar" class="size-5 text-sky-500" />
+                            </div>
+
                         </div>
 
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
-                            <x-wirekit::icon name="calendar" class="size-5 text-sky-500" />
-                        </div>
+                        <div class="space-y-2">
 
-                    </div>
+                            <x-wirekit::progress :value="$used" :max="$leav->days" label="Terpakai" show-value
+                                intent="primary" size="sm" />
 
+                            <div class="flex items-center justify-between text-xs text-slate-400">
+                                <span>
+                                    Terpakai {{ $used }} hari
+                                </span>
 
-                    <x-wirekit::progress :value="2" :max="12" label="Terpakai" show-value
-                        intent="primary" size="sm" />
+                                <span>
+                                    dari {{ $leav->days }} hari
+                                </span>
+                            </div>
 
-                </div>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-
-        {{-- =================================================
-            CUTI KHUSUS
-        ================================================== --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.body>
-
-                <div class="space-y-5">
-
-                    <div class="flex items-start justify-between gap-4">
-
-                        <div>
-                            <p class="text-sm font-medium text-slate-600">
-                                Cuti Khusus
-                            </p>
-
-                            <p class="mt-1 text-2xl font-bold text-slate-900">
-                                2 Hari
-                            </p>
-
-                            <p class="mt-0.5 text-xs text-slate-400">
-                                Sisa cuti
-                            </p>
-                        </div>
-
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50">
-                            <x-wirekit::icon name="calendar-days" class="size-5 text-emerald-500" />
                         </div>
 
                     </div>
 
+                </x-wirekit::card.body>
 
-                    <x-wirekit::progress :value="1" :max="3" label="Terpakai" show-value
-                        intent="success" size="sm" />
+            </x-wirekit::card>
 
-                </div>
+        @empty
 
-            </x-wirekit::card.body>
+            <x-wirekit::card class="md:col-span-2 xl:col-span-3">
 
-        </x-wirekit::card>
+                <x-wirekit::card.body>
 
+                    <div
+                        class="flex items-start gap-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
 
-        {{-- =================================================
-            CUTI MELAHIRKAN
-        ================================================== --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.body>
-
-                <div class="space-y-5">
-
-                    <div class="flex items-start justify-between gap-4">
-
-                        <div>
-                            <p class="text-sm font-medium text-slate-600">
-                                Cuti Melahirkan
-                            </p>
-
-                            <p class="mt-1 text-2xl font-bold text-slate-900">
-                                90 Hari
-                            </p>
-
-                            <p class="mt-0.5 text-xs text-slate-400">
-                                Sisa cuti
-                            </p>
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                            <x-wirekit::icon name="information-circle" class="size-5 text-slate-500" />
                         </div>
 
-                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-50">
-                            <x-wirekit::icon name="heart" class="size-5 text-violet-500" />
+                        <div>
+
+                            <p class="text-sm font-semibold text-slate-800">
+                                Belum ada hak cuti pada kontrak aktif
+                            </p>
+
+                            <p class="mt-1 text-sm text-slate-500">
+                                Kontrak aktif Anda belum memiliki jatah cuti
+                                yang terdaftar saat ini.
+                            </p>
+
                         </div>
 
                     </div>
 
+                </x-wirekit::card.body>
 
-                    <x-wirekit::progress :value="0" :max="90" label="Terpakai" show-value
-                        intent="primary" size="sm" />
-
-                </div>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
+            </x-wirekit::card>
+        @endforelse
 
     </div>
 
@@ -188,41 +157,62 @@
 
         <x-wirekit::card.body>
 
-            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            @if (!$employee->latestEmployeeContract)
+                <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
 
-                <div class="flex items-start gap-3">
+                    <p class="text-base font-semibold text-slate-800">
+                        Belum ada contract aktif
+                    </p>
 
-                    <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                        <x-wirekit::icon name="document-text" class="size-5 text-slate-600" />
-                    </div>
+                    <p class="mt-2 text-sm text-slate-500">
+                        Saat ini Anda belum memiliki contract aktif
+                        yang menjadi dasar hak cuti.
+                    </p>
 
-                    <div>
+                </div>
+            @else
+                @php
+                    $contract = $employee->latestEmployeeContract;
+                @endphp
 
-                        <div class="flex flex-wrap items-center gap-2">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
-                            <p class="text-sm font-semibold text-slate-800">
-                                CTR/2026/09/001
-                            </p>
+                    <div class="flex items-start gap-3">
 
-                            <x-wirekit::badge intent="success">
-                                Aktif
-                            </x-wirekit::badge>
-
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+                            <x-wirekit::icon name="document-text" class="size-5 text-slate-600" />
                         </div>
 
-                        <p class="mt-1 text-sm text-slate-600">
-                            Software Engineer
-                        </p>
+                        <div>
 
-                        <p class="mt-0.5 text-xs text-slate-400">
-                            01 Januari 2026 – 31 Desember 2026
-                        </p>
+                            <div class="flex flex-wrap items-center gap-2">
+
+                                <p class="text-sm font-semibold text-slate-800">
+                                    {{ $contract->contract_number }}
+                                </p>
+
+                                <x-wirekit::badge intent="success">
+                                    Aktif
+                                </x-wirekit::badge>
+
+                            </div>
+
+                            <p class="mt-1 text-sm text-slate-600">
+                                {{ $contract->position_name }}
+                            </p>
+
+                            <p class="mt-0.5 text-xs text-slate-400">
+                                {{ \Carbon\Carbon::parse($contract->start_date)->translatedFormat('d F Y') }}
+                                –
+                                {{ \Carbon\Carbon::parse($contract->end_date)->translatedFormat('d F Y') }}
+                            </p>
+
+                        </div>
 
                     </div>
 
                 </div>
-
-            </div>
+            @endif
 
         </x-wirekit::card.body>
 
@@ -288,15 +278,11 @@
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
 
                     <div class="w-full sm:w-40">
-
                         <x-wirekit::input type="date" label="Dari Tanggal" />
-
                     </div>
 
                     <div class="w-full sm:w-40">
-
                         <x-wirekit::input type="date" label="Sampai Tanggal" />
-
                     </div>
 
                 </div>
@@ -310,6 +296,7 @@
                     'pending' => 'Menunggu',
                     'approved' => 'Disetujui',
                     'rejected' => 'Ditolak',
+                    'cancelled' => 'Dibatalkan',
                 ]"
                     value="all" />
 
@@ -357,253 +344,112 @@
                     {{-- TABLE BODY --}}
                     <x-wirekit::table.body>
 
-                        {{-- =================================================
-                            PENDING
-                        ================================================== --}}
-                        <x-wirekit::table.row>
+                        @forelse ($leaveRequests as $request)
+                            <x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
+                                <x-wirekit::table.td>
 
-                                <div>
+                                    <div>
 
-                                    <p class="text-sm font-medium text-slate-800">
-                                        Cuti Tahunan
+                                        <p class="text-sm font-medium text-slate-800">
+                                            {{ $request->leaveType?->name }}
+                                        </p>
+
+                                        <p class="mt-0.5 text-xs text-slate-400">
+                                            Diajukan
+                                            {{ $request->created_at?->translatedFormat('d F Y') }}
+                                        </p>
+
+                                    </div>
+
+                                </x-wirekit::table.td>
+
+
+                                <x-wirekit::table.td>
+
+                                    <p class="text-sm text-slate-700">
+                                        {{ \Carbon\Carbon::parse($request->start_date)->translatedFormat('d M Y') }}
                                     </p>
 
                                     <p class="mt-0.5 text-xs text-slate-400">
-                                        Diajukan 17 September 2026
+                                        s.d.
+                                        {{ \Carbon\Carbon::parse($request->end_date)->translatedFormat('d M Y') }}
                                     </p>
 
-                                </div>
+                                </x-wirekit::table.td>
 
-                            </x-wirekit::table.td>
 
+                                <x-wirekit::table.td>
+                                    {{ $request->total_days }} Hari
+                                </x-wirekit::table.td>
 
-                            <x-wirekit::table.td>
 
-                                <p class="text-sm text-slate-700">
-                                    21 Sep 2026
-                                </p>
+                                <x-wirekit::table.td>
 
-                                <p class="mt-0.5 text-xs text-slate-400">
-                                    s.d. 23 Sep 2026
-                                </p>
+                                    @if ($request->status === 'pending')
+                                        <x-wirekit::badge intent="warning">
+                                            Menunggu
+                                        </x-wirekit::badge>
+                                    @elseif ($request->status === 'approved')
+                                        <x-wirekit::badge intent="success">
+                                            Disetujui
+                                        </x-wirekit::badge>
+                                    @elseif ($request->status === 'rejected')
+                                        <x-wirekit::badge intent="danger">
+                                            Ditolak
+                                        </x-wirekit::badge>
+                                    @elseif ($request->status === 'cancelled')
+                                        <x-wirekit::badge intent="secondary">
+                                            Dibatalkan
+                                        </x-wirekit::badge>
+                                    @endif
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
-                                3 Hari
-                            </x-wirekit::table.td>
+                                <x-wirekit::table.td align="right">
 
+                                    <div class="flex justify-end gap-2">
 
-                            <x-wirekit::table.td>
+                                        <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
+                                            Detail
+                                        </x-wirekit::button>
 
-                                <x-wirekit::badge intent="warning">
-                                    Menunggu
-                                </x-wirekit::badge>
+                                        @if ($request->status === 'pending')
+                                            <x-wirekit::button type="button" variant="outline" intent="danger"
+                                                class="px-3 py-1.5 text-xs">
+                                                Batalkan
+                                            </x-wirekit::button>
+                                        @endif
 
-                            </x-wirekit::table.td>
+                                    </div>
 
+                                </x-wirekit::table.td>
 
-                            <x-wirekit::table.td align="right">
+                            </x-wirekit::table.row>
 
-                                <div class="flex justify-end gap-2">
+                        @empty
 
-                                    <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                        Detail
-                                    </x-wirekit::button>
+                            <x-wirekit::table.row>
 
-                                    <x-wirekit::button type="button" variant="outline" intent="danger"
-                                        class="px-3 py-1.5 text-xs ">
-                                        Batalkan
-                                    </x-wirekit::button>
+                                <x-wirekit::table.td colspan="5">
 
-                                </div>
+                                    <div class="py-8 text-center">
 
-                            </x-wirekit::table.td>
+                                        <p class="text-sm font-medium text-slate-700">
+                                            Belum ada pengajuan cuti
+                                        </p>
 
-                        </x-wirekit::table.row>
+                                        <p class="mt-1 text-sm text-slate-400">
+                                            Riwayat pengajuan cuti Anda akan tampil di sini.
+                                        </p>
 
+                                    </div>
 
-                        {{-- =================================================
-                            APPROVED
-                        ================================================== --}}
-                        <x-wirekit::table.row>
+                                </x-wirekit::table.td>
 
-                            <x-wirekit::table.td>
-
-                                <div>
-
-                                    <p class="text-sm font-medium text-slate-800">
-                                        Cuti Khusus
-                                    </p>
-
-                                    <p class="mt-0.5 text-xs text-slate-400">
-                                        Diajukan 10 September 2026
-                                    </p>
-
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <p class="text-sm text-slate-700">
-                                    14 Sep 2026
-                                </p>
-
-                                <p class="mt-0.5 text-xs text-slate-400">
-                                    s.d. 15 Sep 2026
-                                </p>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-                                2 Hari
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge intent="success">
-                                    Disetujui
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td align="right">
-
-                                <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- =================================================
-                            REJECTED
-                        ================================================== --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <div>
-
-                                    <p class="text-sm font-medium text-slate-800">
-                                        Cuti Tahunan
-                                    </p>
-
-                                    <p class="mt-0.5 text-xs text-slate-400">
-                                        Diajukan 01 Agustus 2026
-                                    </p>
-
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <p class="text-sm text-slate-700">
-                                    10 Agu 2026
-                                </p>
-
-                                <p class="mt-0.5 text-xs text-slate-400">
-                                    s.d. 11 Agu 2026
-                                </p>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-                                2 Hari
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge intent="danger">
-                                    Ditolak
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td align="right">
-
-                                <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- =================================================
-                            CANCELLED
-                        ================================================== --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <div>
-
-                                    <p class="text-sm font-medium text-slate-800">
-                                        Cuti Tahunan
-                                    </p>
-
-                                    <p class="mt-0.5 text-xs text-slate-400">
-                                        Diajukan 05 Juli 2026
-                                    </p>
-
-                                </div>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <p class="text-sm text-slate-700">
-                                    12 Jul 2026
-                                </p>
-
-                                <p class="mt-0.5 text-xs text-slate-400">
-                                    s.d. 13 Jul 2026
-                                </p>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-                                2 Hari
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge intent="secondary">
-                                    Dibatalkan
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td align="right">
-
-                                <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                    Detail
-                                </x-wirekit::button>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
+                            </x-wirekit::table.row>
+                        @endforelse
 
                     </x-wirekit::table.body>
 
