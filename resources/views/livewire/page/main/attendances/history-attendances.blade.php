@@ -259,6 +259,9 @@
 
                 <x-wirekit::table hoverable table-label="Riwayat izin dan sakit">
 
+                    {{-- =================================================
+                    HEADER
+                ================================================== --}}
                     <x-wirekit::table.head>
 
                         <x-wirekit::table.row>
@@ -268,11 +271,7 @@
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
-                                Periode
-                            </x-wirekit::table.th>
-
-                            <x-wirekit::table.th>
-                                Durasi
+                                Tanggal
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
@@ -288,214 +287,106 @@
                     </x-wirekit::table.head>
 
 
+                    {{-- =================================================
+                    BODY
+                ================================================== --}}
                     <x-wirekit::table.body>
 
-                        {{-- =================================================
-                        ROW 1
-                    ================================================== --}}
-                        <x-wirekit::table.row>
+                        @forelse ($this->absenceHistory as $absence)
+                            <x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
+                                {{-- JENIS --}}
+                                <x-wirekit::table.td>
 
-                                <x-wirekit::badge variant="info">
-                                    Izin
-                                </x-wirekit::badge>
+                                    @if ($absence->type === 'izin')
+                                        <x-wirekit::badge intent="info">
+                                            Izin
+                                        </x-wirekit::badge>
+                                    @elseif ($absence->type === 'sakit')
+                                        <x-wirekit::badge intent="warning">
+                                            Sakit
+                                        </x-wirekit::badge>
+                                    @else
+                                        <x-wirekit::badge intent="secondary">
+                                            {{ ucfirst($absence->type) }}
+                                        </x-wirekit::badge>
+                                    @endif
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                {{-- TANGGAL --}}
+                                <x-wirekit::table.td>
 
-                                <span class="text-sm text-slate-700">
-                                    15 September 2026
-                                </span>
+                                    <span class="text-sm text-slate-700">
+                                        {{ $absence->date?->translatedFormat('d F Y') ?? '-' }}
+                                    </span>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                {{-- ALASAN --}}
+                                <x-wirekit::table.td>
 
-                                <span class="text-sm text-slate-700">
-                                    1 Hari
-                                </span>
+                                    <span class="text-sm text-slate-600">
+                                        {{ $absence->reason ?? 'Tidak ada alasan' }}
+                                    </span>
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
 
-                            <x-wirekit::table.td>
+                                {{-- STATUS --}}
+                                <x-wirekit::table.td>
 
-                                <span class="text-sm text-slate-600">
-                                    Keperluan keluarga
-                                </span>
+                                    @if ($absence->status === 'pending')
+                                        <x-wirekit::badge intent="warning">
+                                            Menunggu
+                                        </x-wirekit::badge>
+                                    @elseif ($absence->status === 'approved')
+                                        <x-wirekit::badge intent="success">
+                                            Disetujui
+                                        </x-wirekit::badge>
+                                    @elseif ($absence->status === 'rejected')
+                                        <x-wirekit::badge intent="danger">
+                                            Ditolak
+                                        </x-wirekit::badge>
+                                    @elseif ($absence->status === 'cancelled')
+                                        <x-wirekit::badge intent="secondary">
+                                            Dibatalkan
+                                        </x-wirekit::badge>
+                                    @else
+                                        <x-wirekit::badge intent="secondary">
+                                            {{ ucfirst($absence->status) }}
+                                        </x-wirekit::badge>
+                                    @endif
 
-                            </x-wirekit::table.td>
+                                </x-wirekit::table.td>
 
+                            </x-wirekit::table.row>
 
-                            <x-wirekit::table.td>
+                        @empty
 
-                                <x-wirekit::badge variant="warning">
-                                    Menunggu
-                                </x-wirekit::badge>
+                            <x-wirekit::table.row>
 
-                            </x-wirekit::table.td>
+                                <x-wirekit::table.td colspan="4">
 
-                        </x-wirekit::table.row>
+                                    <div class="py-8 text-center">
 
+                                        <p class="text-sm font-medium text-slate-700">
+                                            Belum ada riwayat izin atau sakit
+                                        </p>
 
-                        {{-- =================================================
-                        ROW 2
-                    ================================================== --}}
-                        <x-wirekit::table.row>
+                                        <p class="mt-1 text-sm text-slate-400">
+                                            Tidak ditemukan pengajuan izin atau sakit
+                                            pada periode yang dipilih.
+                                        </p>
 
-                            <x-wirekit::table.td>
+                                    </div>
 
-                                <x-wirekit::badge variant="warning">
-                                    Sakit
-                                </x-wirekit::badge>
+                                </x-wirekit::table.td>
 
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    10 — 11 September 2026
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    2 Hari
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-600">
-                                    Demam dan perlu istirahat
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="success">
-                                    Disetujui
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- =================================================
-                        ROW 3
-                    ================================================== --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="info">
-                                    Izin
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    03 September 2026
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    1 Hari
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-600">
-                                    Urusan keluarga
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="success">
-                                    Disetujui
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
-
-
-                        {{-- =================================================
-                        ROW 4
-                    ================================================== --}}
-                        <x-wirekit::table.row>
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="warning">
-                                    Sakit
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    28 Agustus 2026
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-700">
-                                    1 Hari
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <span class="text-sm text-slate-600">
-                                    Kondisi kesehatan
-                                </span>
-
-                            </x-wirekit::table.td>
-
-
-                            <x-wirekit::table.td>
-
-                                <x-wirekit::badge variant="danger">
-                                    Ditolak
-                                </x-wirekit::badge>
-
-                            </x-wirekit::table.td>
-
-                        </x-wirekit::table.row>
+                            </x-wirekit::table.row>
+                        @endforelse
 
                     </x-wirekit::table.body>
 

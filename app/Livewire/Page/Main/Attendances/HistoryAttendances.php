@@ -7,6 +7,7 @@ use App\Models\EmployeeAbsenceRequest;
 use App\Models\Holidays;
 use App\Models\WorkTime;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -24,6 +25,19 @@ class HistoryAttendances extends Component
     {
         $this->year = now()->year;
         $this->month = now()->month;
+    }
+
+    #[Computed]
+    public function absenceHistory(): Collection
+    {
+        $employee = Auth::user()->employees;
+
+        return EmployeeAbsenceRequest::query()
+            ->where('employee_id', $employee->id)
+            ->whereMonth('date', $this->month)
+            ->whereYear('date', $this->year)
+            ->latest('date')
+            ->get();
     }
 
     #[Computed]
