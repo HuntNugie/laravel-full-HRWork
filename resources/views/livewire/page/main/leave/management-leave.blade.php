@@ -302,9 +302,12 @@
                                 <x-wirekit::table.td align="right">
 
                                     @can('show-management-leave')
-                                        <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
-                                            Detail
-                                        </x-wirekit::button>
+                                        <livewire:components.main.leave.modal-detail-management-leave :request="$request"
+                                            :key="'management-leave-detail-' . $request->id">
+                                            <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
+                                                Detail
+                                            </x-wirekit::button>
+                                        </livewire:components.main.leave.modal-detail-management-leave>
                                     @endcan
 
                                 </x-wirekit::table.td>
