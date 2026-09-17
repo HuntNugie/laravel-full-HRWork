@@ -29,6 +29,8 @@
 
 
 
+
+
             </x-wirekit::sidebar.group>
         @endcanany
 
@@ -156,7 +158,8 @@
 
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-manage-absence'])
+
+        @canany(['view-manage-absence', 'view-type-leave'])
 
             <x-wirekit::sidebar.group collapsible label="Cuti dan izin">
 
@@ -174,6 +177,12 @@
                     </x-wirekit::sidebar.item>
                 @endcan
 
+                @can('view-management-leave')
+                    <x-wirekit::sidebar.item href="{{ route('leave.manage.view') }}" :active="request()->routeIs('leave.manage.view')" icon="book"
+                        wire:navigate>
+                        Manajemen cuti
+                    </x-wirekit::sidebar.item>
+                @endcan
 
 
                 {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>

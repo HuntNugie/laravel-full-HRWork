@@ -38,4 +38,12 @@ class LeaveRequest extends Model
     {
         return $this->belongsTo(User::class, 'rejected_by');
     }
+
+    public function employeeContract()
+    {
+        return $this->belongsTo(
+            EmployeeContract::class,
+            'employee_contract_id'
+        );
+    }
 }
