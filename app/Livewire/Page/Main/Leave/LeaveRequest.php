@@ -13,23 +13,56 @@ use Livewire\Component;
 #[Layout('layouts.main', ['title' => 'Halaman Pengajuan Cuti Karyawan'])]
 class LeaveRequest extends Component
 {
-    public Employees $employee;
-    public int $leaveRequestVersion = 1;
+    /*
+    |--------------------------------------------------------------------------
+    | DATA UTAMA
+    |--------------------------------------------------------------------------
+    */
 
-    /**
-     * Jatah cuti dari kontrak aktif.
-     */
+    public Employees $employee;
+
     public Collection $entitlements;
 
-    /**
-     * Riwayat pengajuan cuti karyawan.
-     */
     public Collection $leaveRequests;
+
+    public int $leaveRequestVersion = 1;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTER
+    |--------------------------------------------------------------------------
+    */
+
+    public string $segment = 'all';
+
+    public ?string $dateFrom = null;
+
+    public ?string $dateTo = null;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | MOUNT
+    |--------------------------------------------------------------------------
+    */
 
     public function mount(): void
     {
         $this->employee = Auth::user()->employees;
 
+        $this->loadData();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOAD DATA
+    |--------------------------------------------------------------------------
+    */
+
+    private function loadData(): void
+    {
         $contract = $this->employee->latestEmployeeContract;
 
         /*
@@ -37,30 +70,143 @@ class LeaveRequest extends Component
         | Jatah Cuti
         |--------------------------------------------------------------------------
         */
+
         $this->entitlements = $contract
-            ? $contract->contractLeave()
+            ? $contract
+            ->contractLeave()
             ->with('leaveType')
             ->get()
             : new Collection();
+
 
         /*
         |--------------------------------------------------------------------------
         | Riwayat Pengajuan Cuti
         |--------------------------------------------------------------------------
         */
-        $this->leaveRequests = $this->employee
+
+        $query = $this->employee
             ->leaveRequest()
             ->with('leaveType')
-            ->latest()
-            ->get();
+            ->latest('created_at');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER STATUS
+        |--------------------------------------------------------------------------
+        */
+
+        if ($this->segment !== 'all') {
+            $query->where('status', $this->segment);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER DARI TANGGAL
+        |--------------------------------------------------------------------------
+        |
+        | Menampilkan pengajuan yang periodenya beririsan
+        | dengan tanggal yang dipilih.
+        |
+        */
+
+        if ($this->dateFrom) {
+            $query->whereDate(
+                'end_date',
+                '>=',
+                $this->dateFrom
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FILTER SAMPAI TANGGAL
+        |--------------------------------------------------------------------------
+        */
+
+        if ($this->dateTo) {
+            $query->whereDate(
+                'start_date',
+                '<=',
+                $this->dateTo
+            );
+        }
+
+
+        $this->leaveRequests = $query->get();
     }
 
-    /**
-     * Mengambil jumlah cuti yang sudah digunakan.
-     *
-     * Hanya pengajuan dengan status approved
-     * yang mengurangi jatah cuti.
-     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTER STATUS
+    |--------------------------------------------------------------------------
+    */
+
+    public function updatedSegment(): void
+    {
+        $this->loadData();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTER DARI TANGGAL
+    |--------------------------------------------------------------------------
+    */
+
+    public function updatedDateFrom(): void
+    {
+        $this->loadData();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTER SAMPAI TANGGAL
+    |--------------------------------------------------------------------------
+    */
+
+    public function updatedDateTo(): void
+    {
+        $this->loadData();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDASI RENTANG TANGGAL
+    |--------------------------------------------------------------------------
+    */
+
+    public function updated(): void
+    {
+        if (
+            $this->dateFrom &&
+            $this->dateTo &&
+            $this->dateFrom > $this->dateTo
+        ) {
+            $this->addError(
+                'dateTo',
+                'Sampai tanggal harus sama atau setelah dari tanggal.'
+            );
+
+            return;
+        }
+
+        $this->resetErrorBag('dateTo');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USED LEAVE
+    |--------------------------------------------------------------------------
+    */
+
     public function usedLeave(int $leaveTypeId): int
     {
         return (int) $this->employee
@@ -70,12 +216,19 @@ class LeaveRequest extends Component
             ->sum('total_days');
     }
 
-    /**
-     * Mengambil sisa cuti berdasarkan entitlement.
-     */
-    public function remainingLeave(ContractLeaveEntitlements $entitlement): int
-    {
-        $used = $this->usedLeave($entitlement->leave_type_id);
+
+    /*
+    |--------------------------------------------------------------------------
+    | REMAINING LEAVE
+    |--------------------------------------------------------------------------
+    */
+
+    public function remainingLeave(
+        ContractLeaveEntitlements $entitlement
+    ): int {
+        $used = $this->usedLeave(
+            $entitlement->leave_type_id
+        );
 
         return max(
             0,
@@ -83,16 +236,23 @@ class LeaveRequest extends Component
         );
     }
 
-    /**
-     * Mengambil persentase cuti yang sudah digunakan.
-     */
-    public function leavePercentage(ContractLeaveEntitlements $entitlement): float
-    {
+
+    /*
+    |--------------------------------------------------------------------------
+    | LEAVE PERCENTAGE
+    |--------------------------------------------------------------------------
+    */
+
+    public function leavePercentage(
+        ContractLeaveEntitlements $entitlement
+    ): float {
         if ($entitlement->days <= 0) {
             return 0;
         }
 
-        $used = $this->usedLeave($entitlement->leave_type_id);
+        $used = $this->usedLeave(
+            $entitlement->leave_type_id
+        );
 
         return min(
             100,
@@ -100,40 +260,60 @@ class LeaveRequest extends Component
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | REFRESH DARI CHILD COMPONENT
+    |--------------------------------------------------------------------------
+    */
+
     #[On('leave-request')]
-    public function refresh()
+    public function refresh(): void
     {
         $this->employee = Auth::user()->employees;
 
-        $contract = $this->employee->latestEmployeeContract;
+        $this->loadData();
 
         /*
         |--------------------------------------------------------------------------
-        | Jatah Cuti
+        | Paksa child modal dibuat ulang
         |--------------------------------------------------------------------------
         */
-        $this->entitlements = $contract
-            ? $contract->contractLeave()
-            ->with('leaveType')
-            ->get()
-            : new Collection();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Riwayat Pengajuan Cuti
-        |--------------------------------------------------------------------------
-        */
-        $this->leaveRequests = $this->employee
-            ->leaveRequest()
-            ->with('leaveType')
-            ->latest()
-            ->get();
 
         $this->leaveRequestVersion++;
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESET FILTER
+    |--------------------------------------------------------------------------
+    */
+
+    public function resetFilters(): void
+    {
+        $this->segment = 'all';
+        $this->dateFrom = null;
+        $this->dateTo = null;
+
+        $this->resetValidation([
+            'dateTo',
+        ]);
+
+        $this->loadData();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RENDER
+    |--------------------------------------------------------------------------
+    */
+
     public function render()
     {
-        return view('livewire.page.main.leave.leave-request');
+        return view(
+            'livewire.page.main.leave.leave-request'
+        );
     }
 }

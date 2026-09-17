@@ -21,7 +21,8 @@
 
         </x-wirekit::stack>
 
-        {{-- Ajukan Cuti --}}
+
+        {{-- AJUKAN CUTI --}}
         @can('create-leave')
             <livewire:components.main.leave.modal-leave-request :key="'leave-request-modal-' . $leaveRequestVersion">
                 <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
@@ -69,11 +70,13 @@
 
                             </div>
 
+
                             <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
                                 <x-wirekit::icon name="calendar" class="size-5 text-sky-500" />
                             </div>
 
                         </div>
+
 
                         <div class="space-y-2">
 
@@ -81,6 +84,7 @@
                                 intent="primary" size="sm" />
 
                             <div class="flex items-center justify-between text-xs text-slate-400">
+
                                 <span>
                                     Terpakai {{ $used }} hari
                                 </span>
@@ -88,6 +92,7 @@
                                 <span>
                                     dari {{ $leav->days }} hari
                                 </span>
+
                             </div>
 
                         </div>
@@ -110,6 +115,7 @@
                         <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
                             <x-wirekit::icon name="information-circle" class="size-5 text-slate-500" />
                         </div>
+
 
                         <div>
 
@@ -184,6 +190,7 @@
                             <x-wirekit::icon name="document-text" class="size-5 text-slate-600" />
                         </div>
 
+
                         <div>
 
                             <div class="flex flex-wrap items-center gap-2">
@@ -198,14 +205,20 @@
 
                             </div>
 
+
                             <p class="mt-1 text-sm text-slate-600">
                                 {{ $contract->position_name }}
                             </p>
 
+
                             <p class="mt-0.5 text-xs text-slate-400">
+
                                 {{ \Carbon\Carbon::parse($contract->start_date)->translatedFormat('d F Y') }}
+
                                 –
+
                                 {{ \Carbon\Carbon::parse($contract->end_date)->translatedFormat('d F Y') }}
+
                             </p>
 
                         </div>
@@ -232,6 +245,7 @@
                 <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-50">
                     <x-wirekit::icon name="information-circle" class="size-5 text-sky-500" />
                 </div>
+
 
                 <div>
 
@@ -275,21 +289,35 @@
                 </x-wirekit::stack>
 
 
-                {{-- FILTER --}}
+                {{-- FILTER TANGGAL --}}
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
 
                     <div class="w-full sm:w-40">
-                        <x-wirekit::input type="date" label="Dari Tanggal" />
+
+                        <x-wirekit::input type="date" label="Dari Tanggal" wire:model.live="dateFrom" />
+
                     </div>
 
+
                     <div class="w-full sm:w-40">
-                        <x-wirekit::input type="date" label="Sampai Tanggal" />
+
+                        <x-wirekit::input type="date" label="Sampai Tanggal" wire:model.live="dateTo" />
+
                     </div>
+
+
+                    @if ($dateFrom || $dateTo)
+                        <x-wirekit::button type="button" variant="outline" wire:click="resetFilters" class="shrink-0">
+                            Reset
+                        </x-wirekit::button>
+                    @endif
 
                 </div>
 
             </div>
 
+
+            {{-- FILTER STATUS --}}
             <div class="mt-4">
 
                 <x-wirekit::segmented-control label="Status Pengajuan" name="leave_status" :options="[
@@ -299,7 +327,7 @@
                     'rejected' => 'Ditolak',
                     'cancelled' => 'Dibatalkan',
                 ]"
-                    value="all" />
+                    wire:model.live="segment" />
 
             </div>
 
@@ -321,17 +349,21 @@
                                 Jenis Cuti
                             </x-wirekit::table.th>
 
+
                             <x-wirekit::table.th>
                                 Periode
                             </x-wirekit::table.th>
+
 
                             <x-wirekit::table.th>
                                 Durasi
                             </x-wirekit::table.th>
 
+
                             <x-wirekit::table.th>
                                 Status
                             </x-wirekit::table.th>
+
 
                             <x-wirekit::table.th align="right">
                                 Aksi
@@ -346,8 +378,10 @@
                     <x-wirekit::table.body>
 
                         @forelse ($leaveRequests as $request)
+
                             <x-wirekit::table.row>
 
+                                {{-- JENIS CUTI --}}
                                 <x-wirekit::table.td>
 
                                     <div>
@@ -366,25 +400,35 @@
                                 </x-wirekit::table.td>
 
 
+                                {{-- PERIODE --}}
                                 <x-wirekit::table.td>
 
                                     <p class="text-sm text-slate-700">
+
                                         {{ \Carbon\Carbon::parse($request->start_date)->translatedFormat('d M Y') }}
+
                                     </p>
 
                                     <p class="mt-0.5 text-xs text-slate-400">
+
                                         s.d.
+
                                         {{ \Carbon\Carbon::parse($request->end_date)->translatedFormat('d M Y') }}
+
                                     </p>
 
                                 </x-wirekit::table.td>
 
 
+                                {{-- DURASI --}}
                                 <x-wirekit::table.td>
+
                                     {{ $request->total_days }} Hari
+
                                 </x-wirekit::table.td>
 
 
+                                {{-- STATUS --}}
                                 <x-wirekit::table.td>
 
                                     @if ($request->status === 'pending')
@@ -408,21 +452,28 @@
                                 </x-wirekit::table.td>
 
 
+                                {{-- AKSI --}}
                                 <x-wirekit::table.td align="right">
 
                                     <div class="flex justify-end gap-2">
 
+                                        {{-- DETAIL --}}
                                         <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
                                             Detail
                                         </x-wirekit::button>
 
+
+                                        {{-- BATALKAN --}}
                                         @can('cancel-leave')
                                             @if ($request->status === 'pending')
-                                                <livewire:components.main.leave.modal-cancel-leave :request="$request">
+                                                <livewire:components.main.leave.modal-cancel-leave :request="$request"
+                                                    :key="'cancel-leave-' . $request->id">
+
                                                     <x-wirekit::button type="button" variant="outline" intent="danger"
                                                         class="px-3 py-1.5 text-xs">
                                                         Batalkan
                                                     </x-wirekit::button>
+
                                                 </livewire:components.main.leave.modal-cancel-leave>
                                             @endif
                                         @endcan
@@ -446,7 +497,8 @@
                                         </p>
 
                                         <p class="mt-1 text-sm text-slate-400">
-                                            Riwayat pengajuan cuti Anda akan tampil di sini.
+                                            Tidak ditemukan pengajuan cuti
+                                            berdasarkan filter yang dipilih.
                                         </p>
 
                                     </div>
@@ -454,6 +506,7 @@
                                 </x-wirekit::table.td>
 
                             </x-wirekit::table.row>
+
                         @endforelse
 
                     </x-wirekit::table.body>
