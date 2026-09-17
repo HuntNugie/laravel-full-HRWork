@@ -24,6 +24,8 @@ use App\Livewire\Page\Main\Employee\DetailEmployee;
 use App\Livewire\Page\Main\Employee\EditEmployee;
 use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Employee\HistoryContract;
+use App\Livewire\Page\Main\Employee\MyContract;
+use App\Livewire\Page\Main\Employee\MyData;
 use App\Livewire\Page\Main\Holiday\Holiday;
 use App\Livewire\Page\Main\Leave\DetailLeaveType;
 use App\Livewire\Page\Main\Leave\LeaveRequest;
@@ -54,6 +56,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/my-profile', MyProfile::class)->middleware("gateMyProfile")->name('my-profile');
+    Route::get('/my-data', MyData::class)->middleware("permission:view-data-my")->name('my-data');
+    Route::get('/my-contract', MyContract::class)->middleware("permission:view-contract-my")->name('my-contract');
 
     Route::prefix('print')->group(function () {
         Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');

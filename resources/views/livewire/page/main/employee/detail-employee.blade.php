@@ -754,6 +754,165 @@
 
     </div>
 
+{{-- =====================================================
+    LEAVE ENTITLEMENTS
+====================================================== --}}
+<x-wirekit::card>
+
+    <x-wirekit::card.header>
+
+        <x-wirekit::stack gap="1">
+
+            <h2 class="text-lg font-semibold text-slate-900">
+                Jatah Cuti
+            </h2>
+
+            <p class="text-sm text-slate-500">
+                Informasi jatah dan sisa cuti karyawan pada tahun {{ now()->year }}.
+            </p>
+
+        </x-wirekit::stack>
+
+    </x-wirekit::card.header>
+
+
+    <x-wirekit::card.body>
+
+        @if ($leaveEntitlements->isNotEmpty())
+
+            <div class="wk-scrollbar max-h-[320px] overflow-auto pr-2">
+
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+
+                    @foreach ($leaveEntitlements as $leave)
+
+                        @php
+                            $used = $this->usedLeave($leave->leave_type_id);
+                            $pending = $this->pendingLeave($leave->leave_type_id);
+                            $remaining = $this->remainingLeave($leave);
+                        @endphp
+
+                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+
+                            <div class="flex items-start justify-between gap-4">
+
+                                <div class="flex min-w-0 items-center gap-3">
+
+                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
+                                        <x-wirekit::icon
+                                            name="calendar"
+                                            class="size-5 text-sky-500"
+                                        />
+                                    </div>
+
+                                    <div class="min-w-0">
+
+                                        <p class="truncate text-sm font-medium text-slate-900">
+                                            {{ $leave->leaveType?->name ?? 'Jenis Cuti' }}
+                                        </p>
+
+                                        <p class="mt-0.5 text-xs text-slate-400">
+                                            Jatah {{ $leave->days }} hari
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="shrink-0 text-right">
+
+                                    <p class="text-lg font-semibold text-slate-900">
+                                        {{ $remaining }}
+                                    </p>
+
+                                    <p class="text-xs text-slate-400">
+                                        Hari tersisa
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="mt-4 border-t border-slate-200 pt-3">
+
+                                <div class="flex items-center justify-between text-xs">
+
+                                    <span class="text-slate-400">
+                                        Terpakai
+                                    </span>
+
+                                    <span class="font-medium text-slate-700">
+                                        {{ $used }} / {{ $leave->days }} Hari
+                                    </span>
+
+                                </div>
+
+
+                                @if ($pending > 0)
+
+                                    <div class="mt-1 flex items-center justify-between text-xs">
+
+                                        <span class="text-slate-400">
+                                            Menunggu persetujuan
+                                        </span>
+
+                                        <span class="font-medium text-amber-600">
+                                            {{ $pending }} Hari
+                                        </span>
+
+                                    </div>
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                    @endforeach
+
+                </div>
+
+            </div>
+
+        @else
+
+            <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4">
+
+                <div class="flex items-start gap-3">
+
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
+
+                        <x-wirekit::icon
+                            name="information-circle"
+                            class="size-5 text-slate-500"
+                        />
+
+                    </div>
+
+                    <div>
+
+                        <p class="text-sm font-semibold text-slate-800">
+                            Belum ada jatah cuti
+                        </p>
+
+                        <p class="mt-1 text-sm text-slate-500">
+                            Contract karyawan ini belum memiliki jatah cuti
+                            yang terdaftar.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @endif
+
+    </x-wirekit::card.body>
+
+</x-wirekit::card>
         <x-wirekit::card>
 
             <x-wirekit::card.header>

@@ -11,7 +11,7 @@
         </x-wirekit::sidebar.group>
 
 
-        @canany(['view-attendance', 'view-leave'])
+        @canany(['view-attendance', 'view-leave', 'view-data-my'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
 
                 @can('view-attendance')
@@ -27,7 +27,16 @@
                     </x-wirekit::sidebar.item>
                 @endcan
 
-
+                @can('view-data-my')
+                    <x-wirekit::sidebar.item href="{{ route('my-data') }}" :active="request()->routeIs('my-data')" icon="user" wire:navigate>
+                        Data saya
+                    </x-wirekit::sidebar.item>
+                @endcan
+                @can('view-contract-my')
+                    <x-wirekit::sidebar.item href="{{ route('my-contract') }}" :active="request()->routeIs('my-contract')" icon="archive" wire:navigate>
+                        Kontrak saya
+                    </x-wirekit::sidebar.item>
+                @endcan
 
 
 
@@ -86,14 +95,16 @@
 
 
                 @can('view-team')
-                    <x-wirekit::sidebar.item href="{{ route('team.view') }}" icon="user-group" :active="request()->routeIs('team.view')" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('team.view') }}" icon="user-group" :active="request()->routeIs('team.view')"
+                        wire:navigate>
                         Manajemen Team
                     </x-wirekit::sidebar.item>
                 @endcan
 
 
                 @can('view-position')
-                    <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge"
+                        wire:navigate>
                         Manajemen Jabatan
                     </x-wirekit::sidebar.item>
                 @endcan
@@ -178,7 +189,7 @@
                 @endcan
 
                 @can('view-management-leave')
-                    <x-wirekit::sidebar.item href="{{ route('leave.manage.view') }}" :active="request()->routeIs('leave.manage.view')" icon="book"
+                    <x-wirekit::sidebar.item href="{{ route('leave.manage.view') }}" :active="request()->routeIs('leave.manage].view')" icon="book"
                         wire:navigate>
                         Manajemen cuti
                     </x-wirekit::sidebar.item>
