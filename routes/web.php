@@ -21,6 +21,7 @@ use App\Livewire\Page\Main\Employee\Contract\CreateEmployeeContract;
 use App\Livewire\Page\Main\Employee\Contract\DetailEmployeeContract;
 use App\Livewire\Page\Main\Employee\Contract\EditEmployeeContract;
 use App\Livewire\Page\Main\Employee\DetailEmployee;
+use App\Livewire\Page\Main\Employee\DetailMyContract;
 use App\Livewire\Page\Main\Employee\EditEmployee;
 use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Employee\HistoryContract;
@@ -58,6 +59,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/my-profile', MyProfile::class)->middleware("gateMyProfile")->name('my-profile');
     Route::get('/my-data', MyData::class)->middleware("permission:view-data-my")->name('my-data');
     Route::get('/my-contract', MyContract::class)->middleware("permission:view-contract-my")->name('my-contract');
+    Route::get('/my-contract/{contract}', DetailMyContract::class)->middleware("permission:show-contract-my")->name('my-contract.show');
 
     Route::prefix('print')->group(function () {
         Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');

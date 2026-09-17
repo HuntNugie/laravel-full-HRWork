@@ -92,7 +92,15 @@
 
                             </div>
 
-
+<x-wirekit::button
+    type="button"
+    variant="outline"
+    size="sm"
+    href="{{ route('my-contract.show', $activeContract->id) }}"
+    wire:navigate
+>
+    Detail Contract
+</x-wirekit::button>
                         </div>
 
                     </div>
@@ -562,6 +570,22 @@
                                             </p>
 
                                         @endif
+
+                                    </div>
+
+
+                                    {{-- ACTION --}}
+                                    <div>
+
+                                <x-wirekit::button
+    type="button"
+    variant="outline"
+    size="sm"
+    href="{{ route('my-contract.show', $contract->id) }}"
+    wire:navigate
+>
+    Detail Contract
+</x-wirekit::button>
 
                                     </div>
 
