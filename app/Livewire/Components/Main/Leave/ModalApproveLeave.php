@@ -3,6 +3,7 @@
 namespace App\Livewire\Components\Main\Leave;
 
 use App\Models\LeaveRequest;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -29,6 +30,7 @@ class ModalApproveLeave extends Component
         */
 
         $this->request->refresh();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -93,25 +95,63 @@ class ModalApproveLeave extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Ambil entitlement
+        | Tahun Cuti
         |--------------------------------------------------------------------------
+        |
+        | Jatah dihitung berdasarkan tahun dari tanggal mulai cuti.
+        |
         */
 
-        $entitlement = $contract
-            ->contractLeave()
-            ->where(
-                'leave_type_id',
-                $this->request->leave_type_id
-            )
-            ->first();
-
-        if (!$entitlement) {
+        try {
+            $leaveYear = Carbon::parse(
+                $this->request->start_date
+            )->year;
+        } catch (\Throwable) {
 
             $this->dispatch(
                 'wirekit-toast',
                 variant: 'danger',
-                title: 'Tidak dapat diproses',
-                message: 'Jatah cuti tidak ditemukan pada contract karyawan.'
+                title: 'Tanggal Tidak Valid',
+                message: 'Tanggal mulai pengajuan cuti tidak valid.'
+            );
+
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pastikan pengajuan tidak melewati tahun
+        |--------------------------------------------------------------------------
+        */
+
+        try {
+            $startDate = Carbon::parse(
+                $this->request->start_date
+            );
+
+            $endDate = Carbon::parse(
+                $this->request->end_date
+            );
+        } catch (\Throwable) {
+
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Tanggal Tidak Valid',
+                message: 'Periode pengajuan cuti tidak valid.'
+            );
+
+            return;
+        }
+
+        if ($startDate->year !== $endDate->year) {
+
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Periode Tidak Valid',
+                message: 'Pengajuan cuti tidak boleh melewati pergantian tahun.'
             );
 
             return;
@@ -126,16 +166,29 @@ class ModalApproveLeave extends Component
 
         $approved = false;
 
+        $availableDays = 0;
+
+        $entitlementDays = 0;
+
+        $usedDays = 0;
+
+        $pendingDays = 0;
+
+
         DB::transaction(function () use (
             $employee,
             $contract,
-            $entitlement,
-            &$approved
+            $leaveYear,
+            &$approved,
+            &$availableDays,
+            &$entitlementDays,
+            &$usedDays,
+            &$pendingDays,
         ) {
 
             /*
             |--------------------------------------------------------------------------
-            | Ambil request terbaru dengan lock
+            | Ambil request terbaru + lock
             |--------------------------------------------------------------------------
             */
 
@@ -151,7 +204,7 @@ class ModalApproveLeave extends Component
 
             /*
             |--------------------------------------------------------------------------
-            | Cek kembali status
+            | Cek status kembali
             |--------------------------------------------------------------------------
             */
 
@@ -162,12 +215,35 @@ class ModalApproveLeave extends Component
 
             /*
             |--------------------------------------------------------------------------
-            | Hitung approved
+            | Ambil entitlement + lock
             |--------------------------------------------------------------------------
             |
-            | Request yang sedang diproses masih pending sehingga
-            | otomatis tidak ikut dihitung.
+            | Lock entitlement agar approval cuti yang menggunakan
+            | entitlement yang sama berjalan secara berurutan.
             |
+            */
+
+            $entitlement = $contract
+                ->contractLeave()
+                ->where(
+                    'leave_type_id',
+                    $leaveRequest->leave_type_id
+                )
+                ->lockForUpdate()
+                ->first();
+
+            if (!$entitlement) {
+                return;
+            }
+
+
+            $entitlementDays = (int) $entitlement->days;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Hitung approved tahun pengajuan
+            |--------------------------------------------------------------------------
             */
 
             $usedDays = (int) $employee
@@ -180,15 +256,19 @@ class ModalApproveLeave extends Component
                     'status',
                     'approved'
                 )
+                ->whereYear(
+                    'start_date',
+                    $leaveYear
+                )
                 ->sum('total_days');
 
 
             /*
             |--------------------------------------------------------------------------
-            | Hitung pending LAIN
+            | Hitung pending lain pada tahun pengajuan
             |--------------------------------------------------------------------------
             |
-            | Request yang sedang diproses dikecualikan.
+            | Request yang sedang di-approve dikecualikan.
             |
             */
 
@@ -202,19 +282,25 @@ class ModalApproveLeave extends Component
                     'status',
                     'pending'
                 )
-                ->whereKeyNot($leaveRequest->id)
+                ->whereKeyNot(
+                    $leaveRequest->id
+                )
+                ->whereYear(
+                    'start_date',
+                    $leaveYear
+                )
                 ->sum('total_days');
 
 
             /*
             |--------------------------------------------------------------------------
-            | Sisa yang tersedia untuk request ini
+            | Hitung jatah yang tersedia untuk request ini
             |--------------------------------------------------------------------------
             */
 
             $availableDays = max(
                 0,
-                $entitlement->days
+                $entitlementDays
                     - $usedDays
                     - $pendingDays
             );
@@ -222,11 +308,14 @@ class ModalApproveLeave extends Component
 
             /*
             |--------------------------------------------------------------------------
-            | Cek jatah
+            | Cek apakah jatah cukup
             |--------------------------------------------------------------------------
             */
 
-            if ($leaveRequest->total_days > $availableDays) {
+            if (
+                (int) $leaveRequest->total_days
+                > $availableDays
+            ) {
                 return;
             }
 
@@ -249,56 +338,58 @@ class ModalApproveLeave extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Gagal karena jatah tidak mencukupi
+        | Request gagal di-approve
         |--------------------------------------------------------------------------
         */
 
         if (!$approved) {
 
+            if ($entitlementDays <= 0) {
+
+                $this->dispatch(
+                    'wirekit-toast',
+                    variant: 'danger',
+                    title: 'Jatah Cuti Tidak Tersedia',
+                    message: 'Jatah cuti pada contract karyawan tidak tersedia.'
+                );
+
+                return;
+            }
+
+
             /*
-            | Ambil data terbaru untuk pesan toast.
+            |--------------------------------------------------------------------------
+            | Request terbaru bisa saja sudah diproses oleh user lain
+            |--------------------------------------------------------------------------
             */
 
-            $usedDays = (int) $employee
-                ->leaveRequest()
-                ->where(
-                    'leave_type_id',
-                    $this->request->leave_type_id
-                )
-                ->where(
-                    'status',
-                    'approved'
-                )
-                ->sum('total_days');
+            $this->request->refresh();
+
+            if ($this->request->status !== 'pending') {
+
+                $this->dispatch(
+                    'wirekit-toast',
+                    variant: 'danger',
+                    title: 'Tidak dapat diproses',
+                    message: 'Pengajuan cuti ini sudah diproses sebelumnya.'
+                );
+
+                return;
+            }
 
 
-            $pendingDays = (int) $employee
-                ->leaveRequest()
-                ->where(
-                    'leave_type_id',
-                    $this->request->leave_type_id
-                )
-                ->where(
-                    'status',
-                    'pending'
-                )
-                ->whereKeyNot($this->request->id)
-                ->sum('total_days');
-
-
-            $availableDays = max(
-                0,
-                $entitlement->days
-                    - $usedDays
-                    - $pendingDays
-            );
-
+            /*
+            |--------------------------------------------------------------------------
+            | Toast karena jatah tidak mencukupi
+            |--------------------------------------------------------------------------
+            */
 
             $this->dispatch(
                 'wirekit-toast',
                 variant: 'danger',
                 title: 'Jatah Cuti Tidak Mencukupi',
-                message: "Pengajuan {$this->request->total_days} hari tidak dapat disetujui. Sisa jatah yang tersedia hanya {$availableDays} hari."
+                message: "Pengajuan {$this->request->total_days} hari tidak dapat disetujui. " .
+                    "Sisa jatah yang tersedia untuk tahun {$leaveYear} hanya {$availableDays} hari."
             );
 
             return;
@@ -316,7 +407,7 @@ class ModalApproveLeave extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Refresh halaman management
+        | Refresh halaman Management Leave
         |--------------------------------------------------------------------------
         */
 
@@ -327,7 +418,18 @@ class ModalApproveLeave extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Tutup modal
+        | Refresh halaman employee jika masih terbuka
+        |--------------------------------------------------------------------------
+        */
+
+        $this->dispatch(
+            'leave-request'
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tutup modal approve
         |--------------------------------------------------------------------------
         */
 
@@ -335,6 +437,13 @@ class ModalApproveLeave extends Component
             'wirekit-modal-close',
             name: 'approve-leave-' . $this->request->id
         );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tutup modal detail management
+        |--------------------------------------------------------------------------
+        */
 
         $this->dispatch(
             'wirekit-modal-close',
@@ -355,6 +464,7 @@ class ModalApproveLeave extends Component
             message: 'Pengajuan cuti berhasil disetujui.'
         );
     }
+
 
     public function render()
     {

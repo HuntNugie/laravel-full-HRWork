@@ -57,8 +57,8 @@
                 {{-- SEARCH --}}
                 <div class="w-full lg:flex-1">
 
-                    <x-wirekit::input type="text" label="Cari Karyawan" placeholder="Cari nama atau kode karyawan..."
-                        wire:model.live.debounce.300ms="search" />
+                    <x-wirekit::input type="text" label="Cari Karyawan" name="search"
+                        placeholder="Cari nama atau kode karyawan..." wire:model.live.debounce.300ms="search" />
 
                 </div>
 

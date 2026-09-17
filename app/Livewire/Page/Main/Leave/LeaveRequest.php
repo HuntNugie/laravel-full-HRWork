@@ -65,9 +65,10 @@ class LeaveRequest extends Component
     {
         $contract = $this->employee->latestEmployeeContract;
 
+
         /*
         |--------------------------------------------------------------------------
-        | Jatah Cuti
+        | JATAH CUTI
         |--------------------------------------------------------------------------
         */
 
@@ -81,8 +82,11 @@ class LeaveRequest extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | Riwayat Pengajuan Cuti
+        | RIWAYAT PENGAJUAN CUTI
         |--------------------------------------------------------------------------
+        |
+        | Semua histori tetap ditampilkan.
+        |
         */
 
         $query = $this->employee
@@ -98,7 +102,10 @@ class LeaveRequest extends Component
         */
 
         if ($this->segment !== 'all') {
-            $query->where('status', $this->segment);
+            $query->where(
+                'status',
+                $this->segment
+            );
         }
 
 
@@ -108,7 +115,7 @@ class LeaveRequest extends Component
         |--------------------------------------------------------------------------
         |
         | Menampilkan pengajuan yang periodenya beririsan
-        | dengan tanggal yang dipilih.
+        | dengan rentang tanggal yang dipilih.
         |
         */
 
@@ -203,24 +210,74 @@ class LeaveRequest extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | USED LEAVE
+    | CUTI SUDAH DIGUNAKAN
     |--------------------------------------------------------------------------
+    |
+    | Hanya approved pada tahun berjalan yang dihitung.
+    |
     */
 
     public function usedLeave(int $leaveTypeId): int
     {
         return (int) $this->employee
             ->leaveRequest()
-            ->where('leave_type_id', $leaveTypeId)
-            ->where('status', 'approved')
+            ->where(
+                'leave_type_id',
+                $leaveTypeId
+            )
+            ->where(
+                'status',
+                'approved'
+            )
+            ->whereYear(
+                'start_date',
+                now()->year
+            )
             ->sum('total_days');
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | REMAINING LEAVE
+    | CUTI PENDING
     |--------------------------------------------------------------------------
+    |
+    | Pending pada tahun berjalan dianggap sebagai jatah
+    | yang sedang dipesan.
+    |
+    */
+
+    public function pendingLeave(int $leaveTypeId): int
+    {
+        return (int) $this->employee
+            ->leaveRequest()
+            ->where(
+                'leave_type_id',
+                $leaveTypeId
+            )
+            ->where(
+                'status',
+                'pending'
+            )
+            ->whereYear(
+                'start_date',
+                now()->year
+            )
+            ->sum('total_days');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SISA CUTI TERSEDIA
+    |--------------------------------------------------------------------------
+    |
+    | Sisa tersedia =
+    |
+    | Jatah
+    | - Approved tahun berjalan
+    | - Pending tahun berjalan
+    |
     */
 
     public function remainingLeave(
@@ -230,17 +287,27 @@ class LeaveRequest extends Component
             $entitlement->leave_type_id
         );
 
+        $pending = $this->pendingLeave(
+            $entitlement->leave_type_id
+        );
+
         return max(
             0,
-            $entitlement->days - $used
+            $entitlement->days
+                - $used
+                - $pending
         );
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | LEAVE PERCENTAGE
+    | PERSENTASE CUTI
     |--------------------------------------------------------------------------
+    |
+    | Progress hanya menunjukkan cuti yang sudah benar-benar
+    | digunakan / approved.
+    |
     */
 
     public function leavePercentage(
@@ -265,6 +332,13 @@ class LeaveRequest extends Component
     |--------------------------------------------------------------------------
     | REFRESH DARI CHILD COMPONENT
     |--------------------------------------------------------------------------
+    |
+    | Dipanggil setelah:
+    | - create leave
+    | - cancel leave
+    | - approve leave
+    | - reject leave
+    |
     */
 
     #[On('leave-request')]
@@ -293,7 +367,9 @@ class LeaveRequest extends Component
     public function resetFilters(): void
     {
         $this->segment = 'all';
+
         $this->dateFrom = null;
+
         $this->dateTo = null;
 
         $this->resetValidation([

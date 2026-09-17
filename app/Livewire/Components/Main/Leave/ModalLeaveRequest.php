@@ -82,6 +82,9 @@ class ModalLeaveRequest extends Component
     |--------------------------------------------------------------------------
     | APPROVED DAYS
     |--------------------------------------------------------------------------
+    |
+    | Hanya menghitung cuti approved pada tahun berjalan.
+    |
     */
 
     public function usedLeave(int $leaveTypeId): int
@@ -96,6 +99,7 @@ class ModalLeaveRequest extends Component
             ->leaveRequest()
             ->where('leave_type_id', $leaveTypeId)
             ->where('status', 'approved')
+            ->whereYear('start_date', now()->year)
             ->sum('total_days');
     }
 
@@ -104,6 +108,10 @@ class ModalLeaveRequest extends Component
     |--------------------------------------------------------------------------
     | PENDING DAYS
     |--------------------------------------------------------------------------
+    |
+    | Pending dianggap sebagai jatah yang sedang dipesan.
+    | Hanya pending pada tahun berjalan yang dihitung.
+    |
     */
 
     public function pendingLeave(int $leaveTypeId): int
@@ -118,6 +126,7 @@ class ModalLeaveRequest extends Component
             ->leaveRequest()
             ->where('leave_type_id', $leaveTypeId)
             ->where('status', 'pending')
+            ->whereYear('start_date', now()->year)
             ->sum('total_days');
     }
 
@@ -126,6 +135,13 @@ class ModalLeaveRequest extends Component
     |--------------------------------------------------------------------------
     | AVAILABLE DAYS
     |--------------------------------------------------------------------------
+    |
+    | Sisa tersedia:
+    |
+    | Jatah
+    | - Approved tahun berjalan
+    | - Pending tahun berjalan
+    |
     */
 
     public function remainingLeave(
@@ -194,6 +210,46 @@ class ModalLeaveRequest extends Component
 
     /*
     |--------------------------------------------------------------------------
+    | VALIDASI TAHUN
+    |--------------------------------------------------------------------------
+    |
+    | Satu pengajuan cuti tidak boleh melewati tahun kalender.
+    |
+    | Contoh:
+    | 29 Des 2026 - 02 Jan 2027 ❌
+    |
+    */
+
+    private function validateLeaveYear(): bool
+    {
+        if (!$this->startDate || !$this->endDate) {
+            return false;
+        }
+
+        try {
+            $start = Carbon::parse($this->startDate);
+            $end = Carbon::parse($this->endDate);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        if ($start->year === $end->year) {
+            return true;
+        }
+
+        $this->dispatch(
+            'wirekit-toast',
+            variant: 'danger',
+            title: 'Periode Tidak Valid',
+            message: 'Pengajuan cuti tidak boleh melewati pergantian tahun.'
+        );
+
+        return false;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | SUBMIT
     |--------------------------------------------------------------------------
     */
@@ -233,6 +289,9 @@ class ModalLeaveRequest extends Component
             'leaveTypeId.required' =>
             'Silakan pilih jenis cuti.',
 
+            'leaveTypeId.integer' =>
+            'Jenis cuti tidak valid.',
+
             'startDate.required' =>
             'Tanggal mulai wajib diisi.',
 
@@ -257,6 +316,17 @@ class ModalLeaveRequest extends Component
             'reason.max' =>
             'Alasan pengajuan maksimal 1000 karakter.',
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDASI TAHUN
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$this->validateLeaveYear()) {
+            return;
+        }
 
 
         /*
@@ -335,7 +405,7 @@ class ModalLeaveRequest extends Component
             $this->dispatch(
                 'wirekit-toast',
                 variant: 'danger',
-                title: 'Durasi tidak valid',
+                title: 'Durasi Tidak Valid',
                 message: 'Silakan periksa kembali tanggal mulai dan tanggal selesai.'
             );
 
@@ -345,11 +415,19 @@ class ModalLeaveRequest extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | CEK JATAH
+        | TAHUN CUTI
+        |--------------------------------------------------------------------------
+        */
+
+        $leaveYear = Carbon::parse($this->startDate)->year;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CEK JATAH TAHUN BERJALAN
         |--------------------------------------------------------------------------
         |
-        | Approved = sudah menggunakan jatah.
-        | Pending  = sedang memesan jatah.
+        | Approved + Pending pada tahun pengajuan.
         |
         */
 
@@ -357,12 +435,14 @@ class ModalLeaveRequest extends Component
             ->leaveRequest()
             ->where('leave_type_id', $entitlement->leave_type_id)
             ->where('status', 'approved')
+            ->whereYear('start_date', $leaveYear)
             ->sum('total_days');
 
         $pendingDays = (int) $employee
             ->leaveRequest()
             ->where('leave_type_id', $entitlement->leave_type_id)
             ->where('status', 'pending')
+            ->whereYear('start_date', $leaveYear)
             ->sum('total_days');
 
         $availableDays = max(
@@ -382,7 +462,7 @@ class ModalLeaveRequest extends Component
                 'wirekit-toast',
                 variant: 'danger',
                 title: 'Jatah Cuti Habis',
-                message: 'Jatah cuti untuk jenis cuti ini sudah habis dan tidak dapat diajukan lagi.'
+                message: "Jatah cuti {$entitlement->leaveType?->name} untuk tahun {$leaveYear} sudah habis."
             );
 
             return;
@@ -400,7 +480,7 @@ class ModalLeaveRequest extends Component
                 'wirekit-toast',
                 variant: 'danger',
                 title: 'Jatah Cuti Tidak Mencukupi',
-                message: "Jatah cuti yang tersedia hanya {$availableDays} hari."
+                message: "Jatah cuti yang tersedia untuk tahun {$leaveYear} hanya {$availableDays} hari."
             );
 
             return;
@@ -411,6 +491,9 @@ class ModalLeaveRequest extends Component
         |--------------------------------------------------------------------------
         | CEK BENTROK PERIODE
         |--------------------------------------------------------------------------
+        |
+        | Pending dan approved dianggap sebagai periode aktif.
+        |
         */
 
         $hasOverlap = $employee
@@ -449,7 +532,7 @@ class ModalLeaveRequest extends Component
         |--------------------------------------------------------------------------
         |
         | Jatah tidak dipotong.
-        | Pengajuan hanya dibuat dengan status pending.
+        | Hanya membuat pengajuan pending.
         |
         */
 
