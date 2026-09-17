@@ -7,6 +7,7 @@ use App\Models\LeaveRequest;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ModalLeaveRequest extends Component
@@ -79,7 +80,7 @@ class ModalLeaveRequest extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | CUTI TERPAKAI
+    | APPROVED DAYS
     |--------------------------------------------------------------------------
     */
 
@@ -101,7 +102,29 @@ class ModalLeaveRequest extends Component
 
     /*
     |--------------------------------------------------------------------------
-    | SISA CUTI
+    | PENDING DAYS
+    |--------------------------------------------------------------------------
+    */
+
+    public function pendingLeave(int $leaveTypeId): int
+    {
+        $employee = Auth::user()->employees;
+
+        if (!$employee) {
+            return 0;
+        }
+
+        return (int) $employee
+            ->leaveRequest()
+            ->where('leave_type_id', $leaveTypeId)
+            ->where('status', 'pending')
+            ->sum('total_days');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | AVAILABLE DAYS
     |--------------------------------------------------------------------------
     */
 
@@ -112,9 +135,13 @@ class ModalLeaveRequest extends Component
             $entitlement->leave_type_id
         );
 
+        $pending = $this->pendingLeave(
+            $entitlement->leave_type_id
+        );
+
         return max(
             0,
-            $entitlement->days - $used
+            $entitlement->days - $used - $pending
         );
     }
 
@@ -173,6 +200,12 @@ class ModalLeaveRequest extends Component
 
     public function submit(): void
     {
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDASI FORM
+        |--------------------------------------------------------------------------
+        */
+
         $this->validate([
             'leaveTypeId' => [
                 'required',
@@ -235,9 +268,11 @@ class ModalLeaveRequest extends Component
         $employee = Auth::user()->employees;
 
         if (!$employee) {
-            $this->addError(
-                'leaveTypeId',
-                'Data karyawan tidak ditemukan.'
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Gagal',
+                message: 'Data karyawan tidak ditemukan.'
             );
 
             return;
@@ -246,16 +281,18 @@ class ModalLeaveRequest extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | CONTRACT
+        | CONTRACT AKTIF
         |--------------------------------------------------------------------------
         */
 
         $contract = $employee->latestEmployeeContract;
 
         if (!$contract || $contract->status !== 'active') {
-            $this->addError(
-                'leaveTypeId',
-                'Anda tidak memiliki contract aktif.'
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Gagal',
+                message: 'Anda tidak memiliki contract aktif.'
             );
 
             return;
@@ -275,14 +312,15 @@ class ModalLeaveRequest extends Component
             ->first();
 
         if (!$entitlement) {
-            $this->addError(
-                'leaveTypeId',
-                'Jenis cuti tidak tersedia pada contract aktif Anda.'
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Gagal',
+                message: 'Jenis cuti tidak tersedia pada contract aktif Anda.'
             );
 
             return;
         }
-
 
 
         /*
@@ -294,9 +332,11 @@ class ModalLeaveRequest extends Component
         $this->calculateTotalDays();
 
         if ($this->totalDays <= 0) {
-            $this->addError(
-                'startDate',
-                'Durasi cuti tidak valid.'
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Durasi tidak valid',
+                message: 'Silakan periksa kembali tanggal mulai dan tanggal selesai.'
             );
 
             return;
@@ -305,23 +345,62 @@ class ModalLeaveRequest extends Component
 
         /*
         |--------------------------------------------------------------------------
-        | CEK SISA CUTI
+        | CEK JATAH
+        |--------------------------------------------------------------------------
+        |
+        | Approved = sudah menggunakan jatah.
+        | Pending  = sedang memesan jatah.
+        |
+        */
+
+        $usedDays = (int) $employee
+            ->leaveRequest()
+            ->where('leave_type_id', $entitlement->leave_type_id)
+            ->where('status', 'approved')
+            ->sum('total_days');
+
+        $pendingDays = (int) $employee
+            ->leaveRequest()
+            ->where('leave_type_id', $entitlement->leave_type_id)
+            ->where('status', 'pending')
+            ->sum('total_days');
+
+        $availableDays = max(
+            0,
+            $entitlement->days - $usedDays - $pendingDays
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | JATAH SUDAH HABIS
         |--------------------------------------------------------------------------
         */
 
-        $usedDays = $this->usedLeave(
-            $entitlement->leave_type_id
-        );
+        if ($availableDays <= 0) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Jatah Cuti Habis',
+                message: 'Jatah cuti untuk jenis cuti ini sudah habis dan tidak dapat diajukan lagi.'
+            );
 
-        $remainingDays = max(
-            0,
-            $entitlement->days - $usedDays
-        );
+            return;
+        }
 
-        if ($this->totalDays > $remainingDays) {
-            $this->addError(
-                'endDate',
-                "Sisa cuti Anda hanya {$remainingDays} hari."
+
+        /*
+        |--------------------------------------------------------------------------
+        | PENGAJUAN MELEBIHI JATAH
+        |--------------------------------------------------------------------------
+        */
+
+        if ($this->totalDays > $availableDays) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Jatah Cuti Tidak Mencukupi',
+                message: "Jatah cuti yang tersedia hanya {$availableDays} hari."
             );
 
             return;
@@ -353,9 +432,11 @@ class ModalLeaveRequest extends Component
             ->exists();
 
         if ($hasOverlap) {
-            $this->addError(
-                'startDate',
-                'Periode cuti bertabrakan dengan pengajuan cuti Anda sebelumnya.'
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Periode Bertabrakan',
+                message: 'Periode cuti bertabrakan dengan pengajuan cuti Anda yang masih aktif.'
             );
 
             return;
@@ -366,23 +447,45 @@ class ModalLeaveRequest extends Component
         |--------------------------------------------------------------------------
         | SIMPAN
         |--------------------------------------------------------------------------
+        |
+        | Jatah tidak dipotong.
+        | Pengajuan hanya dibuat dengan status pending.
+        |
         */
 
-        LeaveRequest::create([
-            'employee_id' => $employee->id,
-            'employee_contract_id' => $contract->id,
-            'leave_type_id' => $entitlement->leave_type_id,
-            'start_date' => $this->startDate,
-            'end_date' => $this->endDate,
-            'total_days' => $this->totalDays,
-            'reason' => $this->reason,
-            'status' => 'pending',
-        ]);
+        DB::transaction(function () use (
+            $employee,
+            $contract,
+            $entitlement
+        ) {
+            LeaveRequest::create([
+                'employee_id' => $employee->id,
+                'employee_contract_id' => $contract->id,
+                'leave_type_id' => $entitlement->leave_type_id,
+                'start_date' => $this->startDate,
+                'end_date' => $this->endDate,
+                'total_days' => $this->totalDays,
+                'reason' => $this->reason,
+                'status' => 'pending',
+            ]);
+        });
 
 
         /*
         |--------------------------------------------------------------------------
-        | RESET
+        | REFRESH ENTITLEMENT
+        |--------------------------------------------------------------------------
+        */
+
+        $this->entitlements = $contract
+            ->contractLeave()
+            ->with('leaveType')
+            ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESET FORM
         |--------------------------------------------------------------------------
         */
 
@@ -396,15 +499,25 @@ class ModalLeaveRequest extends Component
         */
 
         $this->dispatch(
-            'leave-request-created'
+            'leave-request'
         );
-
-        $this->dispatch('wirekit-modal-close', name: 'create-leave-request');
 
 
         /*
         |--------------------------------------------------------------------------
-        | TOAST
+        | TUTUP MODAL
+        |--------------------------------------------------------------------------
+        */
+
+        $this->dispatch(
+            'wirekit-modal-close',
+            name: 'create-leave-request'
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOAST BERHASIL
         |--------------------------------------------------------------------------
         */
 

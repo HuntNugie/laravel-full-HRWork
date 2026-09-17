@@ -22,13 +22,14 @@
         </x-wirekit::stack>
 
         {{-- Ajukan Cuti --}}
-        <livewire:components.main.leave.modal-leave-request>
-            <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
-                <x-wirekit::icon name="plus" />
-                Ajukan Cuti
-            </x-wirekit::button>
-        </livewire:components.main.leave.modal-leave-request>
-
+        @can('create-leave')
+            <livewire:components.main.leave.modal-leave-request :key="'leave-request-modal-' . $leaveRequestVersion">
+                <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
+                    <x-wirekit::icon name="plus" />
+                    Ajukan Cuti
+                </x-wirekit::button>
+            </livewire:components.main.leave.modal-leave-request>
+        @endcan
 
     </div>
 
@@ -415,12 +416,16 @@
                                             Detail
                                         </x-wirekit::button>
 
-                                        @if ($request->status === 'pending')
-                                            <x-wirekit::button type="button" variant="outline" intent="danger"
-                                                class="px-3 py-1.5 text-xs">
-                                                Batalkan
-                                            </x-wirekit::button>
-                                        @endif
+                                        @can('cancel-leave')
+                                            @if ($request->status === 'pending')
+                                                <livewire:components.main.leave.modal-cancel-leave :request="$request">
+                                                    <x-wirekit::button type="button" variant="outline" intent="danger"
+                                                        class="px-3 py-1.5 text-xs">
+                                                        Batalkan
+                                                    </x-wirekit::button>
+                                                </livewire:components.main.leave.modal-cancel-leave>
+                                            @endif
+                                        @endcan
 
                                     </div>
 

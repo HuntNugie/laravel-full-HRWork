@@ -14,6 +14,7 @@ use Livewire\Component;
 class LeaveRequest extends Component
 {
     public Employees $employee;
+    public int $leaveRequestVersion = 1;
 
     /**
      * Jatah cuti dari kontrak aktif.
@@ -98,7 +99,8 @@ class LeaveRequest extends Component
             ($used / $entitlement->days) * 100
         );
     }
-    #[On('leave-request-created')]
+
+    #[On('leave-request')]
     public function refresh()
     {
         $this->employee = Auth::user()->employees;
@@ -126,6 +128,8 @@ class LeaveRequest extends Component
             ->with('leaveType')
             ->latest()
             ->get();
+
+        $this->leaveRequestVersion++;
     }
 
     public function render()
