@@ -336,7 +336,7 @@
 
         <x-wirekit::card.body>
 
-            <div class="wk-scrollbar overflow-x-auto">
+            <div class="wk-scrollbar max-h-[420px] overflow-auto"">
 
                 <x-wirekit::table hoverable table-label="Riwayat pengajuan cuti">
 
