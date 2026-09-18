@@ -305,7 +305,7 @@
 
                                         @can('show-payroll')
                                             <x-wirekit::button type="button" variant="outline" size="sm"
-                                                href="" wire:navigate>
+                                                href="{{ route('payroll.show', $period->id) }}" wire:navigate>
                                                 Detail
                                             </x-wirekit::button>
                                         @endcan

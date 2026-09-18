@@ -15,6 +15,8 @@ use App\Livewire\Page\Main\Benefit\DetailBenefit;
 use App\Livewire\Page\Main\Contract\Contract;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
+use App\Livewire\Page\Main\Dicipline\LateDiciplineRule;
+use App\Livewire\Page\Main\Discipline\LateDiciplineRule as DisciplineLateDiciplineRule;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
 use App\Livewire\Page\Main\Employee\Contract\CreateEmployeeContract;
@@ -32,6 +34,7 @@ use App\Livewire\Page\Main\Leave\DetailLeaveType;
 use App\Livewire\Page\Main\Leave\LeaveRequest;
 use App\Livewire\Page\Main\Leave\LeaveType;
 use App\Livewire\Page\Main\Leave\ManagementLeave;
+use App\Livewire\Page\Main\Payroll\DetailPayrollPeriod;
 use App\Livewire\Page\Main\Payroll\ManagementPayroll;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
@@ -152,8 +155,14 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/', ManagementPayroll::class)
             ->name('payroll.view')
             ->middleware('permission:view-payroll');
+        Route::get('/{period}', DetailPayrollPeriod::class)
+            ->name('payroll.show')
+            ->middleware('permission:show-payroll');
     });
-    // Route::get('/payroll/{period}', DetailPayrollPeriod::class)
-    //     ->name('payroll.show')
-    //     ->middleware('permission:show-payroll');
+
+    Route::prefix('discipline')->group(function () {
+        Route::get('/late', LateDiciplineRule::class)
+            ->middleware('permission:view-late-discipline-rule')
+            ->name('discipline.late.view');
+    });
 });

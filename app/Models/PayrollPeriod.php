@@ -40,10 +40,10 @@ class PayrollPeriod extends Model
     }
 
 
-    // public function payrolls(): HasMany
-    // {
-    //     return $this->hasMany(
-    //         Payroll::class
-    //     );
-    // }
+    public function payrolls(): HasMany
+    {
+        return $this->hasMany(
+            Payroll::class
+        );
+    }
 }
