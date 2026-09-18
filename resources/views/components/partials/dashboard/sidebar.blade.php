@@ -204,18 +204,21 @@
 
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-benefit'])
+        @canany(['view-benefit', 'view-payroll'])
 
             <x-wirekit::sidebar.group collapsible label="Kompensasi">
-
-
+                @can('view-payroll')
+                    <x-wirekit::sidebar.item href="{{ route('payroll.view') }}" :active="request()->routeIs('payroll.view')" icon="credit-card"
+                        wire:navigate>
+                        Penggajian
+                    </x-wirekit::sidebar.item>
+                @endcan
                 @can('view-benefit')
                     <x-wirekit::sidebar.item href="{{ route('benefit.view') }}" :active="request()->routeIs('benefit.view')" icon="rocket-launch"
                         wire:navigate>
                         Manajemen Tunjangan
                     </x-wirekit::sidebar.item>
                 @endcan
-
 
                 {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
                 Training & TNA

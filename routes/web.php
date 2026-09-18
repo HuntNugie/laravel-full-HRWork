@@ -32,6 +32,7 @@ use App\Livewire\Page\Main\Leave\DetailLeaveType;
 use App\Livewire\Page\Main\Leave\LeaveRequest;
 use App\Livewire\Page\Main\Leave\LeaveType;
 use App\Livewire\Page\Main\Leave\ManagementLeave;
+use App\Livewire\Page\Main\Payroll\ManagementPayroll;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
 use App\Livewire\Page\Main\Roles\CreateRole;
@@ -146,4 +147,13 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('contract')->group(function () {
         Route::get('/', Contract::class)->middleware('permission:view-contract')->name('contract.view');
     });
+
+    Route::prefix('payroll')->group(function () {
+        Route::get('/', ManagementPayroll::class)
+            ->name('payroll.view')
+            ->middleware('permission:view-payroll');
+    });
+    // Route::get('/payroll/{period}', DetailPayrollPeriod::class)
+    //     ->name('payroll.show')
+    //     ->middleware('permission:show-payroll');
 });
