@@ -16,6 +16,7 @@ use App\Livewire\Page\Main\Contract\Contract;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
 use App\Livewire\Page\Main\Dicipline\LateDiciplineRule;
+use App\Livewire\Page\Main\Dicipline\UnpresentDisciplineRule;
 use App\Livewire\Page\Main\Discipline\LateDiciplineRule as DisciplineLateDiciplineRule;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
@@ -165,4 +166,8 @@ Route::middleware(['auth', 'isActive'])->group(function () {
             ->middleware('permission:view-late-discipline-rule')
             ->name('discipline.late.view');
     });
+
+    Route::get('/unpresent', UnpresentDisciplineRule::class)
+        ->middleware('permission:view-unpresent-discipline-rule')
+        ->name('discipline.unpresent.view');
 });

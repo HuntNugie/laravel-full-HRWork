@@ -228,16 +228,22 @@
 
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-late-discipline-rule'])
+        @canany(['view-late-discipline-rule', 'view-unpresent-discipline-rule'])
 
             <x-wirekit::sidebar.group collapsible label="Disiplin">
                 @can('view-late-discipline-rule')
-                    <x-wirekit::sidebar.item href="{{ route('discipline.late.view') }}" :active="request()->routeIs('discipline.late.view')" icon="credit-card"
+                    <x-wirekit::sidebar.item href="{{ route('discipline.late.view') }}" :active="request()->routeIs('discipline.late.view')" icon="warning"
                         wire:navigate>
                         Aturan keterlambatan
                     </x-wirekit::sidebar.item>
                 @endcan
-                \
+                @can('view-unpresent-discipline-rule')
+                    <x-wirekit::sidebar.item href="{{ route('discipline.unpresent.view') }}" :active="request()->routeIs('discipline.unpresent.view')" icon="warning"
+                        wire:navigate>
+                        Aturan tidak hadir
+                    </x-wirekit::sidebar.item>
+                @endcan
+
 
                 {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
                 Training & TNA
