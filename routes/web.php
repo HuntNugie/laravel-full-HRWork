@@ -15,8 +15,10 @@ use App\Livewire\Page\Main\Benefit\DetailBenefit;
 use App\Livewire\Page\Main\Contract\Contract;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Page\Main\Dashboard\Dashboard;
+use App\Livewire\Page\Main\Dicipline\DetailWarningLetter;
 use App\Livewire\Page\Main\Dicipline\LateDiciplineRule;
 use App\Livewire\Page\Main\Dicipline\UnpresentDisciplineRule;
+use App\Livewire\Page\Main\Dicipline\WarningLetter;
 use App\Livewire\Page\Main\Discipline\LateDiciplineRule as DisciplineLateDiciplineRule;
 use App\Livewire\Page\Main\Divisi\DetailDivisi;
 use App\Livewire\Page\Main\Divisi\Divisi;
@@ -165,9 +167,14 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/late', LateDiciplineRule::class)
             ->middleware('permission:view-late-discipline-rule')
             ->name('discipline.late.view');
+        Route::get('/unpresent', UnpresentDisciplineRule::class)
+            ->middleware('permission:view-unpresent-discipline-rule')
+            ->name('discipline.unpresent.view');
+        Route::get('/warning-letter', WarningLetter::class)
+            ->middleware('permission:view-warning-letter')
+            ->name('discipline.warning-letter.view');
+        Route::get('/warning-letter/{warningLetter}', DetailWarningLetter::class)
+            ->middleware('permission:show-warning-letter')
+            ->name('discipline.warning-letter.show');
     });
-
-    Route::get('/unpresent', UnpresentDisciplineRule::class)
-        ->middleware('permission:view-unpresent-discipline-rule')
-        ->name('discipline.unpresent.view');
 });
