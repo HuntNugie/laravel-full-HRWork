@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PrintContractEmployeeController;
+use App\Http\Controllers\PrintWarningLetterController;
 use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Absence\Absence;
@@ -70,6 +71,11 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('print')->group(function () {
         Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');
+
+
+        Route::get('/warning-letter/{warningLetter}/print', PrintWarningLetterController::class)
+            ->middleware('permission:show-warning-letter')
+            ->name('print.warning-letter');
     });
 
     Route::prefix('divisi')->group(function () {

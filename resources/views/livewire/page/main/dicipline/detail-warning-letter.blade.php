@@ -68,6 +68,16 @@
                         @endcan
                     @endif
 
+                    @if ($warningLetter->status === 'issued')
+                        @can('show-warning-letter')
+                            <x-wirekit::button type="button" href="{{ route('print.warning-letter', $warningLetter) }}"
+                                target="_blank" rel="noopener noreferrer">
+                                <x-wirekit::icon name="printer" />
+                                Cetak
+                            </x-wirekit::button>
+                        @endcan
+                    @endif
+
 
                 </x-wirekit::row>
 

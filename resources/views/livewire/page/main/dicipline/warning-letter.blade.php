@@ -371,7 +371,7 @@
                 {{-- SEARCH --}}
                 <div class="md:col-span-1">
 
-                    <x-wirekit::input label="Cari Karyawan" placeholder="Nama atau kode employee..."
+                    <x-wirekit::input label="Cari Karyawan" name="search" placeholder="Nama atau kode employee..."
                         wire:model.live.debounce.300ms="search" />
 
                 </div>
@@ -481,10 +481,16 @@
 
                                     <div class="flex items-center gap-3">
 
-                                        <div
-                                            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-semibold text-sky-700">
-                                            {{ strtoupper(substr($warning->employee?->user?->name ?? 'U', 0, 1)) }}
-                                        </div>
+                                        @if ($warning->employee?->user?->getFirstMediaUrl('avatar'))
+                                            <img src="{{ $warning->employee?->user?->getFirstMediaUrl('avatar') }}"
+                                                alt="{{ $warning->employee?->user?->name ?? 'User' }}"
+                                                class="size-9 shrink-0 rounded-full object-cover">
+                                        @else
+                                            <img src="{{ asset('assets/nonProfile.jpg') }}"
+                                                alt="{{ $warning->employee?->user?->name ?? 'User' }}"
+                                                class="size-9 shrink-0 rounded-full object-cover">
+                                        @endif
+
 
                                         <x-wirekit::stack gap="1">
 

@@ -245,7 +245,7 @@
                 @endcan
                 @can('view-warning-letter')
                     <x-wirekit::sidebar.item href="{{ route('discipline.warning-letter.view') }}" :active="request()->routeIs('discipline.warning-letter.view')"
-                        icon="warning" wire:navigate>
+                        icon="legal" wire:navigate>
                         Surat peringatan
                     </x-wirekit::sidebar.item>
                 @endcan
