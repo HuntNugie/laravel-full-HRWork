@@ -487,8 +487,202 @@
 
         </x-wirekit::card>
 
-    </div>
 
+
+    </div>
+    {{-- =====================================================
+    GLOBAL PAYROLL ITEMS
+====================================================== --}}
+
+    <x-wirekit::card>
+
+        <x-wirekit::card.header>
+
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+                <x-wirekit::stack gap="1">
+
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Komponen Payroll Global
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Komponen penghasilan atau potongan yang berlaku
+                        untuk seluruh payroll dalam periode ini.
+                    </p>
+
+                </x-wirekit::stack>
+
+
+                @if ($period->status === 'draft' && $this->generatedEmployeeCount > 0)
+                    @can('edit-period-payroll')
+                        <livewire:components.main.payroll.modal-global-payroll-item :period="$period" :key="'create-global-payroll-item-' . $period->id">
+                            <x-wirekit::button type="button">
+                                <x-wirekit::icon name="plus" />
+                                Tambah Komponen
+                            </x-wirekit::button>
+                        </livewire:components.main.payroll.modal-global-payroll-item>
+                    @endcan
+                @endif
+
+            </div>
+
+        </x-wirekit::card.header>
+
+
+        <x-wirekit::card.body>
+
+            @if ($this->generatedEmployeeCount === 0)
+
+                <div class="rounded-xl border border-dashed border-slate-200 p-8 text-center">
+
+                    <x-wirekit::icon name="document-text" class="mx-auto size-7 text-slate-400" />
+
+                    <p class="mt-3 text-sm font-semibold text-slate-700">
+                        Payroll belum dibuat
+                    </p>
+
+                    <p class="mt-1 text-sm text-slate-400">
+                        Generate payroll terlebih dahulu sebelum menambahkan
+                        komponen global.
+                    </p>
+
+                </div>
+            @elseif ($this->globalPayrollItems->isEmpty())
+                <div class="rounded-xl border border-dashed border-slate-200 p-8 text-center">
+
+                    <x-wirekit::icon name="document-text" class="mx-auto size-7 text-slate-400" />
+
+                    <p class="mt-3 text-sm font-semibold text-slate-700">
+                        Belum ada komponen global
+                    </p>
+
+                    <p class="mt-1 text-sm text-slate-400">
+                        Tambahkan komponen yang berlaku untuk seluruh payroll
+                        karyawan pada periode ini.
+                    </p>
+
+                </div>
+            @else
+                <div class="overflow-x-auto">
+
+                    <x-wirekit::table>
+
+                        <x-wirekit::table.head>
+
+                            <x-wirekit::table.row>
+
+                                <x-wirekit::table.th>
+                                    Komponen
+                                </x-wirekit::table.th>
+
+                                <x-wirekit::table.th>
+                                    Tipe
+                                </x-wirekit::table.th>
+
+                                <x-wirekit::table.th align="right">
+                                    Nominal / Karyawan
+                                </x-wirekit::table.th>
+
+                                <x-wirekit::table.th>
+                                    Keterangan
+                                </x-wirekit::table.th>
+
+                                <x-wirekit::table.th align="right">
+                                    Aksi
+                                </x-wirekit::table.th>
+
+                            </x-wirekit::table.row>
+
+                        </x-wirekit::table.head>
+
+
+                        <x-wirekit::table.body>
+
+                            @foreach ($this->globalPayrollItems as $item)
+                                <x-wirekit::table.row>
+
+                                    <x-wirekit::table.td>
+
+                                        <p class="text-sm font-semibold text-slate-800">
+                                            {{ $item->name }}
+                                        </p>
+
+                                        <p class="mt-1 text-xs text-slate-400">
+                                            Berlaku untuk seluruh karyawan
+                                        </p>
+
+                                    </x-wirekit::table.td>
+
+
+                                    <x-wirekit::table.td>
+
+                                        @if ($item->type === 'earning')
+                                            <x-wirekit::badge intent="success">
+                                                Penghasilan
+                                            </x-wirekit::badge>
+                                        @else
+                                            <x-wirekit::badge intent="danger">
+                                                Potongan
+                                            </x-wirekit::badge>
+                                        @endif
+
+                                    </x-wirekit::table.td>
+
+
+                                    <x-wirekit::table.td align="right">
+
+                                        <span class="text-sm font-semibold text-slate-800">
+                                            {{ $this->money($item->amount) }}
+                                        </span>
+
+                                    </x-wirekit::table.td>
+
+
+                                    <x-wirekit::table.td>
+
+                                        <span class="text-sm text-slate-600">
+                                            {{ $item->description ?? '-' }}
+                                        </span>
+
+                                    </x-wirekit::table.td>
+
+
+                                    <x-wirekit::table.td align="right">
+
+                                        @if ($period->status === 'draft')
+                                            @can('edit-period-payroll')
+                                                <livewire:components.main.payroll.modal-global-payroll-item
+                                                    :period="$period" :item="$item" :key="'edit-global-payroll-item-' . $item->id">
+                                                    <x-wirekit::button type="button" variant="outline"
+                                                        class="px-3 py-1.5 text-xs">
+                                                        <x-wirekit::icon name="pencil" />
+                                                        Edit
+                                                    </x-wirekit::button>
+                                                </livewire:components.main.payroll.modal-global-payroll-item>
+                                            @endcan
+                                        @else
+                                            <span class="text-xs text-slate-400">
+                                                Terkunci
+                                            </span>
+                                        @endif
+
+                                    </x-wirekit::table.td>
+
+                                </x-wirekit::table.row>
+                            @endforeach
+
+                        </x-wirekit::table.body>
+
+                    </x-wirekit::table>
+
+                </div>
+
+            @endif
+
+        </x-wirekit::card.body>
+
+    </x-wirekit::card>
 
 
     {{-- =====================================================

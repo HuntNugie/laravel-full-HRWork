@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -976,6 +977,26 @@ class DetailPayrollPeriod extends Component
     | MARK AS PAID
     |--------------------------------------------------------------------------
     */
+    #[Computed]
+    public function globalPayrollItems(): Collection
+    {
+        $payrollIds = Payroll::query()
+            ->where('payroll_period_id', $this->period->id)
+            ->pluck('id');
+
+        if ($payrollIds->isEmpty()) {
+            return collect();
+        }
+
+        return PayrollItem::query()
+            ->whereIn('payroll_id', $payrollIds)
+            ->where('category', 'global')
+            ->where('source', 'manual')
+            ->orderBy('id')
+            ->get()
+            ->unique('name')
+            ->values();
+    }
 
     public function markAsPaid(): void
     {

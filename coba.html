@@ -1,311 +1,313 @@
-
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Perjanjian Kerja - PT. Inovindo Digital Media</title>
+    <title>Slip Gaji - Budi Santoso</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         @page {
             size: A4;
-            margin: 0;
+            margin: 15mm;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            background-color: #ffffff;
+            margin: 0;
+            background: #f1f5f9;
+            color: #0f172a;
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 10.5pt;
-            line-height: 1.55;
-            color: #111111;
+            font-size: 11px;
+            line-height: 1.5;
         }
 
         .page {
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
-            padding: 18mm 22mm;
-            background-color: #ffffff;
-        }
-
-        /* =====================================================
-           KOP SURAT
-        ====================================================== */
-
-        .letter-header {
-            margin-bottom: 20px;
-        }
-
-        .company-brand {
-            display: table;
             width: 100%;
-            table-layout: fixed;
+            max-width: 794px;
+            margin: 24px auto;
         }
 
-        .company-logo {
-            display: table-cell;
-            width: 78px;
-            vertical-align: middle;
+        .slip {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
         }
 
-        .company-logo img {
-            display: block;
-            width: 62px;
-            height: auto;
-            max-height: 64px;
+        .header {
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .company {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo {
+            width: 52px;
+            height: 52px;
             object-fit: contain;
         }
 
-        .company-info {
-            display: table-cell;
-            vertical-align: middle;
-            text-align: center;
-            padding-right: 78px;
+        .company-name {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
         }
 
-        .company-info h1 {
-            margin-bottom: 4px;
-            font-size: 17pt;
-            font-weight: bold;
-            letter-spacing: 0.7px;
-            line-height: 1.2;
+        .company-address {
+            margin: 3px 0 0;
+            color: #64748b;
+            font-size: 10px;
+            line-height: 1.5;
         }
-
-        .company-info p {
-            margin: 2px 0;
-            font-size: 9pt;
-            line-height: 1.35;
-            color: #222222;
-        }
-
-        .separator {
-            margin: 0 5px;
-        }
-
-        .header-line {
-            height: 4px;
-            margin-top: 12px;
-            border-top: 2.5px solid #000000;
-            border-bottom: 1px solid #000000;
-        }
-
-        /* =====================================================
-           JUDUL DOKUMEN
-        ====================================================== */
 
         .document-title {
-            margin: 22px 0 20px;
+            margin-top: 22px;
             text-align: center;
         }
 
-        .document-title h2 {
-            font-size: 15pt;
-            font-weight: bold;
-            text-transform: uppercase;
-            line-height: 1.25;
+        .document-title h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: .04em;
         }
 
         .document-title p {
-            margin-top: 5px;
-            font-size: 10pt;
+            margin: 4px 0 0;
+            color: #64748b;
+            font-size: 11px;
         }
 
-        /* =====================================================
-           PEMBUKA
-        ====================================================== */
-
-        .intro {
-            margin-bottom: 17px;
-            text-align: justify;
+        .content {
+            padding: 24px;
         }
 
-        .intro p {
-            margin-bottom: 8px;
+        .employee-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: #f8fafc;
         }
 
-        /* =====================================================
-           IDENTITAS PIHAK
-        ====================================================== */
-
-        .party-section {
-            margin-bottom: 18px;
+        .field-label {
+            display: block;
+            margin-bottom: 3px;
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
         }
 
-        .party-label {
-            margin-bottom: 7px;
-            font-weight: bold;
+        .field-value {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1e293b;
         }
-
-        .party-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .party-table td {
-            padding: 3px 0;
-            vertical-align: top;
-        }
-
-        .party-table .label {
-            width: 125px;
-        }
-
-        .party-table .colon {
-            width: 15px;
-            text-align: center;
-        }
-
-        /* =====================================================
-           PASAL
-        ====================================================== */
 
         .section {
-            margin-top: 17px;
+            margin-top: 22px;
         }
 
         .section-title {
-            margin-bottom: 8px;
-            font-weight: bold;
+            margin: 0 0 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .attendance {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .attendance-item {
+            padding: 12px;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .attendance-item:last-child {
+            border-right: 0;
+        }
+
+        .attendance-label {
+            color: #64748b;
+            font-size: 9px;
+        }
+
+        .attendance-value {
+            margin-top: 3px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 9px 0;
+            border-bottom: 1px solid #cbd5e1;
+            color: #64748b;
+            text-align: left;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        td {
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .component-name {
+            font-weight: 600;
+        }
+
+        .component-description {
+            margin-top: 2px;
+            color: #94a3b8;
+            font-size: 9px;
+        }
+
+        .summary {
+            margin-top: 18px;
+            margin-left: auto;
+            width: 320px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+        }
+
+        .summary-label {
+            color: #64748b;
+        }
+
+        .summary-value {
+            font-weight: 600;
+        }
+
+        .net-pay {
+            margin-top: 10px;
+            padding: 16px;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            background: #f0f9ff;
+        }
+
+        .net-pay-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .net-pay-label {
+            color: #0369a1;
+            font-size: 10px;
+            font-weight: 700;
             text-transform: uppercase;
         }
 
-        .section p {
-            margin-bottom: 8px;
-            text-align: justify;
+        .net-pay-value {
+            color: #0369a1;
+            font-size: 20px;
+            font-weight: 700;
         }
 
-        .section ol {
-            margin: 7px 0 8px 24px;
-            padding: 0;
+        .status {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 9px;
+            font-weight: 700;
         }
 
-        .section ol li {
-            margin-bottom: 5px;
-            padding-left: 4px;
-            text-align: justify;
+        .note {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            color: #64748b;
+            font-size: 9px;
         }
 
-        /* =====================================================
-           TABEL KOMPENSASI
-        ====================================================== */
-
-        .compensation-table {
-            width: 100%;
-            margin: 10px 0 12px;
-            border-collapse: collapse;
+        .footer {
+            padding: 20px 24px 24px;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .compensation-table th,
-        .compensation-table td {
-            padding: 7px 8px;
-            border: 1px solid #000000;
-            vertical-align: top;
+        .signature {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-top: 30px;
         }
 
-        .compensation-table th {
-            font-weight: bold;
-            text-align: left;
-            background-color: #f5f5f5;
-        }
-
-        .amount {
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        /* =====================================================
-           CATATAN
-        ====================================================== */
-
-        .notes {
-            margin-top: 17px;
-            padding: 9px 10px;
-            border: 1px solid #bdbdbd;
-        }
-
-        .notes-title {
-            margin-bottom: 4px;
-            font-weight: bold;
-        }
-
-        /* =====================================================
-           TANDA TANGAN
-        ====================================================== */
-
-        .signature-wrapper {
-            margin-top: 42px;
-        }
-
-        .signature-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .signature-table td {
-            width: 50%;
-            padding: 0 15px;
+        .signature-box {
             text-align: center;
-            vertical-align: top;
         }
 
         .signature-space {
-            height: 75px;
+            height: 55px;
         }
 
         .signature-name {
-            font-weight: bold;
+            font-weight: 700;
             text-decoration: underline;
         }
 
         .signature-role {
             margin-top: 2px;
-            font-size: 9.5pt;
+            color: #64748b;
+            font-size: 9px;
         }
 
-        /* =====================================================
-           FOOTER
-        ====================================================== */
-
-        .document-footer {
-            margin-top: 25px;
-            padding-top: 8px;
-            border-top: 1px solid #dddddd;
-            color: #666666;
+        .footer-note {
+            margin-top: 24px;
+            color: #94a3b8;
             text-align: center;
-            font-size: 8pt;
+            font-size: 8px;
         }
-
-        /* =====================================================
-           PAGE BREAK
-        ====================================================== */
-
-        .page-break {
-            page-break-before: always;
-        }
-
-        /* =====================================================
-           PRINT
-        ====================================================== */
 
         @media print {
             body {
-                background: none;
+                background: #ffffff;
             }
 
             .page {
-                width: 210mm;
-                min-height: 297mm;
+                max-width: none;
                 margin: 0;
-                padding: 18mm 22mm;
+            }
+
+            .slip {
+                border: 0;
+                border-radius: 0;
             }
         }
     </style>
@@ -315,690 +317,537 @@
 
     <div class="page">
 
-        <!-- =================================================
-             KOP SURAT
-        ================================================== -->
+        <div class="slip">
 
-        <header class="letter-header">
+            {{-- =====================================================
+                HEADER
+            ====================================================== --}}
 
-            <div class="company-brand">
+            <div class="header">
 
-                <div class="company-logo">
+                <div class="company">
+
                     <img
-                        src="logo-inovindo.webp"
-                        alt="Logo PT. Inovindo Digital Media">
+                        src="{{ public_path('assets/logo-inovindo.webp') }}"
+                        alt="Logo"
+                        class="logo"
+                    >
+
+                    <div>
+
+                        <p class="company-name">
+                            PT. INOVINDO DIGITAL MEDIA
+                        </p>
+
+                        <p class="company-address">
+                            Komplek Buana Citra Ciwastra No. D3,
+                            Kabupaten Bandung
+                            <br>
+                            WhatsApp + Website
+                        </p>
+
+                    </div>
+
                 </div>
 
-                <div class="company-info">
 
-                    <h1>PT. INOVINDO DIGITAL MEDIA</h1>
+                <div class="document-title">
+
+                    <h1>
+                        SLIP GAJI
+                    </h1>
 
                     <p>
-                        Komplek Buana Citra Ciwastra No. D3, Kabupaten Bandung
-                    </p>
-
-                    <p>
-                        WhatsApp: 0856-2251-196
-                        <span class="separator">|</span>
-                        Website: www.inovindo.co.id
+                        September 2026
                     </p>
 
                 </div>
 
             </div>
 
-            <div class="header-line"></div>
 
-        </header>
+            {{-- =====================================================
+                CONTENT
+            ====================================================== --}}
 
+            <div class="content">
 
-        <!-- =================================================
-             JUDUL DOKUMEN
-        ================================================== -->
+                {{-- EMPLOYEE --}}
 
-        <div class="document-title">
+                <div class="employee-box">
 
-            <h2>Perjanjian Kerja</h2>
+                    <div>
 
-            <p>
-                Nomor:
-                <strong>CTR/2026/08/001</strong>
-            </p>
+                        <span class="field-label">
+                            Nama Karyawan
+                        </span>
 
-        </div>
+                        <span class="field-value">
+                            Budi Santoso
+                        </span>
 
-
-        <!-- =================================================
-             PEMBUKA
-        ================================================== -->
-
-        <div class="intro">
-
-            <p>
-                Pada hari ini, <strong>Sabtu</strong>, tanggal
-                <strong>01 Agustus 2026</strong>, bertempat di
-                <strong>Bandung</strong>, telah dibuat dan disepakati
-                Perjanjian Kerja oleh dan antara pihak-pihak sebagaimana
-                diuraikan di bawah ini.
-            </p>
-
-            <p>
-                Perjanjian Kerja ini dibuat berdasarkan kesepakatan kedua
-                belah pihak untuk mengatur hubungan kerja, hak, kewajiban,
-                serta ketentuan kerja antara perusahaan dan pekerja.
-            </p>
-
-        </div>
+                    </div>
 
 
-        <!-- =================================================
-             PIHAK PERTAMA
-        ================================================== -->
+                    <div>
 
-        <div class="party-section">
+                        <span class="field-label">
+                            Kode Karyawan
+                        </span>
 
-            <div class="party-label">
-                PIHAK PERTAMA
+                        <span class="field-value">
+                            EMP-001
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="field-label">
+                            Jabatan
+                        </span>
+
+                        <span class="field-value">
+                            Software Developer
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="field-label">
+                            Periode Payroll
+                        </span>
+
+                        <span class="field-value">
+                            01 September 2026 - 30 September 2026
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                {{-- ATTENDANCE --}}
+
+                <div class="section">
+
+                    <h2 class="section-title">
+                        Ringkasan Kehadiran
+                    </h2>
+
+
+                    <div class="attendance">
+
+                        <div class="attendance-item">
+
+                            <div class="attendance-label">
+                                Hari Kerja
+                            </div>
+
+                            <div class="attendance-value">
+                                26
+                            </div>
+
+                        </div>
+
+
+                        <div class="attendance-item">
+
+                            <div class="attendance-label">
+                                Hadir
+                            </div>
+
+                            <div class="attendance-value">
+                                24
+                            </div>
+
+                        </div>
+
+
+                        <div class="attendance-item">
+
+                            <div class="attendance-label">
+                                Terlambat
+                            </div>
+
+                            <div class="attendance-value">
+                                7
+                            </div>
+
+                        </div>
+
+
+                        <div class="attendance-item">
+
+                            <div class="attendance-label">
+                                Hari Dibayar
+                            </div>
+
+                            <div class="attendance-value">
+                                24
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- EARNINGS --}}
+
+                <div class="section">
+
+                    <h2 class="section-title">
+                        Penghasilan
+                    </h2>
+
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Komponen
+                                </th>
+
+                                <th style="width: 100px;">
+                                    Qty
+                                </th>
+
+                                <th
+                                    class="text-right"
+                                    style="width: 140px;"
+                                >
+                                    Jumlah
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="component-name">
+                                        Gaji Harian
+                                    </div>
+
+                                    <div class="component-description">
+                                        24 hari × Rp100.000
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    24 hari
+                                </td>
+
+                                <td class="text-right">
+                                    Rp2.400.000
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="component-name">
+                                        Tunjangan Makan
+                                    </div>
+
+                                    <div class="component-description">
+                                        24 hari × Rp20.000
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    24 hari
+                                </td>
+
+                                <td class="text-right">
+                                    Rp480.000
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="component-name">
+                                        Tunjangan Transport
+                                    </div>
+
+                                    <div class="component-description">
+                                        24 hari × Rp15.000
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    24 hari
+                                </td>
+
+                                <td class="text-right">
+                                    Rp360.000
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                {{-- DEDUCTIONS --}}
+
+                <div class="section">
+
+                    <h2 class="section-title">
+                        Potongan
+                    </h2>
+
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Komponen
+                                </th>
+
+                                <th>
+                                    Keterangan
+                                </th>
+
+                                <th
+                                    class="text-right"
+                                    style="width: 140px;"
+                                >
+                                    Jumlah
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="component-name">
+                                        Potongan Keterlambatan
+                                    </div>
+
+                                </td>
+
+                                <td>
+
+                                    <div>
+                                        7 kali terlambat
+                                    </div>
+
+                                    <div class="component-description">
+                                        2 × Rp20.000
+                                    </div>
+
+                                </td>
+
+                                <td class="text-right">
+                                    Rp40.000
+                                </td>
+
+                            </tr>
+
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="component-name">
+                                        Penyesuaian Manual
+                                    </div>
+
+                                </td>
+
+                                <td>
+                                    Penyesuaian payroll
+                                </td>
+
+                                <td class="text-right">
+                                    Rp50.000
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                {{-- TOTAL --}}
+
+                <div class="summary">
+
+                    <div class="summary-row">
+
+                        <span class="summary-label">
+                            Total Penghasilan
+                        </span>
+
+                        <span class="summary-value">
+                            Rp3.240.000
+                        </span>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span class="summary-label">
+                            Total Potongan
+                        </span>
+
+                        <span class="summary-value">
+                            Rp90.000
+                        </span>
+
+                    </div>
+
+
+                    <div class="net-pay">
+
+                        <div class="net-pay-row">
+
+                            <span class="net-pay-label">
+                                Gaji Bersih
+                            </span>
+
+                            <span class="net-pay-value">
+                                Rp3.150.000
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {{-- STATUS --}}
+
+                <div class="section">
+
+                    <h2 class="section-title">
+                        Status Payroll
+                    </h2>
+
+                    <span class="status">
+                        PAID
+                    </span>
+
+                </div>
+
+
+                {{-- NOTE --}}
+
+                <div class="section">
+
+                    <div class="note">
+
+                        Slip gaji ini merupakan rincian penghasilan dan
+                        potongan karyawan untuk periode September 2026.
+
+                        <br><br>
+
+                        Dokumen ini dibuat oleh sistem HRWork.
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <table class="party-table">
 
-                <tr>
-                    <td class="label">Nama Perusahaan</td>
-                    <td class="colon">:</td>
-                    <td>
-                        <strong>PT. Inovindo Digital Media</strong>
-                    </td>
-                </tr>
+            {{-- =====================================================
+                FOOTER
+            ====================================================== --}}
 
-                <tr>
-                    <td class="label">Alamat</td>
-                    <td class="colon">:</td>
-                    <td>
-                        Komplek Buana Citra Ciwastra No. D3,
-                        Kabupaten Bandung
-                    </td>
-                </tr>
+            <div class="footer">
 
-                <tr>
-                    <td class="label">Diwakili Oleh</td>
-                    <td class="colon">:</td>
-                    <td>
-                        <strong>Novi Setia Nurviat</strong>
-                    </td>
-                </tr>
+                <div class="signature">
 
-                <tr>
-                    <td class="label">Jabatan</td>
-                    <td class="colon">:</td>
-                    <td>
-                        Direktur
-                    </td>
-                </tr>
+                    <div class="signature-box">
 
-            </table>
-
-        </div>
-
-
-        <!-- =================================================
-             PIHAK KEDUA
-        ================================================== -->
-
-        <div class="party-section">
-
-            <div class="party-label">
-                PIHAK KEDUA
-            </div>
-
-            <table class="party-table">
-
-                <tr>
-                    <td class="label">Nama</td>
-                    <td class="colon">:</td>
-                    <td>
-                        <strong>Andi Pratama</strong>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="label">Employee Code</td>
-                    <td class="colon">:</td>
-                    <td>
-                        EMP-0001
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="label">Tempat, Tanggal Lahir</td>
-                    <td class="colon">:</td>
-                    <td>
-                        Bandung, 15 Mei 2001
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="label">Alamat</td>
-                    <td class="colon">:</td>
-                    <td>
-                        Jl. Contoh No. 123, Bandung
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="label">Jabatan</td>
-                    <td class="colon">:</td>
-                    <td>
-                        Backend Developer
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="label">Division</td>
-                    <td class="colon">:</td>
-                    <td>
-                        IT
-                    </td>
-                </tr>
-
-                <tr>
-                    <td class="label">Team</td>
-                    <td class="colon">:</td>
-                    <td>
-                        Backend
-                    </td>
-                </tr>
-
-            </table>
-
-        </div>
-
-
-        <!-- =================================================
-             PERSETUJUAN
-        ================================================== -->
-
-        <div class="section">
-
-            <p>
-                Pihak Pertama dan Pihak Kedua selanjutnya secara bersama-sama
-                disebut sebagai <strong>Para Pihak</strong>. Para Pihak
-                menyatakan telah sepakat untuk mengikatkan diri dalam
-                hubungan kerja dengan ketentuan sebagaimana diatur dalam
-                Perjanjian Kerja ini.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 1
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 1 — Jenis dan Jangka Waktu Perjanjian
-            </div>
-
-            <p>
-                Perjanjian kerja ini merupakan
-                <strong>Perjanjian Kerja Waktu Tertentu (PKWT)</strong>
-                yang berlaku sejak
-                <strong>01 Agustus 2026</strong> sampai dengan
-                <strong>31 Juli 2027</strong>.
-            </p>
-
-            <p>
-                Perpanjangan atau perubahan terhadap Perjanjian Kerja ini
-                dilakukan berdasarkan kesepakatan Para Pihak dan ketentuan
-                peraturan perundang-undangan yang berlaku.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 2
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 2 — Jabatan dan Ruang Lingkup Pekerjaan
-            </div>
-
-            <p>
-                Pihak Kedua ditempatkan sebagai
-                <strong>Backend Developer</strong> pada
-                <strong>Division IT</strong> dan
-                <strong>Team Backend</strong>.
-            </p>
-
-            <p>
-                Pihak Kedua wajib melaksanakan pekerjaan sesuai dengan
-                tanggung jawab jabatan, target pekerjaan, arahan atasan,
-                serta kebutuhan operasional perusahaan.
-            </p>
-
-            <p>
-                Pihak Kedua dapat diberikan tugas lain yang masih berkaitan
-                dengan kepentingan pekerjaan dan kompetensinya berdasarkan
-                kebutuhan perusahaan.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 3
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 3 — Tempat dan Waktu Kerja
-            </div>
-
-            <p>
-                Pihak Kedua melaksanakan pekerjaan pada lokasi dan waktu kerja
-                yang ditetapkan oleh PT. Inovindo Digital Media sesuai dengan
-                kebijakan perusahaan.
-            </p>
-
-            <p>
-                Pihak Kedua wajib mengikuti ketentuan waktu kerja dan
-                melakukan presensi sesuai dengan sistem presensi yang
-                ditetapkan perusahaan.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 4
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 4 — Upah dan Tunjangan
-            </div>
-
-            <p>
-                Atas pelaksanaan pekerjaan, Pihak Kedua berhak menerima
-                kompensasi sesuai dengan ketentuan yang telah disepakati
-                Para Pihak.
-            </p>
-
-            <table class="compensation-table">
-
-                <thead>
-
-                    <tr>
-                        <th style="width: 65%;">
-                            Komponen
-                        </th>
-
-                        <th style="width: 35%;">
-                            Nilai
-                        </th>
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                    <tr>
-                        <td>
-                            Gaji Harian
-                        </td>
-
-                        <td class="amount">
-                            <strong>Rp250.000 / hari</strong>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                            Tunjangan Transport
-                        </td>
-
-                        <td class="amount">
-                            <strong>Rp500.000 / bulan</strong>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                            Tunjangan Makan
-                        </td>
-
-                        <td class="amount">
-                            <strong>Rp300.000 / bulan</strong>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td>
-                            <strong>Total Tunjangan</strong>
-                        </td>
-
-                        <td class="amount">
-                            <strong>Rp800.000 / bulan</strong>
-                        </td>
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-            <p>
-                Pembayaran upah dilakukan berdasarkan ketentuan pembayaran
-                yang berlaku di perusahaan dengan memperhatikan kehadiran
-                dan ketentuan hubungan kerja.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 5
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 5 — Hak dan Kewajiban Pihak Kedua
-            </div>
-
-            <p>
-                Pihak Kedua memiliki hak dan kewajiban sebagai berikut:
-            </p>
-
-            <ol>
-
-                <li>
-                    Menerima upah dan tunjangan sesuai dengan ketentuan
-                    Perjanjian Kerja.
-                </li>
-
-                <li>
-                    Mendapatkan informasi dan arahan yang diperlukan
-                    untuk melaksanakan pekerjaan.
-                </li>
-
-                <li>
-                    Melaksanakan pekerjaan dengan penuh tanggung jawab.
-                </li>
-
-                <li>
-                    Mematuhi peraturan dan kebijakan perusahaan.
-                </li>
-
-                <li>
-                    Menjaga nama baik perusahaan.
-                </li>
-
-                <li>
-                    Menjaga kerahasiaan informasi dan data perusahaan.
-                </li>
-
-                <li>
-                    Melakukan presensi sesuai dengan ketentuan perusahaan.
-                </li>
-
-                <li>
-                    Menyelesaikan pekerjaan sesuai dengan target dan
-                    tenggat waktu yang telah ditetapkan.
-                </li>
-
-            </ol>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 6
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 6 — Hak dan Kewajiban Pihak Pertama
-            </div>
-
-            <p>
-                Pihak Pertama berkewajiban memberikan hak Pihak Kedua sesuai
-                dengan Perjanjian Kerja serta memberikan arahan dan lingkungan
-                kerja yang diperlukan untuk pelaksanaan pekerjaan.
-            </p>
-
-            <p>
-                Pihak Pertama berhak mengatur pekerjaan, memberikan arahan,
-                melakukan evaluasi kinerja, serta menerapkan ketentuan
-                perusahaan selama tidak bertentangan dengan peraturan yang
-                berlaku.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 7
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 7 — Kerahasiaan
-            </div>
-
-            <p>
-                Pihak Kedua wajib menjaga kerahasiaan seluruh informasi,
-                dokumen, data, sistem, kode sumber, informasi bisnis, serta
-                informasi lainnya yang diperoleh selama menjalankan hubungan
-                kerja.
-            </p>
-
-            <p>
-                Kewajiban menjaga kerahasiaan tetap berlaku sesuai dengan
-                ketentuan perusahaan dan peraturan yang berlaku.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 8
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 8 — Peraturan dan Kebijakan Perusahaan
-            </div>
-
-            <p>
-                Pihak Kedua wajib mematuhi seluruh peraturan perusahaan,
-                prosedur operasional, standar keamanan informasi, kebijakan
-                penggunaan fasilitas perusahaan, serta ketentuan internal
-                lainnya yang berlaku.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 9
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 9 — Pengakhiran Hubungan Kerja
-            </div>
-
-            <p>
-                Pengakhiran hubungan kerja dilaksanakan berdasarkan ketentuan
-                dalam Perjanjian Kerja dan peraturan perundang-undangan
-                yang berlaku.
-            </p>
-
-            <p>
-                Hak dan kewajiban Para Pihak akibat berakhirnya hubungan kerja
-                diselesaikan sesuai dengan ketentuan yang berlaku.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 10
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 10 — Perubahan Perjanjian
-            </div>
-
-            <p>
-                Setiap perubahan terhadap isi Perjanjian Kerja ini dilakukan
-                berdasarkan kesepakatan Para Pihak dan dituangkan dalam
-                dokumen perubahan atau perjanjian lain yang diperlukan.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             PASAL 11
-        ================================================== -->
-
-        <div class="section">
-
-            <div class="section-title">
-                Pasal 11 — Penutup
-            </div>
-
-            <p>
-                Perjanjian Kerja ini dibuat dan disepakati oleh Para Pihak
-                dalam keadaan sadar, tanpa adanya paksaan dari pihak manapun.
-            </p>
-
-            <p>
-                Dengan ditandatanganinya Perjanjian Kerja ini, Para Pihak
-                menyatakan telah membaca, memahami, dan menyetujui seluruh
-                ketentuan yang tercantum di dalamnya.
-            </p>
-
-            <p>
-                Perjanjian ini dibuat dalam rangkap yang diperlukan dan
-                masing-masing pihak memperoleh salinan sesuai dengan
-                kebutuhannya.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             CATATAN
-        ================================================== -->
-
-        <div class="notes">
-
-            <div class="notes-title">
-                Catatan
-            </div>
-
-            <p>
-                Dokumen ini merupakan simulasi template Perjanjian Kerja
-                untuk kebutuhan pengembangan sistem HRIS PT. Inovindo Digital
-                Media dan perlu disesuaikan dengan kebijakan perusahaan serta
-                ditinjau oleh pihak HR/legal sebelum digunakan sebagai
-                dokumen resmi.
-            </p>
-
-        </div>
-
-
-        <!-- =================================================
-             TANDA TANGAN
-        ================================================== -->
-
-        <div class="signature-wrapper">
-
-            <table class="signature-table">
-
-                <tr>
-
-                    <td>
-
-                        <p>
-                            Bandung, 01 Agustus 2026
-                        </p>
-
-                        <p>
-                            <strong>PIHAK PERTAMA</strong>
-                        </p>
-
-                        <p>
-                            PT. Inovindo Digital Media
-                        </p>
+                        <div>
+                            HR / Finance
+                        </div>
 
                         <div class="signature-space"></div>
 
-                        <p class="signature-name">
-                            Novi Setia Nurviat
-                        </p>
-
-                        <p class="signature-role">
-                            Direktur
-                        </p>
-
-                    </td>
-
-                    <td>
-
-                        <p>
-                            Bandung, 01 Agustus 2026
-                        </p>
-
-                        <p>
-                            <strong>PIHAK KEDUA</strong>
-                        </p>
-
-                        <p>
-                            Pekerja
-                        </p>
-
-                        <div class="signature-space"></div>
-
-                        <p class="signature-name">
+                        <div class="signature-name">
                             Andi Pratama
-                        </p>
+                        </div>
 
-                        <p class="signature-role">
-                            EMP-0001
-                        </p>
+                        <div class="signature-role">
+                            HR / Finance
+                        </div>
 
-                    </td>
-
-                </tr>
-
-            </table>
-
-        </div>
+                    </div>
 
 
-        <!-- =================================================
-             FOOTER
-        ================================================== -->
+                    <div class="signature-box">
 
-        <div class="document-footer">
-            Nomor Contract:
-            <strong>CTR/2026/08/001</strong>
+                        <div>
+                            Karyawan
+                        </div>
+
+                        <div class="signature-space"></div>
+
+                        <div class="signature-name">
+                            Budi Santoso
+                        </div>
+
+                        <div class="signature-role">
+                            Software Developer
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="footer-note">
+
+                    Slip Gaji • HRWork • September 2026
+
+                </div>
+
+            </div>
+
         </div>
 
     </div>

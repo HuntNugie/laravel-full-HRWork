@@ -50,10 +50,19 @@
 
         <div class="flex flex-wrap gap-2">
 
-            <x-wirekit::button type="button" variant="outline" disabled
-                title="Aksi akan tersedia pada tahap berikutnya">
-                Edit Payroll
-            </x-wirekit::button>
+            @if ($payroll->status === 'draft')
+                @can('edit-period-payroll')
+                    <x-wirekit::button type="button" variant="outline"
+                        href="{{ route('payroll.employee.edit', [
+                            'period' => $period->id,
+                            'payroll' => $payroll->id,
+                        ]) }}"
+                        wire:navigate>
+                        <x-wirekit::icon name="pencil" />
+                        Edit Payroll
+                    </x-wirekit::button>
+                @endcan
+            @endif
 
         </div>
 
