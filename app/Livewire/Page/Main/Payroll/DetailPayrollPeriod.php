@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Page\Main\Payroll;
 
+use App\Models\LateDisciplineRule;
 use App\Models\Attendances;
 use App\Models\Employees;
 use App\Models\Holidays;
@@ -143,8 +144,9 @@ class DetailPayrollPeriod extends Component
 
         if ($this->period->status !== 'draft') {
             $this->dispatch(
-                'toast',
-                type: 'error',
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Gagal',
                 message: 'Payroll hanya dapat dibuat pada periode dengan status draft.'
             );
 
@@ -157,9 +159,53 @@ class DetailPayrollPeriod extends Component
 
         if ($existingPayrollCount > 0) {
             $this->dispatch(
-                'toast',
-                type: 'error',
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Gagal',
                 message: 'Payroll untuk periode ini sudah pernah dibuat.'
+            );
+
+            return;
+        }
+
+        /*
+    |--------------------------------------------------------------------------
+    | ATURAN KETERLAMBATAN
+    |--------------------------------------------------------------------------
+    |
+    | Aturan:
+    | Setiap threshold keterlambatan dalam bulan kalender
+    | menghasilkan action_amount sebagai potongan.
+    |
+    | Contoh:
+    | 3  kali = 1 × action_amount
+    | 6  kali = 2 × action_amount
+    | 9  kali = 3 × action_amount
+    |
+    */
+
+        $lateRule = LateDisciplineRule::query()->first();
+
+        if (!$lateRule) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Aturan Belum Tersedia',
+                message: 'Aturan keterlambatan belum dikonfigurasi.'
+            );
+
+            return;
+        }
+
+        $lateThreshold = (int) $lateRule->threshold;
+        $lateActionAmount = (float) $lateRule->action_amount;
+
+        if ($lateThreshold < 1) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Aturan Tidak Valid',
+                message: 'Threshold keterlambatan harus lebih besar dari 0.'
             );
 
             return;
@@ -169,20 +215,26 @@ class DetailPayrollPeriod extends Component
 
         if ($employees->isEmpty()) {
             $this->dispatch(
-                'toast',
-                type: 'error',
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Gagal',
                 message: 'Tidak ada karyawan yang memenuhi syarat untuk payroll periode ini.'
             );
 
             return;
         }
 
-        DB::transaction(function () use ($employees) {
+        DB::transaction(function () use (
+            $employees,
+            $lateThreshold,
+            $lateActionAmount
+        ) {
+
             /*
-            |------------------------------------------------------------------
-            | LOCK PERIOD
-            |------------------------------------------------------------------
-            */
+        |--------------------------------------------------------------------------
+        | LOCK PERIOD
+        |--------------------------------------------------------------------------
+        */
 
             $period = PayrollPeriod::query()
                 ->whereKey($this->period->id)
@@ -196,15 +248,64 @@ class DetailPayrollPeriod extends Component
                 );
             }
 
+            /*
+        |--------------------------------------------------------------------------
+        | MASTER WORK TIME
+        |--------------------------------------------------------------------------
+        */
+
+            $workTimes = WorkTime::query()
+                ->get()
+                ->keyBy(
+                    fn($workTime) =>
+                    strtolower(trim($workTime->day_of_week))
+                );
+
+            /*
+        |--------------------------------------------------------------------------
+        | HOLIDAYS
+        |--------------------------------------------------------------------------
+        */
+
+            $holidayDates = Holidays::query()
+                ->whereBetween('date', [
+                    $period->start_date->toDateString(),
+                    $period->end_date->toDateString(),
+                ])
+                ->pluck('date')
+                ->map(
+                    fn($date) =>
+                    Carbon::parse($date)->toDateString()
+                )
+                ->flip();
+
+            /*
+        |--------------------------------------------------------------------------
+        | DAY NAME
+        |--------------------------------------------------------------------------
+        */
+
+            $dayNames = [
+                1 => 'senin',
+                2 => 'selasa',
+                3 => 'rabu',
+                4 => 'kamis',
+                5 => 'jumat',
+                6 => 'sabtu',
+                7 => 'minggu',
+            ];
+
             foreach ($employees as $employee) {
+
                 /*
-                |------------------------------------------------------------------
-                | ACTIVE CONTRACT YANG BERLAKU PADA PERIOD
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | ACTIVE CONTRACT
+            |--------------------------------------------------------------------------
+            */
 
                 $contract = $employee->employeeContract
                     ->filter(function ($contract) use ($period) {
+
                         if ($contract->status !== 'active') {
                             return false;
                         }
@@ -230,10 +331,10 @@ class DetailPayrollPeriod extends Component
                 }
 
                 /*
-                |------------------------------------------------------------------
-                | TANGGAL ELIGIBLE
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | TANGGAL EFFECTIVE CONTRACT
+            |--------------------------------------------------------------------------
+            */
 
                 $eligibleStart = $contract->start_date->greaterThan(
                     $period->start_date
@@ -251,89 +352,55 @@ class DetailPayrollPeriod extends Component
                 }
 
                 /*
-                |------------------------------------------------------------------
-                | WORKING DAYS
-                |------------------------------------------------------------------
-                |
-                | Untuk saat ini HRWork menggunakan:
-                | Senin - Sabtu = hari kerja
-                | Minggu       = libur
-                |
-                */
-
-                /*
-|--------------------------------------------------------------------------
-| WORK TIME
-|--------------------------------------------------------------------------
-| Ambil konfigurasi hari kerja dari master WorkTime.
-|
-*/
-
-                $workTimes = WorkTime::query()
-                    ->get()
-                    ->keyBy('day_of_week');
-
-                $holidayDates = Holidays::query()
-                    ->whereBetween('date', [
-                        $eligibleStart->toDateString(),
-                        $eligibleEnd->toDateString(),
-                    ])
-                    ->pluck('date')
-                    ->map(fn($date) => Carbon::parse($date)->toDateString())
-                    ->flip();
-
-                $dayNames = [
-                    1 => 'senin',
-                    2 => 'selasa',
-                    3 => 'rabu',
-                    4 => 'kamis',
-                    5 => 'jumat',
-                    6 => 'sabtu',
-                    7 => 'minggu',
-                ];
-
-                /*
-|--------------------------------------------------------------------------
-| WORKING DAYS
-|--------------------------------------------------------------------------
-| Hari kerja ditentukan oleh WorkTime.
-| Hari yang tercatat di Holidays dikeluarkan.
-|
-*/
+            |--------------------------------------------------------------------------
+            | WORKING DAYS
+            |--------------------------------------------------------------------------
+            */
 
                 $workingDates = collect(
-                    CarbonPeriod::create($eligibleStart, $eligibleEnd)
-                )->filter(function (Carbon $date) use (
-                    $workTimes,
-                    $holidayDates,
-                    $dayNames
-                ) {
-                    $dayName = $dayNames[$date->dayOfWeekIso];
+                    CarbonPeriod::create(
+                        $eligibleStart,
+                        $eligibleEnd
+                    )
+                )
+                    ->filter(function (Carbon $date) use (
+                        $workTimes,
+                        $holidayDates,
+                        $dayNames
+                    ) {
+                        $dayName = $dayNames[$date->dayOfWeekIso];
 
-                    $workTime = $workTimes->get($dayName);
+                        $workTime = $workTimes->get($dayName);
 
-                    if (!$workTime) {
-                        return false;
-                    }
+                        if (!$workTime) {
+                            return false;
+                        }
 
-                    if (!$workTime->is_working_day) {
-                        return false;
-                    }
+                        if (!$workTime->is_working_day) {
+                            return false;
+                        }
 
-                    if ($holidayDates->has($date->toDateString())) {
-                        return false;
-                    }
+                        if ($holidayDates->has($date->toDateString())) {
+                            return false;
+                        }
 
-                    return true;
-                })->values();
+                        return true;
+                    })
+                    ->values();
 
                 $workingDays = $workingDates->count();
 
+                $workingDateMap = $workingDates
+                    ->mapWithKeys(
+                        fn(Carbon $date) =>
+                        [$date->toDateString() => true]
+                    );
+
                 /*
-                |------------------------------------------------------------------
-                | ATTENDANCE
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | ATTENDANCE
+            |--------------------------------------------------------------------------
+            */
 
                 $attendances = Attendances::query()
                     ->where('employee_id', $employee->id)
@@ -344,42 +411,134 @@ class DetailPayrollPeriod extends Component
                     ->whereNotNull('check_in_at')
                     ->get();
 
+                /*
+            |--------------------------------------------------------------------------
+            | PRESENT DAYS
+            |--------------------------------------------------------------------------
+            */
+
                 $presentDates = $attendances
                     ->pluck('date')
-                    ->map(function ($date) {
-                        return Carbon::parse($date)->toDateString();
-                    })
-                    ->filter(function (string $date) use ($workingDates) {
-                        return $workingDates->contains(
-                            fn(Carbon $workingDate) =>
-                            $workingDate->toDateString() === $date
-                        );
-                    })
+                    ->map(
+                        fn($date) =>
+                        Carbon::parse($date)->toDateString()
+                    )
+                    ->filter(
+                        fn(string $date) =>
+                        $workingDateMap->has($date)
+                    )
                     ->unique()
                     ->values();
 
                 $presentDays = $presentDates->count();
 
                 /*
-                |------------------------------------------------------------------
-                | PAID DAYS
-                |------------------------------------------------------------------
-                |
-                | Untuk tahap pertama:
-                | paid_days = hari hadir.
-                |
-                | Cuti / izin / sakit akan kita integrasikan setelah aturan
-                | paid / unpaid sudah dikunci.
-                |
-                */
+            |--------------------------------------------------------------------------
+            | LATE DAYS
+            |--------------------------------------------------------------------------
+            |
+            | Late dihitung berdasarkan attendance dengan status "late".
+            | Hari terlambat tetap termasuk hari hadir.
+            |
+            */
+
+                $lateDates = $attendances
+                    ->filter(
+                        fn($attendance) =>
+                        $attendance->status === 'late'
+                    )
+                    ->pluck('date')
+                    ->map(
+                        fn($date) =>
+                        Carbon::parse($date)->toDateString()
+                    )
+                    ->filter(
+                        fn(string $date) =>
+                        $workingDateMap->has($date)
+                    )
+                    ->unique()
+                    ->values();
+
+                $lateDays = $lateDates->count();
+
+                /*
+            |--------------------------------------------------------------------------
+            | LATE DEDUCTION BY CALENDAR MONTH
+            |--------------------------------------------------------------------------
+            |
+            | Penting:
+            | threshold dihitung ulang untuk setiap bulan kalender.
+            |
+            | Misalnya:
+            |
+            | September = 5 late
+            | -> floor(5 / 3) = 1
+            | -> Rp20.000
+            |
+            | Oktober = 4 late
+            | -> floor(4 / 3) = 1
+            | -> Rp20.000
+            |
+            | Total = Rp40.000
+            |
+            */
+
+                $lateDeductionTotal = 0.0;
+
+                $lateDeductionItems = $lateDates
+                    ->groupBy(
+                        fn(string $date) =>
+                        Carbon::parse($date)->format('Y-m')
+                    )
+                    ->map(
+                        function ($dates, string $monthKey) use (
+                            $lateThreshold,
+                            $lateActionAmount,
+                            &$lateDeductionTotal
+                        ) {
+
+                            $lateCount = $dates->count();
+
+                            $deductionUnits = intdiv(
+                                $lateCount,
+                                $lateThreshold
+                            );
+
+                            if ($deductionUnits <= 0) {
+                                return null;
+                            }
+
+                            $amount = $deductionUnits * $lateActionAmount;
+
+                            $lateDeductionTotal += $amount;
+
+                            return [
+                                'month' => $monthKey,
+                                'late_count' => $lateCount,
+                                'deduction_units' => $deductionUnits,
+                                'amount' => $amount,
+                            ];
+                        }
+                    )
+                    ->filter()
+                    ->values();
+
+                /*
+            |--------------------------------------------------------------------------
+            | PAID DAYS
+            |--------------------------------------------------------------------------
+            |
+            | Terlambat tetap dianggap hadir dan tetap dibayar.
+            |
+            */
 
                 $paidDays = $presentDays;
 
                 /*
-                |------------------------------------------------------------------
-                | ABSENT DAYS
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | ABSENT DAYS
+            |--------------------------------------------------------------------------
+            */
 
                 $absentDays = max(
                     0,
@@ -387,34 +546,29 @@ class DetailPayrollPeriod extends Component
                 );
 
                 /*
-                |------------------------------------------------------------------
-                | SALARY
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | SALARY
+            |--------------------------------------------------------------------------
+            */
 
                 $salaryDaily = (float) $contract->salary_daily;
+
                 $salaryAmount = $paidDays * $salaryDaily;
 
                 /*
-                |------------------------------------------------------------------
-                | BENEFITS
-                |------------------------------------------------------------------
-                |
-                | Benefit diambil dari contract->benefits.
-                |
-                | amount pada pivot contract_benefits diperlakukan sebagai
-                | nominal benefit per hari kerja.
-                |
-                | Semua benefit yang tercantum pada contract dihitung.
-                | Tidak ada filter status master benefit di sini karena
-                | contract sudah menjadi sumber benefit karyawan pada periode.
-                |
-                */
+            |--------------------------------------------------------------------------
+            | BENEFITS
+            |--------------------------------------------------------------------------
+            */
 
                 $benefitTotal = 0.0;
 
                 foreach ($contract->benefits as $benefit) {
-                    $benefitDaily = (float) ($benefit->pivot->amount ?? 0);
+
+                    $benefitDaily = (float) (
+                        $benefit->pivot->amount ?? 0
+                    );
+
                     $benefitAmount = $paidDays * $benefitDaily;
 
                     if ($benefitAmount <= 0) {
@@ -425,20 +579,22 @@ class DetailPayrollPeriod extends Component
                 }
 
                 /*
-                |------------------------------------------------------------------
-                | GROSS / DEDUCTION / NET
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | GROSS / DEDUCTION / NET
+            |--------------------------------------------------------------------------
+            */
 
                 $grossAmount = $salaryAmount + $benefitTotal;
-                $deductionAmount = 0.0;
+
+                $deductionAmount = $lateDeductionTotal;
+
                 $netAmount = $grossAmount - $deductionAmount;
 
                 /*
-                |------------------------------------------------------------------
-                | CREATE PAYROLL
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | CREATE PAYROLL
+            |--------------------------------------------------------------------------
+            */
 
                 $payroll = Payroll::create([
                     'payroll_period_id' => $period->id,
@@ -452,10 +608,15 @@ class DetailPayrollPeriod extends Component
                     /* Attendance snapshot */
                     'working_days' => $workingDays,
                     'present_days' => $presentDays,
-                    'late_days' => 0,
+                    'late_days' => $lateDays,
                     'absent_days' => $absentDays,
+
+                    /*
+                | Leave belum diintegrasikan pada tahap ini.
+                */
                     'paid_leave_days' => 0,
                     'unpaid_leave_days' => 0,
+
                     'paid_days' => $paidDays,
 
                     /* Amount */
@@ -471,12 +632,13 @@ class DetailPayrollPeriod extends Component
                 ]);
 
                 /*
-                |------------------------------------------------------------------
-                | CREATE SYSTEM PAYROLL ITEM: GAJI HARIAN
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | PAYROLL ITEM: GAJI HARIAN
+            |--------------------------------------------------------------------------
+            */
 
                 if ($salaryAmount > 0) {
+
                     PayrollItem::create([
                         'payroll_id' => $payroll->id,
                         'name' => 'Gaji Harian',
@@ -499,15 +661,19 @@ class DetailPayrollPeriod extends Component
                 }
 
                 /*
-                |------------------------------------------------------------------
-                | CREATE SYSTEM PAYROLL ITEMS: BENEFITS
-                |------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | PAYROLL ITEMS: BENEFITS
+            |--------------------------------------------------------------------------
+            */
 
                 $sortOrder = 2;
 
                 foreach ($contract->benefits as $benefit) {
-                    $benefitDaily = (float) ($benefit->pivot->amount ?? 0);
+
+                    $benefitDaily = (float) (
+                        $benefit->pivot->amount ?? 0
+                    );
+
                     $benefitAmount = $paidDays * $benefitDaily;
 
                     if ($benefitAmount <= 0) {
@@ -534,14 +700,45 @@ class DetailPayrollPeriod extends Component
                         'sort_order' => $sortOrder++,
                     ]);
                 }
+
+                /*
+            |--------------------------------------------------------------------------
+            | PAYROLL ITEMS: LATE DEDUCTION
+            |--------------------------------------------------------------------------
+            */
+
+                foreach ($lateDeductionItems as $lateDeduction) {
+
+                    PayrollItem::create([
+                        'payroll_id' => $payroll->id,
+                        'name' => 'Potongan Keterlambatan',
+                        'type' => 'deduction',
+                        'category' => 'late',
+                        'amount' => $lateDeduction['amount'],
+                        'quantity' => $lateDeduction['deduction_units'],
+                        'rate' => $lateActionAmount,
+                        'source' => 'system',
+                        'description' =>
+                        "Keterlambatan {$lateDeduction['late_count']} kali pada " .
+                            $lateDeduction['month'] .
+                            " menghasilkan {$lateDeduction['deduction_units']} × Rp" .
+                            number_format(
+                                $lateActionAmount,
+                                0,
+                                ',',
+                                '.'
+                            ),
+                        'sort_order' => $sortOrder++,
+                    ]);
+                }
             }
         });
 
         /*
-        |--------------------------------------------------------------------------
-        | REFRESH COMPUTED
-        |--------------------------------------------------------------------------
-        */
+    |--------------------------------------------------------------------------
+    | REFRESH COMPUTED
+    |--------------------------------------------------------------------------
+    */
 
         unset(
             $this->payrolls,
@@ -552,9 +749,14 @@ class DetailPayrollPeriod extends Component
         $this->period->refresh();
 
         $this->dispatch(
-            'toast',
-            type: 'success',
-            message: 'Payroll berhasil dibuat sebagai draft. Gaji dan benefit harian sudah dihitung.'
+            'payroll-period-refresh'
+        );
+
+        $this->dispatch(
+            'wirekit-toast',
+            variant: 'success',
+            title: 'Berhasil',
+            message: 'Payroll berhasil dibuat sebagai draft. Gaji, benefit, dan potongan keterlambatan sudah dihitung.'
         );
     }
 

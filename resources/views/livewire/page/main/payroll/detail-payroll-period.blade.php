@@ -741,16 +741,22 @@
                                 {{-- Action --}}
                                 <x-wirekit::table.td align="right">
 
-                                    {{-- @can('show-payroll')
-                                        <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs"
-                                            href="{{ route('payroll.show', [
-                                                'period' => $period->id,
-                                                'payroll' => $payroll->id,
-                                            ]) }}"
-                                            wire:navigate>
-                                            Detail
-                                        </x-wirekit::button>
-                                    @endcan --}}
+                                    {{-- Action --}}
+                                    <x-wirekit::table.td align="right">
+
+                                        @can('show-payroll')
+                                            <x-wirekit::button type="button" variant="outline"
+                                                class="px-3 py-1.5 text-xs"
+                                                href="{{ route('payroll.employee.show', [
+                                                    'period' => $period->id,
+                                                    'payroll' => $payroll->id,
+                                                ]) }}"
+                                                wire:navigate>
+                                                Detail
+                                            </x-wirekit::button>
+                                        @endcan
+
+                                    </x-wirekit::table.td>
 
                                 </x-wirekit::table.td>
 

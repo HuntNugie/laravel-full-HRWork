@@ -38,6 +38,7 @@ use App\Livewire\Page\Main\Leave\DetailLeaveType;
 use App\Livewire\Page\Main\Leave\LeaveRequest;
 use App\Livewire\Page\Main\Leave\LeaveType;
 use App\Livewire\Page\Main\Leave\ManagementLeave;
+use App\Livewire\Page\Main\Payroll\DetailPayrollEmployee;
 use App\Livewire\Page\Main\Payroll\DetailPayrollPeriod;
 use App\Livewire\Page\Main\Payroll\ManagementPayroll;
 use App\Livewire\Page\Main\Position\DetailPosition;
@@ -167,6 +168,13 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/{period}', DetailPayrollPeriod::class)
             ->name('payroll.show')
             ->middleware('permission:show-payroll');
+
+        Route::get(
+            '/{period}/employee/{payroll}',
+            DetailPayrollEmployee::class
+        )
+            ->middleware('permission:show-payroll')
+            ->name('payroll.employee.show');
     });
 
     Route::prefix('discipline')->group(function () {

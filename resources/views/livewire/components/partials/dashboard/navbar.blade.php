@@ -1,7 +1,7 @@
 <div>
     <x-slot:header>
 
-        <x-wirekit::header>
+        <x-wirekit::header class="bg-sky-400">
 
             {{-- Mobile only --}}
             <x-wirekit::sidebar.toggle class="lg:hidden" />
