@@ -2,13 +2,12 @@
 
 namespace App\Service;
 
-use App\Models\EmployeeAbsenceRequest;
 use App\Models\Employees;
 use App\Models\Holidays;
-use App\Models\LeaveRequest;
 use App\Models\WorkTime;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -33,21 +32,29 @@ class EmployeeDailyStatusService
      */
     public function getStatus(
         Employees $employee,
-        Carbon|string $date
+        CarbonInterface|string $date
     ): array {
-        return $this->getStatuses($employee, $date, $date)->first();
+        $state = $this->getStatuses($employee, $date, $date)->first();
+
+        if (!is_array($state)) {
+            throw new \LogicException(
+                'Daily status tidak dapat dihitung.'
+            );
+        }
+
+        return $state;
     }
 
     /**
      * Calculate daily states for an employee across an inclusive date range.
      *
-     * Data sources are loaded once for the range to avoid querying every
-     * source table once per date.
+     * Source data is loaded once per range instead of querying each date
+     * separately.
      */
     public function getStatuses(
         Employees $employee,
-        Carbon|string $startDate,
-        Carbon|string $endDate
+        CarbonInterface|string $startDate,
+        CarbonInterface|string $endDate
     ): Collection {
         $start = $this->normalizeDate($startDate);
         $end = $this->normalizeDate($endDate);
@@ -71,7 +78,9 @@ class EmployeeDailyStatusService
 
         $workTimes = WorkTime::query()
             ->get()
-            ->keyBy(fn($workTime) => strtolower(trim($workTime->day_of_week)));
+            ->keyBy(
+                fn($workTime) => strtolower(trim($workTime->day_of_week))
+            );
 
         $holidays = Holidays::query()
             ->whereBetween('date', [
@@ -122,7 +131,7 @@ class EmployeeDailyStatusService
 
         $today = now()->startOfDay();
 
-        return collect(Carbon::period($start, $end))
+        return collect(CarbonPeriod::create($start, $end))
             ->map(function (CarbonInterface $date) use (
                 $employee,
                 $contracts,
@@ -200,11 +209,6 @@ class EmployeeDailyStatusService
                 |--------------------------------------------------------------------------
                 | HOLIDAY
                 |--------------------------------------------------------------------------
-                |
-                | Holiday takes the date out of the normal working calendar.
-                | Attendance on a holiday remains available in the source table,
-                | but the daily calendar state stays holiday.
-                |
                 */
 
                 $holiday = $holidays->get($dateKey);
@@ -231,8 +235,8 @@ class EmployeeDailyStatusService
                 | ATTENDANCE
                 |--------------------------------------------------------------------------
                 |
-                | Attendance takes precedence over leave/absence so a real
-                | check-in is not turned into an absent state accidentally.
+                | Real attendance takes precedence over leave/absence.
+                | This prevents a checked-in employee from being counted twice.
                 |
                 */
 
@@ -292,8 +296,12 @@ class EmployeeDailyStatusService
 
                 /*
                 |--------------------------------------------------------------------------
-                | APPROVED ABSENCE: SAKIT / IZIN
+                | APPROVED ABSENCE
                 |--------------------------------------------------------------------------
+                |
+                | Sakit/izin adalah ketidakhadiran yang memiliki keterangan resmi.
+                | Keduanya tidak dibayar dan tidak dianggap unpresent.
+                |
                 */
 
                 $absence = $absenceRequests->get($dateKey);
@@ -321,11 +329,10 @@ class EmployeeDailyStatusService
 
                 /*
                 |--------------------------------------------------------------------------
-                | FUTURE DATE
+                | FUTURE / CURRENT DATE
                 |--------------------------------------------------------------------------
                 |
-                | A future working day is not unpresent because the employee
-                | has not had the opportunity to attend yet.
+                | Hari kerja yang belum dilewati belum dapat dianggap unpresent.
                 |
                 */
 
@@ -408,8 +415,9 @@ class EmployeeDailyStatusService
         ];
     }
 
-    private function normalizeDate(Carbon|string|CarbonInterface $date): Carbon
-    {
+    private function normalizeDate(
+        CarbonInterface|string $date
+    ): Carbon {
         return $date instanceof CarbonInterface
             ? Carbon::instance($date)->startOfDay()
             : Carbon::parse($date)->startOfDay();
