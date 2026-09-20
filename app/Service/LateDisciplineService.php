@@ -49,6 +49,23 @@ class LateDisciplineService
     }
 
     /**
+     * Calculate the payroll deduction amount for a known late count.
+     */
+    public function calculateAmountFromCount(
+        int $lateCount,
+        LateDisciplineRule $rule,
+    ): float {
+        $threshold = (int) $rule->threshold;
+
+        if ($threshold < 1 || $lateCount < 1) {
+            return 0.0;
+        }
+
+        return intdiv($lateCount, $threshold)
+            * (float) $rule->action_amount;
+    }
+
+    /**
      * Calculate late discipline from already resolved daily states.
      *
      * This method lets Payroll reuse the same Daily Status collection without

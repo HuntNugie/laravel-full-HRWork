@@ -4,6 +4,7 @@ namespace App\Livewire\Page\Main\Dicipline;
 
 use App\Models\AttedanceSetting;
 use App\Models\LateDisciplineRule;
+use App\Service\LateDisciplineService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -183,16 +184,11 @@ class LateDiciplineRule extends Component
         LateDisciplineRule $rule,
         int $lateCount
     ): float {
-        if ($rule->threshold <= 0) {
-            return 0;
-        }
-
-        $occurrences = intdiv(
-            $lateCount,
-            $rule->threshold
-        );
-
-        return $occurrences * (float) $rule->action_amount;
+        return app(LateDisciplineService::class)
+            ->calculateAmountFromCount(
+                lateCount: $lateCount,
+                rule: $rule,
+            );
     }
 
     /*
