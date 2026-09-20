@@ -56,8 +56,16 @@ class LateDisciplineService
      */
     public function calculateFromStatuses(
         Collection $statuses,
-        LateDisciplineRule $rule,
+        ?LateDisciplineRule $rule = null,
     ): array {
+        $rule ??= LateDisciplineRule::query()->first();
+
+        if (!$rule) {
+            throw new \RuntimeException(
+                'Aturan keterlambatan belum dikonfigurasi.'
+            );
+        }
+
         $threshold = (int) $rule->threshold;
         $actionAmount = (float) $rule->action_amount;
 
