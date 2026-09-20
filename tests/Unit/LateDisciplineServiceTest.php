@@ -70,6 +70,28 @@ class LateDisciplineServiceTest extends TestCase
         $this->assertCount(2, $result['items']);
     }
 
+    public function test_calculate_amount_from_count_matches_threshold_rule(): void
+    {
+        $service = new LateDisciplineService();
+
+        $rule = $this->rule();
+
+        $this->assertSame(
+            0.0,
+            $service->calculateAmountFromCount(2, $rule)
+        );
+
+        $this->assertSame(
+            20000.0,
+            $service->calculateAmountFromCount(3, $rule)
+        );
+
+        $this->assertSame(
+            40000.0,
+            $service->calculateAmountFromCount(6, $rule)
+        );
+    }
+
     public function test_non_late_states_do_not_create_discipline(): void
     {
         $service = app(LateDisciplineService::class);
