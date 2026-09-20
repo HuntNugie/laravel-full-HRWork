@@ -4,7 +4,7 @@ namespace App\Livewire\Page\Main\Payroll;
 
 use App\Models\Employees;
 use App\Service\EmployeeDailyStatusService;
-use App\Models\LateDisciplineRule;
+use App\Service\LateDisciplineService;
 use App\Models\Payroll;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
@@ -233,23 +233,6 @@ class DetailPayrollPeriod extends Component
                 );
             }
 
-            $lateRule = LateDisciplineRule::query()->first();
-
-            if (!$lateRule) {
-                throw new \RuntimeException(
-                    'Aturan keterlambatan belum dikonfigurasi.'
-                );
-            }
-
-            $lateThreshold = (int) $lateRule->threshold;
-            $lateActionAmount = (float) $lateRule->action_amount;
-
-            if ($lateThreshold < 1) {
-                throw new \RuntimeException(
-                    'Threshold keterlambatan harus lebih besar dari 0.'
-                );
-            }
-
             $employees = $this->eligibleEmployeesQueryForPeriod($period)
                 ->get();
 
@@ -290,6 +273,7 @@ class DetailPayrollPeriod extends Component
             }
 
             $dailyStatusService = app(EmployeeDailyStatusService::class);
+            $lateDisciplineService = app(LateDisciplineService::class);
 
             $created = 0;
             $updated = 0;
@@ -346,8 +330,7 @@ class DetailPayrollPeriod extends Component
                     contract: $contract,
                     period: $period,
                     dailyStatusService: $dailyStatusService,
-                    lateThreshold: $lateThreshold,
-                    lateActionAmount: $lateActionAmount,
+                    lateDisciplineService: $lateDisciplineService,
                 );
 
                 $existingPayroll = $existingPayrolls->get($employee->id);
@@ -565,8 +548,7 @@ class DetailPayrollPeriod extends Component
         $contract,
         PayrollPeriod $period,
         EmployeeDailyStatusService $dailyStatusService,
-        int $lateThreshold,
-        float $lateActionAmount,
+        LateDisciplineService $lateDisciplineService,
     ): array {
         $eligibleStart = $contract->start_date->greaterThan($period->start_date)
             ? $contract->start_date->copy()
@@ -628,77 +610,13 @@ class DetailPayrollPeriod extends Component
             )
             ->count();
 
-        $lateStatuses = $statuses
-            ->filter(fn(array $state) => $state['is_late'] === true)
-            ->values();
+        $lateDiscipline = $lateDisciplineService->calculateFromStatuses(
+            statuses: $statuses,
+        );
 
-        $lateDays = $lateStatuses->count();
-
-        $paidLeaveDays = $statuses
-            ->filter(
-                fn(array $state) =>
-                    $state['status'] === EmployeeDailyStatusService::STATUS_PAID_LEAVE
-            )
-            ->count();
-
-        $paidDays = $statuses
-            ->filter(fn(array $state) => $state['is_paid'] === true)
-            ->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | LATE DISCIPLINE
-        |--------------------------------------------------------------------------
-        |
-        | Hanya status late yang masuk ke perhitungan potongan keterlambatan.
-        |
-        */
-
-        $lateDeductionTotal = 0.0;
-
-        $lateDeductionItems = $lateStatuses
-            ->groupBy(
-                fn(array $state) => Carbon::parse($state['date'])->format('Y-m')
-            )
-            ->map(
-                function ($states, string $monthKey) use (
-                    $lateThreshold,
-                    $lateActionAmount,
-                    &$lateDeductionTotal
-                ) {
-                    $lateCount = $states->count();
-                    $deductionUnits = intdiv(
-                        $lateCount,
-                        $lateThreshold
-                    );
-
-                    if ($deductionUnits <= 0) {
-                        return null;
-                    }
-
-                    $amount = $deductionUnits * $lateActionAmount;
-                    $lateDeductionTotal += $amount;
-
-                    return [
-                        'month' => $monthKey,
-                        'late_count' => $lateCount,
-                        'deduction_units' => $deductionUnits,
-                        'amount' => $amount,
-                    ];
-                }
-            )
-            ->filter()
-            ->values();
-
-        /*
-        |--------------------------------------------------------------------------
-        | PAYROLL TOTALS
-        |--------------------------------------------------------------------------
-        |
-        | absent_days tetap berarti seluruh hari kerja yang tidak dibayar.
-        | Jadi field ini sengaja tidak diubah menjadi "unpresent_days".
-        |
-        */
+        $lateDays = $lateDiscipline['late_count'];
+        $lateDeductionTotal = $lateDiscipline['deduction_amount'];
+        $lateDeductionItems = $lateDiscipline['items'];
 
         $absentDays = max(
             0,
