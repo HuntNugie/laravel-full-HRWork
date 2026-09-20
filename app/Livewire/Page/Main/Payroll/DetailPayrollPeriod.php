@@ -977,6 +977,102 @@ class DetailPayrollPeriod extends Component
     | MARK AS PAID
     |--------------------------------------------------------------------------
     */
+
+    public function markPayrollAsPaid(int $payrollId): void
+    {
+        abort_unless(
+            Auth::user()->can('mark-paid-payroll'),
+            403
+        );
+
+        $this->period->refresh();
+
+        if ($this->period->status !== 'processed') {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Gagal',
+                message: 'Payroll hanya dapat ditandai dibayar setelah periode diproses.'
+            );
+
+            return;
+        }
+
+        DB::transaction(function () use ($payrollId) {
+            $period = PayrollPeriod::query()
+                ->whereKey($this->period->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($period->status !== 'processed') {
+                abort(
+                    422,
+                    'Payroll periode sudah tidak dalam status processed.'
+                );
+            }
+
+            $payroll = Payroll::query()
+                ->where('payroll_period_id', $period->id)
+                ->whereKey($payrollId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$payroll) {
+                abort(
+                    404,
+                    'Payroll karyawan tidak ditemukan dalam periode ini.'
+                );
+            }
+
+            if ($payroll->status === 'paid') {
+                abort(
+                    422,
+                    'Payroll karyawan ini sudah ditandai sebagai dibayar.'
+                );
+            }
+
+            if ($payroll->status !== 'processed') {
+                abort(
+                    422,
+                    'Payroll karyawan harus berstatus processed sebelum dibayar.'
+                );
+            }
+
+            $paidAt = now();
+
+            $payroll->update([
+                'status' => 'paid',
+                'paid_at' => $paidAt,
+            ]);
+
+            $remainingUnpaid = $period
+                ->payrolls()
+                ->where('status', '!=', 'paid')
+                ->count();
+
+            if ($remainingUnpaid === 0) {
+                $period->update([
+                    'status' => 'paid',
+                    'paid_at' => $paidAt,
+                ]);
+            }
+        });
+
+        unset(
+            $this->payrolls,
+            $this->summary
+        );
+
+        $this->period->refresh();
+
+        $this->dispatch(
+            'wirekit-toast',
+            variant: 'success',
+            title: 'Berhasil',
+            message: 'Payroll karyawan berhasil ditandai sebagai sudah dibayar.'
+        );
+    }
+
     #[Computed]
     public function globalPayrollItems(): Collection
     {

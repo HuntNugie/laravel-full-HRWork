@@ -118,6 +118,24 @@
                 @endcan
             @endif
 
+            {{-- Tambahkan di HEADER ACTION, setelah action periode yang sudah ada. --}}
+            @if (in_array($period->status, ['processed', 'paid'], true))
+                @can('show-payroll')
+                    <x-wirekit::button type="button" variant="outline"
+                        href="{{ route('payroll.print.summary', ['period' => $period->id]) }}" target="_blank">
+                        <x-wirekit::icon name="printer" />
+                        Cetak Rekap
+                    </x-wirekit::button>
+
+                    <x-wirekit::button type="button" variant="outline"
+                        href="{{ route('payroll.print.payments', ['period' => $period->id]) }}" target="_blank">
+                        <x-wirekit::icon name="printer" />
+                        Cetak Pembayaran
+                    </x-wirekit::button>
+                @endcan
+            @endif
+
+
         </div>
 
     </div>
@@ -933,10 +951,10 @@
 
 
                                 {{-- Action --}}
-                                <x-wirekit::table.td align="right">
 
-                                    {{-- Action --}}
-                                    <x-wirekit::table.td align="right">
+                                {{-- Ganti ACTION CELL di tabel Payroll Karyawan dengan blok ini. --}}
+                                <x-wirekit::table.td align="right">
+                                    <div class="flex flex-wrap justify-end gap-2">
 
                                         @can('show-payroll')
                                             <x-wirekit::button type="button" variant="outline"
@@ -950,8 +968,22 @@
                                             </x-wirekit::button>
                                         @endcan
 
-                                    </x-wirekit::table.td>
+                                        @can('show-payroll')
+                                            @if (in_array($period->status, ['processed', 'paid'], true) && in_array($payroll->status, ['processed', 'paid'], true))
+                                                <x-wirekit::button type="button" variant="outline"
+                                                    class="px-3 py-1.5 text-xs"
+                                                    href="{{ route('payroll.print.slip', [
+                                                        'period' => $period->id,
+                                                        'payroll' => $payroll->id,
+                                                    ]) }}"
+                                                    target="_blank">
+                                                    <x-wirekit::icon name="printer" />
+                                                    Slip Gaji
+                                                </x-wirekit::button>
+                                            @endif
+                                        @endcan
 
+                                    </div>
                                 </x-wirekit::table.td>
 
                             </x-wirekit::table.row>

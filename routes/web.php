@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\PrintContractEmployeeController;
+use App\Http\Controllers\PrintPayrollPaymentController;
+use App\Http\Controllers\PrintPayrollSlipController;
+use App\Http\Controllers\PrintPayrollSummaryController;
 use App\Http\Controllers\PrintWarningLetterController;
 use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
@@ -78,6 +81,15 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/warning-letter/{warningLetter}/print', PrintWarningLetterController::class)
             ->middleware('permission:show-warning-letter')
             ->name('print.warning-letter');
+
+        Route::get('/payroll/{period}/print/slip/{payroll}', PrintPayrollSlipController::class)
+            ->name('payroll.print.slip');
+
+        Route::get('/payroll/{period}/print/summary', PrintPayrollSummaryController::class)
+            ->name('payroll.print.summary');
+
+        Route::get('/payroll/{period}/print/payments', PrintPayrollPaymentController::class)
+            ->name('payroll.print.payments');
     });
 
     Route::prefix('divisi')->group(function () {
