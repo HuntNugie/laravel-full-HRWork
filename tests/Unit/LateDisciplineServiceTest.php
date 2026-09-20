@@ -4,14 +4,13 @@ namespace Tests\Unit;
 
 use App\Models\LateDisciplineRule;
 use App\Service\LateDisciplineService;
-use Illuminate\Support\Collection;
 use PHPUnit\Framework\TestCase;
 
 class LateDisciplineServiceTest extends TestCase
 {
     public function test_three_late_events_create_one_deduction_unit(): void
     {
-        $service = app(LateDisciplineService::class);
+        $service = new LateDisciplineService();
 
         $result = $service->calculateFromStatuses(
             statuses: collect([
