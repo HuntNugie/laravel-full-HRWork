@@ -2,17 +2,13 @@
 
 namespace App\Livewire\Page\Main\Payroll;
 
-use App\Models\Attendances;
 use App\Models\Employees;
-use App\Models\Holidays;
+use App\Service\EmployeeDailyStatusService;
 use App\Models\LateDisciplineRule;
-use App\Models\LeaveRequest;
 use App\Models\Payroll;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
-use App\Models\WorkTime;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -293,33 +289,7 @@ class DetailPayrollPeriod extends Component
                     ->values();
             }
 
-            $workTimes = WorkTime::query()
-                ->get()
-                ->keyBy(
-                    fn(WorkTime $workTime) =>
-                    strtolower(trim($workTime->day_of_week))
-                );
-
-            $holidayDates = Holidays::query()
-                ->whereBetween('date', [
-                    $period->start_date->toDateString(),
-                    $period->end_date->toDateString(),
-                ])
-                ->pluck('date')
-                ->map(
-                    fn($date) => Carbon::parse($date)->toDateString()
-                )
-                ->flip();
-
-            $dayNames = [
-                1 => 'senin',
-                2 => 'selasa',
-                3 => 'rabu',
-                4 => 'kamis',
-                5 => 'jumat',
-                6 => 'sabtu',
-                7 => 'minggu',
-            ];
+            $dailyStatusService = app(EmployeeDailyStatusService::class);
 
             $created = 0;
             $updated = 0;
@@ -375,9 +345,7 @@ class DetailPayrollPeriod extends Component
                     employee: $employee,
                     contract: $contract,
                     period: $period,
-                    workTimes: $workTimes,
-                    holidayDates: $holidayDates,
-                    dayNames: $dayNames,
+                    dailyStatusService: $dailyStatusService,
                     lateThreshold: $lateThreshold,
                     lateActionAmount: $lateActionAmount,
                 );
@@ -596,9 +564,7 @@ class DetailPayrollPeriod extends Component
         Employees $employee,
         $contract,
         PayrollPeriod $period,
-        Collection $workTimes,
-        Collection $holidayDates,
-        array $dayNames,
+        EmployeeDailyStatusService $dailyStatusService,
         int $lateThreshold,
         float $lateActionAmount,
     ): array {
@@ -628,128 +594,79 @@ class DetailPayrollPeriod extends Component
             ];
         }
 
-        $workingDates = collect(
-            CarbonPeriod::create(
-                $eligibleStart,
-                $eligibleEnd
-            )
-        )
-            ->filter(function (Carbon $date) use (
-                $workTimes,
-                $holidayDates,
-                $dayNames
-            ) {
-                $dayName = $dayNames[$date->dayOfWeekIso];
-                $workTime = $workTimes->get($dayName);
+        /*
+        |--------------------------------------------------------------------------
+        | DAILY STATUS
+        |--------------------------------------------------------------------------
+        |
+        | EmployeeDailyStatusService menjadi satu-satunya sumber penentuan
+        | status kalender/attendance/leave/absence untuk payroll.
+        |
+        */
 
-                if (!$workTime) {
-                    return false;
-                }
-
-                if (!$workTime->is_working_day) {
-                    return false;
-                }
-
-                if ($holidayDates->has($date->toDateString())) {
-                    return false;
-                }
-
-                return true;
-            })
-            ->values();
-
-        $workingDays = $workingDates->count();
-
-        $workingDateMap = $workingDates->mapWithKeys(
-            fn(Carbon $date) => [$date->toDateString() => true]
+        $statuses = $dailyStatusService->getStatuses(
+            employee: $employee,
+            startDate: $eligibleStart,
+            endDate: $eligibleEnd,
         );
 
-        $attendances = Attendances::query()
-            ->where('employee_id', $employee->id)
-            ->whereBetween('date', [
-                $eligibleStart->toDateString(),
-                $eligibleEnd->toDateString(),
-            ])
-            ->whereNotNull('check_in_at')
-            ->get();
+        $workingDays = $statuses
+            ->filter(fn(array $state) => $state['is_working_day'] === true)
+            ->count();
 
-        $presentDates = $attendances
-            ->pluck('date')
-            ->map(
-                fn($date) => Carbon::parse($date)->toDateString()
-            )
+        $presentDays = $statuses
             ->filter(
-                fn(string $date) => $workingDateMap->has($date)
+                fn(array $state) =>
+                    in_array(
+                        $state['status'],
+                        [
+                            EmployeeDailyStatusService::STATUS_PRESENT,
+                            EmployeeDailyStatusService::STATUS_LATE,
+                        ],
+                        true
+                    )
             )
-            ->unique()
+            ->count();
+
+        $lateStatuses = $statuses
+            ->filter(fn(array $state) => $state['is_late'] === true)
             ->values();
 
-        $presentDays = $presentDates->count();
+        $lateDays = $lateStatuses->count();
 
-        $approvedLeaveRequests = LeaveRequest::query()
-            ->where('employee_id', $employee->id)
-            ->where('status', 'approved')
-            ->whereDate('start_date', '<=', $eligibleEnd->toDateString())
-            ->whereDate('end_date', '>=', $eligibleStart->toDateString())
-            ->get();
-
-        $paidLeaveDates = collect();
-
-        foreach ($approvedLeaveRequests as $leaveRequest) {
-            $leaveDates = collect(
-                CarbonPeriod::create(
-                    Carbon::parse($leaveRequest->start_date),
-                    Carbon::parse($leaveRequest->end_date)
-                )
-            )
-                ->map(
-                    fn(Carbon $date) => $date->toDateString()
-                )
-                ->filter(
-                    fn(string $date) => $workingDateMap->has($date)
-                );
-
-            $paidLeaveDates = $paidLeaveDates->merge($leaveDates);
-        }
-
-        $paidLeaveDates = $paidLeaveDates
-            ->unique()
-            ->reject(
-                fn(string $date) => $presentDates->contains($date)
-            )
-            ->values();
-
-        $paidLeaveDays = $paidLeaveDates->count();
-
-        $lateDates = $attendances
+        $paidLeaveDays = $statuses
             ->filter(
-                fn($attendance) => $attendance->status === 'late'
+                fn(array $state) =>
+                    $state['status'] === EmployeeDailyStatusService::STATUS_PAID_LEAVE
             )
-            ->pluck('date')
-            ->map(
-                fn($date) => Carbon::parse($date)->toDateString()
-            )
-            ->filter(
-                fn(string $date) => $workingDateMap->has($date)
-            )
-            ->unique()
-            ->values();
+            ->count();
 
-        $lateDays = $lateDates->count();
+        $paidDays = $statuses
+            ->filter(fn(array $state) => $state['is_paid'] === true)
+            ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | LATE DISCIPLINE
+        |--------------------------------------------------------------------------
+        |
+        | Hanya status late yang masuk ke perhitungan potongan keterlambatan.
+        |
+        */
 
         $lateDeductionTotal = 0.0;
 
-        $lateDeductionItems = $lateDates
+        $lateDeductionItems = $lateStatuses
             ->groupBy(
-                fn(string $date) => Carbon::parse($date)->format('Y-m')
+                fn(array $state) => Carbon::parse($state['date'])->format('Y-m')
             )
             ->map(
-                function ($dates, string $monthKey) use (
+                function ($states, string $monthKey) use (
                     $lateThreshold,
                     $lateActionAmount,
                     &$lateDeductionTotal
                 ) {
-                    $lateCount = $dates->count();
+                    $lateCount = $states->count();
                     $deductionUnits = intdiv(
                         $lateCount,
                         $lateThreshold
@@ -773,7 +690,15 @@ class DetailPayrollPeriod extends Component
             ->filter()
             ->values();
 
-        $paidDays = $presentDays + $paidLeaveDays;
+        /*
+        |--------------------------------------------------------------------------
+        | PAYROLL TOTALS
+        |--------------------------------------------------------------------------
+        |
+        | absent_days tetap berarti seluruh hari kerja yang tidak dibayar.
+        | Jadi field ini sengaja tidak diubah menjadi "unpresent_days".
+        |
+        */
 
         $absentDays = max(
             0,
