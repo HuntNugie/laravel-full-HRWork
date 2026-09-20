@@ -617,6 +617,15 @@ class DetailPayrollPeriod extends Component
         $lateDeductionTotal = $lateDiscipline['deduction_amount'];
         $lateDeductionItems = $lateDiscipline['items'];
 
+        $paidLeaveDays = $statuses
+            ->filter(
+                fn(array $state) =>
+                    $state['status'] === EmployeeDailyStatusService::STATUS_PAID_LEAVE
+            )
+            ->count();
+
+        $paidDays = $presentDays + $paidLeaveDays;
+
         $absentDays = max(
             0,
             $workingDays - $paidDays
