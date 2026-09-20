@@ -97,10 +97,18 @@
                             <x-wirekit::icon name="refresh" />
                             Generate Payroll
                         </x-wirekit::button>
+                    @elseif ($this->missingEmployeeCount > 0)
+                        <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500"
+                            wire:click="generatePayroll"
+                            wire:confirm="Sinkronkan payroll untuk {{ $this->missingEmployeeCount }} karyawan yang belum memiliki payroll pada periode ini?"
+                            loading-target="generatePayroll">
+                            <x-wirekit::icon name="refresh" />
+                            Sinkronkan Payroll
+                        </x-wirekit::button>
                     @else
                         <x-wirekit::button type="button" variant="outline" disabled>
                             <x-wirekit::icon name="check" />
-                            Payroll Sudah Dibuat
+                            Payroll Lengkap
                         </x-wirekit::button>
                     @endif
                 @endcan
@@ -732,7 +740,8 @@
                                 {{ number_format($this->missingEmployeeCount) }}
                             </strong>
                             karyawan eligible yang belum memiliki payroll.
-                            Periksa kembali data karyawan sebelum melakukan proses payroll.
+                            Gunakan <strong>Sinkronkan Payroll</strong> untuk menambahkan payroll karyawan yang belum
+                            masuk tanpa menghapus payroll draft yang sudah ada.
                         </p>
 
                     </div>
@@ -951,8 +960,6 @@
 
 
                                 {{-- Action --}}
-
-                                {{-- Ganti ACTION CELL di tabel Payroll Karyawan dengan blok ini. --}}
                                 <x-wirekit::table.td align="right">
                                     <div class="flex flex-wrap justify-end gap-2">
 
@@ -966,6 +973,24 @@
                                                 wire:navigate>
                                                 Detail
                                             </x-wirekit::button>
+                                        @endcan
+
+                                        @can('mark-paid-payroll')
+                                            @if ($period->status === 'processed' && $payroll->status === 'processed')
+                                                <x-wirekit::button type="button" variant="outline" intent="success"
+                                                    class="px-3 py-1.5 text-xs"
+                                                    wire:click="markPayrollAsPaid({{ $payroll->id }})"
+                                                    wire:confirm="Tandai payroll {{ $payroll->employees?->user?->name ?? 'karyawan ini' }} sebagai sudah dibayar?">
+                                                    <x-wirekit::icon name="check" />
+                                                    Mark as Paid
+                                                </x-wirekit::button>
+                                            @elseif ($payroll->status === 'paid')
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+                                                    <x-wirekit::icon name="check-circle" class="size-4" />
+                                                    Paid
+                                                </span>
+                                            @endif
                                         @endcan
 
                                         @can('show-payroll')
@@ -1149,7 +1174,7 @@
                             <x-wirekit::button type="button" intent="success" wire:click="markAsPaid"
                                 wire:confirm="Tandai payroll periode ini sebagai sudah dibayar?">
                                 <x-wirekit::icon name="check" />
-                                Mark as Paid
+                                Tandai Semua Sudah Dibayar
                             </x-wirekit::button>
 
                         </div>
