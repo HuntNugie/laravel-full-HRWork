@@ -44,6 +44,7 @@ class DetailWarningLetter extends Component
     }
 
     #[On('warning-letter-updated')]
+    #[On('warning-letter-issued')]
     #[On('warning-letter-cancelled')]
     public function refreshWarningLetter(): void
     {
