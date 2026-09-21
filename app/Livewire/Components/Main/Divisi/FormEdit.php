@@ -50,6 +50,11 @@ class FormEdit extends Component
             && $this->getErrorBag()->isEmpty();
     }
 
+    public function chooseManager($value): void
+    {
+        $this->managerId = filled($value) ? (int) $value : null;
+    }
+
     public function update()
     {
         $this->authorize('update', $this->divisi);
