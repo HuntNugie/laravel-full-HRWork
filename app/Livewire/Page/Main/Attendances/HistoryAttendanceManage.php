@@ -72,11 +72,6 @@ class HistoryAttendanceManage extends Component
             })
             ->get();
 
-        $period = CarbonPeriod::create(
-            $startDate->copy()->startOfDay(),
-            $endDate->copy()->startOfDay()
-        );
-
         $dailyStatusService = app(EmployeeDailyStatusService::class);
         $attendanceHistory = collect();
 
