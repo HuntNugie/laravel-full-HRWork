@@ -130,10 +130,16 @@
                                             Jadwal Kerja
                                         </p>
 
-                                        <p class="mt-1 text-base font-semibold text-slate-900">
-                                            {{ \Carbon\Carbon::parse($workTime->start_time)->format('H:i') }} -
-                                            {{ \Carbon\Carbon::parse($workTime->end_time)->format('H:i') }}
-                                        </p>
+                                        @if ($workTime)
+                                            <p class="mt-1 text-base font-semibold text-slate-900">
+                                                {{ \Carbon\Carbon::parse($workTime->start_time)->format('H:i') }} -
+                                                {{ \Carbon\Carbon::parse($workTime->end_time)->format('H:i') }}
+                                            </p>
+                                        @else
+                                            <p class="mt-1 text-base font-semibold text-slate-900">
+                                                Tidak tersedia
+                                            </p>
+                                        @endif
                                     </div>
 
 
