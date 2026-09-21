@@ -82,9 +82,9 @@
                     <x-wirekit::badge variant="warning" intent="warning">
                         Menunggu
                     </x-wirekit::badge>
-                @elseif ($absence->status === 'active')
+                @elseif ($absence->status === 'approved')
                     <x-wirekit::badge variant="success" intent="success">
-                        Aktif
+                        Disetujui
                     </x-wirekit::badge>
                 @else
                     <x-wirekit::badge variant="danger" intent="danger">
