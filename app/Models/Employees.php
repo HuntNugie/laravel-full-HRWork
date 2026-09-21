@@ -63,6 +63,7 @@ class Employees extends Model
         return $query
             ->where('status_employee', 'active')
             ->whereNull('team_id')
+            ->whereDoesntHave('supervisorTeam')
             ->where(function (Builder $query) use ($exceptDivisionId) {
                 $query->whereDoesntHave('managedDivisi');
 
