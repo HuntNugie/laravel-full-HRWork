@@ -10,6 +10,7 @@ use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Absence\Absence;
 use App\Livewire\Page\Main\Attendances\ApprovedAbsence;
 use App\Livewire\Page\Main\Attendances\Attendances;
+use App\Livewire\Page\Main\Attendances\DailyStatus;
 use App\Livewire\Page\Main\Attendances\HistoryAttendanceManage;
 use App\Livewire\Page\Main\Attendances\HistoryAttendances;
 use App\Livewire\Page\Main\Attendances\MonitorAttendance;
@@ -157,6 +158,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('attendance')->group(function () {
         Route::get('/', Attendances::class)->middleware('permission:view-attendance')->name('attendance.view');
         Route::get('/monitoring', MonitorAttendance::class)->middleware('permission:view-monitor-attendance')->name('attendance.monitor.view');
+        Route::get('/daily-status', DailyStatus::class)->middleware('permission:view-status-daily')->name('attendance.daily-status.view');
         Route::get('/manage/history', HistoryAttendanceManage::class)->middleware('permission:history-attendance')->name('attendance.history.view');
         Route::get('/history', HistoryAttendances::class)->middleware('permission:view-attendance')->name('history.view');
     });
