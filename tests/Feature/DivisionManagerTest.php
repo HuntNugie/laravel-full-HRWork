@@ -6,6 +6,7 @@ use App\Livewire\Components\Main\Divisi\FormAdd;
 use App\Livewire\Components\Main\Divisi\FormEdit;
 use App\Models\Divisi;
 use App\Models\Employees;
+use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -134,6 +135,63 @@ class DivisionManagerTest extends TestCase
         Livewire::test(FormEdit::class)
             ->call('open', $firstDivision->id)
             ->assertSee('Budi Manager');
+
+        Livewire::test(FormAdd::class)
+            ->set('name', 'Finance')
+            ->set('desc', 'Finance Division')
+            ->set('managerId', $manager->id)
+            ->call('store')
+            ->assertHasErrors(['managerId']);
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $secondDivision->id)
+            ->set('name', 'Operations')
+            ->set('desc', 'Operations Division')
+            ->set('managerId', $manager->id)
+            ->call('update')
+            ->assertHasErrors(['managerId']);
+    }
+
+    public function test_employee_with_a_team_cannot_become_division_manager(): void
+    {
+        $admin = $this->makeAuthorizedUser();
+
+        $division = Divisi::create([
+            'name' => 'Technology',
+            'description' => 'Technology Division',
+            'is_active' => 'active',
+            'manager_id' => null,
+        ]);
+
+        $team = Team::create([
+            'name' => 'Backend',
+            'description' => 'Backend Team',
+            'is_active' => 'active',
+            'divisi_id' => $division->id,
+            'supervisor_id' => null,
+        ]);
+
+        $memberUser = User::factory()->create([
+            'name' => 'Andi Team Member',
+        ]);
+        $member = $this->makeEmployee('TEAM', $memberUser);
+        $member->update(['team_id' => $team->id]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(FormAdd::class)
+            ->assertDontSee('Andi Team Member');
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $division->id)
+            ->assertDontSee('Andi Team Member');
+
+        Livewire::test(FormAdd::class)
+            ->set('name', 'Operations')
+            ->set('desc', 'Operations Division')
+            ->set('managerId', $member->id)
+            ->call('store')
+            ->assertHasErrors(['managerId']);
     }
 
 }
