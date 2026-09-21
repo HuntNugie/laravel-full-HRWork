@@ -525,32 +525,38 @@ class DetailPayrollPeriod extends Component
         Payroll $payroll,
         array $calculation,
     ): void {
-        if ($calculation['salary_amount'] > 0) {
+        $sortOrder = 1;
+
+        foreach ($calculation['salary_items'] as $salaryItem) {
+            $startDate = $salaryItem['contract_start_date']?->format('d M Y') ?? '-';
+            $endDate = $salaryItem['contract_end_date']?->format('d M Y') ?? 'sekarang';
+
             PayrollItem::create([
                 'payroll_id' => $payroll->id,
-                'name' => 'Gaji Harian',
+                'name' => $salaryItem['name'],
                 'type' => 'earning',
                 'category' => 'salary',
-                'amount' => $calculation['salary_amount'],
-                'quantity' => $calculation['paid_days'],
-                'rate' => $calculation['salary_daily'],
+                'amount' => $salaryItem['amount'],
+                'quantity' => $salaryItem['quantity'],
+                'rate' => $salaryItem['rate'],
                 'source' => 'system',
                 'description' =>
-                "Gaji harian {$calculation['paid_days']} hari × Rp" .
+                    "Kontrak {$startDate} — {$endDate} • " .
+                    "{$salaryItem['quantity']} hari × Rp" .
                     number_format(
-                        $calculation['salary_daily'],
+                        $salaryItem['rate'],
                         0,
                         ',',
                         '.'
                     ),
-                'sort_order' => 1,
+                'sort_order' => $sortOrder++,
             ]);
         }
 
-        $sortOrder = 2;
-
         foreach ($calculation['benefit_items'] as $benefitItem) {
             $benefit = $benefitItem['benefit'];
+            $startDate = $benefitItem['contract_start_date']?->format('d M Y') ?? '-';
+            $endDate = $benefitItem['contract_end_date']?->format('d M Y') ?? 'sekarang';
 
             PayrollItem::create([
                 'payroll_id' => $payroll->id,
@@ -562,7 +568,8 @@ class DetailPayrollPeriod extends Component
                 'rate' => $benefitItem['rate'],
                 'source' => 'system',
                 'description' =>
-                "Tunjangan {$benefitItem['quantity']} hari × Rp" .
+                    "Kontrak {$startDate} — {$endDate} • " .
+                    "Tunjangan {$benefitItem['quantity']} hari × Rp" .
                     number_format(
                         $benefitItem['rate'],
                         0,
@@ -584,7 +591,7 @@ class DetailPayrollPeriod extends Component
                 'rate' => $lateDeduction['amount'] / $lateDeduction['deduction_units'],
                 'source' => 'system',
                 'description' =>
-                "Keterlambatan {$lateDeduction['late_count']} kali pada " .
+                    "Keterlambatan {$lateDeduction['late_count']} kali pada " .
                     $lateDeduction['month'] .
                     " menghasilkan {$lateDeduction['deduction_units']} × Rp" .
                     number_format(

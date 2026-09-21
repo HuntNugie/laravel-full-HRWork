@@ -153,6 +153,108 @@ class PayrollCalculationServiceTest extends TestCase
         $this->assertSame(0, $calculation['absent_days']);
     }
 
+    public function test_salary_and_benefits_follow_effective_contract_segments_and_late_threshold_does_not_reset(): void
+    {
+        $employee = $this->createEmployee();
+
+        $oldContract = $employee->employeeContract()->firstOrFail();
+        $oldContract->update([
+            'end_date' => '2026-09-15',
+            'salary_daily' => 100000,
+            'status' => 'expired',
+            'position_name' => 'Developer',
+        ]);
+
+        $newContract = EmployeeContract::create([
+            'employee_id' => $employee->id,
+            'contract_number' => 'CTR-' . uniqid(),
+            'employement_type' => 'pkwtt',
+            'start_date' => '2026-09-16',
+            'end_date' => null,
+            'salary_daily' => 150000,
+            'status' => 'active',
+            'position_name' => 'Senior Developer',
+            'notes' => null,
+        ]);
+
+        $benefitOld = \App\Models\Benefit::create([
+            'name' => 'Tunjangan Lama',
+            'description' => 'Benefit contract lama',
+            'status' => 'active',
+        ]);
+
+        $benefitNew = \App\Models\Benefit::create([
+            'name' => 'Tunjangan Baru',
+            'description' => 'Benefit contract baru',
+            'status' => 'active',
+        ]);
+
+        $oldContract->benefits()->attach($benefitOld->id, [
+            'amount' => 10000,
+        ]);
+
+        $newContract->benefits()->attach($benefitNew->id, [
+            'amount' => 20000,
+        ]);
+
+        foreach ([
+            ['date' => '2026-09-07', 'status' => 'late', 'late_minutes' => 10],
+            ['date' => '2026-09-08', 'status' => 'late', 'late_minutes' => 12],
+            ['date' => '2026-09-16', 'status' => 'late', 'late_minutes' => 15],
+        ] as $attendance) {
+            Attendances::create([
+                'employee_id' => $employee->id,
+                'date' => $attendance['date'],
+                'check_in_at' => $attendance['date'] . ' 09:15:00',
+                'status' => $attendance['status'],
+                'late_minutes' => $attendance['late_minutes'],
+            ]);
+        }
+
+        $period = PayrollPeriod::create([
+            'name' => 'September 2026',
+            'start_date' => '2026-09-01',
+            'end_date' => '2026-09-16',
+            'payment_date' => null,
+            'status' => 'draft',
+            'created_by' => null,
+        ]);
+
+        $calculation = app(PayrollCalculationService::class)->calculate(
+            employee: $employee,
+            contract: $newContract,
+            period: $period,
+        );
+
+        $salaryItems = $calculation['salary_items']->values();
+        $benefitItems = $calculation['benefit_items']->values();
+
+        $this->assertSame(3, $calculation['paid_days']);
+        $this->assertSame(350000.0, $calculation['salary_amount']);
+        $this->assertSame(40000.0, $calculation['benefit_total']);
+
+        $this->assertCount(2, $salaryItems);
+        $this->assertSame(200000.0, (float) $salaryItems[0]['amount']);
+        $this->assertSame(2, $salaryItems[0]['quantity']);
+        $this->assertSame(100000.0, $salaryItems[0]['rate']);
+        $this->assertSame($oldContract->id, $salaryItems[0]['contract_id']);
+
+        $this->assertSame(150000.0, (float) $salaryItems[1]['amount']);
+        $this->assertSame(1, $salaryItems[1]['quantity']);
+        $this->assertSame(150000.0, $salaryItems[1]['rate']);
+        $this->assertSame($newContract->id, $salaryItems[1]['contract_id']);
+
+        $this->assertCount(2, $benefitItems);
+        $this->assertSame(20000.0, (float) $benefitItems[0]['amount']);
+        $this->assertSame($oldContract->id, $benefitItems[0]['contract_id']);
+        $this->assertSame(20000.0, (float) $benefitItems[1]['amount']);
+        $this->assertSame($newContract->id, $benefitItems[1]['contract_id']);
+
+        $this->assertSame(3, $calculation['late_days']);
+        $this->assertSame(20000.0, $calculation['late_deduction_total']);
+        $this->assertCount(1, $calculation['late_deduction_items']);
+    }
+
     private function createEmployee(): Employees
     {
         $employee = Employees::create([
