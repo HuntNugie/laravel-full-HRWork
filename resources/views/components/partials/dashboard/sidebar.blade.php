@@ -161,9 +161,9 @@
                 @endcan
 
                 @can('view-status-daily')
-                    <x-wirekit::sidebar.item href="{{ route('attendance.daily-status.view') }}" :active="request()->routeIs('attendance.daily-status.view')" icon="list"
-                        wire:navigate>
-                        Daily Status
+                    <x-wirekit::sidebar.item href="{{ route('attendance.daily-status.view') }}" :active="request()->routeIs('attendance.daily-status.view')"
+                        icon="globe" wire:navigate>
+                        Status harian
                     </x-wirekit::sidebar.item>
                 @endcan
 
