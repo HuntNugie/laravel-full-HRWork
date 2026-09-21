@@ -51,16 +51,24 @@
                     <x-wirekit::label for="division-manager-edit" class="text-black">
                         Manager Divisi
                     </x-wirekit::label>
+
                     <x-wirekit::select
                         id="division-manager-edit"
-                        class="text-black"
                         name="managerId"
-                        placeholder="Pilih Manager..."
-                        :options="$managers"
-                        wire:model.live="managerId"
-                    />
+                        :value="$managerId ?? ''"
+                        optimistic="chooseManager"
+                    >
+                        <option value="">Pilih Manager...</option>
+
+                        @foreach ($managers as $managerId => $managerName)
+                            <option value="{{ $managerId }}">
+                                {{ $managerName }}
+                            </option>
+                        @endforeach
+                    </x-wirekit::select>
+
                     <p class="mt-1 text-xs text-slate-400">
-                        Manager dapat diganti atau dikosongkan.
+                        Kosongkan jika divisi belum memiliki Manager.
                     </p>
                 </x-wirekit::field>
 
