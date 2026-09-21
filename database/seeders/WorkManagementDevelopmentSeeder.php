@@ -220,13 +220,11 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 'code' => 'DEV-GM-001',
                 'position' => 'General Manager',
                 'team_id' => null,
-                'divisi_id' => $managementDivision->id,
             ],
             'manager' => [
                 'code' => 'DEV-MGR-001',
                 'position' => 'Manager',
                 'team_id' => null,
-                'divisi_id' => $developmentDivision->id,
             ],
             'supervisor' => [
                 'code' => 'DEV-SPV-001',
@@ -261,7 +259,6 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 ['employee_code' => $definition['code']],
                 [
                     'user_id' => $users[$key]->id,
-                    'divisi_id' => $definition['divisi_id'],
                     'status_employee' => 'active',
                     'team_id' => $definition['team_id'],
                     'position_id' => $positions[$definition['position']]->id,
