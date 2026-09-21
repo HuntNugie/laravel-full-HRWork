@@ -15,6 +15,7 @@ class AttendanceService
 {
     public function __construct(
         private readonly EmployeeDailyStatusService $dailyStatusService,
+        private readonly AbsenceRequestService $absenceRequestService,
     ) {
     }
 
@@ -31,16 +32,10 @@ class AttendanceService
 
         $this->validateLocation($latitude, $longitude);
 
-        $hasAbsenceRequest = $employee
-            ->employeeAbsenceRequest()
-            ->whereDate('date', $checkIn->toDateString())
-            ->exists();
-
-        if ($hasAbsenceRequest) {
-            throw new LogicException(
-                'Anda sudah mengajukan sakit/izin untuk hari ini sehingga tidak dapat melakukan check in.'
-            );
-        }
+        $this->absenceRequestService->ensureNoRequestForCheckIn(
+            employee: $employee,
+            date: $checkIn,
+        );
 
         $dailyStatus = $this->dailyStatusService->getStatus(
             employee: $employee,
