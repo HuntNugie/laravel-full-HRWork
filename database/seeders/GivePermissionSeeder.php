@@ -24,11 +24,26 @@ class GivePermissionSeeder extends Seeder
             'view-employee',
             'create-employee',
             'view-team',
-            'show-divisi'
+            'show-divisi',
+            'view-daily-status'
         ])
             ->where('guard_name', 'web')
             ->get();
 
         $hr->syncPermissions($permissions);
+
+        $admin = Role::where('name', 'Administrator')
+            ->where('guard_name', 'web')
+            ->first();
+
+        if ($admin) {
+            $dailyStatusPermission = Permission::where('name', 'view-daily-status')
+                ->where('guard_name', 'web')
+                ->first();
+
+            if ($dailyStatusPermission) {
+                $admin->givePermissionTo($dailyStatusPermission);
+            }
+        }
     }
 }
