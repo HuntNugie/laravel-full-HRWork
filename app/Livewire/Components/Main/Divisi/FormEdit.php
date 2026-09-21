@@ -76,9 +76,17 @@ class FormEdit extends Component
     public function render()
     {
         $managers = Employees::with(['user', 'position'])
-            ->where('status_employee', 'active')
-            ->whereHas('position', function ($query) {
-                $query->where('name', 'Manager');
+            ->where(function ($query) {
+                $query
+                    ->where(function ($query) {
+                        $query->where('status_employee', 'active')
+                            ->whereHas('position', function ($query) {
+                                $query->where('name', 'Manager');
+                            });
+                    })
+                    ->when($this->managerId, function ($query) {
+                        $query->orWhereKey($this->managerId);
+                    });
             })
             ->get();
 
