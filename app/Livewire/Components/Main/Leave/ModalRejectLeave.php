@@ -3,7 +3,7 @@
 namespace App\Livewire\Components\Main\Leave;
 
 use App\Models\LeaveRequest;
-use Illuminate\Support\Facades\Auth;
+use App\Service\LeaveRequestService;
 use Livewire\Component;
 
 class ModalRejectLeave extends Component
@@ -17,7 +17,7 @@ class ModalRejectLeave extends Component
         $this->request = $request;
     }
 
-    public function reject(): void
+    public function reject(LeaveRequestService $leaveRequestService): void
     {
         $this->validate([
             'rejectionReason' => [
@@ -27,86 +27,32 @@ class ModalRejectLeave extends Component
                 'max:1000',
             ],
         ], [
-            'rejectionReason.required' =>
-            'Alasan penolakan wajib diisi.',
-
-            'rejectionReason.min' =>
-            'Alasan penolakan minimal 5 karakter.',
-
-            'rejectionReason.max' =>
-            'Alasan penolakan maksimal 1000 karakter.',
+            'rejectionReason.required' => 'Alasan penolakan wajib diisi.',
+            'rejectionReason.min' => 'Alasan penolakan minimal 5 karakter.',
+            'rejectionReason.max' => 'Alasan penolakan maksimal 1000 karakter.',
         ]);
 
-
-        /*
-    |--------------------------------------------------------------------------
-    | Pastikan request masih pending
-    |--------------------------------------------------------------------------
-    */
-
-        $this->request->refresh();
-
-        if ($this->request->status !== 'pending') {
-
+        try {
+            $this->request = $leaveRequestService->reject(
+                request: $this->request,
+                rejectedBy: auth()->id(),
+                reason: $this->rejectionReason,
+            );
+        } catch (\LogicException $exception) {
             $this->dispatch(
                 'wirekit-toast',
                 variant: 'danger',
                 title: 'Tidak dapat diproses',
-                message: 'Pengajuan cuti ini sudah tidak berstatus menunggu.'
+                message: $exception->getMessage()
             );
 
             return;
         }
 
-
-        /*
-    |--------------------------------------------------------------------------
-    | UPDATE STATUS
-    |--------------------------------------------------------------------------
-    */
-
-        $this->request->update([
-            'status' => 'rejected',
-            'rejected_by' => Auth::id(),
-            'rejected_at' => now(),
-            'rejection_reason' => $this->rejectionReason,
-        ]);
-
-
-        /*
-    |--------------------------------------------------------------------------
-    | Refresh model
-    |--------------------------------------------------------------------------
-    */
-
-        $this->request->refresh();
-
-
-        /*
-    |--------------------------------------------------------------------------
-    | Reset form
-    |--------------------------------------------------------------------------
-    */
-
         $this->rejectionReason = null;
-
         $this->resetValidation();
 
-
-        /*
-    |--------------------------------------------------------------------------
-    | Beritahu parent management leave
-    |--------------------------------------------------------------------------
-    */
-
         $this->dispatch('leave-management-refresh');
-
-
-        /*
-    |--------------------------------------------------------------------------
-    | Tutup modal
-    |--------------------------------------------------------------------------
-    */
 
         $this->dispatch(
             'wirekit-modal-close',
@@ -117,13 +63,6 @@ class ModalRejectLeave extends Component
             'wirekit-modal-close',
             name: 'management-leave-detail-' . $this->request->id
         );
-
-
-        /*
-    |--------------------------------------------------------------------------
-    | Toast
-    |--------------------------------------------------------------------------
-    */
 
         $this->dispatch(
             'wirekit-toast',
