@@ -92,7 +92,7 @@ class AttendanceServiceTest extends TestCase
         $this->assertSame('2026-09-22', $attendance->date->toDateString());
     }
 
-    public function test_pending_absence_request_does_not_block_check_in(): void
+    public function test_pending_absence_request_blocks_check_in(): void
     {
         $employee = $this->createEmployee();
 
@@ -104,14 +104,38 @@ class AttendanceServiceTest extends TestCase
             'status' => 'pending',
         ]);
 
-        $attendance = app(AttendanceService::class)->checkIn(
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('sudah mengajukan sakit/izin');
+
+        app(AttendanceService::class)->checkIn(
             employee: $employee,
             latitude: -6.9,
             longitude: 107.6,
             now: '2026-09-22 09:00:00',
         );
+    }
 
-        $this->assertSame('present', $attendance->status);
+    public function test_rejected_absence_request_also_blocks_check_in(): void
+    {
+        $employee = $this->createEmployee();
+
+        EmployeeAbsenceRequest::create([
+            'employee_id' => $employee->id,
+            'date' => '2026-09-22',
+            'type' => 'izin',
+            'reason' => 'Keperluan keluarga',
+            'status' => 'rejected',
+        ]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('sudah mengajukan sakit/izin');
+
+        app(AttendanceService::class)->checkIn(
+            employee: $employee,
+            latitude: -6.9,
+            longitude: 107.6,
+            now: '2026-09-22 09:00:00',
+        );
     }
 
     public function test_approved_absence_request_blocks_check_in(): void
