@@ -12,20 +12,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $hr = User::create([
-            'name' => 'Muhammad nadin nugraha',
-            'email' => 'nugiekurniawan03@gmail.com',
-            'password' => bcrypt('nugitea123'),
-            'status' => 'active',
-        ]);
-
-        $admin = User::create([
-            'name' => 'Nugie kurniawan',
-            'email' => 'nugiekurniawan02@gmail.com',
-            'password' => bcrypt('nugitea123'),
-            'status' => 'active',
-        ]);
-
         $superAdminEmail = env('SUPERADMIN_EMAIL', 'superadmin@gmail.com');
         $superAdminPassword = env('SUPERADMIN_PASSWORD');
 
@@ -35,15 +21,35 @@ class UserSeeder extends Seeder
             );
         }
 
-        $superAdmin = User::create([
-            'name' => 'Super Admin',
-            'email' => $superAdminEmail,
-            'password' => bcrypt($superAdminPassword),
-            'status' => 'active',
-        ]);
+        $hr = User::updateOrCreate(
+            ['email' => 'nugiekurniawan03@gmail.com'],
+            [
+                'name' => 'Muhammad nadin nugraha',
+                'password' => bcrypt('nugitea123'),
+                'status' => 'active',
+            ],
+        );
 
-        $admin->assignRole('Administrator');
-        $hr->assignRole('HR');
-        $superAdmin->assignRole('super-admin');
+        $admin = User::updateOrCreate(
+            ['email' => 'nugiekurniawan02@gmail.com'],
+            [
+                'name' => 'Nugie kurniawan',
+                'password' => bcrypt('nugitea123'),
+                'status' => 'active',
+            ],
+        );
+
+        $superAdmin = User::updateOrCreate(
+            ['email' => $superAdminEmail],
+            [
+                'name' => 'Super Admin',
+                'password' => bcrypt($superAdminPassword),
+                'status' => 'active',
+            ],
+        );
+
+        $admin->syncRoles(['Administrator']);
+        $hr->syncRoles(['HR']);
+        $superAdmin->syncRoles(['super-admin']);
     }
 }
