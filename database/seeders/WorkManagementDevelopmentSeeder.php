@@ -171,7 +171,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 ],
             );
 
-            $roles = ['Employee', $account['role']];
+            $roles = ['employee', $account['role']];
 
             foreach ($roles as $roleName) {
                 Role::firstOrCreate([
@@ -188,11 +188,11 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $admin = User::where('email', 'nugiekurniawan02@gmail.com')->firstOrFail();
         $superAdmin = User::where('email', env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'))->firstOrFail();
 
-        Role::firstOrCreate(['name' => 'Employee', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
 
-        $hr->syncRoles(['Employee', 'HR']);
-        $admin->syncRoles(['Employee', 'Administrator']);
-        $superAdmin->syncRoles(['Employee', 'super-admin']);
+        $hr->syncRoles(['employee', 'hr']);
+        $admin->syncRoles(['employee', 'administrator']);
+        $superAdmin->syncRoles(['employee', 'super-admin']);
 
         $users['hr'] = $hr;
         $users['admin'] = $admin;
@@ -213,7 +213,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 'Supervisor',
                 'Software Engineer',
                 'HR Officer',
-                'Administrator',
+                'administrator',
             ])
             ->get()
             ->keyBy('name');
