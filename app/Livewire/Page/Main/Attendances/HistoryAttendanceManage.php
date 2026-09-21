@@ -5,7 +5,6 @@ namespace App\Livewire\Page\Main\Attendances;
 use App\Models\Employees;
 use App\Service\EmployeeDailyStatusService;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
