@@ -3,6 +3,7 @@
 namespace App\Livewire\Components\Main\Dicipline;
 
 use App\Models\EmployeeWarningLetter;
+use App\Service\WarningLetterService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -24,26 +25,22 @@ class ModalIssueWarningLetter extends Component
             403
         );
 
-        $this->warningLetter->refresh();
-
-        if ($this->warningLetter->status !== 'draft') {
+        try {
+            $this->warningLetter = app(WarningLetterService::class)
+                ->issue(
+                    warningLetter: $this->warningLetter,
+                    issuedBy: (int) Auth::id(),
+                );
+        } catch (\RuntimeException $e) {
             $this->dispatch(
                 'wirekit-toast',
                 variant: 'warning',
                 title: 'Tidak dapat diterbitkan',
-                message: 'Surat Peringatan hanya dapat diterbitkan ketika berstatus draft.'
+                message: $e->getMessage()
             );
 
             return;
         }
-
-        $this->warningLetter->update([
-            'status' => 'issued',
-            'issued_by' => Auth::id(),
-            'issued_at' => now(),
-        ]);
-
-        $this->warningLetter->refresh();
 
         $this->dispatch('warning-letter-issued');
 
