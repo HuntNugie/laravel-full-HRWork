@@ -104,6 +104,7 @@ class WorkManagementService
     public function assignTeam(DivisionProject $divisionProject, Team $team, Employees $actor): DivisionProject
     {
         $this->ensureActiveEmployee($actor);
+        $this->ensureCanManageDivisionProject($divisionProject, $actor);
 
         if ($divisionProject->status === 'completed') {
             throw ValidationException::withMessages(['division_project' => 'Division project yang sudah selesai tidak dapat menerima team baru.']);
