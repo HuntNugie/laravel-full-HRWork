@@ -73,22 +73,21 @@
     ====================================================== --}}
 
     @php
-
-        $attendanceToday = $employees->pluck('attendances')->flatten();
-
-        $totalPresent = $attendanceToday->whereNotNull('check_in_at')->count();
-
-        $totalWorking = $attendanceToday->whereNotNull('check_in_at')->whereNull('check_out_at')->count();
-
-        $totalLate = $attendanceToday
-            ->whereNotNull('check_in_at')
-            ->filter(function ($attendance) {
-                return $attendance->check_in_at->format('H:i:s') > '08:00:00';
-            })
+        $totalPresent = $employees
+            ->whereIn('monitoring_status', ['present', 'late', 'working'])
             ->count();
 
-        $totalAbsent = $employees->count() - $totalPresent;
+        $totalWorking = $employees
+            ->where('monitoring_status', 'working')
+            ->count();
 
+        $totalLate = $employees
+            ->where('daily_status', 'late')
+            ->count();
+
+        $totalAbsent = $employees
+            ->where('daily_status', 'pending')
+            ->count();
     @endphp
 
 
@@ -284,6 +283,10 @@
                                 Semua Status
                             </option>
 
+                            <option value="working">
+                                Sedang Bekerja
+                            </option>
+
                             <option value="present">
                                 Hadir
                             </option>
@@ -294,6 +297,30 @@
 
                             <option value="absent">
                                 Belum Hadir
+                            </option>
+
+                            <option value="paid_leave">
+                                Cuti
+                            </option>
+
+                            <option value="absence_sick">
+                                Sakit
+                            </option>
+
+                            <option value="absence_permit">
+                                Izin
+                            </option>
+
+                            <option value="holiday">
+                                Libur
+                            </option>
+
+                            <option value="non_working">
+                                Non-Hari Kerja
+                            </option>
+
+                            <option value="outside_contract">
+                                Di Luar Kontrak
                             </option>
                         </select>
 
@@ -438,27 +465,53 @@
                                 {{-- STATUS --}}
                                 <x-wirekit::table.td>
 
-                                    @if (!$attendance)
-                                        <span
-                                            class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
-                                            Belum Hadir
-                                        </span>
-                                    @elseif (!$attendance->check_out_at)
-                                        <span
-                                            class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-600">
-                                            Sedang Bekerja
-                                        </span>
-                                    @elseif ($attendance->check_in_at && $attendance->check_in_at->format('H:i:s') > '08:00:00')
-                                        <span
-                                            class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-600">
-                                            Terlambat
-                                        </span>
-                                    @else
-                                        <span
-                                            class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
-                                            Hadir
-                                        </span>
-                                    @endif
+                                    @switch($employee->monitoring_status)
+                                        @case('working')
+                                            <span class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-600">
+                                                {{ $employee->monitoring_status_label }}
+                                            </span>
+                                        @break
+
+                                        @case('present')
+                                            <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
+                                                {{ $employee->monitoring_status_label }}
+                                            </span>
+                                        @break
+
+                                        @case('late')
+                                            <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-600">
+                                                {{ $employee->monitoring_status_label }}
+                                            </span>
+                                        @break
+
+                                        @case('paid_leave')
+                                        @case('absence_sick')
+                                        @case('absence_permit')
+                                            <span class="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600">
+                                                {{ $employee->monitoring_status_label }}
+                                            </span>
+                                        @break
+
+                                        @case('absent')
+                                        @case('unpresent')
+                                            <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-600">
+                                                {{ $employee->monitoring_status_label }}
+                                            </span>
+                                        @break
+
+                                        @case('holiday')
+                                        @case('non_working')
+                                        @case('outside_contract')
+                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                                                {{ $employee->monitoring_status_label }}
+                                            </span>
+                                        @break
+
+                                        @default
+                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                                                {{ $employee->monitoring_status_label }}
+                                            </span>
+                                    @endswitch
 
                                 </x-wirekit::table.td>
 
