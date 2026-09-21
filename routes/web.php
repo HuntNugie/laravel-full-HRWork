@@ -158,7 +158,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('attendance')->group(function () {
         Route::get('/', Attendances::class)->middleware('permission:view-attendance')->name('attendance.view');
         Route::get('/monitoring', MonitorAttendance::class)->middleware('permission:view-monitor-attendance')->name('attendance.monitor.view');
-        Route::get('/daily-status', DailyStatus::class)->middleware('permission:view-daily-status')->name('attendance.daily-status.view');
+        Route::get('/daily-status', DailyStatus::class)->middleware('permission:permission:view-status-daily')->name('attendance.daily-status.view');
         Route::get('/manage/history', HistoryAttendanceManage::class)->middleware('permission:history-attendance')->name('attendance.history.view');
         Route::get('/history', HistoryAttendances::class)->middleware('permission:view-attendance')->name('history.view');
     });
