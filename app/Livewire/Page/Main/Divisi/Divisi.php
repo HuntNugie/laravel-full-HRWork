@@ -15,12 +15,14 @@ class Divisi extends Component
 
     public string $search = '';
 
-    public function updateSearch(){
+    public function updateSearch()
+    {
         $this->resetPage();
     }
 
-    public function mount(){
-        $this->authorize('viewAny',ModelsDivisi::class);
+    public function mount()
+    {
+        $this->authorize('viewAny', ModelsDivisi::class);
     }
 
     #[On('create-divisi')]
@@ -28,12 +30,15 @@ class Divisi extends Component
     {
         $this->resetPage();
     }
+
     public function render()
     {
         $divisis = ModelsDivisi::query()
+            ->with(['manager.user', 'manager.position'])
             ->when($this->search, fn($q) => $q->where('name', 'LIKE', '%' . $this->search . '%'))
             ->latest()
             ->paginate(5);
+
         return view('livewire.page.main.divisi.divisi', [
             'divisis' => $divisis
         ]);

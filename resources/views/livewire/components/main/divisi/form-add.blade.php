@@ -2,49 +2,29 @@
 
     <x-slot:trigger>
         <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500">
-              <x-wirekit::icon name=plus/> Divisi
+            <x-wirekit::icon name="plus" /> Divisi
         </x-wirekit::button>
     </x-slot:trigger>
 
-
-    {{-- =====================================================
-        HEADER
-    ====================================================== --}}
     <x-wirekit::modal.header>
-
         <x-wirekit::stack gap="1">
-
             <h2 class="text-lg font-semibold text-slate-900">
                 Tambah Divisi
             </h2>
-
             <p class="text-sm text-slate-500">
                 Tambahkan divisi baru ke dalam struktur organisasi.
             </p>
-
         </x-wirekit::stack>
-
     </x-wirekit::modal.header>
 
-
-    {{-- =====================================================
-        BODY
-    ====================================================== --}}
     <x-wirekit::modal.body>
-
         <x-wirekit::form wire:submit="store">
-
             <x-wirekit::stack gap="md">
 
-                {{-- =================================================
-                    NAME
-                ================================================== --}}
                 <x-wirekit::field>
-
                     <x-wirekit::label for="division-name" class="text-black">
                         Nama Divisi
                     </x-wirekit::label>
-
                     <x-wirekit::input
                         id="division-name"
                         type="text"
@@ -53,21 +33,12 @@
                         wire:model.live.debounce.500ms="name"
                         placeholder="Contoh: Human Resources"
                     />
-
-                 
-
                 </x-wirekit::field>
 
-
-                {{-- =================================================
-                    DESCRIPTION
-                ================================================== --}}
                 <x-wirekit::field>
-
                     <x-wirekit::label for="division-description" class="text-black">
                         Deskripsi
                     </x-wirekit::label>
-
                     <x-wirekit::textarea
                         id="division-description"
                         wire:model.live.debounce.500ms="desc"
@@ -76,39 +47,48 @@
                         rows="4"
                         placeholder="Deskripsi mengenai divisi..."
                     />
-
-                   
-
                 </x-wirekit::field>
 
+                <x-wirekit::field>
+                    <x-wirekit::label for="division-manager" class="text-black">
+                        Manager Divisi
+                    </x-wirekit::label>
 
-                {{-- =================================================
-                    STATUS
-                ================================================== --}}
-                <div
-                    class="flex items-center justify-between rounded-lg border border-slate-200 p-4"
-                >
+                    <x-wirekit::select
+                        id="division-manager"
+                        name="managerId"
+                        wire:model="managerId"
+                    >
+                        <option value="">Pilih Manager...</option>
 
+                        @foreach ($managers as $managerId => $managerName)
+                            <option value="{{ $managerId }}">
+                                {{ $managerName }}
+                            </option>
+                        @endforeach
+                    </x-wirekit::select>
+
+                    <p class="mt-1 text-xs text-slate-400">
+                        Kosongkan jika divisi belum memiliki Manager.
+                    </p>
+                </x-wirekit::field>
+
+                <div class="flex items-center justify-between rounded-lg border border-slate-200 p-4">
                     <div>
-
                         <p class="text-sm font-medium text-slate-700">
                             Status Divisi
                         </p>
-
                         <p class="mt-1 text-xs text-slate-400">
                             Tentukan apakah divisi aktif digunakan.
                         </p>
-
                     </div>
 
                     <label class="inline-flex cursor-pointer items-center">
-
                         <input
                             type="checkbox"
                             wire:model="isActive"
                             class="peer sr-only"
                         >
-
                         <div
                             class="relative h-6 w-11 rounded-full
                                    bg-slate-200
@@ -123,34 +103,23 @@
                                    peer-checked:after:translate-x-full
                                    peer-checked:after:border-white"
                         ></div>
-
                     </label>
-
                 </div>
 
-                @error('is_active')
-                    <span class="text-xs text-red-500">
-                        {{ $message }}
-                    </span>
+                @error('managerId')
+                    <span class="text-xs text-red-500">{{ $message }}</span>
                 @enderror
 
+                @error('is_active')
+                    <span class="text-xs text-red-500">{{ $message }}</span>
+                @enderror
 
-                {{-- =================================================
-                    FOOTER
-                ================================================== --}}
                 <div class="flex justify-end gap-2 pt-2">
-
                     <x-wirekit::modal.close>
-
-                        <x-wirekit::button
-                            type="button"
-                            size="sm"
-                        >
+                        <x-wirekit::button type="button" size="sm">
                             Cancel
                         </x-wirekit::button>
-
                     </x-wirekit::modal.close>
-
 
                     <x-wirekit::button
                         type="submit"
@@ -160,23 +129,17 @@
                         :disabled="!$this->canSubmit()"
                         class="bg-[#30AFFF] text-white hover:bg-sky-500"
                     >
-
                         <span wire:loading.remove wire:target="store">
                             Add Division
                         </span>
-
                         <span wire:loading wire:target="store">
                             Saving...
                         </span>
-
                     </x-wirekit::button>
-
                 </div>
 
             </x-wirekit::stack>
-
         </x-wirekit::form>
-
     </x-wirekit::modal.body>
 
 </x-wirekit::modal>
