@@ -153,10 +153,13 @@ class WorkManagementService
     ): Task {
         $this->ensureActiveEmployee($creator);
         $this->ensureActiveEmployee($assignee);
+        $this->ensureTaskWorkerAccount($assignee);
 
         if ($divisionProject->status === 'completed') {
             throw ValidationException::withMessages(['division_project' => 'Division project sudah selesai.']);
         }
+
+        $this->ensureCanManageDivisionProject($divisionProject, $actor);
 
         if (! $divisionProject->teams()->whereKey($team->id)->exists()) {
             throw ValidationException::withMessages(['team_id' => 'Team belum ditugaskan pada division project.']);
@@ -176,6 +179,10 @@ class WorkManagementService
 
         if ((int) $assignee->id === (int) $divisionProject->manager_id) {
             throw ValidationException::withMessages(['assignee_id' => 'Manager division project tidak dapat menjadi assignee task biasa.']);
+        }
+
+        if (! ($creator->user?->hasRole('general-manager') || (int) $team->supervisor_id === (int) $creator->id)) {
+            throw ValidationException::withMessages(['creator' => 'Task hanya dapat dibuat oleh General Manager atau supervisor team terkait.']);
         }
 
         if ((int) $assignee->id === (int) $creator->id && (int) $creator->id === (int) $team->supervisor_id) {
@@ -218,6 +225,10 @@ class WorkManagementService
         string $workStatus = Task::STATUS_IN_PROGRESS,
     ): Task {
         $this->ensureTaskWorker($task, $actor);
+
+        if ($workStatus === Task::STATUS_BLOCKED && $task->status !== Task::STATUS_IN_PROGRESS) {
+            throw ValidationException::withMessages(['status' => 'Task hanya dapat berubah menjadi blocked dari in_progress.']);
+        }
 
         if (! in_array($task->status, [Task::STATUS_TO_DO, Task::STATUS_IN_PROGRESS, Task::STATUS_BLOCKED], true)) {
             throw ValidationException::withMessages(['task' => 'Task tidak berada pada status yang dapat dikerjakan.']);
@@ -265,8 +276,8 @@ class WorkManagementService
     {
         $this->ensureTaskWorker($task, $actor);
 
-        if (! in_array($task->status, [Task::STATUS_TO_DO, Task::STATUS_IN_PROGRESS, Task::STATUS_BLOCKED], true)) {
-            throw ValidationException::withMessages(['task' => 'Task tidak dapat disubmit pada status saat ini.']);
+        if ($task->status !== Task::STATUS_IN_PROGRESS) {
+            throw ValidationException::withMessages(['task' => 'Task hanya dapat disubmit dari status in_progress.']);
         }
 
         if ((int) $task->progress !== 100) {
@@ -344,7 +355,13 @@ class WorkManagementService
 
     public function cancelTask(Task $task, Employees $actor): Task
     {
-        $task->loadMissing('divisionProject');
+        $task->loadMissing('divisionProject', 'team');
+        $this->ensureActiveEmployee($actor);
+        if (! ($actor->user?->hasRole('general-manager')
+            || (int) $task->divisionProject?->manager_id === (int) $actor->id
+            || (int) $task->team?->supervisor_id === (int) $actor->id)) {
+            throw ValidationException::withMessages(['actor' => 'Actor tidak memiliki scope untuk membatalkan task ini.']);
+        }
 
         if (in_array($task->status, [Task::STATUS_DONE, Task::STATUS_CANCELLED], true)) {
             throw ValidationException::withMessages(['task' => 'Task tidak dapat dibatalkan pada status saat ini.']);
@@ -362,6 +379,13 @@ class WorkManagementService
 
     public function reportManualProgress(DivisionProject $divisionProject, Employees $reporter, int $progress, ?string $note = null): ProjectProgressUpdate
     {
+        $divisionProject->loadMissing('teams');
+        $isManager = (int) $divisionProject->manager_id === (int) $reporter->id;
+        $isSupervisor = $divisionProject->teams->contains(fn ($team) => (int) $team->supervisor_id === (int) $reporter->id);
+        if (! $isManager && ! $isSupervisor) {
+            throw ValidationException::withMessages(['reporter' => 'Reporter tidak memiliki scope untuk division project ini.']);
+        }
+
         if ($progress < 0 || $progress > 100) {
             throw ValidationException::withMessages(['progress' => 'Progress harus berada di antara 0 sampai 100.']);
         }
@@ -516,6 +540,21 @@ class WorkManagementService
         }
 
         $this->ensureActiveEmployee($actor);
+        $this->ensureTaskWorkerAccount($actor);
+    }
+
+    private function ensureTaskWorkerAccount(Employees $employee): void
+    {
+        if (! $employee->user?->hasRole('task-worker') || $employee->user?->status !== 'active') {
+            throw ValidationException::withMessages(['employee' => 'Task worker harus memiliki akun aktif dan role task-worker.']);
+        }
+    }
+
+    private function ensureCanManageDivisionProject(DivisionProject $divisionProject, Employees $actor): void
+    {
+        if (! ($actor->user?->hasRole('general-manager') || (int) $divisionProject->manager_id === (int) $actor->id)) {
+            throw ValidationException::withMessages(['actor' => 'Actor tidak memiliki scope untuk division project ini.']);
+        }
     }
 
     private function ensureActiveEmployee(Employees $employee): void

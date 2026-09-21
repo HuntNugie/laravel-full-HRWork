@@ -91,7 +91,7 @@ class CreateTask extends Component
         $this->assignees = Employees::query()
             ->where('team_id', $this->team_id)
             ->where('status_employee', 'active')
-            ->whereKeyNot($supervisorId)
+            ->when($supervisorId, fn ($query) => $query->where('id', '!=', $supervisorId))
             ->with('user')
             ->orderBy('id')
             ->get();
