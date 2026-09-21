@@ -14,7 +14,7 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        $permissions = ['view-divisi', 'create-divisi', 'update-divisi', 'delete-divisi', 'show-divisi', 'view-position', 'create-position', 'view-employee', 'create-employee', 'view-team', 'view-daily-status'];
+        $permissions = ['view-divisi', 'create-divisi', 'update-divisi', 'delete-divisi', 'show-divisi', 'view-position', 'create-position', 'view-employee', 'create-employee', 'view-team', 'view-status-daily'];
         foreach ($permissions as $permission) {
             Permission::create([
                 'name' => $permission,
