@@ -77,22 +77,23 @@ class FormEdit extends Component
     {
         $managers = Employees::with(['user', 'position'])
             ->where(function ($query) {
-                $query
-                    ->where(function ($query) {
-                        $query->where('status_employee', 'active')
-                            ->whereHas('position', function ($query) {
-                                $query->where('name', 'Manager');
-                            });
-                    })
-                    ->when($this->managerId, function ($query) {
-                        $query->orWhereKey($this->managerId);
-                    });
+                $query->where(function ($query) {
+                    $query->where('status_employee', 'active')
+                        ->whereDoesntHave('managedDivisi')
+                        ->whereHas('position', function ($query) {
+                            $query->where('name', 'Manager');
+                        });
+                })
+                ->when($this->managerId, function ($query) {
+                    $query->orWhereKey($this->managerId);
+                });
             })
             ->get();
 
         if ($managers->isEmpty()) {
             $managers = Employees::with(['user', 'position'])
                 ->where('status_employee', 'active')
+                ->whereDoesntHave('managedDivisi')
                 ->get();
         }
 
