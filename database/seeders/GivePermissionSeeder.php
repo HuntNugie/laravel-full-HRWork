@@ -10,7 +10,7 @@ class GivePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        $hr = Role::where('name', 'HR')
+        $hr = Role::where('name', 'hr')
             ->where('guard_name', 'web')
             ->firstOrFail();
 
@@ -32,7 +32,7 @@ class GivePermissionSeeder extends Seeder
 
         $hr->syncPermissions($permissions);
 
-        $admin = Role::where('name', 'Administrator')
+        $admin = Role::where('name', 'administrator')
             ->where('guard_name', 'web')
             ->first();
 
