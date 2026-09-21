@@ -3,13 +3,13 @@
 namespace App\Livewire\Components\Main\Divisi;
 
 use App\Models\Divisi;
+use App\Models\Employees;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 class FormEdit extends Component
 {
-
     public ?Divisi $divisi = null;
 
     #[Validate(['required', 'min:2', 'string'], message: [
@@ -23,42 +23,79 @@ class FormEdit extends Component
         'desc.required' => 'deskripsi wajib di isi',
     ])]
     public string $desc = '';
+
+    #[Validate(['nullable', 'exists:employees,id'], message: [
+        'managerId.exists' => 'Manager tidak ditemukan',
+    ])]
+    public $managerId = null;
+
     public bool $isActive = false;
 
     #[On('open-edit')]
     public function open(int $id)
     {
         $divisi = Divisi::findOrFail($id);
+
         $this->divisi = $divisi;
         $this->name = $divisi->name;
         $this->desc = $divisi->description;
-        $this->isActive = $divisi->is_active === "active" ? true : false;
-    }
-    public function canSubmit()
-    {
-        return filled($this->name) && filled($this->desc) && $this->getErrorBag()->isEmpty();
+        $this->managerId = $divisi->manager_id;
+        $this->isActive = $divisi->is_active === 'active';
     }
 
-    public function update(){
-        $this->authorize('update',$this->divisi);
-        $status = $this->isActive ? "active" : "inactive";
+    public function canSubmit()
+    {
+        return filled($this->name)
+            && filled($this->desc)
+            && $this->getErrorBag()->isEmpty();
+    }
+
+    public function update()
+    {
+        $this->authorize('update', $this->divisi);
+        $this->validate();
+
         $this->divisi->update([
             'name' => $this->name,
             'description' => $this->desc,
-            'is_active' => $status
+            'is_active' => $this->isActive ? 'active' : 'inactive',
+            'manager_id' => $this->managerId ?: null,
         ]);
 
         $this->reset([
             'name',
             'desc',
+            'managerId',
             'isActive'
         ]);
 
-        $this->dispatch('wirekit-modal-close',name:'edit-division');
+        $this->dispatch('wirekit-modal-close', name: 'edit-division');
         $this->dispatch('update-divisi');
     }
+
     public function render()
     {
-        return view('livewire.components.main.divisi.form-edit');
+        $managers = Employees::with(['user', 'position'])
+            ->where('status_employee', 'active')
+            ->whereHas('position', function ($query) {
+                $query->where('name', 'Manager');
+            })
+            ->get();
+
+        if ($managers->isEmpty()) {
+            $managers = Employees::with(['user', 'position'])
+                ->where('status_employee', 'active')
+                ->get();
+        }
+
+        $managers = $managers->mapWithKeys(function ($employee) {
+            return [
+                $employee->id => "{$employee->user->name} - " . ($employee->position->name ?? 'Tanpa posisi'),
+            ];
+        });
+
+        return view('livewire.components.main.divisi.form-edit', [
+            'managers' => $managers,
+        ]);
     }
 }
