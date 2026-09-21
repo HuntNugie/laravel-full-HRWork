@@ -154,7 +154,7 @@ class LeaveRequestServiceTest extends TestCase
         );
     }
 
-    public function test_create_pending_rejects_absence_or_attendance_overlap(): void
+    public function test_create_pending_rejects_absence_overlap(): void
     {
         [, $employee, , $leaveType] = $this->makeEmployee();
 
@@ -173,6 +173,29 @@ class LeaveRequestServiceTest extends TestCase
             leaveTypeId: $leaveType->id,
             startDate: '2026-09-23',
             endDate: '2026-09-23',
+            reason: 'Cuti',
+        );
+    }
+
+    public function test_create_pending_rejects_attendance_overlap(): void
+    {
+        [, $employee, , $leaveType] = $this->makeEmployee();
+
+        \App\Models\Attendances::create([
+            'employee_id' => $employee->id,
+            'date' => '2026-09-24',
+            'check_in_at' => '2026-09-24 08:00:00',
+            'status' => 'present',
+            'late_minutes' => 0,
+        ]);
+
+        $this->expectException(LogicException::class);
+
+        app(LeaveRequestService::class)->createPending(
+            employee: $employee,
+            leaveTypeId: $leaveType->id,
+            startDate: '2026-09-24',
+            endDate: '2026-09-24',
             reason: 'Cuti',
         );
     }
