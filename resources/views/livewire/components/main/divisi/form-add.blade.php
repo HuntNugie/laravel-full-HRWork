@@ -57,8 +57,7 @@
                     <x-wirekit::select
                         id="division-manager"
                         name="managerId"
-                        :value="$managerId ?? ''"
-                        optimistic="chooseManager"
+                        wire:model="managerId"
                     >
                         <option value="">Pilih Manager...</option>
 
