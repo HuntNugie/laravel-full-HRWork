@@ -198,7 +198,7 @@ class UnpresentDisciplineServiceTest extends TestCase
     {
         $employee = $this->createEmployee(
             startDate: '2026-09-01',
-            endDate: '2026-09-15',
+            endDate: '2026-09-08',
             contractStatus: 'expired',
         );
 
@@ -206,7 +206,7 @@ class UnpresentDisciplineServiceTest extends TestCase
             'employee_id' => $employee->id,
             'contract_number' => 'CTR-' . uniqid(),
             'employement_type' => 'pkwtt',
-            'start_date' => '2026-09-16',
+            'start_date' => '2026-09-09',
             'end_date' => null,
             'salary_daily' => 150000,
             'status' => 'active',
