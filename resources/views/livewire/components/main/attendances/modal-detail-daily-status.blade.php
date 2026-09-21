@@ -1,4 +1,4 @@
-<x-wirekit::modal name="detail-daily-status">
+<x-wirekit::modal name="detail-daily-status-{{ $row['state']['employee_id'] }}-{{ $row['state']['date'] }}">
 
     <x-slot:trigger>
         {{ $slot }}
