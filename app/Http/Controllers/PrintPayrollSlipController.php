@@ -13,7 +13,20 @@ class PrintPayrollSlipController extends Controller
 {
     public function __invoke(PayrollPeriod $period, Payroll $payroll)
     {
-        abort_unless(Auth::user()->can('show-payroll'), 403);
+        $user = Auth::user();
+
+        if ($user->can('show-payroll')) {
+            // HR / Administrator can print any payroll they are authorized to view.
+        } elseif ($user->can('show-payroll-my')) {
+            $employee = $user->employees;
+
+            abort_unless(
+                $employee && (int) $payroll->employee_id === (int) $employee->id,
+                404
+            );
+        } else {
+            abort(403);
+        }
 
         abort_if((int) $payroll->payroll_period_id !== (int) $period->id, 404);
 
