@@ -11,6 +11,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Guarded('id')]
 class DivisionProject extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'due_date' => 'date',
+            'reported_progress' => 'integer',
+        ];
+    }
+
     public function masterProject(): BelongsTo
     {
         return $this->belongsTo(MasterProject::class);
