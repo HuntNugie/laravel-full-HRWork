@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Benefit;
+use App\Models\Bank;
+use App\Models\EmployeeBankAccount;
+use App\Models\Employee_profile;
 use App\Models\ContractLeaveEntitlements;
 use App\Models\Divisi;
 use App\Models\EmployeeContract;
@@ -53,6 +56,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $employees['supervisor']->update(['team_id' => $team->id]);
         $employees['worker']->update(['team_id' => $team->id]);
 
+        $this->seedProfilesAndBankAccounts($employees);
         $this->seedContracts($employees);
         $this->seedBenefits($employees);
         $this->seedLeaveEntitlement($employees);
@@ -272,6 +276,49 @@ class WorkManagementDevelopmentSeeder extends Seeder
             'manager_id' => $manager->id,
             'is_active' => 'active',
         ]);
+    }
+
+    /**
+     * @param array<string, Employees> $employees
+     */
+    private function seedProfilesAndBankAccounts(array $employees): void
+    {
+        $bank = Bank::query()
+            ->where('short_name', 'BCA')
+            ->firstOrFail();
+
+        $profiles = [
+            'gm' => ['gender' => 'male', 'phone' => '080000000001', 'nik' => 'DEVTEST000000001'],
+            'manager' => ['gender' => 'male', 'phone' => '080000000002', 'nik' => 'DEVTEST000000002'],
+            'supervisor' => ['gender' => 'male', 'phone' => '080000000003', 'nik' => 'DEVTEST000000003'],
+            'worker' => ['gender' => 'male', 'phone' => '080000000004', 'nik' => 'DEVTEST000000004'],
+            'hr' => ['gender' => 'male', 'phone' => '080000000005', 'nik' => 'DEVTEST000000005'],
+            'admin' => ['gender' => 'male', 'phone' => '080000000006', 'nik' => 'DEVTEST000000006'],
+            'superadmin' => ['gender' => 'male', 'phone' => '080000000007', 'nik' => 'DEVTEST000000007'],
+        ];
+
+        foreach ($employees as $key => $employee) {
+            $profileData = $profiles[$key];
+
+            $profile = Employee_profile::updateOrCreate(
+                ['employee_id' => $employee->id],
+                [
+                    'gender' => $profileData['gender'],
+                    'phone_number' => $profileData['phone'],
+                    'address' => 'Alamat development seed HRWork.',
+                    'nik' => $profileData['nik'],
+                ],
+            );
+
+            EmployeeBankAccount::updateOrCreate(
+                ['employee_profile_id' => $profile->id],
+                [
+                    'bank_id' => $bank->id,
+                    'account_number' => '9000000000' . str_pad((string) $employee->id, 3, '0', STR_PAD_LEFT),
+                    'account_holder' => $employee->user?->name ?? 'HRWork Development',
+                ],
+            );
+        }
     }
 
     /**
