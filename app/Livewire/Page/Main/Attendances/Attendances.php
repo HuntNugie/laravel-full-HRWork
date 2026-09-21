@@ -145,7 +145,6 @@ class Attendances extends Component
         $this->isAbsenceRequest = $employee
             ->employeeAbsenceRequest()
             ->whereDate('date', today())
-            ->where('status', 'approved')
             ->exists();
 
         $this->isCanCheckIn = $this->workTime
