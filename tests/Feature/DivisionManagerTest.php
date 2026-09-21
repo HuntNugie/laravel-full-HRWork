@@ -47,6 +47,7 @@ class DivisionManagerTest extends TestCase
             'user_id' => $user->id,
             'team_id' => null,
             'position_id' => null,
+            'status_employee' => 'active',
         ]);
     }
 
@@ -90,5 +91,49 @@ class DivisionManagerTest extends TestCase
             'id' => $division->id,
             'manager_id' => null,
         ]);
+    }
+
+    public function test_manager_assigned_to_another_division_is_not_available(): void
+    {
+        $admin = $this->makeAuthorizedUser();
+
+        $managerUser = User::factory()->create([
+            'name' => 'Budi Manager',
+        ]);
+        $manager = $this->makeEmployee('MGR', $managerUser);
+
+        $otherUser = User::factory()->create([
+            'name' => 'Sinta Manager',
+        ]);
+        $otherManager = $this->makeEmployee('MGR2', $otherUser);
+
+        $firstDivision = Divisi::create([
+            'name' => 'Technology',
+            'description' => 'Technology Division',
+            'is_active' => 'active',
+            'manager_id' => $manager->id,
+        ]);
+
+        $secondDivision = Divisi::create([
+            'name' => 'Operations',
+            'description' => 'Operations Division',
+            'is_active' => 'active',
+            'manager_id' => null,
+        ]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(FormAdd::class)
+            ->assertDontSee('Budi Manager')
+            ->assertSee('Sinta Manager');
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $secondDivision->id)
+            ->assertDontSee('Budi Manager')
+            ->assertSee('Sinta Manager');
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $firstDivision->id)
+            ->assertSee('Budi Manager');
     }
 }
