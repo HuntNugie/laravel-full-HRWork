@@ -16,11 +16,12 @@ class PayrollCalculationService
     }
 
     /**
-     * Calculate payroll totals for one employee/contract within a payroll period.
+     * Calculate payroll totals for one employee within a payroll period.
      *
-     * Pending dates are intentionally excluded from working/absent-day totals.
-     * They represent the current/future work schedule that has not been resolved
-     * yet and therefore must not reduce payroll as an absence.
+     * Salary and benefit amounts are segmented by the contract that is
+     * effective on each payroll date. Late discipline is calculated once
+     * across the entire resolved period so a contract transition cannot reset
+     * the monthly late threshold.
      *
      * @return array{
      *   salary_daily:float,
@@ -34,6 +35,7 @@ class PayrollCalculationService
      *   benefit_total:float,
      *   late_deduction_total:float,
      *   late_deduction_items:Collection,
+     *   salary_items:Collection,
      *   benefit_items:Collection,
      *   next_sort_order:int
      * }
@@ -43,22 +45,15 @@ class PayrollCalculationService
         EmployeeContract $contract,
         PayrollPeriod $period,
     ): array {
-        $eligibleStart = $contract->start_date->greaterThan($period->start_date)
-            ? $contract->start_date->copy()
-            : $period->start_date->copy();
-
-        $eligibleEnd = $contract->end_date && $contract->end_date->lessThan($period->end_date)
-            ? $contract->end_date->copy()
-            : $period->end_date->copy();
-
-        if ($eligibleStart->gt($eligibleEnd)) {
-            return $this->emptyResult($contract);
-        }
+        $contracts = $this->effectiveContracts(
+            employee: $employee,
+            period: $period,
+        );
 
         $statuses = $this->dailyStatusService->getStatuses(
             employee: $employee,
-            startDate: $eligibleStart,
-            endDate: $eligibleEnd,
+            startDate: $period->start_date,
+            endDate: $period->end_date,
         );
 
         $resolvedStatuses = $statuses
@@ -68,11 +63,17 @@ class PayrollCalculationService
             )
             ->values();
 
-        $workingDays = $resolvedStatuses
-            ->filter(fn(array $state) => $state['is_working_day'] === true)
-            ->count();
+        $workingStatuses = $resolvedStatuses
+            ->filter(
+                fn(array $state) =>
+                    $state['is_working_day'] === true
+                    && $state['contract_id'] !== null
+            )
+            ->values();
 
-        $presentDays = $resolvedStatuses
+        $workingDays = $workingStatuses->count();
+
+        $presentDays = $workingStatuses
             ->filter(
                 fn(array $state) =>
                     in_array(
@@ -86,15 +87,7 @@ class PayrollCalculationService
             )
             ->count();
 
-        $lateDiscipline = $this->lateDisciplineService->calculateFromStatuses(
-            statuses: $resolvedStatuses,
-        );
-
-        $lateDays = $lateDiscipline['late_count'];
-        $lateDeductionTotal = $lateDiscipline['deduction_amount'];
-        $lateDeductionItems = $lateDiscipline['items'];
-
-        $paidLeaveDays = $resolvedStatuses
+        $paidLeaveDays = $workingStatuses
             ->filter(
                 fn(array $state) =>
                     $state['status'] === EmployeeDailyStatusService::STATUS_PAID_LEAVE
@@ -108,32 +101,113 @@ class PayrollCalculationService
             $workingDays - $paidDays
         );
 
-        $salaryDaily = (float) $contract->salary_daily;
-        $salaryAmount = $paidDays * $salaryDaily;
+        /*
+        |--------------------------------------------------------------------------
+        | LATE DISCIPLINE
+        |--------------------------------------------------------------------------
+        |
+        | Calculated against the full resolved period, not per contract.
+        | This keeps monthly thresholds continuous across contract changes.
+        |
+        */
+        $lateDiscipline = $this->lateDisciplineService->calculateFromStatuses(
+            statuses: $resolvedStatuses,
+        );
 
+        $lateDays = $lateDiscipline['late_count'];
+        $lateDeductionTotal = $lateDiscipline['deduction_amount'];
+        $lateDeductionItems = $lateDiscipline['items'];
+
+        /*
+        |--------------------------------------------------------------------------
+        | CONTRACT-SEGMENTED SALARY & BENEFITS
+        |--------------------------------------------------------------------------
+        */
+
+        $contractsById = $contracts->keyBy('id');
+
+        $salaryAmount = 0.0;
         $benefitTotal = 0.0;
+        $salaryItems = collect();
         $benefitItems = collect();
 
-        foreach ($contract->benefits as $benefit) {
-            $benefitDaily = (float) ($benefit->pivot->amount ?? 0);
-            $benefitAmount = $paidDays * $benefitDaily;
+        $workingStatuses
+            ->groupBy('contract_id')
+            ->each(function (Collection $contractStatuses, $contractId) use (
+                $contractsById,
+                &$salaryAmount,
+                &$benefitTotal,
+                $employee,
+                &$salaryItems,
+                &$benefitItems
+            ): void {
+                /** @var EmployeeContract|null $effectiveContract */
+                $effectiveContract = $contractsById->get((int) $contractId);
 
-            if ($benefitAmount <= 0) {
-                continue;
-            }
+                if (!$effectiveContract) {
+                    return;
+                }
 
-            $benefitTotal += $benefitAmount;
+                $segmentPaidDays = $contractStatuses
+                    ->filter(
+                        fn(array $state) =>
+                            in_array(
+                                $state['status'],
+                                [
+                                    EmployeeDailyStatusService::STATUS_PRESENT,
+                                    EmployeeDailyStatusService::STATUS_LATE,
+                                    EmployeeDailyStatusService::STATUS_PAID_LEAVE,
+                                ],
+                                true
+                            )
+                    )
+                    ->count();
 
-            $benefitItems->push([
-                'benefit' => $benefit,
-                'amount' => $benefitAmount,
-                'quantity' => $paidDays,
-                'rate' => $benefitDaily,
-            ]);
-        }
+                if ($segmentPaidDays <= 0) {
+                    return;
+                }
+
+                $salaryDaily = (float) $effectiveContract->salary_daily;
+                $segmentSalary = $segmentPaidDays * $salaryDaily;
+
+                $salaryAmount += $segmentSalary;
+
+                $salaryItems->push([
+                    'name' => 'Gaji Harian',
+                    'amount' => $segmentSalary,
+                    'quantity' => $segmentPaidDays,
+                    'rate' => $salaryDaily,
+                    'contract_id' => $effectiveContract->id,
+                    'contract_start_date' => $effectiveContract->start_date,
+                    'contract_end_date' => $effectiveContract->end_date,
+                    'position_name' => $effectiveContract->position_name,
+                ]);
+
+                foreach ($effectiveContract->benefits as $benefit) {
+                    $benefitDaily = (float) ($benefit->pivot->amount ?? 0);
+                    $benefitAmount = $segmentPaidDays * $benefitDaily;
+
+                    if ($benefitAmount <= 0) {
+                        continue;
+                    }
+
+                    $benefitTotal += $benefitAmount;
+
+                    $benefitItems->push([
+                        'benefit' => $benefit,
+                        'amount' => $benefitAmount,
+                        'quantity' => $segmentPaidDays,
+                        'rate' => $benefitDaily,
+                        'contract_id' => $effectiveContract->id,
+                        'contract_start_date' => $effectiveContract->start_date,
+                        'contract_end_date' => $effectiveContract->end_date,
+                        'position_name' => $effectiveContract->position_name,
+                    ]);
+                }
+            });
 
         return [
-            'salary_daily' => $salaryDaily,
+            'salary_daily' => (float) $contract->salary_daily,
             'salary_amount' => $salaryAmount,
             'working_days' => $workingDays,
             'present_days' => $presentDays,
@@ -144,11 +218,40 @@ class PayrollCalculationService
             'benefit_total' => $benefitTotal,
             'late_deduction_total' => $lateDeductionTotal,
             'late_deduction_items' => $lateDeductionItems,
+            'salary_items' => $salaryItems,
             'benefit_items' => $benefitItems,
-            'next_sort_order' => 2
+            'next_sort_order' => 1
+                + $salaryItems->count()
                 + $benefitItems->count()
                 + $lateDeductionItems->count(),
         ];
+    }
+
+    /**
+     * Load every non-draft contract that overlaps the payroll period.
+     *
+     * Historical expired/terminated contracts are included because the
+     * employee's Daily Status resolves the contract by effective date.
+     */
+    private function effectiveContracts(
+        Employees $employee,
+        PayrollPeriod $period,
+    ): Collection {
+        return $employee->employeeContract()
+            ->whereIn('status', ['active', 'expired', 'terminated'])
+            ->whereDate('start_date', '<=', $period->end_date->toDateString())
+            ->where(function ($query) use ($period) {
+                $query
+                    ->whereNull('end_date')
+                    ->orWhereDate(
+                        'end_date',
+                        '>=',
+                        $period->start_date->toDateString()
+                    );
+            })
+            ->with('benefits')
+            ->orderByDesc('start_date')
+            ->get();
     }
 
     private function emptyResult(EmployeeContract $contract): array
@@ -165,8 +268,9 @@ class PayrollCalculationService
             'benefit_total' => 0.0,
             'late_deduction_total' => 0.0,
             'late_deduction_items' => collect(),
+            'salary_items' => collect(),
             'benefit_items' => collect(),
-            'next_sort_order' => 2,
+            'next_sort_order' => 1,
         ];
     }
 }
