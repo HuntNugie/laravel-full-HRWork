@@ -110,13 +110,12 @@ class EmployeeDashboardTest extends TestCase
             'net_amount' => 200000,
             'status' => 'paid',
             'notes' => null,
-            'paid_at' => '2026-09-30 09:00:00',
+            'paid_at' => '2026-09-20 09:00:00',
         ]);
 
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Dashboard Employee')
             ->assertSee('Dashboard Employee')
             ->assertSee('Hadir')
             ->assertSee('1')
