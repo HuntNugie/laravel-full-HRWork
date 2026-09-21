@@ -177,19 +177,35 @@ class DivisionManagerTest extends TestCase
         $member = $this->makeEmployee('TEAM', $memberUser);
         $member->update(['team_id' => $team->id]);
 
+        $supervisorUser = User::factory()->create([
+            'name' => 'Rina Supervisor',
+        ]);
+        $supervisor = $this->makeEmployee('SUP', $supervisorUser);
+        $supervisor->update(['team_id' => $team->id]);
+        $team->update(['supervisor_id' => $supervisor->id]);
+
         $this->actingAs($admin);
 
         Livewire::test(FormAdd::class)
-            ->assertDontSee('Andi Team Member');
+            ->assertDontSee('Andi Team Member')
+            ->assertDontSee('Rina Supervisor');
 
         Livewire::test(FormEdit::class)
             ->call('open', $division->id)
-            ->assertDontSee('Andi Team Member');
+            ->assertDontSee('Andi Team Member')
+            ->assertDontSee('Rina Supervisor');
 
         Livewire::test(FormAdd::class)
             ->set('name', 'Operations')
             ->set('desc', 'Operations Division')
             ->set('managerId', $member->id)
+            ->call('store')
+            ->assertHasErrors(['managerId']);
+
+        Livewire::test(FormAdd::class)
+            ->set('name', 'Sales')
+            ->set('desc', 'Sales Division')
+            ->set('managerId', $supervisor->id)
             ->call('store')
             ->assertHasErrors(['managerId']);
     }
