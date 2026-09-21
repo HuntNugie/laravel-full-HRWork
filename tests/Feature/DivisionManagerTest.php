@@ -76,6 +76,7 @@ class DivisionManagerTest extends TestCase
         ]);
 
         $this->assertSame($manager->id, $division->manager->id);
+        $this->assertSame($division->id, $manager->managedDivisi->id);
 
         Livewire::test(FormEdit::class)
             ->call('open', $division->id)
