@@ -45,7 +45,9 @@ use App\Livewire\Page\Main\Leave\ManagementLeave;
 use App\Livewire\Page\Main\Payroll\DetailPayrollEmployee;
 use App\Livewire\Page\Main\Payroll\DetailPayrollPeriod;
 use App\Livewire\Page\Main\Payroll\EditPayrollEmployee;
+use App\Livewire\Page\Main\Payroll\DetailMyPayroll;
 use App\Livewire\Page\Main\Payroll\ManagementPayroll;
+use App\Livewire\Page\Main\Payroll\MyPayroll;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
 use App\Livewire\Page\Main\Roles\CreateRole;
@@ -177,9 +179,18 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     });
 
     Route::prefix('payroll')->group(function () {
+        Route::get('/my', MyPayroll::class)
+            ->name('payroll.my.view')
+            ->middleware('permission:view-payroll-my');
+
+        Route::get('/my/{payroll}', DetailMyPayroll::class)
+            ->name('payroll.my.show')
+            ->middleware('permission:show-payroll-my');
+
         Route::get('/', ManagementPayroll::class)
             ->name('payroll.view')
             ->middleware('permission:view-payroll');
+
         Route::get('/{period}', DetailPayrollPeriod::class)
             ->name('payroll.show')
             ->middleware('permission:show-payroll');

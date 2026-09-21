@@ -11,7 +11,7 @@
         </x-wirekit::sidebar.group>
 
 
-        @canany(['view-attendance', 'view-leave', 'view-data-my'])
+        @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
 
                 @can('view-attendance')
@@ -38,7 +38,11 @@
                     </x-wirekit::sidebar.item>
                 @endcan
 
-
+                @can('view-payroll-my')
+                    <x-wirekit::sidebar.item href="{{ route('payroll.my.view') }}" :active="request()->routeIs('payroll.my.view', 'payroll.my.show')" icon="document-text" wire:navigate>
+                        Slip Gaji
+                    </x-wirekit::sidebar.item>
+                @endcan
 
             </x-wirekit::sidebar.group>
         @endcanany
@@ -211,7 +215,7 @@
 
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-benefit', 'view-payroll'])
+        @canany(['view-benefit', 'view-payroll', 'view-payroll-my'])
 
             <x-wirekit::sidebar.group collapsible label="Kompensasi">
                 @can('view-payroll')
