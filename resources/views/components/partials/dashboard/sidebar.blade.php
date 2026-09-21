@@ -153,7 +153,7 @@
                         Monitoring Presensi
                     </x-wirekit::sidebar.item>
                 @endcan
-                @can('history-attendance ')
+                @can('history-attendance')
                     <x-wirekit::sidebar.item href="{{ route('attendance.history.view') }}" :active="request()->routeIs('attendance.history.view')" icon="calendar"
                         wire:navigate>
                         Riwayat Presensi
