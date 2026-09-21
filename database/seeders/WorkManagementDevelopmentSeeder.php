@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Benefit;
 use App\Models\Bank;
 use App\Models\EmployeeBankAccount;
+use App\Models\EmployeeProfileAddress;
 use App\Models\Employee_profile;
 use App\Models\ContractLeaveEntitlements;
 use App\Models\Divisi;
@@ -15,6 +16,8 @@ use App\Models\Position;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
@@ -27,6 +30,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->seedWilayah();
         $this->seedPositions();
 
         $developmentDivision = $this->seedDivision(
@@ -57,6 +61,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $employees['worker']->update(['team_id' => $team->id]);
 
         $this->seedProfilesAndBankAccounts($employees);
+        $this->seedStatusHistory($employees);
         $this->seedContracts($employees);
         $this->seedBenefits($employees);
         $this->seedLeaveEntitlement($employees);
@@ -281,32 +286,72 @@ class WorkManagementDevelopmentSeeder extends Seeder
     /**
      * @param array<string, Employees> $employees
      */
+    private function seedWilayah(): void
+    {
+        if (! DB::table('villages')->exists()) {
+            Artisan::call('wilayah:seed');
+        }
+
+        if (! DB::table('villages')->exists()) {
+            throw new \RuntimeException(
+                'Data wilayah belum tersedia. Pastikan package aliziodev/laravel-wilayah terpasang dan wilayah:seed berhasil.',
+            );
+        }
+    }
+
+    /**
+     * @param array<string, Employees> $employees
+     */
     private function seedProfilesAndBankAccounts(array $employees): void
     {
         $bank = Bank::query()
             ->where('short_name', 'BCA')
             ->firstOrFail();
 
+        $villages = DB::table('villages')
+            ->where('code', 'like', '32.%')
+            ->whereNotNull('postal_code')
+            ->orderBy('id')
+            ->limit(count($employees))
+            ->get(['code', 'name', 'postal_code']);
+
+        if ($villages->count() < count($employees)) {
+            throw new \RuntimeException(
+                'Data desa/kelurahan Jawa Barat belum cukup untuk development seed.',
+            );
+        }
+
         $profiles = [
-            'gm' => ['gender' => 'male', 'phone' => '080000000001', 'nik' => 'DEVTEST000000001'],
-            'manager' => ['gender' => 'male', 'phone' => '080000000002', 'nik' => 'DEVTEST000000002'],
-            'supervisor' => ['gender' => 'male', 'phone' => '080000000003', 'nik' => 'DEVTEST000000003'],
-            'worker' => ['gender' => 'male', 'phone' => '080000000004', 'nik' => 'DEVTEST000000004'],
-            'hr' => ['gender' => 'male', 'phone' => '080000000005', 'nik' => 'DEVTEST000000005'],
-            'admin' => ['gender' => 'male', 'phone' => '080000000006', 'nik' => 'DEVTEST000000006'],
-            'superadmin' => ['gender' => 'male', 'phone' => '080000000007', 'nik' => 'DEVTEST000000007'],
+            'gm' => ['gender' => 'male', 'phone' => 'TESTPHONE-001', 'nik' => 'TEST-NIK-001', 'birth_date' => '1985-01-15', 'birth_address' => 'Bandung, Jawa Barat'],
+            'manager' => ['gender' => 'male', 'phone' => 'TESTPHONE-002', 'nik' => 'TEST-NIK-002', 'birth_date' => '1990-04-22', 'birth_address' => 'Cimahi, Jawa Barat'],
+            'supervisor' => ['gender' => 'female', 'phone' => 'TESTPHONE-003', 'nik' => 'TEST-NIK-003', 'birth_date' => '1995-07-10', 'birth_address' => 'Bandung, Jawa Barat'],
+            'worker' => ['gender' => 'male', 'phone' => 'TESTPHONE-004', 'nik' => 'TEST-NIK-004', 'birth_date' => '1998-11-03', 'birth_address' => 'Cimahi, Jawa Barat'],
+            'hr' => ['gender' => 'female', 'phone' => 'TESTPHONE-005', 'nik' => 'TEST-NIK-005', 'birth_date' => '1992-02-18', 'birth_address' => 'Bandung, Jawa Barat'],
+            'admin' => ['gender' => 'male', 'phone' => 'TESTPHONE-006', 'nik' => 'TEST-NIK-006', 'birth_date' => '1991-08-27', 'birth_address' => 'Garut, Jawa Barat'],
+            'superadmin' => ['gender' => 'male', 'phone' => 'TESTPHONE-007', 'nik' => 'TEST-NIK-007', 'birth_date' => '1988-12-09', 'birth_address' => 'Bandung, Jawa Barat'],
         ];
 
-        foreach ($employees as $key => $employee) {
+        foreach (array_keys($employees) as $index => $key) {
+            $employee = $employees[$key];
             $profileData = $profiles[$key];
+            $village = $villages[$index];
 
             $profile = Employee_profile::updateOrCreate(
                 ['employee_id' => $employee->id],
                 [
                     'gender' => $profileData['gender'],
                     'phone_number' => $profileData['phone'],
-                    'address' => 'Alamat development seed HRWork.',
                     'nik' => $profileData['nik'],
+                    'birth_date' => $profileData['birth_date'],
+                    'birth_address' => $profileData['birth_address'],
+                ],
+            );
+
+            EmployeeProfileAddress::updateOrCreate(
+                ['employee_profile_id' => $profile->id],
+                [
+                    'full_address' => 'Jl. Development Test No. ' . ($index + 1) . ', ' . $village->name . ', Jawa Barat ' . $village->postal_code,
+                    'village_code' => $village->code,
                 ],
             );
 
@@ -314,8 +359,30 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 ['employee_profile_id' => $profile->id],
                 [
                     'bank_id' => $bank->id,
-                    'account_number' => '9000000000' . str_pad((string) $employee->id, 3, '0', STR_PAD_LEFT),
+                    'account_number' => 'TEST-BANK-' . str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT),
                     'account_holder' => $employee->user?->name ?? 'HRWork Development',
+                ],
+            );
+        }
+    }
+
+    /**
+     * @param array<string, Employees> $employees
+     */
+    private function seedStatusHistory(array $employees): void
+    {
+        foreach ($employees as $employee) {
+            DB::table('employee_status_histories')->updateOrInsert(
+                [
+                    'employee_id' => $employee->id,
+                    'new_status' => 'active',
+                    'effective_date' => '2026-01-01',
+                ],
+                [
+                    'old_status' => null,
+                    'reason' => 'Employee development seed.',
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
             );
         }
