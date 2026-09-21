@@ -10,6 +10,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Guarded('id')]
 class Task extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'due_date' => 'date',
+            'submitted_at' => 'datetime',
+            'approved_at' => 'datetime',
+        ];
+    }
+
     public function divisionProject(): BelongsTo
     {
         return $this->belongsTo(DivisionProject::class);
