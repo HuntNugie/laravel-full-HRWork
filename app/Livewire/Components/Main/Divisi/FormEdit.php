@@ -80,6 +80,7 @@ class FormEdit extends Component
                 $query
                     ->where(function ($query) {
                         $query->where('status_employee', 'active')
+                            ->whereDoesntHave('managedDivisi')
                             ->whereHas('position', function ($query) {
                                 $query->where('name', 'Manager');
                             });
@@ -93,6 +94,7 @@ class FormEdit extends Component
         if ($managers->isEmpty()) {
             $managers = Employees::with(['user', 'position'])
                 ->where('status_employee', 'active')
+                ->whereDoesntHave('managedDivisi')
                 ->get();
         }
 
