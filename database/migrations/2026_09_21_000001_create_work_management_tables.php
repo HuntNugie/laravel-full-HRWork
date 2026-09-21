@@ -90,7 +90,7 @@ return new class extends Migration
             $table->enum('decision', ['approved', 'rejected']);
             $table->text('feedback')->nullable();
             $table->timestamps();
-            $table->index(['division_project_id', 'reviewer_level', 'created_at']);
+            $table->index(['division_project_id', 'reviewer_level', 'created_at'], 'proj_reviews_div_proj_lvl_created_idx');
         });
     }
 
