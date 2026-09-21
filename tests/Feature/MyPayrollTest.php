@@ -73,12 +73,14 @@ class MyPayrollTest extends TestCase
         string $suffix,
         string $payrollStatus = 'paid',
         string $periodStatus = 'paid',
+        string $periodStart = '2026-09-01',
     ): Payroll {
+        $periodStartDate = \Illuminate\Support\Carbon::parse($periodStart);
         $period = PayrollPeriod::create([
             'name' => 'Payroll ' . strtoupper($suffix),
-            'start_date' => '2026-09-01',
-            'end_date' => '2026-09-30',
-            'payment_date' => '2026-09-30',
+            'start_date' => $periodStartDate->toDateString(),
+            'end_date' => $periodStartDate->copy()->endOfMonth()->toDateString(),
+            'payment_date' => $periodStartDate->copy()->endOfMonth()->toDateString(),
             'status' => $periodStatus,
         ]);
 
@@ -135,9 +137,27 @@ class MyPayrollTest extends TestCase
         [$user, $employee] = $this->makePermissionedEmployee('ONE');
         [, $otherEmployee] = $this->makePermissionedEmployee('TWO');
 
-        $ownPayroll = $this->makePayroll($employee, 'OWN', 'paid', 'paid');
-        $this->makePayroll($employee, 'DRAFT', 'draft', 'draft');
-        $this->makePayroll($otherEmployee, 'OTHER', 'paid', 'paid');
+        $ownPayroll = $this->makePayroll(
+            $employee,
+            'OWN',
+            'paid',
+            'paid',
+            '2026-09-01',
+        );
+        $this->makePayroll(
+            $employee,
+            'DRAFT',
+            'draft',
+            'draft',
+            '2026-10-01',
+        );
+        $this->makePayroll(
+            $otherEmployee,
+            'OTHER',
+            'paid',
+            'paid',
+            '2026-09-01',
+        );
 
         $response = $this->actingAs($user)
             ->get(route('payroll.my.view'));
@@ -158,8 +178,20 @@ class MyPayrollTest extends TestCase
         [$user, $employee] = $this->makePermissionedEmployee('ONE');
         [, $otherEmployee] = $this->makePermissionedEmployee('TWO');
 
-        $ownPayroll = $this->makePayroll($employee, 'OWN', 'paid', 'paid');
-        $otherPayroll = $this->makePayroll($otherEmployee, 'OTHER', 'paid', 'paid');
+        $ownPayroll = $this->makePayroll(
+            $employee,
+            'OWN',
+            'paid',
+            'paid',
+            '2026-09-01',
+        );
+        $otherPayroll = $this->makePayroll(
+            $otherEmployee,
+            'OTHER',
+            'paid',
+            'paid',
+            '2026-09-01',
+        );
 
         $this->actingAs($user)
             ->get(route('payroll.my.show', $ownPayroll->id))
@@ -177,7 +209,13 @@ class MyPayrollTest extends TestCase
     {
         [$user, $employee] = $this->makePermissionedEmployee('ONE');
         $user->syncRoles([]);
-        $this->makePayroll($employee, 'OWN', 'paid', 'paid');
+        $this->makePayroll(
+            $employee,
+            'OWN',
+            'paid',
+            'paid',
+            '2026-09-01',
+        );
 
         $this->actingAs($user)
             ->get(route('payroll.my.view'))
