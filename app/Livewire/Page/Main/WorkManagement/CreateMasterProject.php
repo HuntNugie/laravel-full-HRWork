@@ -45,7 +45,7 @@ class CreateMasterProject extends Component
         );
 
         session()->flash('success', 'Master project berhasil dibuat.');
-        $this->redirectRoute('work-management.master-projects.show', $project, navigate: true);
+        $this->redirectRoute('work-management.master-projects.show', ['masterProject' => $project], navigate: true);
     }
 
     public function render()

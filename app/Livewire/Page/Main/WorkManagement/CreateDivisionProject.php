@@ -71,7 +71,7 @@ class CreateDivisionProject extends Component
         );
 
         session()->flash('success', 'Division project berhasil dibuat.');
-        $this->redirectRoute('work-management.division-projects.show', $project, navigate: true);
+        $this->redirectRoute('work-management.division-projects.show', ['divisionProject' => $project], navigate: true);
     }
 
     public function render()

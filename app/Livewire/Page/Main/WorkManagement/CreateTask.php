@@ -71,7 +71,7 @@ class CreateTask extends Component
         );
 
         session()->flash('success', 'Task berhasil dibuat.');
-        $this->redirectRoute('work-management.division-projects.show', $this->divisionProject, navigate: true);
+        $this->redirectRoute('work-management.division-projects.show', ['divisionProject' => $this->divisionProject], navigate: true);
     }
 
     public function render()

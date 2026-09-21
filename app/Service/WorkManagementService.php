@@ -304,6 +304,7 @@ class WorkManagementService
 
     public function reviewTask(Task $task, Employees $reviewer, string $decision, ?string $feedback = null): TaskReview
     {
+        $this->ensureActiveEmployee($reviewer);
         $task->loadMissing('team', 'divisionProject');
 
         if ((int) $task->team?->supervisor_id !== (int) $reviewer->id) {
@@ -379,6 +380,7 @@ class WorkManagementService
 
     public function reportManualProgress(DivisionProject $divisionProject, Employees $reporter, int $progress, ?string $note = null): ProjectProgressUpdate
     {
+        $this->ensureActiveEmployee($reporter);
         $divisionProject->loadMissing('teams');
         $isManager = (int) $divisionProject->manager_id === (int) $reporter->id;
         $isSupervisor = $divisionProject->teams->contains(fn ($team) => (int) $team->supervisor_id === (int) $reporter->id);
@@ -412,6 +414,7 @@ class WorkManagementService
 
     public function reviewDivisionProject(DivisionProject $divisionProject, Employees $reviewer, string $decision, ?string $feedback = null): ProjectReview
     {
+        $this->ensureActiveEmployee($reviewer);
         if ((int) $divisionProject->manager_id !== (int) $reviewer->id) {
             throw ValidationException::withMessages(['reviewer' => 'Hanya manager division project yang dapat melakukan review.']);
         }
@@ -451,6 +454,7 @@ class WorkManagementService
 
     public function reviewMasterProject(MasterProject $masterProject, Employees $reviewer, string $decision, ?string $feedback = null): ProjectReview
     {
+        $this->ensureActiveEmployee($reviewer);
         if (! $reviewer->user?->hasRole('general-manager')) {
             throw ValidationException::withMessages(['reviewer' => 'Hanya General Manager yang dapat melakukan final approval.']);
         }

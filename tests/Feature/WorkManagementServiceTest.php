@@ -171,7 +171,7 @@ class WorkManagementServiceTest extends TestCase
 
     private function makeRoleUser(string $suffix, string $roleName): Employees
     {
-        $user = User::factory()->create(['name' => $roleName . ' ' . $suffix]);
+        $user = User::factory()->create(['name' => $roleName . ' ' . $suffix, 'status' => 'active']);
         $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
 
         foreach ($this->permissionsForRole($roleName) as $permissionName) {

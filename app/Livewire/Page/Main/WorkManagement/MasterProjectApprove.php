@@ -44,7 +44,7 @@ class MasterProjectApprove extends Component
         );
 
         session()->flash('success', 'Final approval berhasil disimpan.');
-        $this->redirectRoute('work-management.master-projects.show', $this->masterProject, navigate: true);
+        $this->redirectRoute('work-management.master-projects.show', ['masterProject' => $this->masterProject], navigate: true);
     }
 
     public function render()
