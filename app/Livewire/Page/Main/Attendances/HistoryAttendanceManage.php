@@ -2,8 +2,8 @@
 
 namespace App\Livewire\Page\Main\Attendances;
 
-use App\Models\Attendances;
 use App\Models\Employees;
+use App\Service\EmployeeDailyStatusService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Livewire\Attributes\Layout;
@@ -36,12 +36,6 @@ class HistoryAttendanceManage extends Component
 
     public function render()
     {
-        /*
-        |--------------------------------------------------------------------------
-        | TANGGAL
-        |--------------------------------------------------------------------------
-        */
-
         $startDate = $this->startDate
             ? Carbon::parse($this->startDate)->startOfDay()
             : today()->startOfMonth()->startOfDay();
@@ -49,17 +43,6 @@ class HistoryAttendanceManage extends Component
         $endDate = $this->endDate
             ? Carbon::parse($this->endDate)->endOfDay()
             : today()->endOfDay();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | EMPLOYEE
-        |--------------------------------------------------------------------------
-        |
-        | Employee menjadi sumber utama.
-        | Jadi employee yang tidak punya attendance tetap bisa ditampilkan.
-        |
-        */
 
         $employees = Employees::query()
             ->with([
@@ -70,15 +53,8 @@ class HistoryAttendanceManage extends Component
                         ->whereDate('date', '<=', $endDate->toDateString());
                 },
             ])
-
-            /*
-            |--------------------------------------------------------------------------
-            | SEARCH
-            |--------------------------------------------------------------------------
-            */
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-
                     $q->whereHas('user', function ($qe) {
                         $qe->where(
                             'name',
@@ -94,228 +70,103 @@ class HistoryAttendanceManage extends Component
                     );
                 });
             })
-
             ->get();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | PERIOD
-        |--------------------------------------------------------------------------
-        |
-        | Hanya hari Senin-Sabtu yang dibuat sebagai hari kerja.
-        | Minggu tidak dibuat menjadi "Belum Hadir".
-        |
-        */
 
         $period = CarbonPeriod::create(
             $startDate->copy()->startOfDay(),
             $endDate->copy()->startOfDay()
         );
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | PARSE DATA
-        |--------------------------------------------------------------------------
-        */
-
+        $dailyStatusService = app(EmployeeDailyStatusService::class);
         $attendanceHistory = collect();
 
-
         foreach ($employees as $employee) {
+            $attendanceById = $employee->attendances->keyBy('id');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Buat map attendance berdasarkan tanggal
-            |--------------------------------------------------------------------------
-            */
+            $statuses = $dailyStatusService->getStatuses(
+                employee: $employee,
+                startDate: $startDate,
+                endDate: $endDate,
+            );
 
-            $attendanceByDate = $employee->attendances
-                ->keyBy(function ($attendance) {
-                    return Carbon::parse($attendance->date)
-                        ->format('Y-m-d');
-                });
-
-
-            foreach ($period as $date) {
-
-                $date = Carbon::parse($date);
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Skip Sunday
-                |--------------------------------------------------------------------------
-                */
-
-                if ($date->dayOfWeekIso === 7) {
-                    continue;
-                }
-
-
-                $dateKey = $date->format('Y-m-d');
-
-                $attendance = $attendanceByDate->get($dateKey);
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Check In
-                |--------------------------------------------------------------------------
-                */
+            foreach ($statuses as $state) {
+                $date = Carbon::parse($state['date']);
+                $attendance = $state['attendance_id']
+                    ? $attendanceById->get($state['attendance_id'])
+                    : null;
 
                 $checkIn = $attendance?->check_in_at
                     ? Carbon::parse($attendance->check_in_at)
                     : null;
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | Check Out
-                |--------------------------------------------------------------------------
-                */
-
                 $checkOut = $attendance?->check_out_at
                     ? Carbon::parse($attendance->check_out_at)
                     : null;
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | STATUS
-                |--------------------------------------------------------------------------
-                */
-
-                if (!$attendance || !$checkIn) {
-
-                    $attendanceStatus = 'absent';
-                } elseif (
-                    $checkIn->format('H:i:s') > '08:00:00'
-                ) {
-
-                    $attendanceStatus = 'late';
-                } else {
-
-                    $attendanceStatus = 'present';
-                }
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | DURASI
-                |--------------------------------------------------------------------------
-                */
-
                 $duration = '—';
 
                 if ($checkIn && $checkOut) {
-
                     $diff = $checkIn->diff($checkOut);
 
                     $duration = sprintf(
                         '%dj %dm',
-                        $diff->h,
+                        ($diff->days * 24) + $diff->h,
                         $diff->i
                     );
                 }
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | STATUS LABEL
-                |--------------------------------------------------------------------------
-                */
-
-                $statusLabel = match ($attendanceStatus) {
-
-                    'present' => 'Hadir',
-
-                    'late' => 'Terlambat',
-
-                    'absent' => 'Belum Hadir',
-
+                $statusLabel = match ($state['status']) {
+                    EmployeeDailyStatusService::STATUS_OUTSIDE_CONTRACT => 'Di Luar Kontrak',
+                    EmployeeDailyStatusService::STATUS_NON_WORKING => 'Non-Hari Kerja',
+                    EmployeeDailyStatusService::STATUS_HOLIDAY => 'Libur',
+                    EmployeeDailyStatusService::STATUS_PRESENT => 'Hadir',
+                    EmployeeDailyStatusService::STATUS_LATE => 'Terlambat',
+                    EmployeeDailyStatusService::STATUS_PAID_LEAVE => 'Cuti',
+                    EmployeeDailyStatusService::STATUS_ABSENCE_SICK => 'Sakit',
+                    EmployeeDailyStatusService::STATUS_ABSENCE_PERMIT => 'Izin',
+                    EmployeeDailyStatusService::STATUS_PENDING => 'Menunggu',
+                    EmployeeDailyStatusService::STATUS_UNPRESENT => 'Belum Hadir',
                     default => '—',
                 };
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | AVATAR
-                |--------------------------------------------------------------------------
-                */
-
                 $avatar = $employee->user?->getFirstMediaUrl('avatar');
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | STORE
-                |--------------------------------------------------------------------------
-                */
-
                 $attendanceHistory->push([
-                    'attendance_id' => $attendance?->id,
+                    'attendance_id' => $state['attendance_id'],
 
                     'date' => $date->translatedFormat('d M Y'),
 
-                    'date_value' => $date->format('Y-m-d'),
+                    'date_value' => $state['date'],
 
                     'employee_id' => $employee->id,
 
-                    'employee_name' =>
-                    $employee->user?->name ?? '—',
+                    'employee_name' => $employee->user?->name ?? '—',
 
-                    'employee_code' =>
-                    $employee->employee_code ?? '—',
+                    'employee_code' => $employee->employee_code ?? '—',
 
                     'avatar' => $avatar,
 
-                    'check_in' =>
-                    $checkIn?->format('H:i') ?? '—',
+                    'check_in' => $checkIn?->format('H:i') ?? '—',
 
-                    'check_out' =>
-                    $checkOut?->format('H:i') ?? '—',
+                    'check_out' => $checkOut?->format('H:i') ?? '—',
 
                     'duration' => $duration,
 
-                    'status' => $attendanceStatus,
+                    'status' => $state['status'],
 
                     'status_label' => $statusLabel,
                 ]);
             }
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | FILTER STATUS
-        |--------------------------------------------------------------------------
-        */
-
         if ($this->status !== '') {
-
             $attendanceHistory = $attendanceHistory
-                ->filter(function ($attendance) {
-                    return $attendance['status'] === $this->status;
-                })
+                ->filter(fn(array $attendance) => $attendance['status'] === $this->status)
                 ->values();
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | SORT
-        |--------------------------------------------------------------------------
-        |
-        | Tanggal terbaru di atas.
-        | Kemudian nama employee.
-        |
-        */
-
         $attendanceHistory = $attendanceHistory
             ->sort(function ($a, $b) {
-
                 $dateCompare = strcmp(
                     $b['date_value'],
                     $a['date_value']
@@ -331,7 +182,6 @@ class HistoryAttendanceManage extends Component
                 );
             })
             ->values();
-
 
         return view(
             'livewire.page.main.attendances.history-attendance-manage',
