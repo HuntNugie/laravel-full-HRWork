@@ -63,7 +63,8 @@ class FormAdd extends Component
     public function render()
     {
         $baseQuery = Employees::with(['user', 'position'])
-            ->where('status_employee', 'active');
+            ->where('status_employee', 'active')
+            ->whereDoesntHave('managedDivisi');
 
         $managers = (clone $baseQuery)
             ->whereHas('position', function ($query) {
