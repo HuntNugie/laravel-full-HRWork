@@ -37,18 +37,13 @@ class WorkManagementDevelopmentSeeder extends Seeder
         );
 
         $users = $this->seedUsers();
-        $employees = $this->seedEmployees(
-            $users,
-            $developmentDivision,
-            $managementDivision,
-        );
+        $employees = $this->seedEmployees($users);
 
         $this->assignDivisionManager($developmentDivision, $employees['manager']);
 
         $team = Team::updateOrCreate(
             ['name' => 'Development Team'],
             [
-                'divisi_id' => $developmentDivision->id,
                 'description' => 'Team development untuk kebutuhan development/testing HRWork.',
                 'is_active' => 'active',
                 'supervisor_id' => $employees['supervisor']->id,
@@ -182,14 +177,17 @@ class WorkManagementDevelopmentSeeder extends Seeder
 
         $hr = User::where('email', 'nugiekurniawan03@gmail.com')->firstOrFail();
         $admin = User::where('email', 'nugiekurniawan02@gmail.com')->firstOrFail();
+        $superAdmin = User::where('email', env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'))->firstOrFail();
 
         Role::firstOrCreate(['name' => 'Employee', 'guard_name' => 'web']);
 
         $hr->syncRoles(['Employee', 'HR']);
         $admin->syncRoles(['Employee', 'Administrator']);
+        $superAdmin->syncRoles(['Employee', 'super-admin']);
 
         $users['hr'] = $hr;
         $users['admin'] = $admin;
+        $users['superadmin'] = $superAdmin;
 
         return $users;
     }
@@ -198,11 +196,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
      * @param array<string, User> $users
      * @return array<string, Employees>
      */
-    private function seedEmployees(
-        array $users,
-        Divisi $developmentDivision,
-        Divisi $managementDivision,
-    ): array {
+    private function seedEmployees(array $users): array {
         $positions = Position::query()
             ->whereIn('name', [
                 'General Manager',
@@ -230,25 +224,26 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 'code' => 'DEV-SPV-001',
                 'position' => 'Supervisor',
                 'team_id' => null,
-                'divisi_id' => $developmentDivision->id,
             ],
             'worker' => [
                 'code' => 'DEV-WKR-001',
                 'position' => 'Software Engineer',
                 'team_id' => null,
-                'divisi_id' => $developmentDivision->id,
             ],
             'hr' => [
                 'code' => 'DEV-HR-001',
                 'position' => 'HR Officer',
                 'team_id' => null,
-                'divisi_id' => $managementDivision->id,
             ],
             'admin' => [
                 'code' => 'DEV-ADM-001',
                 'position' => 'Administrator',
                 'team_id' => null,
-                'divisi_id' => $managementDivision->id,
+            ],
+            'superadmin' => [
+                'code' => 'DEV-SADM-001',
+                'position' => 'Administrator',
+                'team_id' => null,
             ],
         ];
 
@@ -262,7 +257,6 @@ class WorkManagementDevelopmentSeeder extends Seeder
                     'status_employee' => 'active',
                     'team_id' => $definition['team_id'],
                     'position_id' => $positions[$definition['position']]->id,
-                    'ResignDate' => null,
                 ],
             );
 
@@ -313,6 +307,11 @@ class WorkManagementDevelopmentSeeder extends Seeder
             ],
             'admin' => [
                 'number' => 'DEV-ADM-2026-001',
+                'salary' => 250000,
+                'position' => 'Administrator',
+            ],
+            'superadmin' => [
+                'number' => 'DEV-SADM-2026-001',
                 'salary' => 250000,
                 'position' => 'Administrator',
             ],
