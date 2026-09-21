@@ -4,6 +4,7 @@ namespace App\Livewire\Page\Main\Leave;
 
 use App\Models\ContractLeaveEntitlements;
 use App\Models\Employees;
+use App\Service\LeaveRequestService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
