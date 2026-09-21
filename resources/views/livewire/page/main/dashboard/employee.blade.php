@@ -345,9 +345,13 @@
                                 </p>
 
                                 <p class="mt-1 text-xs text-slate-500">
-                                    {{ $latestLeaveRequest->start_date?->format('d/m/Y') ?? $latestLeaveRequest->start_date }}
+                                    {{ $latestLeaveRequest->start_date
+                                        ? \Carbon\Carbon::parse($latestLeaveRequest->start_date)->format('d/m/Y')
+                                        : '—' }}
                                     –
-                                    {{ $latestLeaveRequest->end_date?->format('d/m/Y') ?? $latestLeaveRequest->end_date }}
+                                    {{ $latestLeaveRequest->end_date
+                                        ? \Carbon\Carbon::parse($latestLeaveRequest->end_date)->format('d/m/Y')
+                                        : '—' }}
                                 </p>
                             </div>
 
