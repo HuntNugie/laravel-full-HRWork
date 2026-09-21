@@ -28,11 +28,6 @@ class FormAdd extends Component
 
     public bool $isActive = false;
 
-    public function chooseManager($value): void
-    {
-        $this->managerId = filled($value) ? (int) $value : null;
-    }
-
     public function store()
     {
         $this->authorize('create', Divisi::class);
