@@ -466,37 +466,7 @@ class BankSeeder extends Seeder
                 'short_name' => 'Resona',
             ],
             [
-                'bank_code' => 48,
-                'name' => 'Bank Mizuho Indonesia',
-                'short_name' => 'Mizuho',
-            ],
-            [
-                'bank_code' => 50,
-                'name' => 'Standard Chartered Bank',
-                'short_name' => 'Standard Chartered',
-            ],
-            [
-                'bank_code' => 57,
-                'name' => 'Bank BNP Paribas Indonesia',
-                'short_name' => 'BNP Paribas',
-            ],
-            [
-                'bank_code' => 67,
-                'name' => 'Deutsche Bank AG',
-                'short_name' => 'Deutsche Bank',
-            ],
-            [
-                'bank_code' => 69,
-                'name' => 'Bank of China',
-                'short_name' => 'Bank of China',
-            ],
-            [
-                'bank_code' => 68,
-                'name' => 'Bank Woori Indonesia',
-                'short_name' => 'Woori',
-            ],
-            [
-                'bank_code' => 164,
+                'bank_code' => 949,
                 'name' => 'Bank ICBC Indonesia',
                 'short_name' => 'ICBC',
             ],
@@ -512,8 +482,11 @@ class BankSeeder extends Seeder
             ],
         ];
 
-        foreach($banks as $bank){
-            Bank::create($bank);
+        foreach ($banks as $bank) {
+            Bank::updateOrCreate(
+                ['bank_code' => $bank['bank_code']],
+                $bank
+            );
         }
     }
 }
