@@ -2,22 +2,129 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Seed the application's complete permission catalog.
      */
     public function run(): void
     {
-        $permissions = ['view-divisi', 'create-divisi', 'update-divisi', 'delete-divisi', 'show-divisi', 'view-position', 'create-position', 'view-employee', 'create-employee', 'view-team', 'view-status-daily'];
-        foreach ($permissions as $permission) {
-            Permission::create([
-                'name' => $permission,
+        $permissions = [
+            'approve-master-project',
+            'assign-project-team',
+            'assign-role',
+            'assign-task',
+            'assign-team-employee',
+            'cancel-leave',
+            'cancel-warning-letter',
+            'check-in-attendance',
+            'check-out-attendance',
+            'create-absence',
+            'create-benefit',
+            'create-contract',
+            'create-divisi',
+            'create-division-project',
+            'create-employee',
+            'create-holiday',
+            'create-leave',
+            'create-master-project',
+            'create-period-payroll',
+            'create-position',
+            'create-role',
+            'create-task',
+            'create-team',
+            'create-user',
+            'create-warning-letter',
+            'delete-benefit',
+            'delete-divisi',
+            'delete-holiday',
+            'delete-period-payroll',
+            'delete-role',
+            'download-employee-contract',
+            'edit-late-discipline-rule',
+            'edit-period-payroll',
+            'edit-unpresent-discipline-rule',
+            'edit-warning-letter',
+            'history-attendance',
+            'issue-warning-letter',
+            'mark-paid-payroll',
+            'process-leave',
+            'process-payroll',
+            'remove-team-employee',
+            'report-project-progress',
+            'review-division-project',
+            'review-project',
+            'review-task',
+            'show-attendance',
+            'show-benefit',
+            'show-contract',
+            'show-contract-my',
+            'show-divisi',
+            'show-employee',
+            'show-leave',
+            'show-management-leave',
+            'show-payroll',
+            'show-payroll-my',
+            'show-position',
+            'show-role',
+            'show-team',
+            'show-type-leave',
+            'show-user',
+            'show-warning-letter',
+            'submit-project-review',
+            'submit-task',
+            'update-attendance',
+            'update-benefit',
+            'update-contract',
+            'update-divisi',
+            'update-division-project',
+            'update-employee',
+            'update-holiday',
+            'update-master-project',
+            'update-own-task',
+            'update-position',
+            'update-role',
+            'update-task',
+            'update-team',
+            'update-user',
+            'update-work-time',
+            'view-absence',
+            'view-attendance',
+            'view-benefit',
+            'view-contract',
+            'view-contract-my',
+            'view-data-my',
+            'view-divisi',
+            'view-division-project',
+            'view-employee',
+            'view-holiday',
+            'view-late-discipline-rule',
+            'view-leave',
+            'view-manage-absence',
+            'view-management-leave',
+            'view-master-project',
+            'view-monitor-attendance',
+            'view-payroll',
+            'view-payroll-my',
+            'view-position',
+            'view-role',
+            'view-status-daily',
+            'view-task',
+            'view-team',
+            'view-type-leave',
+            'view-unpresent-discipline-rule',
+            'view-user',
+            'view-warning-letter',
+            'view-work-time',
+        ];
+
+        foreach ($permissions as $name) {
+            Permission::firstOrCreate([
+                'name' => $name,
+                'guard_name' => 'web',
             ]);
         }
     }
