@@ -12,7 +12,7 @@ class DailyStatusPermissionSeeder extends Seeder
     {
         $permission = Permission::firstOrCreate(
             [
-                'name' => 'view-daily-status',
+                'name' => 'view-status-daily',
                 'guard_name' => 'web',
             ]
         );
