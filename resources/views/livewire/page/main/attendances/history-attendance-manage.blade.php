@@ -113,8 +113,36 @@
                             Terlambat
                         </option>
 
-                        <option value="absent">
+                        <option value="paid_leave">
+                            Cuti
+                        </option>
+
+                        <option value="absence_sick">
+                            Sakit
+                        </option>
+
+                        <option value="absence_permit">
+                            Izin
+                        </option>
+
+                        <option value="unpresent">
                             Belum Hadir
+                        </option>
+
+                        <option value="pending">
+                            Menunggu
+                        </option>
+
+                        <option value="holiday">
+                            Libur
+                        </option>
+
+                        <option value="non_working">
+                            Non-Hari Kerja
+                        </option>
+
+                        <option value="outside_contract">
+                            Di Luar Kontrak
                         </option>
 
                     </select>
@@ -297,28 +325,51 @@
 
                                     @switch($attendance['status'])
                                         @case('present')
-                                            <span
-                                                class="inline-flex items-center rounded-full
-                                                    bg-emerald-50 px-2.5 py-1
-                                                    text-xs font-medium text-emerald-600">
+                                            <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-600">
                                                 {{ $attendance['status_label'] }}
                                             </span>
                                         @break
 
                                         @case('late')
-                                            <span
-                                                class="inline-flex items-center rounded-full
-                                                    bg-amber-50 px-2.5 py-1
-                                                    text-xs font-medium text-amber-600">
+                                            <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-600">
                                                 {{ $attendance['status_label'] }}
                                             </span>
                                         @break
 
-                                        @case('absent')
-                                            <span
-                                                class="inline-flex items-center rounded-full
-                                                    bg-slate-100 px-2.5 py-1
-                                                    text-xs font-medium text-slate-500">
+                                        @case('paid_leave')
+                                            <span class="inline-flex items-center rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-600">
+                                                {{ $attendance['status_label'] }}
+                                            </span>
+                                        @break
+
+                                        @case('absence_sick')
+                                            <span class="inline-flex items-center rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-600">
+                                                {{ $attendance['status_label'] }}
+                                            </span>
+                                        @break
+
+                                        @case('absence_permit')
+                                            <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-600">
+                                                {{ $attendance['status_label'] }}
+                                            </span>
+                                        @break
+
+                                        @case('unpresent')
+                                            <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-600">
+                                                {{ $attendance['status_label'] }}
+                                            </span>
+                                        @break
+
+                                        @case('pending')
+                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+                                                {{ $attendance['status_label'] }}
+                                            </span>
+                                        @break
+
+                                        @case('holiday')
+                                        @case('non_working')
+                                        @case('outside_contract')
+                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
                                                 {{ $attendance['status_label'] }}
                                             </span>
                                         @break
