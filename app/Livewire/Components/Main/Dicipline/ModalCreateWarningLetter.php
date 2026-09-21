@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Components\Main\Dicipline;
 
-use App\Models\EmployeeWarningLetter;
 use App\Models\Employees;
 use App\Service\WarningLetterService;
 use Illuminate\Support\Facades\Auth;
@@ -29,9 +28,6 @@ class ModalCreateWarningLetter extends Component
         $this->loadPreviewNumber();
     }
 
-    /**
-     * Dibuka ketika HR membuat SP secara manual.
-     */
     public function open(): void
     {
         abort_unless(
@@ -40,7 +36,6 @@ class ModalCreateWarningLetter extends Component
         );
 
         $this->resetForm();
-
         $this->loadPreviewNumber();
 
         $this->dispatch(
@@ -49,9 +44,6 @@ class ModalCreateWarningLetter extends Component
         );
     }
 
-    /**
-     * Dibuka dari Preview Indikasi Pelanggaran.
-     */
     #[On('prepare-warning-letter-from-indication')]
     public function prepareFromIndication(
         int $employeeId,
@@ -93,9 +85,7 @@ class ModalCreateWarningLetter extends Component
         ]);
 
         $this->warningLevel = 'SP1';
-
         $this->issuedDate = now()->toDateString();
-
         $this->letterNumber = '';
     }
 
@@ -124,45 +114,34 @@ class ModalCreateWarningLetter extends Component
                 'required',
                 'exists:employees,id',
             ],
-
             'warningLevel' => [
                 'required',
                 'in:SP1,SP2,SP3',
             ],
-
             'issuedDate' => [
                 'required',
                 'date',
             ],
-
             'reason' => [
                 'required',
                 'string',
             ],
-
             'description' => [
                 'nullable',
                 'string',
             ],
         ]);
 
-        $warningLetterService = app(
-            WarningLetterService::class
+        app(WarningLetterService::class)->createDraft(
+            attributes: [
+                'employee_id' => (int) $validated['employeeId'],
+                'warning_level' => $validated['warningLevel'],
+                'issued_date' => $validated['issuedDate'],
+                'reason' => $validated['reason'],
+                'description' => $validated['description'] ?? null,
+            ],
+            createdBy: (int) Auth::id(),
         );
-
-        $letterNumber = $warningLetterService
-            ->generateWarningLetterNumber();
-
-        EmployeeWarningLetter::create([
-            'employee_id' => $validated['employeeId'],
-            'warning_level' => $validated['warningLevel'],
-            'letter_number' => $letterNumber,
-            'issued_date' => $validated['issuedDate'],
-            'reason' => $validated['reason'],
-            'description' => $validated['description'] ?? null,
-            'status' => 'draft',
-            'created_by' => Auth::id(),
-        ]);
 
         $this->dispatch('warning-letter-saved');
 
@@ -179,7 +158,6 @@ class ModalCreateWarningLetter extends Component
         );
 
         $this->resetForm();
-
         $this->loadPreviewNumber();
     }
 

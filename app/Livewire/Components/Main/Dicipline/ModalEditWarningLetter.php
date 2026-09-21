@@ -4,6 +4,7 @@ namespace App\Livewire\Components\Main\Dicipline;
 
 use App\Models\EmployeeWarningLetter;
 use App\Models\Employees;
+use App\Service\WarningLetterService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -27,12 +28,7 @@ class ModalEditWarningLetter extends Component
     {
         $this->warningLetter = $warningLetter;
 
-        $this->employeeId = (string) $warningLetter->employee_id;
-        $this->warningLevel = $warningLetter->warning_level;
-        $this->letterNumber = $warningLetter->letter_number ?? '';
-        $this->issuedDate = $warningLetter->issued_date?->toDateString() ?? '';
-        $this->reason = $warningLetter->reason;
-        $this->description = $warningLetter->description ?? '';
+        $this->loadFromModel();
     }
 
     public function open(): void
@@ -46,25 +42,31 @@ class ModalEditWarningLetter extends Component
 
         if ($this->warningLetter->status !== 'draft') {
             $this->dispatch(
-                'toast',
-                type: 'error',
+                'wirekit-toast',
+                variant: 'warning',
+                title: 'Tidak dapat diedit',
                 message: 'Surat Peringatan yang sudah diterbitkan atau dibatalkan tidak dapat diedit.'
             );
 
             return;
         }
 
+        $this->loadFromModel();
+
+        $this->dispatch(
+            'wirekit-modal-show',
+            name: 'edit-warning-letter-' . $this->warningLetter->id
+        );
+    }
+
+    private function loadFromModel(): void
+    {
         $this->employeeId = (string) $this->warningLetter->employee_id;
         $this->warningLevel = $this->warningLetter->warning_level;
         $this->letterNumber = $this->warningLetter->letter_number ?? '';
         $this->issuedDate = $this->warningLetter->issued_date?->toDateString() ?? '';
         $this->reason = $this->warningLetter->reason;
         $this->description = $this->warningLetter->description ?? '';
-
-        $this->dispatch(
-            'wirekit-modal-show',
-            name: 'edit-warning-letter-' . $this->warningLetter->id
-        );
     }
 
     public function employeeOptions(): array
@@ -87,48 +89,53 @@ class ModalEditWarningLetter extends Component
             403
         );
 
-        $this->warningLetter->refresh();
-
-        if ($this->warningLetter->status !== 'draft') {
-            abort(422, 'Surat Peringatan sudah tidak dapat diedit.');
-        }
-
         $validated = $this->validate([
             'employeeId' => [
                 'required',
                 'exists:employees,id',
             ],
-
             'warningLevel' => [
                 'required',
                 'in:SP1,SP2,SP3',
             ],
-
             'issuedDate' => [
                 'required',
                 'date',
             ],
-
             'reason' => [
                 'required',
                 'string',
             ],
-
             'description' => [
                 'nullable',
                 'string',
             ],
         ]);
 
-        $this->warningLetter->update([
-            'employee_id' => $validated['employeeId'],
-            'warning_level' => $validated['warningLevel'],
-            'issued_date' => $validated['issuedDate'],
-            'reason' => $validated['reason'],
-            'description' => $validated['description'] ?? null,
-        ]);
+        try {
+            $this->warningLetter = app(WarningLetterService::class)
+                ->updateDraft(
+                    warningLetter: $this->warningLetter,
+                    attributes: [
+                        'employee_id' => (int) $validated['employeeId'],
+                        'warning_level' => $validated['warningLevel'],
+                        'issued_date' => $validated['issuedDate'],
+                        'reason' => $validated['reason'],
+                        'description' => $validated['description'] ?? null,
+                    ],
+                );
+        } catch (\RuntimeException $e) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'warning',
+                title: 'Tidak dapat diedit',
+                message: $e->getMessage()
+            );
 
-        $this->warningLetter->refresh();
+            return;
+        }
+
+        $this->loadFromModel();
 
         $this->dispatch('warning-letter-updated');
 
@@ -141,7 +148,7 @@ class ModalEditWarningLetter extends Component
             'wirekit-toast',
             variant: 'success',
             title: 'Berhasil',
-            message: 'Berhasil mengedit surat peringatan',
+            message: 'Surat Peringatan berhasil diperbarui.'
         );
     }
 

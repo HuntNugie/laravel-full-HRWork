@@ -3,6 +3,7 @@
 namespace App\Livewire\Components\Main\Dicipline;
 
 use App\Models\EmployeeWarningLetter;
+use App\Service\WarningLetterService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
@@ -26,19 +27,6 @@ class ModalCancelWarningLetter extends Component
             403
         );
 
-        $this->warningLetter->refresh();
-
-        if (! in_array($this->warningLetter->status, ['draft', 'issued'], true)) {
-            $this->dispatch(
-                'wirekit-toast',
-                variant: 'warning',
-                title: 'Tidak dapat dibatalkan',
-                message: 'Surat Peringatan yang sudah dibatalkan tidak dapat dibatalkan kembali.'
-            );
-
-            return;
-        }
-
         $validated = $this->validate([
             'cancellationReason' => [
                 'required',
@@ -46,14 +34,23 @@ class ModalCancelWarningLetter extends Component
             ],
         ]);
 
-        $this->warningLetter->update([
-            'status' => 'cancelled',
-            'cancelled_by' => Auth::id(),
-            'cancelled_at' => now(),
-            'cancellation_reason' => $validated['cancellationReason'],
-        ]);
+        try {
+            $this->warningLetter = app(WarningLetterService::class)
+                ->cancel(
+                    warningLetter: $this->warningLetter,
+                    reason: $validated['cancellationReason'],
+                    cancelledBy: (int) Auth::id(),
+                );
+        } catch (\RuntimeException $e) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'warning',
+                title: 'Tidak dapat dibatalkan',
+                message: $e->getMessage()
+            );
 
-        $this->warningLetter->refresh();
+            return;
+        }
 
         $this->dispatch('warning-letter-cancelled');
 
