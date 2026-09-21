@@ -69,7 +69,7 @@
                     </x-wirekit::select>
 
                     <p class="mt-1 text-xs text-slate-400">
-                        Kosongkan jika divisi belum memiliki Manager.
+                        Hanya employee aktif yang belum memiliki Team dan belum memimpin Divisi lain yang dapat dipilih.
                     </p>
                 </x-wirekit::field>
 

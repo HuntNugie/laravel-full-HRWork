@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Guarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 #[Guarded('id')]
@@ -54,6 +55,24 @@ class Employees extends Model
     public function managedDivisi()
     {
         return $this->hasOne(Divisi::class, 'manager_id');
+    }
+
+    // scope untuk kandidat manager divisi yang masih available
+    public function scopeAvailableDivisionManagers(Builder $query, ?int $exceptDivisionId = null): Builder
+    {
+        return $query
+            ->where('status_employee', 'active')
+            ->whereNull('team_id')
+            ->whereDoesntHave('supervisorTeam')
+            ->where(function (Builder $query) use ($exceptDivisionId) {
+                $query->whereDoesntHave('managedDivisi');
+
+                if ($exceptDivisionId) {
+                    $query->orWhereHas('managedDivisi', function (Builder $query) use ($exceptDivisionId) {
+                        $query->whereKey($exceptDivisionId);
+                    });
+                }
+            });
     }
 
     // relasi supervisor team

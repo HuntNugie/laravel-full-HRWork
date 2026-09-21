@@ -33,6 +33,10 @@ class FormAdd extends Component
         $this->authorize('create', Divisi::class);
         $this->validate();
 
+        if (filled($this->managerId) && ! $this->validateManagerSelection()) {
+            return;
+        }
+
         $status = $this->isActive ? 'active' : 'inactive';
 
         Divisi::create([
@@ -53,6 +57,25 @@ class FormAdd extends Component
         $this->dispatch('create-divisi');
     }
 
+    private function validateManagerSelection(): bool
+    {
+        $available = Employees::query()
+            ->availableDivisionManagers()
+            ->whereKey($this->managerId)
+            ->exists();
+
+        if (! $available) {
+            $this->addError(
+                'managerId',
+                'Manager harus aktif, tidak memiliki Team, dan belum memimpin Divisi lain.'
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
     public function canSubmit()
     {
         return filled($this->name)
@@ -62,8 +85,9 @@ class FormAdd extends Component
 
     public function render()
     {
-        $baseQuery = Employees::with(['user', 'position'])
-            ->where('status_employee', 'active');
+        $baseQuery = Employees::query()
+            ->with(['user', 'position'])
+            ->availableDivisionManagers();
 
         $managers = (clone $baseQuery)
             ->whereHas('position', function ($query) {

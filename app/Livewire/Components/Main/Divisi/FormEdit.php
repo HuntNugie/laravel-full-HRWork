@@ -50,10 +50,33 @@ class FormEdit extends Component
             && $this->getErrorBag()->isEmpty();
     }
 
+    private function validateManagerSelection(): bool
+    {
+        $available = Employees::query()
+            ->availableDivisionManagers($this->divisi?->id)
+            ->whereKey($this->managerId)
+            ->exists();
+
+        if (! $available) {
+            $this->addError(
+                'managerId',
+                'Manager harus aktif, tidak memiliki Team, dan belum memimpin Divisi lain.'
+            );
+
+            return false;
+        }
+
+        return true;
+    }
+
     public function update()
     {
         $this->authorize('update', $this->divisi);
         $this->validate();
+
+        if (filled($this->managerId) && ! $this->validateManagerSelection()) {
+            return;
+        }
 
         $this->divisi->update([
             'name' => $this->name,
@@ -75,25 +98,18 @@ class FormEdit extends Component
 
     public function render()
     {
-        $managers = Employees::with(['user', 'position'])
-            ->where(function ($query) {
-                $query
-                    ->where(function ($query) {
-                        $query->where('status_employee', 'active')
-                            ->whereHas('position', function ($query) {
-                                $query->where('name', 'Manager');
-                            });
-                    })
-                    ->when($this->managerId, function ($query) {
-                        $query->orWhereKey($this->managerId);
-                    });
+        $baseQuery = Employees::query()
+            ->with(['user', 'position'])
+            ->availableDivisionManagers($this->divisi?->id);
+
+        $managers = (clone $baseQuery)
+            ->whereHas('position', function ($query) {
+                $query->where('name', 'Manager');
             })
             ->get();
 
         if ($managers->isEmpty()) {
-            $managers = Employees::with(['user', 'position'])
-                ->where('status_employee', 'active')
-                ->get();
+            $managers = $baseQuery->get();
         }
 
         $managers = $managers->mapWithKeys(function ($employee) {
