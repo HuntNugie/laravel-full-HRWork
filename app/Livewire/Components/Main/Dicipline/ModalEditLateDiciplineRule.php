@@ -5,6 +5,7 @@ namespace App\Livewire\Components\Main\Dicipline;
 use App\Models\LateDisciplineRule;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ModalEditLateDiciplineRule extends Component
@@ -86,14 +87,31 @@ class ModalEditLateDiciplineRule extends Component
         $rule = LateDisciplineRule::query()
             ->firstOrFail();
 
-        $rule->update([
-            'name' => trim($validated['name']),
-            'threshold' => (int) $validated['threshold'],
-            'action_amount' => $validated['actionAmount'],
-            'description' => filled($validated['description'])
-                ? trim($validated['description'])
-                : null,
-        ]);
+        DB::transaction(function () use ($validated, &$rule): void {
+            /*
+            |----------------------------------------------------------------------
+            | HRWork saat ini hanya memiliki satu aturan keterlambatan aktif.
+            | Saat aturan diedit, nonaktifkan aturan aktif lain agar konfigurasi
+            | yang dipakai payroll tetap deterministic.
+            |----------------------------------------------------------------------
+            */
+            LateDisciplineRule::query()
+                ->where('id', '!=', $rule->id)
+                ->where('status', 'active')
+                ->update([
+                    'status' => 'inactive',
+                ]);
+
+            $rule->update([
+                'name' => trim($validated['name']),
+                'threshold' => (int) $validated['threshold'],
+                'action_amount' => $validated['actionAmount'],
+                'description' => filled($validated['description'])
+                    ? trim($validated['description'])
+                    : null,
+                'status' => 'active',
+            ]);
+        });
 
         /*
         |--------------------------------------------------------------------------
