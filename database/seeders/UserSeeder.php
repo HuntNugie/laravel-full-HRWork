@@ -48,8 +48,8 @@ class UserSeeder extends Seeder
             ],
         );
 
-        $admin->syncRoles(['Administrator']);
-        $hr->syncRoles(['HR']);
+        $admin->syncRoles(['administrator']);
+        $hr->syncRoles(['hr']);
         $superAdmin->syncRoles(['super-admin']);
     }
 }
