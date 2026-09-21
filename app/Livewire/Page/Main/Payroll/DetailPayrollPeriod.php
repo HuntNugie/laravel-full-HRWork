@@ -3,11 +3,10 @@
 namespace App\Livewire\Page\Main\Payroll;
 
 use App\Models\Employees;
-use App\Service\EmployeeDailyStatusService;
-use App\Service\LateDisciplineService;
 use App\Models\Payroll;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
+use App\Service\PayrollCalculationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -271,8 +270,7 @@ class DetailPayrollPeriod extends Component
                     ->values();
             }
 
-            $dailyStatusService = app(EmployeeDailyStatusService::class);
-            $lateDisciplineService = app(LateDisciplineService::class);
+            $payrollCalculationService = app(PayrollCalculationService::class);
 
             $created = 0;
             $updated = 0;
@@ -324,12 +322,10 @@ class DetailPayrollPeriod extends Component
                     continue;
                 }
 
-                $calculation = $this->calculateEmployeePayroll(
+                $calculation = $payrollCalculationService->calculate(
                     employee: $employee,
                     contract: $contract,
                     period: $period,
-                    dailyStatusService: $dailyStatusService,
-                    lateDisciplineService: $lateDisciplineService,
                 );
 
                 $existingPayroll = $existingPayrolls->get($employee->id);
@@ -520,161 +516,6 @@ class DetailPayrollPeriod extends Component
                             );
                     });
             });
-    }
-
-    /**
-     * Hitung angka payroll untuk satu employee.
-     * Belum memasukkan payroll item manual/global.
-     *
-     * @return array{
-     *   salary_daily:float,
-     *   salary_amount:float,
-     *   working_days:int,
-     *   present_days:int,
-     *   late_days:int,
-     *   absent_days:int,
-     *   paid_leave_days:int,
-     *   paid_days:int,
-     *   benefit_total:float,
-     *   late_deduction_total:float,
-     *   late_deduction_items:Collection<int,array{month:string,late_count:int,deduction_units:int,amount:float}>,
-     *   benefit_items:Collection<int,array{benefit:object,amount:float,quantity:int,rate:float}>,
-     *   next_sort_order:int
-     * }
-     */
-    private function calculateEmployeePayroll(
-        Employees $employee,
-        $contract,
-        PayrollPeriod $period,
-        EmployeeDailyStatusService $dailyStatusService,
-        LateDisciplineService $lateDisciplineService,
-    ): array {
-        $eligibleStart = $contract->start_date->greaterThan($period->start_date)
-            ? $contract->start_date->copy()
-            : $period->start_date->copy();
-
-        $eligibleEnd = $contract->end_date && $contract->end_date->lessThan($period->end_date)
-            ? $contract->end_date->copy()
-            : $period->end_date->copy();
-
-        if ($eligibleStart->gt($eligibleEnd)) {
-            return [
-                'salary_daily' => (float) $contract->salary_daily,
-                'salary_amount' => 0.0,
-                'working_days' => 0,
-                'present_days' => 0,
-                'late_days' => 0,
-                'absent_days' => 0,
-                'paid_leave_days' => 0,
-                'paid_days' => 0,
-                'benefit_total' => 0.0,
-                'late_deduction_total' => 0.0,
-                'late_deduction_items' => collect(),
-                'benefit_items' => collect(),
-                'next_sort_order' => 2,
-            ];
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | DAILY STATUS
-        |--------------------------------------------------------------------------
-        |
-        | EmployeeDailyStatusService menjadi satu-satunya sumber penentuan
-        | status kalender/attendance/leave/absence untuk payroll.
-        |
-        */
-
-        $statuses = $dailyStatusService->getStatuses(
-            employee: $employee,
-            startDate: $eligibleStart,
-            endDate: $eligibleEnd,
-        );
-
-        $workingDays = $statuses
-            ->filter(fn(array $state) => $state['is_working_day'] === true)
-            ->count();
-
-        $presentDays = $statuses
-            ->filter(
-                fn(array $state) =>
-                    in_array(
-                        $state['status'],
-                        [
-                            EmployeeDailyStatusService::STATUS_PRESENT,
-                            EmployeeDailyStatusService::STATUS_LATE,
-                        ],
-                        true
-                    )
-            )
-            ->count();
-
-        $lateDiscipline = $lateDisciplineService->calculateFromStatuses(
-            statuses: $statuses,
-        );
-
-        $lateDays = $lateDiscipline['late_count'];
-        $lateDeductionTotal = $lateDiscipline['deduction_amount'];
-        $lateDeductionItems = $lateDiscipline['items'];
-
-        $paidLeaveDays = $statuses
-            ->filter(
-                fn(array $state) =>
-                    $state['status'] === EmployeeDailyStatusService::STATUS_PAID_LEAVE
-            )
-            ->count();
-
-        $paidDays = $presentDays + $paidLeaveDays;
-
-        $absentDays = max(
-            0,
-            $workingDays - $paidDays
-        );
-
-        $salaryDaily = (float) $contract->salary_daily;
-        $salaryAmount = $paidDays * $salaryDaily;
-
-        $benefitTotal = 0.0;
-        $benefitItems = collect();
-
-        foreach ($contract->benefits as $benefit) {
-            $benefitDaily = (float) (
-                $benefit->pivot->amount ?? 0
-            );
-
-            $benefitAmount = $paidDays * $benefitDaily;
-
-            if ($benefitAmount <= 0) {
-                continue;
-            }
-
-            $benefitTotal += $benefitAmount;
-
-            $benefitItems->push([
-                'benefit' => $benefit,
-                'amount' => $benefitAmount,
-                'quantity' => $paidDays,
-                'rate' => $benefitDaily,
-            ]);
-        }
-
-        return [
-            'salary_daily' => $salaryDaily,
-            'salary_amount' => $salaryAmount,
-            'working_days' => $workingDays,
-            'present_days' => $presentDays,
-            'late_days' => $lateDays,
-            'absent_days' => $absentDays,
-            'paid_leave_days' => $paidLeaveDays,
-            'paid_days' => $paidDays,
-            'benefit_total' => $benefitTotal,
-            'late_deduction_total' => $lateDeductionTotal,
-            'late_deduction_items' => $lateDeductionItems,
-            'benefit_items' => $benefitItems,
-            'next_sort_order' => 2
-                + $benefitItems->count()
-                + $lateDeductionItems->count(),
-        ];
     }
 
     /**
