@@ -17,6 +17,19 @@ class DailyStatusPermissionSeeder extends Seeder
             ]
         );
 
+        $legacyPermission = Permission::query()
+            ->where('name', 'view-daily-status')
+            ->where('guard_name', 'web')
+            ->first();
+
+        if ($legacyPermission && $legacyPermission->id !== $permission->id) {
+            foreach ($legacyPermission->roles as $role) {
+                $role->givePermissionTo($permission);
+            }
+
+            $legacyPermission->delete();
+        }
+
         foreach (['HR', 'Administrator'] as $roleName) {
             $role = Role::query()
                 ->where('name', $roleName)
