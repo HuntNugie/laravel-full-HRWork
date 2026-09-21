@@ -33,7 +33,7 @@ class EmployeeDashboardTest extends TestCase
         ]);
 
         $role = Role::firstOrCreate([
-            'name' => 'Employee',
+            'name' => 'employee',
             'guard_name' => 'web',
         ]);
 
@@ -135,7 +135,7 @@ class EmployeeDashboardTest extends TestCase
         ]);
 
         $role = Role::firstOrCreate([
-            'name' => 'HR',
+            'name' => 'hr',
             'guard_name' => 'web',
         ]);
 
