@@ -23,7 +23,7 @@ class DivisionManagerTest extends TestCase
         $user = User::factory()->create();
 
         $role = Role::firstOrCreate([
-            'name' => 'HR',
+            'name' => 'hr',
             'guard_name' => 'web',
         ]);
 
