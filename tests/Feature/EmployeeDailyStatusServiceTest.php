@@ -200,7 +200,86 @@ class EmployeeDailyStatusServiceTest extends TestCase
         $this->assertFalse($nonWorking['is_unpresent']);
     }
 
-    public function test_date_outside_active_contract_is_outside_contract(): void
+    public function test_expired_contract_still_resolves_for_its_historical_effective_dates(): void
+    {
+        $employee = $this->createEmployeeContract(
+            '2026-09-01',
+            '2026-09-22',
+            'expired'
+        );
+
+        $this->createWorkingTime('senin');
+
+        $historicalState = app(EmployeeDailyStatusService::class)
+            ->getStatus($employee, '2026-09-21');
+
+        $afterContractState = app(EmployeeDailyStatusService::class)
+            ->getStatus($employee, '2026-09-23');
+
+        $this->assertSame(
+            EmployeeDailyStatusService::STATUS_UNPRESENT,
+            $historicalState['status']
+        );
+        $this->assertTrue($historicalState['is_unpresent']);
+        $this->assertSame(
+            $employee->employeeContract()->firstOrFail()->id,
+            $historicalState['contract_id']
+        );
+
+        $this->assertSame(
+            EmployeeDailyStatusService::STATUS_OUTSIDE_CONTRACT,
+            $afterContractState['status']
+        );
+        $this->assertNull($afterContractState['contract_id']);
+    }
+
+    public function test_daily_status_selects_the_latest_contract_effective_on_each_date(): void
+    {
+        $employee = $this->createEmployeeContract(
+            '2026-09-01',
+            '2026-09-15',
+            'expired'
+        );
+
+        $newContract = EmployeeContract::create([
+            'employee_id' => $employee->id,
+            'contract_number' => 'CTR-' . uniqid(),
+            'employement_type' => 'pkwtt',
+            'start_date' => '2026-09-16',
+            'end_date' => null,
+            'salary_daily' => 125000,
+            'status' => 'active',
+            'position_name' => 'Senior Developer',
+            'notes' => null,
+        ]);
+
+        $this->createWorkingTime('senin');
+
+        $statuses = app(EmployeeDailyStatusService::class)
+            ->getStatuses($employee, '2026-09-14', '2026-09-21');
+
+        $beforeChange = $statuses->firstWhere('date', '2026-09-14');
+        $afterChange = $statuses->firstWhere('date', '2026-09-21');
+
+        $this->assertSame(
+            'expired',
+            $employee->employeeContract()->findOrFail($beforeChange['contract_id'])->status
+        );
+        $this->assertSame(
+            $newContract->id,
+            $afterChange['contract_id']
+        );
+        $this->assertSame(
+            EmployeeDailyStatusService::STATUS_UNPRESENT,
+            $beforeChange['status']
+        );
+        $this->assertSame(
+            EmployeeDailyStatusService::STATUS_UNPRESENT,
+            $afterChange['status']
+        );
+    }
+
+    public function test_date_outside_contract_range_is_outside_contract(): void
     {
         $employee = $this->createEmployeeContract('2026-09-15', '2026-09-30');
 
@@ -216,7 +295,11 @@ class EmployeeDailyStatusServiceTest extends TestCase
         $this->assertNull($state['contract_id']);
     }
 
-    private function createEmployeeContract(string $startDate, ?string $endDate): Employees
+    private function createEmployeeContract(
+        string $startDate,
+        ?string $endDate,
+        string $status = 'active'
+    ): Employees
     {
         $employee = Employees::create([
             'employee_code' => 'EMP-' . uniqid(),
@@ -232,7 +315,7 @@ class EmployeeDailyStatusServiceTest extends TestCase
             'start_date' => $startDate,
             'end_date' => $endDate,
             'salary_daily' => 100000,
-            'status' => 'active',
+            'status' => $status,
             'position_name' => 'Developer',
             'notes' => null,
         ]);

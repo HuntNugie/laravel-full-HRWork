@@ -66,7 +66,10 @@ class EmployeeDailyStatusService
         }
 
         $contracts = $employee->employeeContract()
-            ->where('status', 'active')
+            // Contract status is a current state. Historical Daily Status must
+            // still resolve contracts that have since become expired/terminated.
+            // Draft contracts are excluded because they are not effective.
+            ->whereIn('status', ['active', 'expired', 'terminated'])
             ->whereDate('start_date', '<=', $end->toDateString())
             ->where(function ($query) use ($start) {
                 $query
