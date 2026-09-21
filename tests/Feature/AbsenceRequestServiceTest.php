@@ -83,9 +83,9 @@ class AbsenceRequestServiceTest extends TestCase
         );
     }
 
-    public function test_create_rejects_after_attendance_or_active_leave(): void
+    public function test_create_rejects_after_attendance(): void
     {
-        [, $employee, $contract] = $this->makeEmployee();
+        [, $employee] = $this->makeEmployee();
 
         Attendances::create([
             'employee_id' => $employee->id,
@@ -95,16 +95,19 @@ class AbsenceRequestServiceTest extends TestCase
             'late_minutes' => 0,
         ]);
 
-        $service = app(AbsenceRequestService::class);
-
         $this->expectException(LogicException::class);
 
-        $service->create(
+        app(AbsenceRequestService::class)->create(
             employee: $employee,
             type: 'izin',
             reason: 'Keperluan pribadi',
             date: '2026-09-23',
         );
+    }
+
+    public function test_create_rejects_when_active_leave_exists(): void
+    {
+        [, $employee, $contract] = $this->makeEmployee();
 
         $leaveType = LeaveType::create([
             'name' => 'Cuti Tahunan',
@@ -132,7 +135,7 @@ class AbsenceRequestServiceTest extends TestCase
 
         $this->expectException(LogicException::class);
 
-        $service->create(
+        app(AbsenceRequestService::class)->create(
             employee: $employee,
             type: 'izin',
             reason: 'Keperluan pribadi',
