@@ -48,7 +48,7 @@
                 ['key' => 'present', 'title' => 'Hadir', 'description' => 'Status hadir', 'icon' => 'check', 'class' => 'text-emerald-600 bg-emerald-50'],
                 ['key' => 'late', 'title' => 'Terlambat', 'description' => 'Masuk melewati batas', 'icon' => 'warning', 'class' => 'text-amber-600 bg-amber-50'],
                 ['key' => 'paid_leave', 'title' => 'Cuti', 'description' => 'Cuti disetujui', 'icon' => 'calendar', 'class' => 'text-sky-600 bg-sky-50'],
-                ['key' => 'absence', 'title' => 'Sakit / Izin', 'description' => 'Ketidakhadiran resmi', 'icon' => 'document', 'class' => 'text-violet-600 bg-violet-50'],
+                ['key' => 'absence', 'title' => 'Sakit / Izin', 'description' => 'Ketidakhadiran resmi', 'icon' => 'file-text', 'class' => 'text-violet-600 bg-violet-50'],
                 ['key' => 'unpresent', 'title' => 'Belum Hadir', 'description' => 'Hari kerja tanpa presensi', 'icon' => 'close', 'class' => 'text-rose-600 bg-rose-50'],
                 ['key' => 'pending', 'title' => 'Menunggu', 'description' => 'Hari kerja belum selesai', 'icon' => 'clock', 'class' => 'text-slate-600 bg-slate-100'],
             ];
