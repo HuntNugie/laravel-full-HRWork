@@ -63,7 +63,8 @@ class LeaveRequest extends Component
 
     private function loadData(): void
     {
-        $contract = $this->employee->latestEmployeeContract;
+        $contract = app(LeaveRequestService::class)
+            ->currentActiveContract($this->employee);
 
 
         /*
@@ -219,21 +220,14 @@ class LeaveRequest extends Component
 
     public function usedLeave(int $leaveTypeId): int
     {
-        return (int) $this->employee
-            ->leaveRequest()
-            ->where(
-                'leave_type_id',
-                $leaveTypeId
-            )
-            ->where(
-                'status',
-                'approved'
-            )
-            ->whereYear(
-                'start_date',
-                now()->year
-            )
-            ->sum('total_days');
+        $entitlement = $this->entitlements->firstWhere(
+            'leave_type_id',
+            $leaveTypeId
+        );
+
+        return $entitlement
+            ? app(LeaveRequestService::class)->usedDays($entitlement, now()->year)
+            : 0;
     }
 
 
@@ -249,21 +243,14 @@ class LeaveRequest extends Component
 
     public function pendingLeave(int $leaveTypeId): int
     {
-        return (int) $this->employee
-            ->leaveRequest()
-            ->where(
-                'leave_type_id',
-                $leaveTypeId
-            )
-            ->where(
-                'status',
-                'pending'
-            )
-            ->whereYear(
-                'start_date',
-                now()->year
-            )
-            ->sum('total_days');
+        $entitlement = $this->entitlements->firstWhere(
+            'leave_type_id',
+            $leaveTypeId
+        );
+
+        return $entitlement
+            ? app(LeaveRequestService::class)->pendingDays($entitlement, now()->year)
+            : 0;
     }
 
 
@@ -283,20 +270,8 @@ class LeaveRequest extends Component
     public function remainingLeave(
         ContractLeaveEntitlements $entitlement
     ): int {
-        $used = $this->usedLeave(
-            $entitlement->leave_type_id
-        );
-
-        $pending = $this->pendingLeave(
-            $entitlement->leave_type_id
-        );
-
-        return max(
-            0,
-            $entitlement->days
-                - $used
-                - $pending
-        );
+        return app(LeaveRequestService::class)
+            ->remainingDays($entitlement, now()->year);
     }
 
 
