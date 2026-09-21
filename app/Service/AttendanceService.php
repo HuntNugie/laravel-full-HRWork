@@ -31,6 +31,17 @@ class AttendanceService
 
         $this->validateLocation($latitude, $longitude);
 
+        $hasAbsenceRequest = $employee
+            ->employeeAbsenceRequest()
+            ->whereDate('date', $checkIn->toDateString())
+            ->exists();
+
+        if ($hasAbsenceRequest) {
+            throw new LogicException(
+                'Anda sudah mengajukan sakit/izin untuk hari ini sehingga tidak dapat melakukan check in.'
+            );
+        }
+
         $dailyStatus = $this->dailyStatusService->getStatus(
             employee: $employee,
             date: $checkIn->toDateString(),
