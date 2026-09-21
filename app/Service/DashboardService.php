@@ -6,12 +6,17 @@ use App\Models\User;
 
 class DashboardService
 {
-    static function matching(User $user)
+    public static function matching(User $user): string
     {
         return match (true) {
-            $user->hasRole('employee') => 'livewire.page.main.dashboard.employee',
-            $user->hasRole('super-admin') => 'livewire.page.main.dashboard.super-admin',
-            default => 'livewire.page.main.dashboard.dashboard'
+            $user->hasAnyRole(['Employee', 'employee']) =>
+                'livewire.page.main.dashboard.employee',
+
+            $user->hasRole('super-admin') =>
+                'livewire.page.main.dashboard.super-admin',
+
+            default =>
+                'livewire.page.main.dashboard.dashboard',
         };
     }
 }

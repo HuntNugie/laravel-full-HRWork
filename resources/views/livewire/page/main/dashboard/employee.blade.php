@@ -1,965 +1,706 @@
-<x-wirekit::stack gap="md">
+<x-wirekit::stack gap="lg">
 
-    {{-- =========================================================
-        1. PAGE HEADING
-        ---------------------------------------------------------
-        Nanti digunakan untuk:
-        - Menampilkan sapaan user
-        - Menampilkan tanggal / informasi hari ini
-        - Memberikan konteks bahwa ini adalah dashboard employee
-    ========================================================== --}}
+    {{-- PAGE HEADER --}}
     <x-wirekit::stack gap="sm">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-sm font-medium text-[#30AFFF]">Dashboard Employee</p>
 
-        <span class="text-sm font-medium text-[#30AFFF]">
-            Dashboard
-        </span>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                    {{ $greeting }}, {{ $employee->user->name }}
+                </h1>
 
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900">
-            Good Morning, Nugie
-        </h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Ringkasan aktivitas dan informasi kepegawaian kamu.
+                </p>
+            </div>
 
-        <p class="text-sm text-slate-500">
-            Berikut ringkasan aktivitas dan informasi kamu hari ini.
-        </p>
-
+            <x-wirekit::badge intent="neutral" leading-icon="calendar">
+                {{ $today->format('d/m/Y') }}
+            </x-wirekit::badge>
+        </div>
     </x-wirekit::stack>
 
+    {{-- SUMMARY --}}
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-    {{-- =========================================================
-        2. TODAY'S OVERVIEW
-        ---------------------------------------------------------
-        Nanti digunakan untuk:
-        - Ringkasan cepat kondisi employee
-        - Attendance hari ini
-        - Sisa cuti
-        - Payroll terakhir / periode berjalan
-        - Status pekerjaan employee
-
-        Bagian ini harus bisa dipahami dalam beberapa detik.
-    ========================================================== --}}
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-        {{-- Attendance --}}
         <x-wirekit::card>
-
             <x-wirekit::card.body>
-
                 <x-wirekit::stack gap="sm">
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm font-medium text-slate-500">
-                            Attendance
-                        </span>
-
-                        <div
-                            class="flex size-9 items-center justify-center
-                                   rounded-lg bg-emerald-50">
-                            <x-wirekit::icon name="check-circle" class="size-5 text-emerald-600" />
-                        </div>
-
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-medium text-slate-500">Status Hari Ini</span>
+                        <x-wirekit::icon name="check-circle" class="size-5 text-emerald-600" />
                     </div>
 
                     <div>
+                        <x-wirekit::badge :intent="$todayStatusIntent" :dot="true">
+                            {{ $todayStatusLabel }}
+                        </x-wirekit::badge>
 
-                        <p class="text-xl font-semibold text-slate-900">
-                            Present
+                        <p class="mt-2 text-xs text-slate-500">
+                            Sumber:
+                            {{ $todayStatus['source'] === 'calculation' ? 'perhitungan harian' : $todayStatus['source'] }}
                         </p>
-
-                        <p class="mt-1 text-xs text-slate-500">
-                            Clock in 08:03 AM
-                        </p>
-
                     </div>
-
                 </x-wirekit::stack>
-
             </x-wirekit::card.body>
-
         </x-wirekit::card>
 
-
-        {{-- Leave Balance --}}
         <x-wirekit::card>
-
             <x-wirekit::card.body>
-
                 <x-wirekit::stack gap="sm">
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm font-medium text-slate-500">
-                            Leave Balance
-                        </span>
-
-                        <div
-                            class="flex size-9 items-center justify-center
-                                   rounded-lg bg-sky-50">
-                            <x-wirekit::icon name="calendar" class="size-5 text-sky-600" />
-                        </div>
-
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-medium text-slate-500">Hadir Bulan Ini</span>
+                        <x-wirekit::icon name="calendar-check" class="size-5 text-emerald-600" />
                     </div>
 
                     <div>
-
-                        <p class="text-xl font-semibold text-slate-900">
-                            8 Days
+                        <p class="text-2xl font-semibold text-slate-900">
+                            {{ $attendanceSummary['present'] }}
                         </p>
-
                         <p class="mt-1 text-xs text-slate-500">
-                            Remaining leave
+                            Termasuk {{ $attendanceSummary['late'] }} hari terlambat
                         </p>
-
                     </div>
-
                 </x-wirekit::stack>
-
             </x-wirekit::card.body>
-
         </x-wirekit::card>
 
-
-        {{-- Payroll --}}
         <x-wirekit::card>
-
             <x-wirekit::card.body>
-
                 <x-wirekit::stack gap="sm">
-
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm font-medium text-slate-500">
-                            Payroll
-                        </span>
-
-                        <div
-                            class="flex size-9 items-center justify-center
-                                   rounded-lg bg-violet-50">
-                            <x-wirekit::icon name="wallet" class="size-5 text-violet-600" />
-                        </div>
-
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-medium text-slate-500">Sisa Cuti</span>
+                        <x-wirekit::icon name="calendar" class="size-5 text-sky-600" />
                     </div>
 
                     <div>
-
-                        <p class="text-xl font-semibold text-slate-900">
-                            Rp 5.250.000
+                        <p class="text-2xl font-semibold text-slate-900">
+                            {{ $leaveSummary['remaining'] }} hari
                         </p>
-
                         <p class="mt-1 text-xs text-slate-500">
-                            August 2026
+                            Seluruh jenis cuti pada contract aktif
                         </p>
-
                     </div>
-
                 </x-wirekit::stack>
-
             </x-wirekit::card.body>
-
         </x-wirekit::card>
 
-
-        {{-- Work Status --}}
         <x-wirekit::card>
-
             <x-wirekit::card.body>
-
                 <x-wirekit::stack gap="sm">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-medium text-slate-500">Payroll Terakhir</span>
+                        <x-wirekit::icon name="wallet" class="size-5 text-violet-600" />
+                    </div>
 
-                    <div class="flex items-center justify-between">
-
-                        <span class="text-sm font-medium text-slate-500">
-                            Work Status
-                        </span>
-
-                        <div
-                            class="flex size-9 items-center justify-center
-                                   rounded-lg bg-amber-50">
-                            <x-wirekit::icon name="briefcase" class="size-5 text-amber-600" />
+                    @if ($latestPayroll)
+                        <div>
+                            <p class="text-xl font-semibold text-slate-900">
+                                Rp{{ number_format((float) $latestPayroll->net_amount, 0, ',', '.') }}
+                            </p>
+                            <p class="mt-1 text-xs text-slate-500">
+                                {{ $latestPayroll->period?->name ?? 'Periode payroll' }}
+                            </p>
                         </div>
-
-                    </div>
-
-                    <div>
-
-                        <p class="text-xl font-semibold text-slate-900">
-                            Active
-                        </p>
-
-                        <p class="mt-1 text-xs text-slate-500">
-                            Full-time employee
-                        </p>
-
-                    </div>
-
+                    @else
+                        <div>
+                            <p class="text-sm font-medium text-slate-700">Belum tersedia</p>
+                            <p class="mt-1 text-xs text-slate-500">
+                                Belum ada payroll yang dapat dilihat.
+                            </p>
+                        </div>
+                    @endif
                 </x-wirekit::stack>
-
             </x-wirekit::card.body>
-
         </x-wirekit::card>
 
     </div>
 
-
-    {{-- =========================================================
-        3. MY ATTENDANCE
-        ---------------------------------------------------------
-        Nanti digunakan untuk:
-        - Status attendance hari ini
-        - Jam masuk
-        - Jam keluar
-        - Status keterlambatan
-        - Shortcut ke halaman attendance
-
-        Ini fokus pada attendance milik employee sendiri.
-    ========================================================== --}}
+    {{-- TODAY + MONTHLY --}}
     <div class="grid gap-6 lg:grid-cols-2">
 
         <x-wirekit::card>
-
             <x-wirekit::card.header>
-
-                <div class="flex items-center justify-between gap-4">
-
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <x-wirekit::stack gap="1">
-
-                        <h2 class="text-lg font-semibold text-slate-900">
-                            My Attendance
-                        </h2>
-
-                        <p class="text-sm text-slate-500">
-                            Ringkasan kehadiran kamu hari ini.
-                        </p>
-
+                        <h2 class="text-lg font-semibold text-slate-900">Presensi Hari Ini</h2>
+                        <p class="text-sm text-slate-500">Status presensi berdasarkan Daily Status.</p>
                     </x-wirekit::stack>
 
-                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                        View
-                    </x-wirekit::button>
-
+                    @can('view-attendance')
+                        <x-wirekit::button
+                            href="{{ route('attendance.view') }}"
+                            size="sm"
+                            intent="neutral"
+                            surface="outline"
+                            wire:navigate
+                        >
+                            Buka Presensi
+                        </x-wirekit::button>
+                    @endcan
                 </div>
-
             </x-wirekit::card.header>
 
             <x-wirekit::card.body>
-
                 <x-wirekit::stack gap="md">
 
-                    <div class="rounded-lg border border-emerald-200
-                               bg-emerald-50 p-4">
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="text-sm font-medium text-slate-500">Status</p>
 
-                        <div class="flex items-center justify-between gap-4">
-
-                            <div>
-
-                                <p class="text-sm font-semibold text-emerald-700">
-                                    Present Today
-                                </p>
-
-                                <p class="mt-1 text-xs text-emerald-600">
-                                    Thursday, 05 September 2026
-                                </p>
-
+                            <div class="mt-2">
+                                <x-wirekit::badge :intent="$todayStatusIntent" :dot="true">
+                                    {{ $todayStatusLabel }}
+                                </x-wirekit::badge>
                             </div>
-
-                            <span
-                                class="inline-flex items-center rounded-full
-                                       bg-white px-2.5 py-1
-                                       text-xs font-medium text-emerald-600">
-                                On Time
-                            </span>
-
                         </div>
 
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-
-                        <div>
-
-                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                Clock In
-                            </p>
-
-                            <p class="mt-1 text-base font-semibold text-slate-800">
-                                08:03 AM
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                Clock Out
-                            </p>
-
-                            <p class="mt-1 text-base font-semibold text-slate-800">
-                                —
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-
-        {{-- =====================================================
-            4. MY LEAVE
-            -----------------------------------------------------
-            Nanti digunakan untuk:
-            - Menampilkan sisa cuti
-            - Cuti yang sudah digunakan
-            - Pengajuan cuti terakhir
-            - Status pengajuan cuti
-        ====================================================== --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <div class="flex items-center justify-between gap-4">
-
-                    <x-wirekit::stack gap="1">
-
-                        <h2 class="text-lg font-semibold text-slate-900">
-                            My Leave
-                        </h2>
-
-                        <p class="text-sm text-slate-500">
-                            Informasi cuti dan pengajuan terakhir.
-                        </p>
-
-                    </x-wirekit::stack>
-
-                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                        View
-                    </x-wirekit::button>
-
-                </div>
-
-            </x-wirekit::card.header>
-
-            <x-wirekit::card.body>
-
-                <x-wirekit::stack gap="md">
-
-                    <div class="grid grid-cols-2 gap-4">
-
-                        <div>
-
-                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                Remaining
-                            </p>
-
-                            <p class="mt-1 text-2xl font-semibold text-slate-900">
-                                8
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-500">
-                                days
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                Used
-                            </p>
-
-                            <p class="mt-1 text-2xl font-semibold text-slate-900">
-                                4
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-500">
-                                days
-                            </p>
-
-                        </div>
-
+                        @if ($todayStatus['is_late'])
+                            <div class="text-right">
+                                <p class="text-xs text-slate-400">Terlambat</p>
+                                <p class="mt-1 text-sm font-semibold text-amber-600">
+                                    {{ $todayStatus['late_minutes'] }} menit
+                                </p>
+                            </div>
+                        @endif
                     </div>
 
                     <x-wirekit::divider />
 
-                    <div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Check In</p>
+                            <p class="mt-1 text-base font-semibold text-slate-900">
+                                {{ $todayAttendance?->check_in_at?->format('H:i') ?? '—' }}
+                            </p>
+                        </div>
 
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Latest Request
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Check Out</p>
+                            <p class="mt-1 text-base font-semibold text-slate-900">
+                                {{ $todayAttendance?->check_out_at?->format('H:i') ?? '—' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <x-wirekit::divider />
+
+                    <div class="flex items-center justify-between gap-4">
+                        <div>
+                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Jadwal</p>
+                            <p class="mt-1 text-sm font-medium text-slate-800">
+                                {{ $todayWorkTime?->start_time ? substr($todayWorkTime->start_time, 0, 5) : '—' }}
+                                –
+                                {{ $todayWorkTime?->end_time ? substr($todayWorkTime->end_time, 0, 5) : '—' }}
+                            </p>
+                        </div>
+
+                        <p class="text-xs text-slate-500">
+                            {{ $todayStatus['is_working_day'] ? 'Hari kerja' : 'Bukan hari kerja' }}
                         </p>
+                    </div>
 
-                        <div class="mt-2 flex items-center justify-between gap-4">
+                </x-wirekit::stack>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
 
-                            <div>
+        <x-wirekit::card>
+            <x-wirekit::card.header>
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">Kehadiran Bulan Ini</h2>
+                    <p class="text-sm text-slate-500">Ringkasan status dari awal hingga akhir bulan.</p>
+                </x-wirekit::stack>
+            </x-wirekit::card.header>
 
-                                <p class="text-sm font-medium text-slate-800">
-                                    Annual Leave
+            <x-wirekit::card.body>
+                <div class="grid gap-4 sm:grid-cols-2">
+
+                    <div class="rounded-lg border border-slate-200 p-4">
+                        <p class="text-xs text-slate-400">Hadir</p>
+                        <p class="mt-1 text-2xl font-semibold text-slate-900">
+                            {{ $attendanceSummary['present'] }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg border border-slate-200 p-4">
+                        <p class="text-xs text-slate-400">Terlambat</p>
+                        <p class="mt-1 text-2xl font-semibold text-slate-900">
+                            {{ $attendanceSummary['late'] }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg border border-slate-200 p-4">
+                        <p class="text-xs text-slate-400">Cuti Dibayar</p>
+                        <p class="mt-1 text-2xl font-semibold text-slate-900">
+                            {{ $attendanceSummary['leave'] }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg border border-slate-200 p-4">
+                        <p class="text-xs text-slate-400">Sakit / Izin</p>
+                        <p class="mt-1 text-2xl font-semibold text-slate-900">
+                            {{ $attendanceSummary['absence'] }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg border border-slate-200 p-4 sm:col-span-2">
+                        <p class="text-xs text-slate-400">Tidak Hadir</p>
+                        <p class="mt-1 text-2xl font-semibold text-slate-900">
+                            {{ $attendanceSummary['unpresent'] }}
+                        </p>
+                    </div>
+
+                </div>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
+
+    </div>
+
+    {{-- LEAVE + PAYROLL --}}
+    <div class="grid gap-6 lg:grid-cols-2">
+
+        <x-wirekit::card>
+            <x-wirekit::card.header>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <x-wirekit::stack gap="1">
+                        <h2 class="text-lg font-semibold text-slate-900">Cuti Saya</h2>
+                        <p class="text-sm text-slate-500">Ringkasan quota dan pengajuan cuti.</p>
+                    </x-wirekit::stack>
+
+                    @can('view-leave')
+                        <x-wirekit::button
+                            href="{{ route('leave.view') }}"
+                            size="sm"
+                            intent="neutral"
+                            surface="outline"
+                            wire:navigate
+                        >
+                            Buka Cuti
+                        </x-wirekit::button>
+                    @endcan
+                </div>
+            </x-wirekit::card.header>
+
+            <x-wirekit::card.body>
+                <x-wirekit::stack gap="md">
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <p class="text-xs text-slate-400">Quota</p>
+                            <p class="mt-1 text-xl font-semibold text-slate-900">{{ $leaveSummary['quota'] }}</p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs text-slate-400">Terpakai</p>
+                            <p class="mt-1 text-xl font-semibold text-slate-900">{{ $leaveSummary['used'] }}</p>
+                        </div>
+
+                        <div>
+                            <p class="text-xs text-slate-400">Pending</p>
+                            <p class="mt-1 text-xl font-semibold text-slate-900">{{ $leaveSummary['pending'] }}</p>
+                        </div>
+                    </div>
+
+                    <x-wirekit::divider />
+
+                    @if ($leaveBreakdown->isNotEmpty())
+                        <x-wirekit::stack gap="sm">
+                            @foreach ($leaveBreakdown->take(3) as $leave)
+                                <div class="flex items-center justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-medium text-slate-800">
+                                            {{ $leave['name'] }}
+                                        </p>
+
+                                        <p class="mt-1 text-xs text-slate-400">
+                                            {{ $leave['used'] }} digunakan dari {{ $leave['quota'] }} hari
+                                        </p>
+                                    </div>
+
+                                    <x-wirekit::badge intent="success">
+                                        {{ $leave['remaining'] }} tersisa
+                                    </x-wirekit::badge>
+                                </div>
+                            @endforeach
+                        </x-wirekit::stack>
+                    @else
+                        <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
+                            <p class="text-sm font-medium text-slate-700">Belum ada jatah cuti</p>
+                            <p class="mt-1 text-sm text-slate-500">
+                                Contract aktif belum memiliki entitlement cuti.
+                            </p>
+                        </div>
+                    @endif
+
+                    @if ($latestLeaveRequest)
+                        <x-wirekit::divider />
+
+                        <div class="flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <p class="text-xs uppercase tracking-wide text-slate-400">Pengajuan terakhir</p>
+
+                                <p class="mt-1 truncate text-sm font-medium text-slate-800">
+                                    {{ $latestLeaveRequest->leaveType?->name ?? 'Pengajuan Cuti' }}
                                 </p>
 
                                 <p class="mt-1 text-xs text-slate-500">
-                                    20 – 21 August 2026
+                                    {{ $latestLeaveRequest->start_date
+                                        ? \Carbon\Carbon::parse($latestLeaveRequest->start_date)->format('d/m/Y')
+                                        : '—' }}
+                                    –
+                                    {{ $latestLeaveRequest->end_date
+                                        ? \Carbon\Carbon::parse($latestLeaveRequest->end_date)->format('d/m/Y')
+                                        : '—' }}
                                 </p>
-
                             </div>
 
-                            <span
-                                class="inline-flex items-center rounded-full
-                                       bg-emerald-50 px-2.5 py-1
-                                       text-xs font-medium text-emerald-600">
-                                Approved
-                            </span>
+                            @php
+                                $leaveIntent = match ($latestLeaveRequest->status) {
+                                    'approved' => 'success',
+                                    'pending' => 'warning',
+                                    'rejected', 'cancelled' => 'danger',
+                                    default => 'neutral',
+                                };
+                            @endphp
 
+                            <x-wirekit::badge :intent="$leaveIntent">
+                                {{ ucfirst($latestLeaveRequest->status) }}
+                            </x-wirekit::badge>
                         </div>
-
-                    </div>
+                    @endif
 
                 </x-wirekit::stack>
-
             </x-wirekit::card.body>
+        </x-wirekit::card>
 
+        <x-wirekit::card>
+            <x-wirekit::card.header>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <x-wirekit::stack gap="1">
+                        <h2 class="text-lg font-semibold text-slate-900">Payroll Terbaru</h2>
+                        <p class="text-sm text-slate-500">Slip gaji terakhir yang sudah diproses.</p>
+                    </x-wirekit::stack>
+
+                    @can('view-payroll-my')
+                        <x-wirekit::button
+                            href="{{ route('payroll.my.view') }}"
+                            size="sm"
+                            intent="neutral"
+                            surface="outline"
+                            wire:navigate
+                        >
+                            Lihat Slip Gaji
+                        </x-wirekit::button>
+                    @endcan
+                </div>
+            </x-wirekit::card.header>
+
+            <x-wirekit::card.body>
+                @if ($latestPayroll)
+                    <x-wirekit::stack gap="md">
+
+                        <div>
+                            <p class="text-xs uppercase tracking-wide text-slate-400">
+                                {{ $latestPayroll->period?->name ?? 'Periode Payroll' }}
+                            </p>
+
+                            <p class="mt-1 text-3xl font-semibold text-slate-900">
+                                Rp{{ number_format((float) $latestPayroll->net_amount, 0, ',', '.') }}
+                            </p>
+
+                            <div class="mt-3">
+                                <x-wirekit::badge intent="success" :dot="true">
+                                    {{ ucfirst($latestPayroll->status) }}
+                                </x-wirekit::badge>
+                            </div>
+                        </div>
+
+                        <x-wirekit::divider />
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-xs text-slate-400">Hari Dibayar</p>
+                                <p class="mt-1 text-sm font-medium text-slate-800">
+                                    {{ $latestPayroll->paid_days }} hari
+                                </p>
+                            </div>
+
+                            <div>
+                                <p class="text-xs text-slate-400">Potongan</p>
+                                <p class="mt-1 text-sm font-medium text-slate-800">
+                                    Rp{{ number_format((float) $latestPayroll->deduction_amount, 0, ',', '.') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        @can('show-payroll-my')
+                            <x-wirekit::button
+                                href="{{ route('payroll.my.show', $latestPayroll->id) }}"
+                                size="sm"
+                                intent="neutral"
+                                surface="link"
+                                class="px-0"
+                                wire:navigate
+                            >
+                                Lihat detail payroll
+                            </x-wirekit::button>
+                        @endcan
+
+                    </x-wirekit::stack>
+                @else
+                    <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm font-medium text-slate-700">Belum ada slip gaji</p>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Payroll yang sudah diproses atau dibayar akan muncul di sini.
+                        </p>
+                    </div>
+                @endif
+            </x-wirekit::card.body>
         </x-wirekit::card>
 
     </div>
 
-
-    {{-- =========================================================
-        5. MY PAYROLL
-        ---------------------------------------------------------
-        Nanti digunakan untuk:
-        - Payroll terakhir
-        - Total pembayaran
-        - Status pembayaran
-        - Informasi komponen gaji sederhana
-        - Shortcut ke riwayat payroll
-    ========================================================== --}}
+    {{-- EMPLOYMENT + ACTION --}}
     <div class="grid gap-6 lg:grid-cols-2">
 
         <x-wirekit::card>
-
             <x-wirekit::card.header>
-
-                <div class="flex items-center justify-between gap-4">
-
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <x-wirekit::stack gap="1">
-
-                        <h2 class="text-lg font-semibold text-slate-900">
-                            My Payroll
-                        </h2>
-
-                        <p class="text-sm text-slate-500">
-                            Informasi payroll terbaru.
-                        </p>
-
+                        <h2 class="text-lg font-semibold text-slate-900">Pekerjaan Saya</h2>
+                        <p class="text-sm text-slate-500">Informasi posisi dan contract yang sedang digunakan.</p>
                     </x-wirekit::stack>
 
-                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                        View
-                    </x-wirekit::button>
-
+                    @can('view-contract-my')
+                        <x-wirekit::button
+                            href="{{ route('my-contract') }}"
+                            size="sm"
+                            intent="neutral"
+                            surface="outline"
+                            wire:navigate
+                        >
+                            Lihat Contract
+                        </x-wirekit::button>
+                    @endcan
                 </div>
-
             </x-wirekit::card.header>
 
             <x-wirekit::card.body>
-
-                <x-wirekit::stack gap="md">
-
-                    <div>
-
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            August 2026
-                        </p>
-
-                        <p class="mt-1 text-2xl font-semibold text-slate-900">
-                            Rp 5.250.000
-                        </p>
-
-                        <span
-                            class="mt-2 inline-flex items-center rounded-full
-                                   bg-emerald-50 px-2.5 py-1
-                                   text-xs font-medium text-emerald-600">
-                            Paid
-                        </span>
-
-                    </div>
-
-                    <x-wirekit::divider />
-
-                    <div class="grid grid-cols-2 gap-4">
-
-                        <div>
-
-                            <p class="text-xs text-slate-400">
-                                Base Salary
-                            </p>
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                Rp 4.800.000
-                            </p>
-
-                        </div>
-
-                        <div>
-
-                            <p class="text-xs text-slate-400">
-                                Allowance
-                            </p>
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                Rp 450.000
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-
-        {{-- =====================================================
-            6. MY EMPLOYMENT
-            -----------------------------------------------------
-            Nanti digunakan untuk:
-            - Position / jabatan
-            - Division
-            - Team
-            - Status employee
-            - Informasi pekerjaan utama
-        ====================================================== --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <div class="flex items-center justify-between gap-4">
-
-                    <x-wirekit::stack gap="1">
-
-                        <h2 class="text-lg font-semibold text-slate-900">
-                            My Employment
-                        </h2>
-
-                        <p class="text-sm text-slate-500">
-                            Informasi pekerjaan kamu.
-                        </p>
-
-                    </x-wirekit::stack>
-
-                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                        View
-                    </x-wirekit::button>
-
-                </div>
-
-            </x-wirekit::card.header>
-
-            <x-wirekit::card.body>
-
                 <div class="grid gap-5 sm:grid-cols-2">
 
                     <div>
-
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Position
-                        </p>
-
-                        <p class="mt-1 text-sm font-semibold text-slate-800">
-                            Software Developer
-                        </p>
-
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Nomor Karyawan</p>
+                        <p class="mt-1 text-sm font-semibold text-slate-800">{{ $employee->employee_code }}</p>
                     </div>
 
                     <div>
-
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Division
-                        </p>
-
-                        <p class="mt-1 text-sm font-medium text-slate-700">
-                            Technology
-                        </p>
-
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Status</p>
+                        <div class="mt-1">
+                            <x-wirekit::badge
+                                :intent="$employee->status_employee === 'active' ? 'success' : 'neutral'"
+                            >
+                                {{ $employee->status_employee ?? 'Belum diketahui' }}
+                            </x-wirekit::badge>
+                        </div>
                     </div>
 
                     <div>
-
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Team
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Jabatan</p>
+                        <p class="mt-1 text-sm font-medium text-slate-800">
+                            {{ $employee->position?->name ?? $currentContract?->position_name ?? 'Belum diketahui' }}
                         </p>
-
-                        <p class="mt-1 text-sm font-medium text-slate-700">
-                            Backend Development
-                        </p>
-
                     </div>
 
                     <div>
-
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Status
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Team</p>
+                        <p class="mt-1 text-sm font-medium text-slate-800">
+                            {{ $employee->team?->name ?? 'Belum diketahui' }}
                         </p>
+                    </div>
 
-                        <span
-                            class="mt-1 inline-flex items-center rounded-full
-                                   bg-emerald-50 px-2.5 py-1
-                                   text-xs font-medium text-emerald-600">
-                            Active
-                        </span>
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Divisi</p>
+                        <p class="mt-1 text-sm font-medium text-slate-800">
+                            {{ $employee->team?->divisi?->name ?? 'Belum diketahui' }}
+                        </p>
+                    </div>
 
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-slate-400">Contract</p>
+                        <p class="mt-1 text-sm font-medium text-slate-800">
+                            @if ($currentContract)
+                                {{ $currentContract->start_date?->format('d/m/Y') ?? '—' }}
+                                –
+                                {{ $currentContract->end_date?->format('d/m/Y') ?? 'Tetap' }}
+                            @else
+                                Belum ada contract aktif
+                            @endif
+                        </p>
                     </div>
 
                 </div>
-
             </x-wirekit::card.body>
+        </x-wirekit::card>
 
+        <x-wirekit::card>
+            <x-wirekit::card.header>
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">Perlu Perhatian</h2>
+                    <p class="text-sm text-slate-500">Pengajuan yang masih menunggu proses.</p>
+                </x-wirekit::stack>
+            </x-wirekit::card.header>
+
+            <x-wirekit::card.body>
+                <x-wirekit::stack gap="sm">
+
+                    @if ($pendingLeaveCount > 0)
+                        <div class="flex items-center justify-between gap-4 py-2">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-50">
+                                    <x-wirekit::icon name="calendar" class="size-5 text-amber-600" />
+                                </div>
+
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-slate-800">
+                                        {{ $pendingLeaveCount }} pengajuan cuti menunggu
+                                    </p>
+                                    <p class="mt-1 text-xs text-slate-500">Menunggu proses persetujuan.</p>
+                                </div>
+                            </div>
+
+                            @can('view-leave')
+                                <x-wirekit::button
+                                    href="{{ route('leave.view') }}"
+                                    size="sm"
+                                    intent="neutral"
+                                    surface="ghost"
+                                    wire:navigate
+                                >
+                                    Buka
+                                </x-wirekit::button>
+                            @endcan
+                        </div>
+                    @endif
+
+                    @if ($pendingAbsenceCount > 0)
+                        <div class="flex items-center justify-between gap-4 py-2">
+                            <div class="flex min-w-0 items-center gap-3">
+                                <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-50">
+                                    <x-wirekit::icon name="document-text" class="size-5 text-sky-600" />
+                                </div>
+
+                                <div class="min-w-0">
+                                    <p class="text-sm font-medium text-slate-800">
+                                        {{ $pendingAbsenceCount }} pengajuan sakit/izin menunggu
+                                    </p>
+                                    <p class="mt-1 text-xs text-slate-500">Menunggu proses persetujuan.</p>
+                                </div>
+                            </div>
+
+                            @can('view-attendance')
+                                <x-wirekit::button
+                                    href="{{ route('attendance.view') }}"
+                                    size="sm"
+                                    intent="neutral"
+                                    surface="ghost"
+                                    wire:navigate
+                                >
+                                    Buka
+                                </x-wirekit::button>
+                            @endcan
+                        </div>
+                    @endif
+
+                    @if ($pendingLeaveCount === 0 && $pendingAbsenceCount === 0)
+                        <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
+                            <p class="text-sm font-medium text-slate-700">Tidak ada tindakan yang tertunda</p>
+                            <p class="mt-1 text-sm text-slate-500">
+                                Saat ini tidak ada pengajuan yang menunggu proses.
+                            </p>
+                        </div>
+                    @endif
+
+                </x-wirekit::stack>
+            </x-wirekit::card.body>
         </x-wirekit::card>
 
     </div>
 
-
-    {{-- =========================================================
-        7. ACTION REQUIRED
-        ---------------------------------------------------------
-        Nanti digunakan untuk:
-        - Menampilkan hal yang perlu dilakukan employee
-        - Dokumen yang belum lengkap
-        - Approval / request yang perlu ditindaklanjuti
-        - Reminder penting
-
-        Ini bersifat situasional:
-        kalau tidak ada action, section ini bisa kosong / disembunyikan.
-    ========================================================== --}}
+    {{-- QUICK ACCESS --}}
     <x-wirekit::card>
-
         <x-wirekit::card.header>
-
             <x-wirekit::stack gap="1">
-
-                <h2 class="text-lg font-semibold text-slate-900">
-                    Action Required
-                </h2>
-
-                <p class="text-sm text-slate-500">
-                    Hal-hal yang membutuhkan perhatian kamu.
-                </p>
-
+                <h2 class="text-lg font-semibold text-slate-900">Akses Cepat</h2>
+                <p class="text-sm text-slate-500">Navigasi ke layanan karyawan yang sudah tersedia.</p>
             </x-wirekit::stack>
-
         </x-wirekit::card.header>
 
         <x-wirekit::card.body>
+            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
 
-            <x-wirekit::stack gap="sm">
-
-                <div class="flex items-center justify-between gap-4 py-3">
-
-                    <div class="flex min-w-0 items-center gap-3">
-
-                        <div
-                            class="flex size-9 shrink-0 items-center justify-center
-                                   rounded-full bg-amber-50">
-                            <x-wirekit::icon name="exclamation-triangle" class="size-5 text-amber-600" />
-                        </div>
-
-                        <div class="min-w-0">
-
-                            <p class="truncate text-sm font-medium text-slate-800">
-                                Complete employee information
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-500">
-                                Your emergency contact information is incomplete.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                        Complete
+                @can('view-attendance')
+                    <x-wirekit::button
+                        href="{{ route('attendance.view') }}"
+                        class="w-full"
+                        intent="neutral"
+                        surface="outline"
+                        wire:navigate
+                    >
+                        Presensi
                     </x-wirekit::button>
+                @endcan
 
-                </div>
-
-                <x-wirekit::divider />
-
-                <div class="flex items-center justify-between gap-4 py-3">
-
-                    <div class="flex min-w-0 items-center gap-3">
-
-                        <div
-                            class="flex size-9 shrink-0 items-center justify-center
-                                   rounded-full bg-sky-50">
-                            <x-wirekit::icon name="document-text" class="size-5 text-sky-600" />
-                        </div>
-
-                        <div class="min-w-0">
-
-                            <p class="truncate text-sm font-medium text-slate-800">
-                                Review company policy
-                            </p>
-
-                            <p class="mt-1 text-xs text-slate-500">
-                                New employee handbook is available.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                        Review
+                @can('view-leave')
+                    <x-wirekit::button
+                        href="{{ route('leave.view') }}"
+                        class="w-full"
+                        intent="neutral"
+                        surface="outline"
+                        wire:navigate
+                    >
+                        Pengajuan Cuti
                     </x-wirekit::button>
+                @endcan
 
-                </div>
+                @can('view-data-my')
+                    <x-wirekit::button
+                        href="{{ route('my-data') }}"
+                        class="w-full"
+                        intent="neutral"
+                        surface="outline"
+                        wire:navigate
+                    >
+                        Data Saya
+                    </x-wirekit::button>
+                @endcan
 
-            </x-wirekit::stack>
+                @can('view-contract-my')
+                    <x-wirekit::button
+                        href="{{ route('my-contract') }}"
+                        class="w-full"
+                        intent="neutral"
+                        surface="outline"
+                        wire:navigate
+                    >
+                        Contract Saya
+                    </x-wirekit::button>
+                @endcan
 
-        </x-wirekit::card.body>
-
-    </x-wirekit::card>
-
-
-    {{-- =========================================================
-        8. ADDITIONAL ACCESS
-        ---------------------------------------------------------
-        Nanti digunakan untuk:
-        - Fitur tambahan berdasarkan permission
-        - BUKAN dashboard berbeda
-        - Satu dashboard tetap dipakai seluruh employee
-
-        Contoh nanti:
-        @can('view-employee') → Employee Management
-        @can('view-team')     → Team Management
-        @can('view-report')   → Reports
-
-        Jadi role tambahan hanya menentukan widget/fitur yang muncul.
-    ========================================================== --}}
-    <x-wirekit::card>
-
-        <x-wirekit::card.header>
-
-            <x-wirekit::stack gap="1">
-
-                <h2 class="text-lg font-semibold text-slate-900">
-                    Additional Access
-                </h2>
-
-                <p class="text-sm text-slate-500">
-                    Fitur tambahan yang tersedia berdasarkan akses kamu.
-                </p>
-
-            </x-wirekit::stack>
-
-        </x-wirekit::card.header>
-
-        <x-wirekit::card.body>
-
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-
-                {{-- Employee Management --}}
-                <div
-                    class="rounded-lg border border-slate-200
-                           p-4 transition hover:border-[#30AFFF]">
-
-                    <x-wirekit::stack gap="sm">
-
-                        <div
-                            class="flex size-9 items-center justify-center
-                                   rounded-lg bg-sky-50">
-                            <x-wirekit::icon name="users" class="size-5 text-sky-600" />
-                        </div>
-
-                        <div>
-
-                            <h3 class="text-sm font-semibold text-slate-800">
-                                Employee Management
-                            </h3>
-
-                            <p class="mt-1 text-xs leading-5 text-slate-500">
-                                Manage employee information and accounts.
-                            </p>
-
-                        </div>
-
-                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                            Open
-                        </x-wirekit::button>
-
-                    </x-wirekit::stack>
-
-                </div>
-
-
-                {{-- Team Management --}}
-                <div
-                    class="rounded-lg border border-slate-200
-                           p-4 transition hover:border-[#30AFFF]">
-
-                    <x-wirekit::stack gap="sm">
-
-                        <div
-                            class="flex size-9 items-center justify-center
-                                   rounded-lg bg-violet-50">
-                            <x-wirekit::icon name="user-group" class="size-5 text-violet-600" />
-                        </div>
-
-                        <div>
-
-                            <h3 class="text-sm font-semibold text-slate-800">
-                                Team Management
-                            </h3>
-
-                            <p class="mt-1 text-xs leading-5 text-slate-500">
-                                View and manage your team.
-                            </p>
-
-                        </div>
-
-                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                            Open
-                        </x-wirekit::button>
-
-                    </x-wirekit::stack>
-
-                </div>
-
-
-                {{-- Reports --}}
-                <div
-                    class="rounded-lg border border-slate-200
-                           p-4 transition hover:border-[#30AFFF]">
-
-                    <x-wirekit::stack gap="sm">
-
-                        <div
-                            class="flex size-9 items-center justify-center
-                                   rounded-lg bg-emerald-50">
-                            <x-wirekit::icon name="chart-bar" class="size-5 text-emerald-600" />
-                        </div>
-
-                        <div>
-
-                            <h3 class="text-sm font-semibold text-slate-800">
-                                Reports
-                            </h3>
-
-                            <p class="mt-1 text-xs leading-5 text-slate-500">
-                                Access reports available to you.
-                            </p>
-
-                        </div>
-
-                        <x-wirekit::button type="button" size="sm" intent="neutral" surface="ghost">
-                            Open
-                        </x-wirekit::button>
-
-                    </x-wirekit::stack>
-
-                </div>
+                @can('view-payroll-my')
+                    <x-wirekit::button
+                        href="{{ route('payroll.my.view') }}"
+                        class="w-full"
+                        intent="neutral"
+                        surface="outline"
+                        wire:navigate
+                    >
+                        Slip Gaji
+                    </x-wirekit::button>
+                @endcan
 
             </div>
-
         </x-wirekit::card.body>
-
-    </x-wirekit::card>
-
-
-    {{-- =========================================================
-        9. ANNOUNCEMENTS
-        ---------------------------------------------------------
-        Nanti digunakan untuk:
-        - Pengumuman perusahaan
-        - Informasi dari HR
-        - Event / kegiatan perusahaan
-        - Update kebijakan
-        - Informasi penting lainnya
-
-        Idealnya hanya menampilkan beberapa pengumuman terbaru.
-    ========================================================== --}}
-    <x-wirekit::card>
-
-        <x-wirekit::card.header>
-
-            <x-wirekit::stack gap="1">
-
-                <h2 class="text-lg font-semibold text-slate-900">
-                    Announcements
-                </h2>
-
-                <p class="text-sm text-slate-500">
-                    Informasi terbaru dari perusahaan.
-                </p>
-
-            </x-wirekit::stack>
-
-        </x-wirekit::card.header>
-
-        <x-wirekit::card.body>
-
-            <x-wirekit::stack gap="sm">
-
-                <div class="py-3">
-
-                    <div class="flex items-start justify-between gap-4">
-
-                        <div class="min-w-0">
-
-                            <h3 class="text-sm font-semibold text-slate-800">
-                                Company Town Hall
-                            </h3>
-
-                            <p class="mt-1 text-sm leading-6 text-slate-500">
-                                Town Hall bulanan akan dilaksanakan pada
-                                10 September 2026.
-                            </p>
-
-                        </div>
-
-                        <span class="shrink-0 text-xs text-slate-400">
-                            2 days ago
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <x-wirekit::divider />
-
-                <div class="py-3">
-
-                    <div class="flex items-start justify-between gap-4">
-
-                        <div class="min-w-0">
-
-                            <h3 class="text-sm font-semibold text-slate-800">
-                                Updated Employee Handbook
-                            </h3>
-
-                            <p class="mt-1 text-sm leading-6 text-slate-500">
-                                Employee handbook versi terbaru sekarang tersedia.
-                            </p>
-
-                        </div>
-
-                        <span class="shrink-0 text-xs text-slate-400">
-                            5 days ago
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </x-wirekit::stack>
-
-        </x-wirekit::card.body>
-
     </x-wirekit::card>
 
 </x-wirekit::stack>
