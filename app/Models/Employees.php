@@ -50,6 +50,12 @@ class Employees extends Model
         return $this->hasMany(EmployeeStatusHistory::class, 'employee_id');
     }
 
+    // relasi ke divisi yang dipimpin
+    public function managedDivisi()
+    {
+        return $this->hasOne(Divisi::class, 'manager_id');
+    }
+
     // relasi supervisor team
     public function supervisorTeam()
     {
