@@ -5,6 +5,7 @@ namespace App\Livewire\Page\Main\Attendances;
 use App\Models\Divisi;
 use App\Models\Employees;
 use App\Models\Team;
+use App\Models\WorkTime;
 use App\Service\EmployeeDailyStatusService;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -94,6 +95,10 @@ class DailyStatus extends Component
 
         $dailyStatusService = app(EmployeeDailyStatusService::class);
 
+        $workTimes = WorkTime::query()
+            ->get()
+            ->keyBy('id');
+
         foreach ($employees as $employee) {
             $state = $dailyStatusService->getStatus(
                 employee: $employee,
@@ -114,25 +119,16 @@ class DailyStatus extends Component
                 'division_name' => $employee->team?->divisi?->name ?? '—',
                 'team_name' => $employee->team?->name ?? '—',
                 'work_time_start' => $state['work_time_id']
-                    ? $this->formatTimeValue($state['work_time_id'], 'start_time')
+                    ? $workTimes->get($state['work_time_id'])?->start_time
                     : null,
                 'work_time_end' => $state['work_time_id']
-                    ? $this->formatTimeValue($state['work_time_id'], 'end_time')
+                    ? $workTimes->get($state['work_time_id'])?->end_time
                     : null,
                 'check_in' => $attendance?->check_in_at?->format('H:i'),
                 'check_out' => $attendance?->check_out_at?->format('H:i'),
                 'late_minutes' => $state['late_minutes'],
             ];
         }
-    }
-
-    private function formatTimeValue(int $workTimeId, string $column): ?string
-    {
-        $workTime = \App\Models\WorkTime::query()->find($workTimeId);
-
-        return $workTime?->{$column}
-            ? Carbon::parse($workTime->{$column})->format('H:i')
-            : null;
     }
 
     private function label(string $status): string
