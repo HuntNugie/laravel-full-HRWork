@@ -30,21 +30,12 @@ class LateDisciplineService
         CarbonInterface|string $startDate,
         CarbonInterface|string $endDate,
     ): array {
-        $rule = LateDisciplineRule::query()->first();
-
-        if (!$rule) {
-            throw new \RuntimeException(
-                'Aturan keterlambatan belum dikonfigurasi.'
-            );
-        }
-
         return $this->calculateFromStatuses(
             statuses: app(EmployeeDailyStatusService::class)->getStatuses(
                 employee: $employee,
                 startDate: $startDate,
                 endDate: $endDate,
             ),
-            rule: $rule,
         );
     }
 
@@ -55,13 +46,13 @@ class LateDisciplineService
         int $lateCount,
         LateDisciplineRule $rule,
     ): float {
-        $threshold = (int) $rule->threshold;
+        $this->validateRule($rule);
 
-        if ($threshold < 1 || $lateCount < 1) {
+        if ($lateCount < 1) {
             return 0.0;
         }
 
-        return intdiv($lateCount, $threshold)
+        return intdiv($lateCount, (int) $rule->threshold)
             * (float) $rule->action_amount;
     }
 
@@ -75,32 +66,21 @@ class LateDisciplineService
         Collection $statuses,
         ?LateDisciplineRule $rule = null,
     ): array {
-        $rule ??= LateDisciplineRule::query()->first();
-
-        if (!$rule) {
-            throw new \RuntimeException(
-                'Aturan keterlambatan belum dikonfigurasi.'
-            );
-        }
+        $rule = $rule
+            ? $this->validateRule($rule)
+            : $this->resolveActiveRule();
 
         $threshold = (int) $rule->threshold;
         $actionAmount = (float) $rule->action_amount;
 
-        if ($threshold < 1) {
-            throw new \RuntimeException(
-                'Threshold keterlambatan harus lebih besar dari 0.'
-            );
-        }
-
         $lateStatuses = $statuses
-            ->filter(fn(array $state) => $state['is_late'] === true)
+            ->filter(fn(array $state) => ($state['is_late'] ?? false) === true)
+            ->sortBy('date')
             ->values();
 
         $lateDates = $lateStatuses
             ->pluck('date')
             ->values();
-
-        $deductionAmount = 0.0;
 
         $items = $lateStatuses
             ->groupBy(
@@ -110,8 +90,7 @@ class LateDisciplineService
             ->map(
                 function (Collection $states, string $monthKey) use (
                     $threshold,
-                    $actionAmount,
-                    &$deductionAmount
+                    $actionAmount
                 ) {
                     $lateCount = $states->count();
                     $deductionUnits = intdiv(
@@ -123,14 +102,11 @@ class LateDisciplineService
                         return null;
                     }
 
-                    $amount = $deductionUnits * $actionAmount;
-                    $deductionAmount += $amount;
-
                     return [
                         'month' => $monthKey,
                         'late_count' => $lateCount,
                         'deduction_units' => $deductionUnits,
-                        'amount' => $amount,
+                        'amount' => $deductionUnits * $actionAmount,
                     ];
                 }
             )
@@ -144,9 +120,78 @@ class LateDisciplineService
             'deduction_units' => $items->sum(
                 fn(array $item) => $item['deduction_units']
             ),
-            'deduction_amount' => $deductionAmount,
+            'deduction_amount' => $items->sum(
+                fn(array $item) => $item['amount']
+            ),
             'late_dates' => $lateDates,
             'items' => $items,
         ];
+    }
+
+    /**
+     * Resolve the single active late-discipline rule.
+     *
+     * The current HRWork business design has one effective late-discipline
+     * rule. Multiple active rules would make the calculation ambiguous.
+     */
+    private function resolveActiveRule(): LateDisciplineRule
+    {
+        $activeRules = LateDisciplineRule::query()
+            ->where('status', 'active')
+            ->orderBy('id')
+            ->get();
+
+        if ($activeRules->isEmpty()) {
+            throw new \RuntimeException(
+                'Aturan keterlambatan aktif belum dikonfigurasi.'
+            );
+        }
+
+        if ($activeRules->count() > 1) {
+            throw new \RuntimeException(
+                'Terdapat lebih dari satu aturan keterlambatan aktif. Aktifkan hanya satu aturan.'
+            );
+        }
+
+        return $this->validateRule($activeRules->first());
+    }
+
+    /**
+     * Validate configuration before it participates in payroll/discpline math.
+     */
+    private function validateRule(
+        LateDisciplineRule $rule
+    ): LateDisciplineRule {
+        if ($rule->status !== 'active') {
+            throw new \RuntimeException(
+                'Aturan keterlambatan yang digunakan harus berstatus aktif.'
+            );
+        }
+
+        if ((int) $rule->threshold < 1) {
+            throw new \RuntimeException(
+                'Threshold keterlambatan harus lebih besar dari 0.'
+            );
+        }
+
+        if ($rule->period_type !== 'monthly') {
+            throw new \RuntimeException(
+                'Periode aturan keterlambatan saat ini harus bulanan.'
+            );
+        }
+
+        if ($rule->action_type !== 'payroll_deduction') {
+            throw new \RuntimeException(
+                'Konsekuensi aturan keterlambatan saat ini harus berupa potongan gaji.'
+            );
+        }
+
+        if ((float) $rule->action_amount < 0) {
+            throw new \RuntimeException(
+                'Nominal potongan keterlambatan tidak boleh negatif.'
+            );
+        }
+
+        return $rule;
     }
 }
