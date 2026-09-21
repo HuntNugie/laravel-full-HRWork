@@ -67,7 +67,6 @@
 
 
                     @foreach ($times as $id => $time)
-                        {{-- SENIN --}}
                         <div
                             class="grid grid-cols-1 gap-4 rounded-xl border border-slate-200 p-4 md:grid-cols-[1fr_220px_220px] md:items-end">
 
@@ -76,27 +75,51 @@
                                     {{ $time['day_of_week'] }}
                                 </p>
 
-                                <p class="mt-1 text-xs text-slate-500">
-                                    {{ $time['is_working_day'] ? 'Hari Kerja' : 'Hari libur' }}
-                                </p>
+                                <label class="mt-2 flex items-center gap-2 text-xs text-slate-600">
+                                    <input
+                                        type="checkbox"
+                                        wire:model.live="updateWorkTime.{{ $id }}.is_working_day"
+                                        @disabled(!$is_edit)
+                                        class="size-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
+                                    >
+
+                                    <span>
+                                        Hari Kerja
+                                    </span>
+                                </label>
+
+                                @unless ($updateWorkTime[$id]['is_working_day'])
+                                    <p class="mt-2 text-xs text-slate-500">
+                                        Jam kerja tidak digunakan.
+                                    </p>
+                                @endunless
+
+                                @error("updateWorkTime.$id.start_time")
+                                    <p class="mt-2 text-xs text-red-600">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
                             </div>
 
-                            @if ($time['is_working_day'])
-                                <x-wirekit::time-picker label="Jam Mulai" value="{{ $time['start_time'] }}"
-                                    name="monday_start" wire:model="updateWorkTime.{{ $id }}.start_time"
-                                    format="24" step="60" :disabled="!$is_edit" />
+                            <x-wirekit::time-picker
+                                label="Jam Mulai"
+                                value="{{ $updateWorkTime[$id]['start_time'] }}"
+                                name="start_time_{{ $id }}"
+                                wire:model="updateWorkTime.{{ $id }}.start_time"
+                                format="24"
+                                step="60"
+                                :disabled="!$is_edit || !$updateWorkTime[$id]['is_working_day']"
+                            />
 
-                                <x-wirekit::time-picker label="Jam Selesai" name="monday_end"
-                                    value="{{ $time['end_time'] }}"
-                                    wire:model="updateWorkTime.{{ $id }}.end_time" format="24"
-                                    step="60" :disabled="!$is_edit" />
-                            @else
-                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
-                                    Hari Libur
-                                </span>
-                            @endif
-
-
+                            <x-wirekit::time-picker
+                                label="Jam Selesai"
+                                value="{{ $updateWorkTime[$id]['end_time'] }}"
+                                name="end_time_{{ $id }}"
+                                wire:model="updateWorkTime.{{ $id }}.end_time"
+                                format="24"
+                                step="60"
+                                :disabled="!$is_edit || !$updateWorkTime[$id]['is_working_day']"
+                            />
 
                         </div>
                     @endforeach
