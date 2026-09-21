@@ -142,7 +142,7 @@
 
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-monitor-attendance', 'history-attendance', 'view-daily-status'])
+        @canany(['view-monitor-attendance', 'history-attendance', 'view-status-daily'])
 
             <x-wirekit::sidebar.group collapsible label="Presensi">
 
@@ -160,7 +160,7 @@
                     </x-wirekit::sidebar.item>
                 @endcan
 
-                @can('view-daily-status')
+                @can('view-status-daily')
                     <x-wirekit::sidebar.item href="{{ route('attendance.daily-status.view') }}" :active="request()->routeIs('attendance.daily-status.view')" icon="list"
                         wire:navigate>
                         Daily Status
