@@ -60,6 +60,8 @@ use App\Livewire\Page\Main\Time\Time;
 use App\Livewire\Page\Main\User\DetailRolePermission;
 use App\Livewire\Page\Main\User\DetailUser;
 use App\Livewire\Page\Main\User\User;
+use App\Livewire\Page\Main\WorkManagement\CreateMasterProject;
+use App\Livewire\Page\Main\WorkManagement\MasterProjects;
 
 Route::get('/', function () {
     return redirect()->route("login");
@@ -69,7 +71,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
 });
 
-
 Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
     Route::get('/my-profile', MyProfile::class)->middleware("gateMyProfile")->name('my-profile');
@@ -77,22 +78,22 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/my-contract', MyContract::class)->middleware("permission:view-contract-my")->name('my-contract');
     Route::get('/my-contract/{contract}', DetailMyContract::class)->middleware("permission:show-contract-my")->name('my-contract.show');
 
+    Route::prefix('work-management')->group(function () {
+        Route::get('/master-projects', MasterProjects::class)
+            ->middleware('permission:view-master-project')
+            ->name('work-management.master-projects');
+
+        Route::get('/master-projects/create', CreateMasterProject::class)
+            ->middleware('permission:create-master-project')
+            ->name('work-management.master-projects.create');
+    });
+
     Route::prefix('print')->group(function () {
         Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');
-
-
-        Route::get('/warning-letter/{warningLetter}/print', PrintWarningLetterController::class)
-            ->middleware('permission:show-warning-letter')
-            ->name('print.warning-letter');
-
-        Route::get('/payroll/{period}/print/slip/{payroll}', PrintPayrollSlipController::class)
-            ->name('payroll.print.slip');
-
-        Route::get('/payroll/{period}/print/summary', PrintPayrollSummaryController::class)
-            ->name('payroll.print.summary');
-
-        Route::get('/payroll/{period}/print/payments', PrintPayrollPaymentController::class)
-            ->name('payroll.print.payments');
+        Route::get('/warning-letter/{warningLetter}/print', PrintWarningLetterController::class)->middleware('permission:show-warning-letter')->name('print.warning-letter');
+        Route::get('/payroll/{period}/print/slip/{payroll}', PrintPayrollSlipController::class)->name('payroll.print.slip');
+        Route::get('/payroll/{period}/print/summary', PrintPayrollSummaryController::class)->name('payroll.print.summary');
+        Route::get('/payroll/{period}/print/payments', PrintPayrollPaymentController::class)->name('payroll.print.payments');
     });
 
     Route::prefix('divisi')->group(function () {
@@ -102,27 +103,16 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('teams')->group(function () {
         Route::get('/', Team::class)->middleware('permission:view-team')->name('team.view');
-        // 'permission:show-team'
         Route::get('/{team}/detail', DetailTeam::class)->middleware('permission:show-team')->name('team.show');
     });
 
     Route::prefix('employees')->group(function () {
         Route::get('/', Employee::class)->middleware('permission:view-employee')->name('employee.view');
-        // untuk menambahkan employee
         Route::get('/create', CreateEmployee::class)->middleware('permission:create-employee')->name('employee.create');
-        // untuk edit
         Route::get('/{employee}/edit', EditEmployee::class)->middleware('permission:update-employee')->name('employee.edit');
-
-        // untuk detail
         Route::get('/{employee}/detail', DetailEmployee::class)->middleware('permission:show-employee')->name('employee.show');
-
-        // untuk buat contract
         Route::get('/{employee}/contract/create', CreateEmployeeContract::class)->middleware('permission:create-contract')->name('contract.create');
-
-        // untuk detail contract
         Route::get('/{employee}/contract/{contract}/detail', DetailEmployeeContract::class)->middleware('permission:show-contract')->name('contract.show');
-
-        // untuk edit contract
         Route::get('/{employee}/contract/edit', EditEmployeeContract::class)->middleware('permission:update-contract')->name('contract.edit');
     });
 
@@ -139,7 +129,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('positions')->group(function () {
         Route::get('/', Position::class)->middleware('permission:view-position')->name('position.view');
-        Route::get('/{position}/detail', DetailPosition::class)->middleware("permission:show-position")->name('position.show');
+        Route::get('/{position}/detail', DetailPosition::class)->middleware('permission:show-position')->name('position.show');
     });
 
     Route::prefix('roles')->group(function () {
@@ -154,7 +144,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     });
 
     Route::prefix('holiday')->group(function () {
-        Route::get("/", Holiday::class)->middleware("permission:view-holiday")->name("holiday.view");
+        Route::get('/', Holiday::class)->middleware('permission:view-holiday')->name('holiday.view');
     });
 
     Route::prefix('attendance')->group(function () {
@@ -168,7 +158,6 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::prefix('leave')->group(function () {
         Route::get('/', LeaveRequest::class)->middleware('permission:view-leave')->name('leave.view');
         Route::get('/manage', ManagementLeave::class)->middleware('permission:view-management-leave')->name('leave.manage.view');
-
         Route::get('/type', LeaveType::class)->middleware('permission:view-type-leave')->name('leave.type.view');
         Route::get('/type/{leavetype}', DetailLeaveType::class)->middleware('permission:show-type-leave')->name('leave.type.show');
         Route::get('/absence', Absence::class)->middleware('permission:view-manage-absence')->name('absence.view');
@@ -179,50 +168,18 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     });
 
     Route::prefix('payroll')->group(function () {
-        Route::get('/my', MyPayroll::class)
-            ->name('payroll.my.view')
-            ->middleware('permission:view-payroll-my');
-
-        Route::get('/my/{payroll}', DetailMyPayroll::class)
-            ->name('payroll.my.show')
-            ->middleware('permission:show-payroll-my');
-
-        Route::get('/', ManagementPayroll::class)
-            ->name('payroll.view')
-            ->middleware('permission:view-payroll');
-
-        Route::get('/{period}', DetailPayrollPeriod::class)
-            ->name('payroll.show')
-            ->middleware('permission:show-payroll');
-
-        Route::get(
-            '/{period}/employee/{payroll}',
-            DetailPayrollEmployee::class
-        )
-            ->middleware('permission:show-payroll')
-            ->name('payroll.employee.show');
-
-
-        Route::get(
-            '/payroll/{period}/employee/{payroll}/edit',
-            EditPayrollEmployee::class
-        )
-            ->middleware('permission:edit-period-payroll')
-            ->name('payroll.employee.edit');
+        Route::get('/my', MyPayroll::class)->name('payroll.my.view')->middleware('permission:view-payroll-my');
+        Route::get('/my/{payroll}', DetailMyPayroll::class)->name('payroll.my.show')->middleware('permission:show-payroll-my');
+        Route::get('/', ManagementPayroll::class)->name('payroll.view')->middleware('permission:view-payroll');
+        Route::get('/{period}', DetailPayrollPeriod::class)->name('payroll.show')->middleware('permission:show-payroll');
+        Route::get('/{period}/employee/{payroll}', DetailPayrollEmployee::class)->middleware('permission:show-payroll')->name('payroll.employee.show');
+        Route::get('/payroll/{period}/employee/{payroll}/edit', EditPayrollEmployee::class)->middleware('permission:edit-period-payroll')->name('payroll.employee.edit');
     });
 
     Route::prefix('discipline')->group(function () {
-        Route::get('/late', LateDiciplineRule::class)
-            ->middleware('permission:view-late-discipline-rule')
-            ->name('discipline.late.view');
-        Route::get('/unpresent', UnpresentDisciplineRule::class)
-            ->middleware('permission:view-unpresent-discipline-rule')
-            ->name('discipline.unpresent.view');
-        Route::get('/warning-letter', WarningLetter::class)
-            ->middleware('permission:view-warning-letter')
-            ->name('discipline.warning-letter.view');
-        Route::get('/warning-letter/{warningLetter}', DetailWarningLetter::class)
-            ->middleware('permission:show-warning-letter')
-            ->name('discipline.warning-letter.show');
+        Route::get('/late', LateDiciplineRule::class)->middleware('permission:view-late-discipline-rule')->name('discipline.late.view');
+        Route::get('/unpresent', UnpresentDisciplineRule::class)->middleware('permission:view-unpresent-discipline-rule')->name('discipline.unpresent.view');
+        Route::get('/warning-letter', WarningLetter::class)->middleware('permission:view-warning-letter')->name('discipline.warning-letter.view');
+        Route::get('/warning-letter/{warningLetter}', DetailWarningLetter::class)->middleware('permission:show-warning-letter')->name('discipline.warning-letter.show');
     });
 });
