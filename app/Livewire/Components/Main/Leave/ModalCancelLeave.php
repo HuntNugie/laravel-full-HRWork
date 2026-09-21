@@ -3,24 +3,47 @@
 namespace App\Livewire\Components\Main\Leave;
 
 use App\Models\LeaveRequest;
+use App\Service\LeaveRequestService;
 use Livewire\Component;
 
 class ModalCancelLeave extends Component
 {
     public LeaveRequest $request;
 
-    public function cancel()
+    public function cancel(LeaveRequestService $leaveRequestService): void
     {
-        $this->request->update([
-            "status" => "cancelled"
-        ]);
+        try {
+            $this->request = $leaveRequestService->cancel(
+                request: $this->request
+            );
+        } catch (\LogicException $exception) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Tidak dapat diproses',
+                message: $exception->getMessage()
+            );
 
-        $this->dispatch('wirekit-modal-close', name: 'cancel-leave');
-        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'berhasil membatalkan cuti');
+            return;
+        }
+
+        $this->dispatch(
+            'wirekit-modal-close',
+            name: 'cancel-leave'
+        );
+        $this->dispatch(
+            'wirekit-toast',
+            variant: 'success',
+            title: 'Berhasil',
+            message: 'Berhasil membatalkan cuti.'
+        );
         $this->dispatch('leave-request');
     }
+
     public function render()
     {
-        return view('livewire.components.main.leave.modal-cancel-leave');
+        return view(
+            'livewire.components.main.leave.modal-cancel-leave'
+        );
     }
 }
