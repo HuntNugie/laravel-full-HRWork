@@ -15,14 +15,23 @@ class DetailDivisi extends Component
     public function mount(Divisi $divisi)
     {
         $this->authorize('view', $divisi);
-        $this->divisi = $divisi->load('team');
+        $this->divisi = $divisi->load([
+            'manager.user',
+            'manager.position',
+            'team',
+        ]);
     }
 
     #[On('update-divisi')]
     public function refreshDivisi()
     {
-        $this->divisi->load('team');
+        $this->divisi->load([
+            'manager.user',
+            'manager.position',
+            'team',
+        ]);
     }
+
     public function render()
     {
         return view('livewire.page.main.divisi.detail-divisi');
