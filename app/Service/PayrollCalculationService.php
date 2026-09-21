@@ -137,7 +137,6 @@ class PayrollCalculationService
                 $contractsById,
                 &$salaryAmount,
                 &$benefitTotal,
-                $employee,
                 &$salaryItems,
                 &$benefitItems
             ): void {
@@ -254,23 +253,4 @@ class PayrollCalculationService
             ->get();
     }
 
-    private function emptyResult(EmployeeContract $contract): array
-    {
-        return [
-            'salary_daily' => (float) $contract->salary_daily,
-            'salary_amount' => 0.0,
-            'working_days' => 0,
-            'present_days' => 0,
-            'late_days' => 0,
-            'absent_days' => 0,
-            'paid_leave_days' => 0,
-            'paid_days' => 0,
-            'benefit_total' => 0.0,
-            'late_deduction_total' => 0.0,
-            'late_deduction_items' => collect(),
-            'salary_items' => collect(),
-            'benefit_items' => collect(),
-            'next_sort_order' => 1,
-        ];
-    }
 }
