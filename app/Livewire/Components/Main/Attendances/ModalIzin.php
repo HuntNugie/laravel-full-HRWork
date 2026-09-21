@@ -3,41 +3,56 @@
 namespace App\Livewire\Components\Main\Attendances;
 
 use App\Models\EmployeeAbsenceRequest;
-use Livewire\Attributes\Validate;
+use App\Service\AbsenceRequestService;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 
 class ModalIzin extends Component
 {
-
     public string $type = "";
 
     public string $reason = "";
 
-    public function submit()
+    public function submit(AbsenceRequestService $absenceRequestService): void
     {
         $this->authorize('create', EmployeeAbsenceRequest::class);
 
         $this->validate([
-            "type" => "required|in:sakit,izin",
-            "reason" => "required|string"
+            'type' => 'required|in:sakit,izin',
+            'reason' => 'required|string|min:5|max:1000',
         ]);
 
-        if (Auth::user()?->employees?->employeeAbsenceRequest && Auth::user()->employees->employeeAbsenceRequest()->where('date', today())->exists()) {
-            $this->dispatch('wirekit-toast', variant: 'danger', title: 'Ada masalah', message: 'anda sudah mengajukan izin untuk hari ini');
+        try {
+            $absenceRequestService->create(
+                employee: Auth::user()->employees,
+                type: $this->type,
+                reason: $this->reason,
+            );
+        } catch (\LogicException $exception) {
+            $this->dispatch(
+                'wirekit-toast',
+                variant: 'danger',
+                title: 'Pengajuan Tidak Dapat Diproses',
+                message: $exception->getMessage()
+            );
+
             return;
         }
-        Auth::user()->employees->employeeAbsenceRequest()->create([
-            'type' => $this->type,
-            'date' => today(),
-            'reason' => $this->reason
-        ]);
 
-        $this->dispatch('wirekit-modal-close', name: 'create-absence-request');
+        $this->reset(['type', 'reason']);
+
+        $this->dispatch(
+            'wirekit-modal-close',
+            name: 'create-absence-request'
+        );
         $this->dispatch('update-data');
-        $this->dispatch('wirekit-toast', variant: 'success', title: 'mengajukan izin/sakit', message: "Berhasil mengajukan izin/sakit");
+        $this->dispatch(
+            'wirekit-toast',
+            variant: 'success',
+            title: 'Berhasil mengajukan izin/sakit',
+            message: 'Berhasil mengajukan izin/sakit.'
+        );
     }
-
 
     public function render()
     {
