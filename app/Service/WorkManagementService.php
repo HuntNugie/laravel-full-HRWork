@@ -160,8 +160,6 @@ class WorkManagementService
             throw ValidationException::withMessages(['division_project' => 'Division project sudah selesai.']);
         }
 
-        $this->ensureCanManageDivisionProject($divisionProject, $actor);
-
         if (! $divisionProject->teams()->whereKey($team->id)->exists()) {
             throw ValidationException::withMessages(['team_id' => 'Team belum ditugaskan pada division project.']);
         }
