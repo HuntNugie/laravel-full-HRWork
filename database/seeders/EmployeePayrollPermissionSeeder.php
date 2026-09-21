@@ -21,7 +21,7 @@ class EmployeePayrollPermissionSeeder extends Seeder
         );
 
         $employeeRole = Role::firstOrCreate([
-            'name' => 'Employee',
+            'name' => 'employee',
             'guard_name' => 'web',
         ]);
 
