@@ -66,6 +66,9 @@ class WorkManagementPermissionSeeder extends Seeder
             ],
         ];
 
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        $superAdmin->syncPermissions(Permission::query()->where('guard_name', 'web')->get());
+
         foreach ($rolePermissions as $roleName => $permissionNames) {
             $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
             $role->syncPermissions($permissionNames);
