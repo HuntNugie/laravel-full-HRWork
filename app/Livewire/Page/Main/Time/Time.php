@@ -38,16 +38,52 @@ class Time extends Component
         $this->updateWorkTime = $this->times->toArray();
     }
 
-    public function submit()
+    public function submit(): void
     {
         $this->authorize('update', WorkTime::class);
+
         foreach ($this->updateWorkTime as $id => $workTime) {
-            WorkTime::find($id)->update([
-                'start_time' => $workTime['start_time'],
-                'end_time' => $workTime['end_time'],
+            $isWorkingDay = (bool) ($workTime['is_working_day'] ?? false);
+
+            if ($isWorkingDay && (
+                blank($workTime['start_time'] ?? null)
+                || blank($workTime['end_time'] ?? null)
+            )) {
+                $this->addError(
+                    "updateWorkTime.$id.start_time",
+                    'Jam mulai dan jam selesai wajib diisi untuk hari kerja.'
+                );
+
+                return;
+            }
+
+            $record = WorkTime::find($id);
+
+            if (!$record) {
+                continue;
+            }
+
+            $record->update([
+                'start_time' => $workTime['start_time'] ?? null,
+                'end_time' => $workTime['end_time'] ?? null,
+                'is_working_day' => $isWorkingDay,
             ]);
         }
 
+        $this->times = WorkTime::query()
+            ->get()
+            ->mapWithKeys(function ($time) {
+                return [
+                    $time->id => [
+                        'day_of_week' => $time->day_of_week,
+                        'start_time' => $time->start_time,
+                        'end_time' => $time->end_time,
+                        'is_working_day' => (bool) $time->is_working_day,
+                    ],
+                ];
+            });
+
+        $this->updateWorkTime = $this->times->toArray();
         $this->is_edit = false;
         $this->dispatch(
             'wirekit-toast',
