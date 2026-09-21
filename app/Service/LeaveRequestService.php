@@ -13,7 +13,7 @@ use LogicException;
 
 class LeaveRequestService
 {
-    public function currentActiveContract(Employees $employee, ?CarbonInterface|string $date = null): ?EmployeeContract
+    public function currentActiveContract(Employees $employee, CarbonInterface|string|null $date = null): ?EmployeeContract
     {
         $targetDate = $date instanceof CarbonInterface
             ? Carbon::instance($date)->startOfDay()
