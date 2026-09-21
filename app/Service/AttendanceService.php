@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Models\AttedanceSetting;
 use App\Models\Attendances;
 use App\Models\Employees;
+use App\Models\WorkTime;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -55,15 +56,13 @@ class AttendanceService
                 );
             }
 
-            $workTime = app(\App\Models\WorkTime::class)
-                ->newQuery()
-                ->whereKey(
-                    $this->dailyStatusService->getStatus(
-                        employee: $employee,
-                        date: $checkIn->toDateString()
-                    )['work_time_id']
-                )
-                ->first();
+            $dailyStatus = $this->dailyStatusService->getStatus(
+                employee: $employee,
+                date: $checkIn->toDateString(),
+            );
+
+            $workTime = WorkTime::query()
+                ->find($dailyStatus['work_time_id']);
 
             if (!$workTime) {
                 throw new LogicException(
@@ -196,9 +195,7 @@ class AttendanceService
 
         $workTimeId = $dailyStatus['work_time_id'];
 
-        $workTime = app(\App\Models\WorkTime::class)
-            ->newQuery()
-            ->find($workTimeId);
+        $workTime = WorkTime::query()->find($workTimeId);
 
         if (!$workTime) {
             throw new LogicException(
