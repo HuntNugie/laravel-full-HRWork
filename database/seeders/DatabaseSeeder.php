@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -15,16 +14,31 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
         $this->call([
+            // Core authorization and bootstrap accounts.
             PermissionSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
+
+            // Organization and master data.
             DivisiSeeder::class,
             BankSeeder::class,
+
+            // Existing HR permissions.
             GivePermissionSeeder::class,
             EmployeePayrollPermissionSeeder::class,
+
+            // Work Management authorization.
             WorkManagementPermissionSeeder::class,
+
+            // HR configuration required by the application.
+            WorkTimeSeeder::class,
+            AttedanceSettingSeeder::class,
+            LateDisciplineRuleSeeder::class,
+            UnpresentDisciplineRuleSeeder::class,
+
+            // Coherent development data for local testing.
+            WorkManagementDevelopmentSeeder::class,
         ]);
     }
 }
