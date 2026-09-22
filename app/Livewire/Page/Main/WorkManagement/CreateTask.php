@@ -16,7 +16,7 @@ use Livewire\Component;
 class CreateTask extends Component
 {
     public DivisionProject $divisionProject;
-    public Collection $teams;
+    public Team $team;
     public Collection $assignees;
 
     public ?int $team_id = null;
@@ -26,36 +26,35 @@ class CreateTask extends Component
     public ?string $due_date = null;
     public bool $isSupervisor = false;
 
-    public function mount(DivisionProject $divisionProject): void
+    public function mount(DivisionProject $divisionProject, Team $team): void
     {
         $this->authorize('create', Task::class);
 
         $this->divisionProject = $divisionProject->load('teams');
-        $this->teams = $divisionProject->teams()->with('supervisor.user')->orderBy('name')->get();
         $this->assignees = collect();
 
+        if (! $this->divisionProject->teams->contains('id', $team->id)) {
+            abort(404);
+        }
+
         $employee = Auth::user()?->employees;
+        if (! $employee) {
+            abort(403);
+        }
 
-        if ($employee?->user?->hasRole('supervisor')) {
-            $supervisorTeam = $employee->supervisorTeam()->first();
+        $this->team = $team->load('supervisor.user');
+        $this->team_id = $team->id;
 
-            if (! $supervisorTeam || ! $this->divisionProject->teams->contains('id', $supervisorTeam->id)) {
+        if ($employee->user?->hasRole('supervisor')) {
+            if ((int) $this->team->supervisor_id !== (int) $employee->id) {
                 abort(403);
             }
 
             $this->isSupervisor = true;
-            $this->team_id = $supervisorTeam->id;
-            $this->loadAssignees();
-        }
-    }
-
-    public function updatedTeamId(): void
-    {
-        if ($this->isSupervisor) {
-            return;
+        } elseif (! $employee->user?->hasRole('general-manager')) {
+            abort(403);
         }
 
-        $this->assignee_id = null;
         $this->loadAssignees();
     }
 
@@ -82,7 +81,7 @@ class CreateTask extends Component
 
         $service->createTask(
             $this->divisionProject,
-            Team::findOrFail($validated['team_id']),
+            $this->team,
             Employees::findOrFail($validated['assignee_id']),
             $creator,
             $validated['title'],
@@ -91,7 +90,10 @@ class CreateTask extends Component
         );
 
         session()->flash('success', 'Task berhasil dibuat.');
-        $this->redirectRoute('work-management.division-projects.show', ['divisionProject' => $this->divisionProject], navigate: true);
+        $this->redirectRoute('work-management.division-projects.teams.show', [
+            'divisionProject' => $this->divisionProject,
+            'team' => $this->team,
+        ], navigate: true);
     }
 
     public function render()
