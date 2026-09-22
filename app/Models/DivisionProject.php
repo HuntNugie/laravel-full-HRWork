@@ -48,6 +48,11 @@ class DivisionProject extends Model
         return $this->hasMany(ProjectReview::class);
     }
 
+    public function reports()
+    {
+        return $this->hasMany(ProjectReport::class);
+    }
+
     public function audits()
     {
         return $this->morphMany(WorkManagementAudit::class, 'auditable');
