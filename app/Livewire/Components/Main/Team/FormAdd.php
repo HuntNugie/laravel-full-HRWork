@@ -5,6 +5,7 @@ namespace App\Livewire\Components\Main\Team;
 use App\Models\Divisi;
 use App\Models\Employees;
 use App\Models\Team;
+use App\Service\OrganizationAssignmentService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Validate;
@@ -46,16 +47,18 @@ class FormAdd extends Component
         $this->authorize('create', Team::class);
         $this->validate();
         $status = $this->isActive ? 'active' : 'inactive';
-        DB::transaction(function () use ($status) {
-            $team =  Team::create([
-                'name' => $this->name,
-                'description' => $this->desc,
-                'is_active' => $status,
-                'divisi_id' => intval($this->divisiId),
-                'supervisor_id' => $this->supervisorId,
-            ]);
-            Employees::findOrFail($this->supervisorId)->update(['team_id' => $team->id]);
-        });
+        $team = Team::create([
+            'name' => $this->name,
+            'description' => $this->desc,
+            'is_active' => $status,
+            'divisi_id' => intval($this->divisiId),
+            'supervisor_id' => null,
+        ]);
+
+        app(OrganizationAssignmentService::class)->assignSupervisor(
+            $team,
+            Employees::findOrFail($this->supervisorId),
+        );
         $this->dispatch('wirekit-modal-close', name: 'create-team');
         $this->dispatch('create-team');
     }

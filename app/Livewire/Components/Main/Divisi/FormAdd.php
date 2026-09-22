@@ -4,8 +4,10 @@ namespace App\Livewire\Components\Main\Divisi;
 
 use App\Models\Divisi;
 use App\Models\Employees;
+use App\Service\OrganizationAssignmentService;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Illuminate\Support\Facades\DB;
 
 class FormAdd extends Component
 {
@@ -39,12 +41,21 @@ class FormAdd extends Component
 
         $status = $this->isActive ? 'active' : 'inactive';
 
-        Divisi::create([
+        $divisi = Divisi::create([
             'name' => $this->name,
             'description' => $this->desc,
             'is_active' => $status,
-            'manager_id' => $this->managerId ?: null,
+            'manager_id' => null,
         ]);
+
+        if (filled($this->managerId)) {
+            DB::transaction(function () use ($divisi) {
+                app(OrganizationAssignmentService::class)->assignDivisionManager(
+                    $divisi,
+                    Employees::findOrFail($this->managerId),
+                );
+            });
+        }
 
         $this->reset([
             'name',

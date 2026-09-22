@@ -4,7 +4,7 @@ namespace App\Livewire\Components\Main\Team;
 
 use App\Models\Employees;
 use App\Models\Team;
-use Illuminate\Support\Facades\DB;
+use App\Service\OrganizationAssignmentService;
 use Livewire\Component;
 
 class FormAssignSupervisor extends Component
@@ -22,30 +22,10 @@ class FormAssignSupervisor extends Component
             "employeeId" => "required|exists:employees,id",
         ]);
 
-        DB::transaction(function () {
-            $newSupervisor = Employees::with('user')
-                ->findOrFail($this->employeeId);
-
-            $oldSupervisor = $this->team->supervisor;
-
-            // Supervisor lama kembali menjadi employee biasa
-            if ($oldSupervisor) {
-                $oldSupervisor->user->removeRole('supervisor');
-            }
-
-            // Tetapkan supervisor baru
-            $this->team->update([
-                'supervisor_id' => $newSupervisor->id,
-            ]);
-
-            // Pastikan supervisor baru menjadi member team
-            $newSupervisor->update([
-                'team_id' => $this->team->id,
-            ]);
-
-            // Tambahkan role supervisor
-            $newSupervisor->user->assignRole('supervisor');
-        });
+        app(OrganizationAssignmentService::class)->assignSupervisor(
+            $this->team,
+            Employees::findOrFail($this->employeeId),
+        );
 
         $this->dispatch(
             "wirekit-modal-close",

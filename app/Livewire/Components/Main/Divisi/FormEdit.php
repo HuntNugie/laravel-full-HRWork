@@ -4,9 +4,11 @@ namespace App\Livewire\Components\Main\Divisi;
 
 use App\Models\Divisi;
 use App\Models\Employees;
+use App\Service\OrganizationAssignmentService;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Illuminate\Support\Facades\DB;
 
 class FormEdit extends Component
 {
@@ -78,12 +80,22 @@ class FormEdit extends Component
             return;
         }
 
-        $this->divisi->update([
-            'name' => $this->name,
-            'description' => $this->desc,
-            'is_active' => $this->isActive ? 'active' : 'inactive',
-            'manager_id' => $this->managerId ?: null,
-        ]);
+        $manager = filled($this->managerId)
+            ? Employees::findOrFail($this->managerId)
+            : null;
+
+        DB::transaction(function () use ($manager) {
+            $this->divisi->update([
+                'name' => $this->name,
+                'description' => $this->desc,
+                'is_active' => $this->isActive ? 'active' : 'inactive',
+            ]);
+
+            app(OrganizationAssignmentService::class)->assignDivisionManager(
+                $this->divisi,
+                $manager,
+            );
+        });
 
         $this->reset([
             'name',
