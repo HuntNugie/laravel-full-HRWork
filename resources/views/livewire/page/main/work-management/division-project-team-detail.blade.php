@@ -60,7 +60,13 @@
     </div>
 
     @can('submitSupervisorReport', $divisionProject)
-        @if ((int) $team->supervisor_id === (int) auth()->user()?->employees?->id && in_array($divisionProject->status, ['ready_for_review', 'revision_required'], true))
+        @if (
+            (int) $team->supervisor_id === (int) auth()->user()?->employees?->id
+            && in_array($divisionProject->status, ['in_progress', 'ready_for_review', 'revision_required'], true)
+            && $tasks->isNotEmpty()
+            && $tasks->where('status', '!=', 'cancelled')->every(fn ($task) => $task->status === 'done')
+            && (! $latestSupervisorReport || $latestSupervisorReport->status === 'rejected')
+        )
             <x-wirekit::card>
                 <x-wirekit::card.header>
                     <x-wirekit::stack gap="1">
@@ -134,6 +140,40 @@
             </div>
         </x-wirekit::card.body>
     </x-wirekit::card>
+
+    @can('reviewTeamReport', [$divisionProject, $team])
+        @if ($latestSupervisorReport?->status === 'submitted')
+            <x-wirekit::card>
+                <x-wirekit::card.header>
+                    <x-wirekit::stack gap="1">
+                        <h2 class="text-lg font-semibold text-slate-900">Review Manager</h2>
+                        <p class="text-sm text-slate-500">Review laporan Supervisor {{ $team->name }}.</p>
+                    </x-wirekit::stack>
+                </x-wirekit::card.header>
+                <x-wirekit::card.body>
+                    <form wire:submit="reviewSupervisorReport" class="space-y-4">
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-slate-700">Keputusan</label>
+                            <select wire:model="reviewDecision" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                                <option value="">Pilih keputusan</option>
+                                <option value="approved">Approve</option>
+                                <option value="rejected">Return untuk Revisi</option>
+                            </select>
+                            @error('reviewDecision') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="mb-2 block text-sm font-medium text-slate-700">Feedback</label>
+                            <textarea wire:model="reviewFeedback" rows="4" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20" placeholder="Tuliskan feedback untuk Supervisor"></textarea>
+                            @error('reviewFeedback') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                        </div>
+                        <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">
+                            Simpan Review Team
+                        </x-wirekit::button>
+                    </form>
+                </x-wirekit::card.body>
+            </x-wirekit::card>
+        @endif
+    @endcan
 
     <x-wirekit::card>
         <x-wirekit::card.header>
