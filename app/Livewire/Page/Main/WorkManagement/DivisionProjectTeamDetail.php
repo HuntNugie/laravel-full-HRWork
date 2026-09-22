@@ -21,6 +21,8 @@ class DivisionProjectTeamDetail extends Component
     public ?ProjectReport $latestSupervisorReport = null;
 
     public string $supervisorReport = '';
+    public ?string $reviewDecision = null;
+    public string $reviewFeedback = '';
 
     public function mount(DivisionProject $divisionProject, Team $team): void
     {
@@ -58,6 +60,34 @@ class DivisionProjectTeamDetail extends Component
         $this->supervisorReport = '';
         $this->loadPage();
         session()->flash('success', 'Laporan Team berhasil dikirim ke Manager.');
+    }
+
+    public function reviewSupervisorReport(WorkManagementService $service): void
+    {
+        $this->authorize('reviewTeamReport', [$this->divisionProject, $this->team]);
+
+        $this->validate([
+            'reviewDecision' => ['required', 'in:approved,rejected'],
+            'reviewFeedback' => ['nullable', 'string'],
+        ]);
+
+        $employee = Auth::user()?->employees;
+        if (! $employee) {
+            abort(403);
+        }
+
+        $service->reviewTeamReport(
+            $this->divisionProject,
+            $this->team,
+            $employee,
+            $this->reviewDecision,
+            $this->reviewFeedback ?: null,
+        );
+
+        $this->reviewDecision = null;
+        $this->reviewFeedback = '';
+        $this->loadPage();
+        session()->flash('success', 'Review laporan Supervisor berhasil disimpan.');
     }
 
     public function render()
