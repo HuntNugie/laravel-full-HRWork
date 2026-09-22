@@ -13,7 +13,7 @@
         </x-wirekit::stack>
 
         @can('create', \App\Models\Task::class)
-            @if ($divisionProject->status !== 'completed')
+            @if (in_array($divisionProject->status, ['draft', 'in_progress', 'revision_required'], true))
                 <x-wirekit::button
                     type="button"
                     class="bg-[#30AFFF] text-white hover:bg-[#1599E8]"
@@ -85,7 +85,7 @@
     </div>
 
     @can('assignTeam', $divisionProject)
-        @if ($availableTeams->isNotEmpty())
+        @if (in_array($divisionProject->status, ['draft', 'in_progress', 'revision_required'], true) && $availableTeams->isNotEmpty())
             <x-wirekit::card>
                 <x-wirekit::card.header>
                     <x-wirekit::stack gap="1">
