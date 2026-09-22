@@ -142,7 +142,7 @@
     </x-wirekit::card>
 
     @can('reviewTeamReport', [$divisionProject, $team])
-        @if ($latestSupervisorReport?->status === 'submitted')
+        @if ($divisionProject->status === 'submitted_to_manager' && $latestSupervisorReport?->status === 'submitted')
             <x-wirekit::card>
                 <x-wirekit::card.header>
                     <x-wirekit::stack gap="1">
