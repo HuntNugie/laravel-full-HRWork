@@ -2,11 +2,13 @@
 
 namespace App\Livewire\Page\Main\Dashboard;
 
+use App\Models\Attendances;
 use App\Models\Payroll;
 use App\Service\DashboardService;
 use App\Service\EmployeeDailyStatusService;
 use App\Service\LeaveRequestService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -18,17 +20,26 @@ class Dashboard extends Component
         $user = Auth::user();
         $view = DashboardService::matching($user);
 
-        if (! $user->hasAnyRole(['Employee', 'employee'])) {
-            return view($view);
-        }
-
         $employee = $user->employees()
             ->with([
                 'user',
                 'position',
                 'team.divisi',
+                'managedDivisi',
             ])
-            ->firstOrFail();
+            ->first();
+
+        if ($user->hasRole('manager')) {
+            return $this->renderManagerDashboard($employee);
+        }
+
+        if ($user->hasRole('supervisor')) {
+            return $this->renderSupervisorDashboard($employee);
+        }
+
+        if (! $user->hasAnyRole(['Employee', 'employee']) || ! $employee) {
+            return view($view);
+        }
 
         $dailyStatusService = app(EmployeeDailyStatusService::class);
         $leaveRequestService = app(LeaveRequestService::class);
@@ -224,5 +235,103 @@ class Dashboard extends Component
             'pendingAbsenceCount' => $pendingAbsenceCount,
             'latestPayroll' => $latestPayroll,
         ]);
+    }
+
+    private function renderManagerDashboard(?\App\Models\Employees $employee)
+    {
+        if (! $employee) {
+            return view('livewire.page.main.dashboard.dashboard');
+        }
+
+        $division = $employee->managedDivisi()
+            ->with([
+                'team.employees.user',
+                'team.employees.position',
+                'team.employees.team',
+            ])
+            ->first();
+
+        $teams = $division?->team ?? collect();
+        $employees = $teams
+            ->flatMap(fn ($team) => $team->employees)
+            ->unique('id')
+            ->values();
+
+        $attendanceRows = $this->makeAttendanceRows($employees);
+
+        return view('livewire.page.main.dashboard.manager', [
+            'employee' => $employee,
+            'today' => now()->startOfDay(),
+            'division' => $division,
+            'teams' => $teams,
+            'attendanceRows' => $attendanceRows,
+            'summary' => [
+                'teams' => $teams->count(),
+                'employees' => $employees->count(),
+                'checked_in' => $attendanceRows->where('attendance', '!=', null)->count(),
+                'late' => $attendanceRows->where('status', 'late')->count(),
+            ],
+        ]);
+    }
+
+    private function renderSupervisorDashboard(?\App\Models\Employees $employee)
+    {
+        if (! $employee) {
+            return view('livewire.page.main.dashboard.dashboard');
+        }
+
+        $team = $employee->supervisorTeam()
+            ->with([
+                'divisi',
+                'employees.user',
+                'employees.position',
+            ])
+            ->first();
+
+        $employees = $team?->employees
+            ->reject(fn ($member) => (int) $member->id === (int) $employee->id)
+            ->values() ?? collect();
+
+        $attendanceRows = $this->makeAttendanceRows($employees);
+
+        return view('livewire.page.main.dashboard.supervisor', [
+            'employee' => $employee,
+            'today' => now()->startOfDay(),
+            'team' => $team,
+            'attendanceRows' => $attendanceRows,
+            'summary' => [
+                'employees' => $employees->count(),
+                'checked_in' => $attendanceRows->where('attendance', '!=', null)->count(),
+                'late' => $attendanceRows->where('status', 'late')->count(),
+            ],
+        ]);
+    }
+
+    private function makeAttendanceRows(Collection $employees): Collection
+    {
+        if ($employees->isEmpty()) {
+            return collect();
+        }
+
+        $attendanceByEmployee = Attendances::query()
+            ->whereIn('employee_id', $employees->pluck('id'))
+            ->whereDate('date', now()->toDateString())
+            ->get()
+            ->keyBy('employee_id');
+
+        return $employees->map(function ($member) use ($attendanceByEmployee) {
+            $attendance = $attendanceByEmployee->get($member->id);
+
+            return [
+                'employee' => $member,
+                'attendance' => $attendance,
+                'status' => $attendance?->status,
+                'status_label' => match ($attendance?->status) {
+                    'present' => 'Hadir',
+                    'late' => 'Terlambat',
+                    default => 'Belum Check In',
+                },
+            ];
+        })->values();
     }
 }

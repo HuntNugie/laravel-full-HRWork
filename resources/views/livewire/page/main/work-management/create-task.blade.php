@@ -15,13 +15,28 @@
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
                 <h2 class="text-lg font-semibold text-slate-900">Informasi Task</h2>
-                <p class="text-sm text-slate-500">Tentukan team dan karyawan yang bertanggung jawab atas task ini.</p>
+                <p class="text-sm text-slate-500">
+                    {{ $isSupervisor
+                        ? 'Pilih anggota team kamu yang akan mengerjakan task ini.'
+                        : 'Tentukan team dan karyawan yang bertanggung jawab atas task ini.' }}
+                </p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
 
         <x-wirekit::card.body>
             <form wire:submit="save" class="space-y-5">
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                @if ($isSupervisor)
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Team</p>
+                        <p class="mt-1 text-sm font-semibold text-slate-800">
+                            {{ $teams->firstWhere('id', $team_id)?->name ?? 'Team tidak ditemukan' }}
+                        </p>
+                        <p class="mt-1 text-xs text-slate-500">
+                            Team otomatis menggunakan team yang kamu supervisi.
+                        </p>
+                    </div>
+                @else
                     <div>
                         <label class="mb-2 block text-sm font-medium text-slate-700">Team</label>
                         <select wire:model.live="team_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
@@ -32,17 +47,23 @@
                         </select>
                         @error('team_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
                     </div>
+                @endif
 
-                    <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Assignee</label>
-                        <select wire:model="assignee_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
-                            <option value="">Pilih karyawan</option>
-                            @foreach ($assignees as $assignee)
-                                <option value="{{ $assignee->id }}">{{ $assignee->user?->name ?? $assignee->id }}</option>
-                            @endforeach
-                        </select>
-                        @error('assignee_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                    </div>
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700">
+                        {{ $isSupervisor ? 'Anggota Team' : 'Assignee' }}
+                    </label>
+                    <select wire:model="assignee_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                        <option value="">
+                            {{ $isSupervisor ? 'Pilih anggota team' : 'Pilih karyawan' }}
+                        </option>
+                        @foreach ($assignees as $assignee)
+                            <option value="{{ $assignee->id }}">
+                                {{ $assignee->user?->name ?? $assignee->id }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('assignee_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
                 </div>
 
                 <div>

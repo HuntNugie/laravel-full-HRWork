@@ -24,17 +24,37 @@ class CreateTask extends Component
     public string $title = '';
     public string $description = '';
     public ?string $due_date = null;
+    public bool $isSupervisor = false;
 
     public function mount(DivisionProject $divisionProject): void
     {
         $this->authorize('create', Task::class);
+
         $this->divisionProject = $divisionProject->load('teams');
         $this->teams = $divisionProject->teams()->with('supervisor.user')->orderBy('name')->get();
         $this->assignees = collect();
+
+        $employee = Auth::user()?->employees;
+
+        if ($employee?->user?->hasRole('supervisor')) {
+            $supervisorTeam = $employee->supervisorTeam()->first();
+
+            if (! $supervisorTeam || ! $this->divisionProject->teams->contains('id', $supervisorTeam->id)) {
+                abort(403);
+            }
+
+            $this->isSupervisor = true;
+            $this->team_id = $supervisorTeam->id;
+            $this->loadAssignees();
+        }
     }
 
     public function updatedTeamId(): void
     {
+        if ($this->isSupervisor) {
+            return;
+        }
+
         $this->assignee_id = null;
         $this->loadAssignees();
     }
@@ -91,6 +111,10 @@ class CreateTask extends Component
         $this->assignees = Employees::query()
             ->where('team_id', $this->team_id)
             ->where('status_employee', 'active')
+            ->whereHas('user', fn ($query) => $query
+                ->where('status', 'active')
+                ->role('task-worker')
+            )
             ->when($supervisorId, fn ($query) => $query->where('id', '!=', $supervisorId))
             ->with('user')
             ->orderBy('id')
