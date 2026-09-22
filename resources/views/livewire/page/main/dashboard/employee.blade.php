@@ -627,6 +627,223 @@
 
     </div>
 
+
+    {{-- ROLE-SCOPED ATTENDANCE --}}
+
+    @if ($employee->user->hasRole('manager'))
+        <x-wirekit::card>
+            <x-wirekit::card.header>
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">Presensi Divisi Hari Ini</h2>
+                    <p class="text-sm text-slate-500">
+                        Presensi employee di seluruh team dalam divisi yang kamu kelola.
+                    </p>
+                </x-wirekit::stack>
+            </x-wirekit::card.header>
+
+            <x-wirekit::card.body>
+                @if ($managerDivision)
+                    <x-wirekit::stack gap="md">
+                        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            <div class="rounded-lg border border-slate-200 p-4">
+                                <p class="text-xs text-slate-400">Divisi</p>
+                                <p class="mt-1 text-sm font-semibold text-slate-900">
+                                    {{ $managerDivision->name }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg border border-slate-200 p-4">
+                                <p class="text-xs text-slate-400">Team</p>
+                                <p class="mt-1 text-2xl font-semibold text-slate-900">
+                                    {{ $managerAttendanceSummary['teams'] }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg border border-slate-200 p-4">
+                                <p class="text-xs text-slate-400">Employee</p>
+                                <p class="mt-1 text-2xl font-semibold text-slate-900">
+                                    {{ $managerAttendanceSummary['employees'] }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg border border-slate-200 p-4">
+                                <p class="text-xs text-slate-400">Sudah Check In</p>
+                                <p class="mt-1 text-2xl font-semibold text-emerald-600">
+                                    {{ $managerAttendanceSummary['checked_in'] }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <x-wirekit::table hoverable>
+                                <x-wirekit::table.head>
+                                    <x-wirekit::table.row>
+                                        <x-wirekit::table.th>Employee</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Position</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Team</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Status</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Check In</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Check Out</x-wirekit::table.th>
+                                    </x-wirekit::table.row>
+                                </x-wirekit::table.head>
+                                <x-wirekit::table.body>
+                                    @forelse ($managerAttendanceRows as $row)
+                                        <x-wirekit::table.row>
+                                            <x-wirekit::table.td>
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-800">
+                                                        {{ $row['employee']->user?->name ?? '-' }}
+                                                    </p>
+                                                    <p class="text-xs text-slate-400">
+                                                        {{ $row['employee']->employee_code }}
+                                                    </p>
+                                                </div>
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                {{ $row['employee']->position?->name ?? '-' }}
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                {{ $row['employee']->team?->name ?? '-' }}
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                <x-wirekit::badge
+                                                    :intent="$row['status'] === 'late' ? 'warning' : ($row['attendance'] ? 'success' : 'neutral')"
+                                                    :dot="true"
+                                                >
+                                                    {{ $row['status_label'] }}
+                                                </x-wirekit::badge>
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                {{ $row['attendance']?->check_in_at?->format('H:i') ?? '—' }}
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                {{ $row['attendance']?->check_out_at?->format('H:i') ?? '—' }}
+                                            </x-wirekit::table.td>
+                                        </x-wirekit::table.row>
+                                    @empty
+                                        <x-wirekit::table.row>
+                                            <x-wirekit::table.td colspan="6">
+                                                <div class="py-8 text-center text-sm text-slate-500">
+                                                    Belum ada employee dalam team pada divisi ini.
+                                                </div>
+                                            </x-wirekit::table.td>
+                                        </x-wirekit::table.row>
+                                    @endforelse
+                                </x-wirekit::table.body>
+                            </x-wirekit::table>
+                        </div>
+                    </x-wirekit::stack>
+                @else
+                    <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm font-medium text-slate-700">Belum ada divisi yang dikelola</p>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Data presensi divisi akan muncul setelah kamu ditetapkan sebagai manager pada sebuah divisi.
+                        </p>
+                    </div>
+                @endif
+            </x-wirekit::card.body>
+        </x-wirekit::card>
+    @endif
+
+    @if ($employee->user->hasRole('supervisor'))
+        <x-wirekit::card>
+            <x-wirekit::card.header>
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">Presensi Team Hari Ini</h2>
+                    <p class="text-sm text-slate-500">
+                        Presensi anggota team yang kamu supervisi.
+                    </p>
+                </x-wirekit::stack>
+            </x-wirekit::card.header>
+
+            <x-wirekit::card.body>
+                @if ($supervisorTeam)
+                    <x-wirekit::stack gap="md">
+                        <div class="grid gap-4 sm:grid-cols-3">
+                            <div class="rounded-lg border border-slate-200 p-4">
+                                <p class="text-xs text-slate-400">Team</p>
+                                <p class="mt-1 text-sm font-semibold text-slate-900">
+                                    {{ $supervisorTeam->name }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg border border-slate-200 p-4">
+                                <p class="text-xs text-slate-400">Anggota Team</p>
+                                <p class="mt-1 text-2xl font-semibold text-slate-900">
+                                    {{ $supervisorAttendanceSummary['employees'] }}
+                                </p>
+                            </div>
+                            <div class="rounded-lg border border-slate-200 p-4">
+                                <p class="text-xs text-slate-400">Sudah Check In</p>
+                                <p class="mt-1 text-2xl font-semibold text-emerald-600">
+                                    {{ $supervisorAttendanceSummary['checked_in'] }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <x-wirekit::table hoverable>
+                                <x-wirekit::table.head>
+                                    <x-wirekit::table.row>
+                                        <x-wirekit::table.th>Employee</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Position</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Status</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Check In</x-wirekit::table.th>
+                                        <x-wirekit::table.th>Check Out</x-wirekit::table.th>
+                                    </x-wirekit::table.row>
+                                </x-wirekit::table.head>
+                                <x-wirekit::table.body>
+                                    @forelse ($supervisorAttendanceRows as $row)
+                                        <x-wirekit::table.row>
+                                            <x-wirekit::table.td>
+                                                <div>
+                                                    <p class="text-sm font-semibold text-slate-800">
+                                                        {{ $row['employee']->user?->name ?? '-' }}
+                                                    </p>
+                                                    <p class="text-xs text-slate-400">
+                                                        {{ $row['employee']->employee_code }}
+                                                    </p>
+                                                </div>
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                {{ $row['employee']->position?->name ?? '-' }}
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                <x-wirekit::badge
+                                                    :intent="$row['status'] === 'late' ? 'warning' : ($row['attendance'] ? 'success' : 'neutral')"
+                                                    :dot="true"
+                                                >
+                                                    {{ $row['status_label'] }}
+                                                </x-wirekit::badge>
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                {{ $row['attendance']?->check_in_at?->format('H:i') ?? '—' }}
+                                            </x-wirekit::table.td>
+                                            <x-wirekit::table.td>
+                                                {{ $row['attendance']?->check_out_at?->format('H:i') ?? '—' }}
+                                            </x-wirekit::table.td>
+                                        </x-wirekit::table.row>
+                                    @empty
+                                        <x-wirekit::table.row>
+                                            <x-wirekit::table.td colspan="5">
+                                                <div class="py-8 text-center text-sm text-slate-500">
+                                                    Belum ada anggota team untuk ditampilkan.
+                                                </div>
+                                            </x-wirekit::table.td>
+                                        </x-wirekit::table.row>
+                                    @endforelse
+                                </x-wirekit::table.body>
+                            </x-wirekit::table>
+                        </div>
+                    </x-wirekit::stack>
+                @else
+                    <div class="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4">
+                        <p class="text-sm font-medium text-slate-700">Belum ada team yang kamu supervisi</p>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Data presensi anggota team akan muncul setelah sebuah team menunjukmu sebagai supervisor.
+                        </p>
+                    </div>
+                @endif
+            </x-wirekit::card.body>
+        </x-wirekit::card>
+    @endif
+
     {{-- QUICK ACCESS --}}
     <x-wirekit::card>
         <x-wirekit::card.header>

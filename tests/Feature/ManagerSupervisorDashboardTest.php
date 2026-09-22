@@ -40,7 +40,8 @@ class ManagerSupervisorDashboardTest extends TestCase
         $this->actingAs($managerUser)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Dashboard Manager')
+            ->assertSee('Dashboard Employee')
+            ->assertSee('Presensi Divisi Hari Ini')
             ->assertSee('Inside Employee')
             ->assertDontSee($outsideEmployee->user->name);
     }
@@ -52,7 +53,8 @@ class ManagerSupervisorDashboardTest extends TestCase
         $this->actingAs($supervisorUser)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Dashboard Supervisor')
+            ->assertSee('Dashboard Employee')
+            ->assertSee('Presensi Team Hari Ini')
             ->assertSee($worker->user->name)
             ->assertDontSee($outsideWorker->user->name);
     }
@@ -246,6 +248,13 @@ class ManagerSupervisorDashboardTest extends TestCase
         }
 
         $user->assignRole($role);
+
+        $employeeRole = Role::firstOrCreate([
+            'name' => 'employee',
+            'guard_name' => 'web',
+        ]);
+
+        $user->assignRole($employeeRole);
 
         return Employees::create([
             'employee_code' => 'EMP-' . $suffix,

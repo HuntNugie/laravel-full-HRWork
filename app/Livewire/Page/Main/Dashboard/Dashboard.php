@@ -20,25 +20,88 @@ class Dashboard extends Component
         $user = Auth::user();
         $view = DashboardService::matching($user);
 
+        if (! $user->hasAnyRole(['Employee', 'employee'])) {
+            return view($view);
+        }
+
         $employee = $user->employees()
             ->with([
                 'user',
                 'position',
                 'team.divisi',
-                'managedDivisi',
             ])
-            ->first();
+            ->firstOrFail();
+
+        $managerDivision = null;
+        $managerAttendanceRows = collect();
+        $managerAttendanceSummary = [
+            'teams' => 0,
+            'employees' => 0,
+            'checked_in' => 0,
+            'late' => 0,
+        ];
+
+        $supervisorTeam = null;
+        $supervisorAttendanceRows = collect();
+        $supervisorAttendanceSummary = [
+            'employees' => 0,
+            'checked_in' => 0,
+            'late' => 0,
+        ];
 
         if ($user->hasRole('manager')) {
-            return $this->renderManagerDashboard($employee);
+            $managerDivision = $employee->managedDivisi()
+                ->with([
+                    'team.employees.user',
+                    'team.employees.position',
+                    'team.employees.team',
+                ])
+                ->first();
+
+            $managerTeams = $managerDivision?->team ?? collect();
+            $managerEmployees = $managerTeams
+                ->flatMap(fn ($team) => $team->employees)
+                ->unique('id')
+                ->values();
+
+            $managerAttendanceRows = $this->makeAttendanceRows($managerEmployees);
+
+            $managerAttendanceSummary = [
+                'teams' => $managerTeams->count(),
+                'employees' => $managerEmployees->count(),
+                'checked_in' => $managerAttendanceRows
+                    ->whereNotNull('attendance')
+                    ->count(),
+                'late' => $managerAttendanceRows
+                    ->where('status', 'late')
+                    ->count(),
+            ];
         }
 
         if ($user->hasRole('supervisor')) {
-            return $this->renderSupervisorDashboard($employee);
-        }
+            $supervisorTeam = $employee->supervisorTeam()
+                ->with([
+                    'divisi',
+                    'employees.user',
+                    'employees.position',
+                ])
+                ->first();
 
-        if (! $user->hasAnyRole(['Employee', 'employee']) || ! $employee) {
-            return view($view);
+            $supervisorEmployees = $supervisorTeam?->employees
+                ->reject(fn ($member) => (int) $member->id === (int) $employee->id)
+                ->values() ?? collect();
+
+            $supervisorAttendanceRows = $this->makeAttendanceRows($supervisorEmployees);
+
+            $supervisorAttendanceSummary = [
+                'employees' => $supervisorEmployees->count(),
+                'checked_in' => $supervisorAttendanceRows
+                    ->whereNotNull('attendance')
+                    ->count(),
+                'late' => $supervisorAttendanceRows
+                    ->where('status', 'late')
+                    ->count(),
+            ];
         }
 
         $dailyStatusService = app(EmployeeDailyStatusService::class);
@@ -234,76 +297,12 @@ class Dashboard extends Component
             'pendingLeaveCount' => $pendingLeaveCount,
             'pendingAbsenceCount' => $pendingAbsenceCount,
             'latestPayroll' => $latestPayroll,
-        ]);
-    }
-
-    private function renderManagerDashboard(?\App\Models\Employees $employee)
-    {
-        if (! $employee) {
-            return view('livewire.page.main.dashboard.dashboard');
-        }
-
-        $division = $employee->managedDivisi()
-            ->with([
-                'team.employees.user',
-                'team.employees.position',
-                'team.employees.team',
-            ])
-            ->first();
-
-        $teams = $division?->team ?? collect();
-        $employees = $teams
-            ->flatMap(fn ($team) => $team->employees)
-            ->unique('id')
-            ->values();
-
-        $attendanceRows = $this->makeAttendanceRows($employees);
-
-        return view('livewire.page.main.dashboard.manager', [
-            'employee' => $employee,
-            'today' => now()->startOfDay(),
-            'division' => $division,
-            'teams' => $teams,
-            'attendanceRows' => $attendanceRows,
-            'summary' => [
-                'teams' => $teams->count(),
-                'employees' => $employees->count(),
-                'checked_in' => $attendanceRows->where('attendance', '!=', null)->count(),
-                'late' => $attendanceRows->where('status', 'late')->count(),
-            ],
-        ]);
-    }
-
-    private function renderSupervisorDashboard(?\App\Models\Employees $employee)
-    {
-        if (! $employee) {
-            return view('livewire.page.main.dashboard.dashboard');
-        }
-
-        $team = $employee->supervisorTeam()
-            ->with([
-                'divisi',
-                'employees.user',
-                'employees.position',
-            ])
-            ->first();
-
-        $employees = $team?->employees
-            ->reject(fn ($member) => (int) $member->id === (int) $employee->id)
-            ->values() ?? collect();
-
-        $attendanceRows = $this->makeAttendanceRows($employees);
-
-        return view('livewire.page.main.dashboard.supervisor', [
-            'employee' => $employee,
-            'today' => now()->startOfDay(),
-            'team' => $team,
-            'attendanceRows' => $attendanceRows,
-            'summary' => [
-                'employees' => $employees->count(),
-                'checked_in' => $attendanceRows->where('attendance', '!=', null)->count(),
-                'late' => $attendanceRows->where('status', 'late')->count(),
-            ],
+            'managerDivision' => $managerDivision,
+            'managerAttendanceRows' => $managerAttendanceRows,
+            'managerAttendanceSummary' => $managerAttendanceSummary,
+            'supervisorTeam' => $supervisorTeam,
+            'supervisorAttendanceRows' => $supervisorAttendanceRows,
+            'supervisorAttendanceSummary' => $supervisorAttendanceSummary,
         ]);
     }
 

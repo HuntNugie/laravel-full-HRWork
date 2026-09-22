@@ -12,12 +12,6 @@ class DashboardService
             $user->hasRole('super-admin') =>
                 'livewire.page.main.dashboard.super-admin',
 
-            $user->hasRole('manager') =>
-                'livewire.page.main.dashboard.manager',
-
-            $user->hasRole('supervisor') =>
-                'livewire.page.main.dashboard.supervisor',
-
             $user->hasAnyRole(['Employee', 'employee']) =>
                 'livewire.page.main.dashboard.employee',
 
