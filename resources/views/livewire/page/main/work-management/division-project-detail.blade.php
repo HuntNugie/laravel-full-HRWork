@@ -155,25 +155,48 @@
                         <x-wirekit::table.row>
                             <x-wirekit::table.th>Team</x-wirekit::table.th>
                             <x-wirekit::table.th>Supervisor</x-wirekit::table.th>
+                            <x-wirekit::table.th>Progress</x-wirekit::table.th>
+                            <x-wirekit::table.th>Aksi</x-wirekit::table.th>
                         </x-wirekit::table.row>
                     </x-wirekit::table.head>
                     <x-wirekit::table.body>
                         @forelse ($divisionProject->teams as $team)
+                            @php
+                                $teamTasks = $divisionProject->tasks->where('team_id', $team->id)->reject(fn ($task) => $task->status === 'cancelled');
+                                $teamProgress = $teamTasks->isNotEmpty()
+                                    ? (int) round($teamTasks->avg(fn ($task) => (int) $task->progress))
+                                    : 0;
+                            @endphp
                             <x-wirekit::table.row>
                                 <x-wirekit::table.td>
-                                    <a
-                                        href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
-                                        wire:navigate
-                                        class="text-sm font-semibold text-[#168ED1] hover:underline"
-                                    >
-                                        {{ $team->name }}
-                                    </a>
+                                    <span class="text-sm font-semibold text-slate-800">{{ $team->name }}</span>
                                 </x-wirekit::table.td>
                                 <x-wirekit::table.td><span class="text-sm text-slate-600">{{ $team->supervisor?->user?->name ?? '-' }}</span></x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <div class="min-w-32">
+                                        <div class="mb-1 flex justify-between text-xs text-slate-500">
+                                            <span>{{ $teamProgress }}%</span>
+                                            <span>{{ $teamTasks->count() }} task</span>
+                                        </div>
+                                        <div class="h-2 rounded-full bg-slate-100">
+                                            <div class="h-2 rounded-full bg-[#30AFFF]" style="width: {{ $teamProgress }}%"></div>
+                                        </div>
+                                    </div>
+                                </x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <x-wirekit::button
+                                        variant="outline"
+                                        size="sm"
+                                        href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
+                                        wire:navigate
+                                    >
+                                        Lihat Perkembangan
+                                    </x-wirekit::button>
+                                </x-wirekit::table.td>
                             </x-wirekit::table.row>
                         @empty
                             <x-wirekit::table.row>
-                                <x-wirekit::table.td colspan="2"><div class="py-10 text-center text-sm text-slate-500">Belum ada team yang ditugaskan.</div></x-wirekit::table.td>
+                                <x-wirekit::table.td colspan="4"><div class="py-10 text-center text-sm text-slate-500">Belum ada team yang ditugaskan.</div></x-wirekit::table.td>
                             </x-wirekit::table.row>
                         @endforelse
                     </x-wirekit::table.body>
