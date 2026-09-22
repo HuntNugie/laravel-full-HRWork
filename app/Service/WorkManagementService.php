@@ -501,6 +501,12 @@ class WorkManagementService
             ]);
         }
 
+        if ($divisionProject->status !== 'submitted_to_manager') {
+            throw ValidationException::withMessages([
+                'division_project' => 'Semua Supervisor harus mengirim laporan sebelum Manager melakukan review.',
+            ]);
+        }
+
         if (! in_array($decision, ['approved', 'rejected'], true)) {
             throw ValidationException::withMessages([
                 'decision' => 'Decision review tidak valid.',
