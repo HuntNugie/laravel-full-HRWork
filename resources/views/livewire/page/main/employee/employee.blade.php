@@ -35,7 +35,7 @@
 
         <x-wirekit::card.header>
 
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex flex-col gap-4">
 
                 <x-wirekit::stack gap="1">
 
@@ -50,11 +50,53 @@
                 </x-wirekit::stack>
 
 
-                {{-- Search --}}
-                <div class="w-full sm:w-64">
+                {{-- Search & Filters --}}
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 
-                    <x-wirekit::input placeholder="Cari nama employee" wire:model.live.debounce.500ms="search"
-                        name="search" class="text-black" />
+                    <x-wirekit::input
+                        placeholder="Cari nama, email, atau employee code"
+                        wire:model.live.debounce.500ms="search"
+                        name="search"
+                        class="text-black"
+                    />
+
+                    <x-wirekit::select
+                        name="filterDivision"
+                        ariaLabel="Filter berdasarkan divisi"
+                        placeholder="Semua divisi"
+                        :options="$divisions"
+                        wire:model.live="filterDivision"
+                    />
+
+                    <x-wirekit::select
+                        name="filterTeam"
+                        ariaLabel="Filter berdasarkan team"
+                        placeholder="Semua team"
+                        :options="$teams"
+                        wire:model.live="filterTeam"
+                    />
+
+                    <x-wirekit::select
+                        name="filterPosition"
+                        ariaLabel="Filter berdasarkan position"
+                        placeholder="Semua position"
+                        :options="$positions"
+                        wire:model.live="filterPosition"
+                    />
+
+                </div>
+
+                <div class="flex justify-end">
+
+                    <x-wirekit::button
+                        type="button"
+                        intent="neutral"
+                        surface="outline"
+                        size="sm"
+                        wire:click="resetFilters"
+                    >
+                        Reset Filter
+                    </x-wirekit::button>
 
                 </div>
 
@@ -79,6 +121,10 @@
 
                             <x-wirekit::table.th sortable column="position">
                                 Position
+                            </x-wirekit::table.th>
+
+                            <x-wirekit::table.th sortable column="division">
+                                Division
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th sortable column="team">
@@ -151,6 +197,16 @@
                                 </x-wirekit::table.td>
 
 
+                                {{-- Division --}}
+                                <x-wirekit::table.td>
+
+                                    <span class="text-sm text-slate-700">
+                                        {{ $employee->team?->divisi?->name ?? $employee->managedDivisi?->name ?? 'Belum di ketahui' }}
+                                    </span>
+
+                                </x-wirekit::table.td>
+
+
                                 {{-- Team --}}
                                 <x-wirekit::table.td>
 
@@ -175,9 +231,7 @@
                                 <x-wirekit::table.td>
 
                                     <span
-                                        class="inline-flex items-center rounded-full
-                              px-2.5 py-1
-                                text-xs font-medium   {{ $employee->status_employee == 'active' ? 'bg-emerald-50  text-emerald-600' : 'bg-red-50  text-red-600' }}">
+                                        class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $employee->status_employee == 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600' }}">
                                         {{ $employee->status_employee ?? 'Belum di ketahui' }}
                                     </span>
 
@@ -187,8 +241,12 @@
                                 {{-- Actions --}}
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::button type="button" class="px-3 py-1.5 text-xs"
-                                        href="{{ route('employee.show', $employee->id) }}" wire:navigate>
+                                    <x-wirekit::button
+                                        type="button"
+                                        class="px-3 py-1.5 text-xs"
+                                        href="{{ route('employee.show', $employee->id) }}"
+                                        wire:navigate
+                                    >
                                         Detail
                                     </x-wirekit::button>
 
@@ -198,24 +256,30 @@
 
                         @empty
                             <x-wirekit::table.row>
-                                <x-wirekit::table.td colspan="6">
+
+                                <x-wirekit::table.td colspan="7">
+
                                     <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
+
                                         <p class="text-sm font-medium text-slate-700">
                                             Belum ada data karyawan.
                                         </p>
 
                                         <p class="text-sm text-slate-500">
-                                            Silakan tambahkan karyawan terlebih dahulu.
+                                            Tidak ada karyawan yang sesuai dengan filter yang dipilih.
                                         </p>
+
                                     </div>
+
                                 </x-wirekit::table.td>
+
                             </x-wirekit::table.row>
                         @endforelse
-
 
                     </x-wirekit::table.body>
 
                 </x-wirekit::table>
+
                 {{ $employees->links() }}
 
             </div>

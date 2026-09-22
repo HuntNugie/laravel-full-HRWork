@@ -170,7 +170,7 @@
 
         <x-wirekit::card.header>
 
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
 
                 <x-wirekit::stack gap="1">
 
@@ -185,10 +185,31 @@
                 </x-wirekit::stack>
 
 
-                <div class="w-full lg:w-72">
+                <div class="grid w-full gap-3 sm:grid-cols-[minmax(0,1fr)_16rem_auto] xl:max-w-3xl">
 
-                    <x-wirekit::input placeholder="Cari nama, email, atau employee code" name="search"
-                        wire:model.live.debounce.400ms="search" class="text-black" />
+                    <x-wirekit::input
+                        placeholder="Cari nama, email, atau employee code"
+                        name="search"
+                        wire:model.live.debounce.400ms="search"
+                        class="text-black"
+                    />
+
+                    <x-wirekit::select
+                        name="roleFilter"
+                        ariaLabel="Filter berdasarkan role"
+                        placeholder="Semua role"
+                        :options="$roles"
+                        wire:model.live="roleFilter"
+                    />
+
+                    <x-wirekit::button
+                        type="button"
+                        intent="neutral"
+                        surface="outline"
+                        wire:click="resetFilters"
+                    >
+                        Reset
+                    </x-wirekit::button>
 
                 </div>
 
@@ -238,10 +259,7 @@
 
                     <x-wirekit::table.body>
 
-                        {{-- =================================================
-                            USER 1
-                        ================================================== --}}
-                        @forelse ($users as $user )
+                        @forelse ($users as $user)
                             <x-wirekit::table.row>
 
                                 <x-wirekit::table.td>
@@ -320,8 +338,6 @@
                                             </span>
                                         @endif
 
-
-
                                     </div>
 
                                 </x-wirekit::table.td>
@@ -330,9 +346,7 @@
                                 <x-wirekit::table.td>
 
                                     <span @class([
-                                        "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium ",
+                                        'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium',
                                         'bg-emerald-50 text-emerald-600' => $user->status === 'active',
                                         'bg-yellow-50 text-yellow-600' => $user->status === 'pending',
                                         'bg-red-50 text-red-600' => $user->status === 'inactive',
@@ -354,8 +368,12 @@
 
                                 <x-wirekit::table.td>
 
-                                    <x-wirekit::button type="button" href="{{ route('user.show', $user->id) }}"
-                                        wire:navigate class="px-3 py-1.5 text-xs">
+                                    <x-wirekit::button
+                                        type="button"
+                                        href="{{ route('user.show', $user->id) }}"
+                                        wire:navigate
+                                        class="px-3 py-1.5 text-xs"
+                                    >
                                         Detail
                                     </x-wirekit::button>
 
@@ -377,20 +395,12 @@
                             </x-wirekit::table.row>
                         @endforelse
 
-
-
-                        {{-- =================================================
-                            EMPTY STATE
-                        ================================================== --}}
-
-                        {{--
-
-                        --}}
-
                     </x-wirekit::table.body>
 
                 </x-wirekit::table>
+
                 {{ $users->links() }}
+
             </div>
 
         </x-wirekit::card.body>

@@ -3,11 +3,11 @@
 namespace App\Livewire\Page\Main\User;
 
 use App\Models\User as ModelsUser;
-use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Spatie\Permission\Models\Role;
 
 #[Layout('layouts.main', ['title' => 'Halaman manajemen User'])]
 class User extends Component
@@ -16,8 +16,21 @@ class User extends Component
 
     public string $search = '';
 
-    public function updatedSearch()
+    public string $roleFilter = '';
+
+    public function updatedSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedRoleFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'roleFilter']);
         $this->resetPage();
     }
 
@@ -28,6 +41,7 @@ class User extends Component
             $q->where('name', 'super-admin');
         })->count();
     }
+
     #[Computed]
     public function totalUser()
     {
@@ -35,6 +49,7 @@ class User extends Component
             $q->where('name', 'super-admin');
         })->count();
     }
+
     #[Computed]
     public function totalActive()
     {
@@ -42,6 +57,7 @@ class User extends Component
             $q->where('name', 'super-admin');
         })->count();
     }
+
     #[Computed]
     public function totalInactive()
     {
@@ -52,18 +68,35 @@ class User extends Component
 
     public function render()
     {
-        $users = ModelsUser::query()->whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'super-admin');
-        })->when($this->search, function ($q) {
-            $q->where(function ($qe) {
-                $qe->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%')
-                    ->orWhereHas('employees', function ($q) {
-                        $q->where('employee_code', 'like', '%' . $this->search . '%');
-                    });
-            });
-        })->latest()->paginate(5);
+        $users = ModelsUser::query()
+            ->with(['employees.position', 'roles'])
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'super-admin');
+            })
+            ->when($this->search, function ($q) {
+                $q->where(function ($qe) {
+                    $qe->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%')
+                        ->orWhereHas('employees', function ($q) {
+                            $q->where('employee_code', 'like', '%' . $this->search . '%');
+                        });
+                });
+            })
+            ->when($this->roleFilter, function ($q) {
+                $q->whereHas('roles', function ($roleQuery) {
+                    $roleQuery->where('name', $this->roleFilter);
+                });
+            })
+            ->latest()
+            ->paginate(5);
 
-        return view('livewire.page.main.user.user', compact('users'));
+        $roles = Role::query()
+            ->where('name', '!=', 'super-admin')
+            ->orderBy('name')
+            ->pluck('name', 'name')
+            ->mapWithKeys(fn ($name) => [$name => str($name)->headline()])
+            ->all();
+
+        return view('livewire.page.main.user.user', compact('users', 'roles'));
     }
 }
