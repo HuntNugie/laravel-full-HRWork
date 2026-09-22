@@ -842,6 +842,8 @@ class WorkManagementDevelopmentSeeder extends Seeder
             $processedAt = $paymentDate->copy()->addDays(1)->setTime(10, 0);
             $paidAt = $paymentDate->copy()->addDays(4)->setTime(10, 0);
 
+            $generatedEmployeeCount = 0;
+
             DB::transaction(function () use (
                 $creator,
                 $employees,
@@ -851,6 +853,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 $paymentDate,
                 $processedAt,
                 $paidAt,
+                &$generatedEmployeeCount,
             ): void {
                 $period = PayrollPeriod::updateOrCreate(
                     [
@@ -871,22 +874,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 // Rebuild historical payroll rows so the seed remains idempotent.
                 $period->payrolls()->delete();
 
-                $eligibleEmployees = Employees::query()
-                    ->with(['employeeContract.benefits', 'user'])
-                    ->whereHas('user.roles', fn ($query) => $query->where('name', 'employee'))
-                    ->whereHas('employeeContract', function ($query) use ($startDate, $endDate) {
-                        $query
-                            ->where('status', 'active')
-                            ->whereDate('start_date', '<=', $endDate->toDateString())
-                            ->where(function ($query) use ($startDate) {
-                                $query
-                                    ->whereNull('end_date')
-                                    ->orWhereDate('end_date', '>=', $startDate->toDateString());
-                            });
-                    })
-                    ->get();
-
-                foreach ($eligibleEmployees as $employee) {
+                foreach (array_values($employees) as $employee) {
                     $contract = $employee->employeeContract
                         ->filter(function ($contract) use ($startDate, $endDate) {
                             return $contract->status === 'active'
@@ -931,6 +919,8 @@ class WorkManagementDevelopmentSeeder extends Seeder
                         'processed_at' => $processedAt,
                         'paid_at' => $paidAt,
                     ]);
+
+                    $generatedEmployeeCount++;
 
                     $sortOrder = 1;
 
@@ -986,7 +976,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             });
 
             $this->command?->line(
-                'Payroll history: ' . $startDate->translatedFormat('F Y') . ' → paid (' . $eligibleEmployees->count() . ' employees).'
+                'Payroll history: ' . $startDate->translatedFormat('F Y') . ' → paid (' . $generatedEmployeeCount . ' employees).'
             );
         }
     }
