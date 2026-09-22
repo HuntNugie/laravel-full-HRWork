@@ -427,9 +427,9 @@ class WorkManagementService
         $this->ensureActiveEmployee($reporter);
         $divisionProject->loadMissing('teams');
 
-        if (! in_array($divisionProject->status, ['ready_for_review', 'revision_required'], true)) {
+        if (! in_array($divisionProject->status, ['in_progress', 'ready_for_review', 'revision_required'], true)) {
             throw ValidationException::withMessages([
-                'division_project' => 'Division project belum berada pada tahap laporan Supervisor.',
+                'division_project' => 'Division project sudah masuk tahap review atau approval dan tidak menerima laporan Supervisor baru.',
             ]);
         }
 
@@ -480,8 +480,9 @@ class WorkManagementService
         });
     }
 
-    public function reviewDivisionProject(
+    public function reviewTeamReport(
         DivisionProject $divisionProject,
+        Team $team,
         Employees $reviewer,
         string $decision,
         ?string $feedback = null,
@@ -494,9 +495,9 @@ class WorkManagementService
             ]);
         }
 
-        if ($divisionProject->status !== 'submitted_to_manager') {
+        if (! $divisionProject->teams()->whereKey($team->id)->exists()) {
             throw ValidationException::withMessages([
-                'division_project' => 'Laporan seluruh Supervisor harus dikirim sebelum manager melakukan review.',
+                'team' => 'Team belum ditugaskan pada division project ini.',
             ]);
         }
 
@@ -506,7 +507,20 @@ class WorkManagementService
             ]);
         }
 
-        return DB::transaction(function () use ($divisionProject, $reviewer, $decision, $feedback) {
+        $report = $divisionProject->reports()
+            ->where('report_level', ProjectReport::LEVEL_SUPERVISOR)
+            ->where('team_id', $team->id)
+            ->where('status', ProjectReport::STATUS_SUBMITTED)
+            ->latest('id')
+            ->first();
+
+        if (! $report) {
+            throw ValidationException::withMessages([
+                'report' => 'Belum ada laporan Supervisor yang menunggu review untuk Team ini.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($divisionProject, $team, $reviewer, $decision, $feedback, $report) {
             $review = $divisionProject->reviews()->create([
                 'reviewer_id' => $reviewer->id,
                 'reviewer_level' => 'manager',
@@ -514,33 +528,54 @@ class WorkManagementService
                 'feedback' => $feedback,
             ]);
 
-            $old = ['status' => $divisionProject->status];
+            $old = ['status' => $report->status];
 
-            $divisionProject->reports()
-                ->where('report_level', ProjectReport::LEVEL_SUPERVISOR)
-                ->where('status', ProjectReport::STATUS_SUBMITTED)
-                ->update([
-                    'status' => $decision === 'approved'
-                        ? ProjectReport::STATUS_APPROVED
-                        : ProjectReport::STATUS_REJECTED,
-                ]);
-
-            $divisionProject->update([
+            $report->update([
                 'status' => $decision === 'approved'
-                    ? 'manager_approved'
-                    : 'revision_required',
+                    ? ProjectReport::STATUS_APPROVED
+                    : ProjectReport::STATUS_REJECTED,
             ]);
 
-            $divisionProject = $divisionProject->refresh();
+            if ($decision === 'rejected') {
+                $divisionProject->update(['status' => 'revision_required']);
+            } else {
+                $this->syncManagerApprovalStatus($divisionProject);
+            }
 
-            $this->audit($reviewer, $divisionProject, 'division_project.manager_reviewed', $old, [
-                'status' => $divisionProject->status,
+            $this->audit($reviewer, $report, 'division_project.supervisor_report_reviewed', $old, [
+                'status' => $report->status,
                 'decision' => $decision,
                 'feedback' => $feedback,
+                'team_id' => $team->id,
             ]);
 
             return $review;
         });
+    }
+
+    private function syncManagerApprovalStatus(DivisionProject $divisionProject): DivisionProject
+    {
+        $teams = $divisionProject->teams()->get();
+
+        if ($teams->isEmpty()) {
+            return $divisionProject;
+        }
+
+        $allApproved = $teams->every(function (Team $team) use ($divisionProject) {
+            $latest = $divisionProject->reports()
+                ->where('report_level', ProjectReport::LEVEL_SUPERVISOR)
+                ->where('team_id', $team->id)
+                ->latest('id')
+                ->first();
+
+            return $latest?->status === ProjectReport::STATUS_APPROVED;
+        });
+
+        if ($allApproved) {
+            $divisionProject->update(['status' => 'manager_approved']);
+        }
+
+        return $divisionProject->refresh();
     }
 
     public function submitDivisionProjectToGM(
@@ -722,11 +757,16 @@ class WorkManagementService
                 ->latest('id')
                 ->first();
 
-            return $latest?->status === ProjectReport::STATUS_SUBMITTED;
+            return in_array($latest?->status, [
+                ProjectReport::STATUS_SUBMITTED,
+                ProjectReport::STATUS_APPROVED,
+            ], true);
         });
 
         if ($allReported) {
             $divisionProject->update(['status' => 'submitted_to_manager']);
+        } else {
+            $divisionProject->update(['status' => 'in_progress']);
         }
     }
 
