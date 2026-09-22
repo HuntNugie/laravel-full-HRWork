@@ -38,6 +38,8 @@
                                 $statusClass = match ($project->status) {
                                     'completed' => 'bg-emerald-50 text-emerald-600',
                                     'ready_for_review' => 'bg-violet-50 text-violet-600',
+                                    'submitted_to_gm' => 'bg-blue-50 text-blue-600',
+                                    'manager_approved' => 'bg-cyan-50 text-cyan-600',
                                     'in_progress' => 'bg-sky-50 text-sky-600',
                                     'rejected' => 'bg-rose-50 text-rose-600',
                                     default => 'bg-slate-100 text-slate-600',
