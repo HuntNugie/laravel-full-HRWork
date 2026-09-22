@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\DivisionProject;
 use App\Models\Employees;
+use App\Models\Team;
 use App\Models\User;
 
 class DivisionProjectPolicy
@@ -76,6 +77,27 @@ class DivisionProjectPolicy
     {
         return $user->can('review-division-project')
             && (int) $divisionProject->manager_id === (int) $user->employees?->id;
+    }
+
+    public function viewTeam(User $user, DivisionProject $divisionProject, Team $team): bool
+    {
+        if (! $user->can('view-division-project') || ! ($employee = $user->employees)) {
+            return false;
+        }
+
+        if (! $divisionProject->teams()->whereKey($team->id)->exists()) {
+            return false;
+        }
+
+        if ($this->isGeneralManager($employee)) {
+            return true;
+        }
+
+        if ((int) $divisionProject->manager_id === (int) $employee->id) {
+            return true;
+        }
+
+        return (int) $team->supervisor_id === (int) $employee->id;
     }
 
     public function submitSupervisorReport(User $user, DivisionProject $divisionProject): bool
