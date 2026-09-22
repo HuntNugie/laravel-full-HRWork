@@ -176,6 +176,7 @@ class RolePermissionSeeder extends Seeder
                 'assign-project-team',
                 'report-project-progress',
                 'review-division-project',
+                'submit-division-project-to-gm',
 
                 // Task management
                 'view-task',
