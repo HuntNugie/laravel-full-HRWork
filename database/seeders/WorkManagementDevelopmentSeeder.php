@@ -92,6 +92,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             ['name' => 'Project Coordinator', 'description' => 'Koordinasi aktivitas dan dokumentasi project.', 'min_salary_daily' => 220000],
             ['name' => 'Finance Officer', 'description' => 'Pengelolaan operasional keuangan.', 'min_salary_daily' => 210000],
             ['name' => 'Accounting Staff', 'description' => 'Pencatatan dan rekonsiliasi akuntansi.', 'min_salary_daily' => 190000],
+            ['name' => 'Administrator', 'description' => 'Pengelola administrasi sistem dan operasional internal.', 'min_salary_daily' => 250000],
             ['name' => 'Administrative Officer', 'description' => 'Operasional administrasi internal.', 'min_salary_daily' => 185000],
             ['name' => 'HR Officer', 'description' => 'Pengelolaan operasional sumber daya manusia.', 'min_salary_daily' => 275000],
             ['name' => 'Recruitment Staff', 'description' => 'Rekrutmen dan administrasi kandidat.', 'min_salary_daily' => 195000],
