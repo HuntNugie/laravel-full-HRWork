@@ -1,15 +1,83 @@
-<div class="space-y-6">
-    <div><a href="{{ route('work-management.division-projects.show', $divisionProject) }}" wire:navigate class="text-sm text-blue-600">← Kembali</a><h1 class="mt-2 text-2xl font-semibold">Create Task</h1><p class="text-sm text-gray-500">{{ $divisionProject->name }}</p></div>
-    <form wire:submit="save" class="space-y-4 rounded-xl border bg-white p-6">
-        <div class="grid gap-4 md:grid-cols-2">
-            <div><label class="mb-1 block text-sm font-medium">Team</label><select wire:model.live="team_id" class="w-full rounded-lg border-gray-300"><option value="">Pilih team</option>@foreach ($teams as $team)<option value="{{ $team->id }}">{{ $team->name }}</option>@endforeach</select></div>
-            <div><label class="mb-1 block text-sm font-medium">Assignee</label><select wire:model="assignee_id" class="w-full rounded-lg border-gray-300"><option value="">Pilih karyawan</option>@foreach ($assignees as $assignee)<option value="{{ $assignee->id }}">{{ $assignee->user?->name ?? $assignee->id }}</option>@endforeach</select></div>
+<x-wirekit::stack gap="md">
+    <div>
+        <div class="mb-2 flex items-center gap-2">
+            <a href="{{ route('work-management.division-projects.show', $divisionProject) }}" wire:navigate class="text-sm text-[#30AFFF] hover:underline">Division Project</a>
+            <span class="text-sm text-slate-400">/ Create Task</span>
         </div>
-        @error('team_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
-        @error('assignee_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
-        <div><label class="mb-1 block text-sm font-medium">Judul Task</label><input type="text" wire:model="title" class="w-full rounded-lg border-gray-300" />@error('title')<span class="text-sm text-red-600">{{ $message }}</span>@enderror</div>
-        <div><label class="mb-1 block text-sm font-medium">Deskripsi</label><textarea wire:model="description" rows="4" class="w-full rounded-lg border-gray-300"></textarea></div>
-        <div><label class="mb-1 block text-sm font-medium">Deadline</label><input type="date" wire:model="due_date" class="w-full rounded-lg border-gray-300" /></div>
-        <div class="flex gap-3"><a href="{{ route('work-management.division-projects.show', $divisionProject) }}" wire:navigate class="rounded-lg border px-4 py-2 text-sm">Batal</a><button class="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white">Simpan</button></div>
-    </form>
-</div>
+
+        <x-wirekit::stack gap="1">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Create Task</h1>
+            <p class="text-sm text-slate-500">{{ $divisionProject->name }}</p>
+        </x-wirekit::stack>
+    </div>
+
+    <x-wirekit::card>
+        <x-wirekit::card.header>
+            <x-wirekit::stack gap="1">
+                <h2 class="text-lg font-semibold text-slate-900">Informasi Task</h2>
+                <p class="text-sm text-slate-500">Tentukan team dan karyawan yang bertanggung jawab atas task ini.</p>
+            </x-wirekit::stack>
+        </x-wirekit::card.header>
+
+        <x-wirekit::card.body>
+            <form wire:submit="save" class="space-y-5">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700">Team</label>
+                        <select wire:model.live="team_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                            <option value="">Pilih team</option>
+                            @foreach ($teams as $team)
+                                <option value="{{ $team->id }}">{{ $team->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('team_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-medium text-slate-700">Assignee</label>
+                        <select wire:model="assignee_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                            <option value="">Pilih karyawan</option>
+                            @foreach ($assignees as $assignee)
+                                <option value="{{ $assignee->id }}">{{ $assignee->user?->name ?? $assignee->id }}</option>
+                            @endforeach
+                        </select>
+                        @error('assignee_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700">Judul Task</label>
+                    <x-wirekit::input type="text" wire:model="title" name="title" placeholder="Masukkan judul task" />
+                    @error('title') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-700">Deskripsi</label>
+                    <textarea wire:model="description" rows="5" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20" placeholder="Jelaskan pekerjaan yang harus dilakukan"></textarea>
+                    @error('description') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="max-w-md">
+                    <label class="mb-2 block text-sm font-medium text-slate-700">Deadline</label>
+                    <input type="date" wire:model="due_date" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20" />
+                    @error('due_date') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
+                    <x-wirekit::button
+                        type="button"
+                        variant="outline"
+                        href="{{ route('work-management.division-projects.show', $divisionProject) }}"
+                        wire:navigate
+                    >
+                        Batal
+                    </x-wirekit::button>
+
+                    <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">
+                        Simpan Task
+                    </x-wirekit::button>
+                </div>
+            </form>
+        </x-wirekit::card.body>
+    </x-wirekit::card>
+</x-wirekit::stack>
