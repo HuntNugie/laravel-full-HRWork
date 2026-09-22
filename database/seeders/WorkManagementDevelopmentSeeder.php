@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\Benefit;
 use App\Models\Bank;
-use App\Models\EmployeeBankAccount;
-use App\Models\EmployeeProfileAddress;
-use App\Models\Employee_profile;
+use App\Models\Benefit;
 use App\Models\ContractLeaveEntitlements;
 use App\Models\Divisi;
+use App\Models\EmployeeBankAccount;
 use App\Models\EmployeeContract;
+use App\Models\EmployeeProfileAddress;
+use App\Models\Employee_profile;
 use App\Models\Employees;
 use App\Models\LeaveType;
 use App\Models\Position;
@@ -24,88 +24,81 @@ use Spatie\Permission\Models\Role;
 class WorkManagementDevelopmentSeeder extends Seeder
 {
     /**
-     * Seed a small, coherent HRWork environment for local development/testing.
+     * Seed a complete development HRWork environment.
      *
-     * The seeder is intentionally idempotent for development data.
+     * Dataset:
+     * - 50 employees
+     * - 5 divisions
+     * - 10 teams
+     * - 1 general manager
+     * - 5 managers
+     * - 10 supervisors
+     * - 31 task workers
+     * - HR, administrator, and super-admin accounts
+     * - profiles, addresses, bank accounts, status history, contracts,
+     *   benefits, and annual leave entitlements
      */
     public function run(): void
     {
         $this->seedWilayah();
         $this->seedPositions();
 
-        $developmentDivision = $this->seedDivision(
-            'Development',
-            'Divisi pengembangan aplikasi.',
-        );
-
-        $managementDivision = $this->seedDivision(
-            'Management',
-            'Divisi manajemen untuk akun pengelola HRWork.',
-        );
-
+        $divisions = $this->seedDivisions();
         $users = $this->seedUsers();
         $employees = $this->seedEmployees($users);
 
-        $this->assignDivisionManager($developmentDivision, $employees['manager']);
-
-        $team = Team::updateOrCreate(
-            ['name' => 'Development Team'],
-            [
-                'description' => 'Team development untuk kebutuhan development/testing HRWork.',
-                'is_active' => 'active',
-                'supervisor_id' => $employees['supervisor']->id,
-            ],
-        );
-
-        $employees['supervisor']->update(['team_id' => $team->id]);
-        $employees['worker']->update(['team_id' => $team->id]);
-
+        $this->seedDivisionAndTeams($divisions, $employees);
         $this->seedProfilesAndBankAccounts($employees);
         $this->seedStatusHistory($employees);
         $this->seedContracts($employees);
         $this->seedBenefits($employees);
         $this->seedLeaveEntitlement($employees);
 
-        $this->command?->info('Development HR/Work Management data seeded.');
-        $this->command?->line('GM: gm.hrwork@gmail.com / password');
-        $this->command?->line('Manager: manager.hrwork@gmail.com / password');
-        $this->command?->line('Supervisor: supervisor.hrwork@gmail.com / password');
-        $this->command?->line('Task Worker: worker.hrwork@gmail.com / password');
+        $count = Employees::query()
+            ->where('employee_code', 'like', 'DEV-%')
+            ->count();
+
+        if ($count !== 50) {
+            throw new \RuntimeException(
+                "Development seed harus menghasilkan tepat 50 employee. Saat ini: {$count}.",
+            );
+        }
+
+        $this->command?->info("Development HR/Work Management data seeded: {$count} employees.");
+        $this->command?->line('Development accounts use password: nugitea123');
+        $this->command?->line('GM: gm.hrwork@gmail.com');
+        $this->command?->line('HR: nugiekurniawan03@gmail.com');
+        $this->command?->line('Administrator: nugiekurniawan02@gmail.com');
+        $this->command?->line('Super Admin: ' . env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'));
     }
 
     private function seedPositions(): void
     {
         $positions = [
-            [
-                'name' => 'General Manager',
-                'description' => 'Penanggung jawab final Work Management.',
-                'min_salary_daily' => 500000,
-            ],
-            [
-                'name' => 'Manager',
-                'description' => 'Penanggung jawab Division Project.',
-                'min_salary_daily' => 350000,
-            ],
-            [
-                'name' => 'Supervisor',
-                'description' => 'Penanggung jawab distribusi task dalam team.',
-                'min_salary_daily' => 275000,
-            ],
-            [
-                'name' => 'Software Engineer',
-                'description' => 'Task worker untuk pekerjaan development.',
-                'min_salary_daily' => 225000,
-            ],
-            [
-                'name' => 'HR Officer',
-                'description' => 'Pengelola modul HR.',
-                'min_salary_daily' => 275000,
-            ],
-            [
-                'name' => 'Administrator',
-                'description' => 'Pengelola administrasi aplikasi.',
-                'min_salary_daily' => 250000,
-            ],
+            ['name' => 'General Manager', 'description' => 'Penanggung jawab final perusahaan dan Work Management.', 'min_salary_daily' => 500000],
+            ['name' => 'Manager', 'description' => 'Penanggung jawab division dan distribusi pekerjaan.', 'min_salary_daily' => 350000],
+            ['name' => 'Supervisor', 'description' => 'Penanggung jawab team dan review pekerjaan.', 'min_salary_daily' => 275000],
+            ['name' => 'Software Engineer', 'description' => 'Pengembangan perangkat lunak umum.', 'min_salary_daily' => 225000],
+            ['name' => 'Backend Developer', 'description' => 'Pengembangan layanan backend dan API.', 'min_salary_daily' => 240000],
+            ['name' => 'Frontend Developer', 'description' => 'Pengembangan antarmuka aplikasi web.', 'min_salary_daily' => 235000],
+            ['name' => 'Mobile Developer', 'description' => 'Pengembangan aplikasi mobile.', 'min_salary_daily' => 230000],
+            ['name' => 'UI/UX Designer', 'description' => 'Perancangan pengalaman dan antarmuka pengguna.', 'min_salary_daily' => 220000],
+            ['name' => 'QA Engineer', 'description' => 'Quality assurance dan pengujian aplikasi.', 'min_salary_daily' => 210000],
+            ['name' => 'DevOps Engineer', 'description' => 'Infrastruktur, deployment, dan reliability.', 'min_salary_daily' => 250000],
+            ['name' => 'IT Support Specialist', 'description' => 'Dukungan perangkat dan aplikasi internal.', 'min_salary_daily' => 190000],
+            ['name' => 'Network Support Specialist', 'description' => 'Dukungan jaringan dan konektivitas.', 'min_salary_daily' => 205000],
+            ['name' => 'Data Analyst', 'description' => 'Analisis data dan pelaporan.', 'min_salary_daily' => 215000],
+            ['name' => 'Product Specialist', 'description' => 'Analisis kebutuhan dan pengembangan produk.', 'min_salary_daily' => 230000],
+            ['name' => 'Project Coordinator', 'description' => 'Koordinasi aktivitas dan dokumentasi project.', 'min_salary_daily' => 220000],
+            ['name' => 'Finance Officer', 'description' => 'Pengelolaan operasional keuangan.', 'min_salary_daily' => 210000],
+            ['name' => 'Accounting Staff', 'description' => 'Pencatatan dan rekonsiliasi akuntansi.', 'min_salary_daily' => 190000],
+            ['name' => 'Administrative Officer', 'description' => 'Operasional administrasi internal.', 'min_salary_daily' => 185000],
+            ['name' => 'HR Officer', 'description' => 'Pengelolaan operasional sumber daya manusia.', 'min_salary_daily' => 275000],
+            ['name' => 'Recruitment Staff', 'description' => 'Rekrutmen dan administrasi kandidat.', 'min_salary_daily' => 195000],
+            ['name' => 'People Operations Staff', 'description' => 'Operasional layanan dan administrasi karyawan.', 'min_salary_daily' => 200000],
+            ['name' => 'Marketing Specialist', 'description' => 'Pemasaran dan komunikasi produk.', 'min_salary_daily' => 200000],
+            ['name' => 'Content Specialist', 'description' => 'Konten dan dokumentasi komunikasi.', 'min_salary_daily' => 190000],
+            ['name' => 'Security Analyst', 'description' => 'Keamanan aplikasi dan infrastruktur.', 'min_salary_daily' => 240000],
         ];
 
         foreach ($positions as $position) {
@@ -120,15 +113,48 @@ class WorkManagementDevelopmentSeeder extends Seeder
         }
     }
 
-    private function seedDivision(string $name, string $description): Divisi
+    /**
+     * @return array<string, Divisi>
+     */
+    private function seedDivisions(): array
     {
-        return Divisi::updateOrCreate(
-            ['name' => $name],
-            [
-                'description' => $description,
-                'is_active' => 'active',
+        $definitions = [
+            'development' => [
+                'name' => 'Development',
+                'description' => 'Divisi pengembangan aplikasi dan software engineering.',
             ],
-        );
+            'product' => [
+                'name' => 'Product',
+                'description' => 'Divisi product, design, dan quality assurance.',
+            ],
+            'infrastructure' => [
+                'name' => 'Infrastructure',
+                'description' => 'Divisi infrastruktur, DevOps, jaringan, dan IT support.',
+            ],
+            'finance' => [
+                'name' => 'Finance & Administration',
+                'description' => 'Divisi keuangan dan administrasi perusahaan.',
+            ],
+            'people' => [
+                'name' => 'Human Resources & Operations',
+                'description' => 'Divisi HR, people operations, dan operasional karyawan.',
+            ],
+        ];
+
+        $divisions = [];
+
+        foreach ($definitions as $key => $definition) {
+            $divisions[$key] = Divisi::updateOrCreate(
+                ['name' => $definition['name']],
+                [
+                    'description' => $definition['description'],
+                    'is_active' => 'active',
+                    'manager_id' => null,
+                ],
+            );
+        }
+
+        return $divisions;
     }
 
     /**
@@ -136,29 +162,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
      */
     private function seedUsers(): array
     {
-        $accounts = [
-            'gm' => [
-                'name' => 'GM HRWork',
-                'email' => 'gm.hrwork@gmail.com',
-                'role' => 'general-manager',
-            ],
-            'manager' => [
-                'name' => 'Manager Development',
-                'email' => 'manager.hrwork@gmail.com',
-                'role' => 'manager',
-            ],
-            'supervisor' => [
-                'name' => 'Supervisor Development',
-                'email' => 'supervisor.hrwork@gmail.com',
-                'role' => 'supervisor',
-            ],
-            'worker' => [
-                'name' => 'Worker Development',
-                'email' => 'worker.hrwork@gmail.com',
-                'role' => 'task-worker',
-            ],
-        ];
-
+        $accounts = $this->accountDefinitions();
         $users = [];
 
         foreach ($accounts as $key => $account) {
@@ -166,126 +170,374 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 ['email' => $account['email']],
                 [
                     'name' => $account['name'],
-                    'password' => Hash::make('password'),
+                    'password' => Hash::make('nugitea123'),
                     'status' => 'active',
                 ],
             );
 
-            $roles = ['employee', $account['role']];
-
-            foreach ($roles as $roleName) {
+            foreach ($account['roles'] as $roleName) {
                 Role::firstOrCreate([
                     'name' => $roleName,
                     'guard_name' => 'web',
                 ]);
             }
 
-            $user->syncRoles($roles);
+            $user->syncRoles($account['roles']);
             $users[$key] = $user;
         }
 
-        $hr = User::where('email', 'nugiekurniawan03@gmail.com')->firstOrFail();
-        $admin = User::where('email', 'nugiekurniawan02@gmail.com')->firstOrFail();
-        $superAdmin = User::where('email', env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'))->firstOrFail();
-
-        Role::firstOrCreate(['name' => 'employee', 'guard_name' => 'web']);
-
-        $hr->syncRoles(['employee', 'hr']);
-        $admin->syncRoles(['employee', 'administrator']);
-        $superAdmin->syncRoles(['employee', 'super-admin']);
-
-        $users['hr'] = $hr;
-        $users['admin'] = $admin;
-        $users['superadmin'] = $superAdmin;
-
         return $users;
+    }
+
+    /**
+     * @return array<string, array{name:string,email:string,roles:array<int,string>,position:string,code:string}>
+     */
+    private function accountDefinitions(): array
+    {
+        $accounts = [
+            'gm' => [
+                'name' => 'GM HRWork',
+                'email' => 'gm.hrwork@gmail.com',
+                'roles' => ['employee', 'general-manager'],
+                'position' => 'General Manager',
+                'code' => 'DEV-GM-001',
+            ],
+            'manager-development' => [
+                'name' => 'Manager Development',
+                'email' => 'manager.development.hrwork@gmail.com',
+                'roles' => ['employee', 'manager'],
+                'position' => 'Manager',
+                'code' => 'DEV-MGR-001',
+            ],
+            'supervisor-backend' => [
+                'name' => 'Supervisor Backend Development',
+                'email' => 'supervisor.backend.hrwork@gmail.com',
+                'roles' => ['employee', 'supervisor'],
+                'position' => 'Supervisor',
+                'code' => 'DEV-SPV-001',
+            ],
+            'worker-backend-1' => [
+                'name' => 'Worker Backend Development',
+                'email' => 'worker.backend.001.hrwork@gmail.com',
+                'roles' => ['employee', 'task-worker'],
+                'position' => 'Backend Developer',
+                'code' => 'DEV-WKR-001',
+            ],
+        ];
+
+        $accounts['hr'] = [
+            'name' => 'HR HRWork',
+            'email' => 'nugiekurniawan03@gmail.com',
+            'roles' => ['employee', 'hr'],
+            'position' => 'HR Officer',
+            'code' => 'DEV-HR-001',
+        ];
+
+        $accounts['admin'] = [
+            'name' => 'Administrator HRWork',
+            'email' => 'nugiekurniawan02@gmail.com',
+            'roles' => ['employee', 'administrator'],
+            'position' => 'Administrator',
+            'code' => 'DEV-ADM-001',
+        ];
+
+        $accounts['superadmin'] = [
+            'name' => 'Super Admin',
+            'email' => env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'),
+            'roles' => ['employee', 'super-admin'],
+            'position' => 'Administrator',
+            'code' => 'DEV-SADM-001',
+        ];
+
+        $extraManagers = [
+            ['key' => 'manager-product', 'name' => 'Rian Setiawan', 'email' => 'rian.setiawan.hrwork@gmail.com', 'code' => 'DEV-MGR-002'],
+            ['key' => 'manager-infrastructure', 'name' => 'Fajar Nugroho', 'email' => 'fajar.nugroho.hrwork@gmail.com', 'code' => 'DEV-MGR-003'],
+            ['key' => 'manager-finance', 'name' => 'Siti Rahmawati', 'email' => 'siti.rahmawati.hrwork@gmail.com', 'code' => 'DEV-MGR-004'],
+            ['key' => 'manager-people', 'name' => 'Dimas Prakoso', 'email' => 'dimas.prakoso.hrwork@gmail.com', 'code' => 'DEV-MGR-005'],
+        ];
+
+        foreach ($extraManagers as $manager) {
+            $accounts[$manager['key']] = [
+                'name' => $manager['name'],
+                'email' => $manager['email'],
+                'roles' => ['employee', 'manager'],
+                'position' => 'Manager',
+                'code' => $manager['code'],
+            ];
+        }
+
+        $extraSupervisors = [
+            ['key' => 'supervisor-frontend', 'name' => 'Nanda Putri', 'email' => 'nanda.putri.hrwork@gmail.com', 'code' => 'DEV-SPV-002'],
+            ['key' => 'supervisor-uiux', 'name' => 'Aldi Saputra', 'email' => 'aldi.saputra.hrwork@gmail.com', 'code' => 'DEV-SPV-003'],
+            ['key' => 'supervisor-product', 'name' => 'Raka Maulana', 'email' => 'raka.maulana.hrwork@gmail.com', 'code' => 'DEV-SPV-004'],
+            ['key' => 'supervisor-devops', 'name' => 'Intan Permata', 'email' => 'intan.permata.hrwork@gmail.com', 'code' => 'DEV-SPV-005'],
+            ['key' => 'supervisor-it-support', 'name' => 'Yusuf Kurnia', 'email' => 'yusuf.kurnia.hrwork@gmail.com', 'code' => 'DEV-SPV-006'],
+            ['key' => 'supervisor-finance', 'name' => 'Bima Ramadhan', 'email' => 'bima.ramadhan.hrwork@gmail.com', 'code' => 'DEV-SPV-007'],
+            ['key' => 'supervisor-admin', 'name' => 'Nadia Lestari', 'email' => 'nadia.lestari.hrwork@gmail.com', 'code' => 'DEV-SPV-008'],
+            ['key' => 'supervisor-hr', 'name' => 'Reza Firmansyah', 'email' => 'reza.firmansyah.hrwork@gmail.com', 'code' => 'DEV-SPV-009'],
+            ['key' => 'supervisor-people', 'name' => 'Tiara Anjani', 'email' => 'tiara.anjani.hrwork@gmail.com', 'code' => 'DEV-SPV-010'],
+        ];
+
+        foreach ($extraSupervisors as $supervisor) {
+            $accounts[$supervisor['key']] = [
+                'name' => $supervisor['name'],
+                'email' => $supervisor['email'],
+                'roles' => ['employee', 'supervisor'],
+                'position' => 'Supervisor',
+                'code' => $supervisor['code'],
+            ];
+        }
+
+        $workers = [
+            ['key' => 'worker-backend-2', 'name' => 'Andi Pratama', 'email' => 'andi.pratama.hrwork@gmail.com', 'position' => 'Backend Developer'],
+            ['key' => 'worker-backend-3', 'name' => 'Budi Santoso', 'email' => 'budi.santoso.hrwork@gmail.com', 'position' => 'Software Engineer'],
+            ['key' => 'worker-backend-4', 'name' => 'Citra Lestari', 'email' => 'citra.lestari.hrwork@gmail.com', 'position' => 'Security Analyst'],
+            ['key' => 'worker-frontend-1', 'name' => 'Deni Kurniawan', 'email' => 'deni.kurniawan.hrwork@gmail.com', 'position' => 'Frontend Developer'],
+            ['key' => 'worker-frontend-2', 'name' => 'Eka Putri', 'email' => 'eka.putri.hrwork@gmail.com', 'position' => 'Frontend Developer'],
+            ['key' => 'worker-frontend-3', 'name' => 'Farhan Akbar', 'email' => 'farhan.akbar.hrwork@gmail.com', 'position' => 'Mobile Developer'],
+
+            ['key' => 'worker-uiux-1', 'name' => 'Gina Maharani', 'email' => 'gina.maharani.hrwork@gmail.com', 'position' => 'UI/UX Designer'],
+            ['key' => 'worker-uiux-2', 'name' => 'Hadi Wijaya', 'email' => 'hadi.wijaya.hrwork@gmail.com', 'position' => 'UI/UX Designer'],
+            ['key' => 'worker-uiux-3', 'name' => 'Indra Gunawan', 'email' => 'indra.gunawan.hrwork@gmail.com', 'position' => 'QA Engineer'],
+            ['key' => 'worker-product-1', 'name' => 'Joko Firmansyah', 'email' => 'joko.firmansyah.hrwork@gmail.com', 'position' => 'Product Specialist'],
+            ['key' => 'worker-product-2', 'name' => 'Karina Sari', 'email' => 'karina.sari.hrwork@gmail.com', 'position' => 'Project Coordinator'],
+            ['key' => 'worker-product-3', 'name' => 'Lukman Hakim', 'email' => 'lukman.hakim.hrwork@gmail.com', 'position' => 'Data Analyst'],
+
+            ['key' => 'worker-devops-1', 'name' => 'Maya Anggraini', 'email' => 'maya.anggraini.hrwork@gmail.com', 'position' => 'DevOps Engineer'],
+            ['key' => 'worker-devops-2', 'name' => 'Niko Ramadhan', 'email' => 'niko.ramadhan.hrwork@gmail.com', 'position' => 'DevOps Engineer'],
+            ['key' => 'worker-devops-3', 'name' => 'Oki Setiawan', 'email' => 'oki.setiawan.hrwork@gmail.com', 'position' => 'Security Analyst'],
+            ['key' => 'worker-it-1', 'name' => 'Putri Amelia', 'email' => 'putri.amelia.hrwork@gmail.com', 'position' => 'IT Support Specialist'],
+            ['key' => 'worker-it-2', 'name' => 'Qori Ananda', 'email' => 'qori.ananda.hrwork@gmail.com', 'position' => 'Network Support Specialist'],
+            ['key' => 'worker-it-3', 'name' => 'Salsa Nurfadila', 'email' => 'salsa.nurfadila.hrwork@gmail.com', 'position' => 'IT Support Specialist'],
+
+            ['key' => 'worker-finance-1', 'name' => 'Taufik Hidayat', 'email' => 'taufik.hidayat.hrwork@gmail.com', 'position' => 'Finance Officer'],
+            ['key' => 'worker-finance-2', 'name' => 'Uli Permata', 'email' => 'uli.permata.hrwork@gmail.com', 'position' => 'Accounting Staff'],
+            ['key' => 'worker-finance-3', 'name' => 'Vina Oktaviani', 'email' => 'vina.oktaviani.hrwork@gmail.com', 'position' => 'Data Analyst'],
+            ['key' => 'worker-admin-1', 'name' => 'Wahyu Saputra', 'email' => 'wahyu.saputra.hrwork@gmail.com', 'position' => 'Administrative Officer'],
+            ['key' => 'worker-admin-2', 'name' => 'Xena Maharani', 'email' => 'xena.maharani.hrwork@gmail.com', 'position' => 'Administrative Officer'],
+            ['key' => 'worker-admin-3', 'name' => 'Yudi Pratama', 'email' => 'yudi.pratama.hrwork@gmail.com', 'position' => 'Content Specialist'],
+
+            ['key' => 'worker-hr-1', 'name' => 'Zahra Fadillah', 'email' => 'zahra.fadillah.hrwork@gmail.com', 'position' => 'Recruitment Staff'],
+            ['key' => 'worker-hr-2', 'name' => 'Bagas Aditya', 'email' => 'bagas.aditya.hrwork@gmail.com', 'position' => 'People Operations Staff'],
+            ['key' => 'worker-hr-3', 'name' => 'Chandra Wijaya', 'email' => 'chandra.wijaya.hrwork@gmail.com', 'position' => 'Marketing Specialist'],
+            ['key' => 'worker-people-1', 'name' => 'Daffa Maulana', 'email' => 'daffa.maulana.hrwork@gmail.com', 'position' => 'People Operations Staff'],
+            ['key' => 'worker-people-2', 'name' => 'Elsya Nuraini', 'email' => 'elsya.nuraini.hrwork@gmail.com', 'position' => 'HR Officer'],
+            ['key' => 'worker-people-3', 'name' => 'Galih Prakoso', 'email' => 'galih.prakoso.hrwork@gmail.com', 'position' => 'Project Coordinator'],
+        ];
+
+        foreach ($workers as $index => $worker) {
+            $accounts[$worker['key']] = [
+                'name' => $worker['name'],
+                'email' => $worker['email'],
+                'roles' => ['employee', 'task-worker'],
+                'position' => $worker['position'],
+                'code' => 'DEV-WKR-' . str_pad((string) ($index + 2), 3, '0', STR_PAD_LEFT),
+            ];
+        }
+
+        return $accounts;
     }
 
     /**
      * @param array<string, User> $users
      * @return array<string, Employees>
      */
-    private function seedEmployees(array $users): array {
+    private function seedEmployees(array $users): array
+    {
+        $accounts = $this->accountDefinitions();
+
         $positions = Position::query()
-            ->whereIn('name', [
-                'General Manager',
-                'Manager',
-                'Supervisor',
-                'Software Engineer',
-                'HR Officer',
-                'administrator',
-            ])
+            ->whereIn('name', array_values(array_unique(array_column($accounts, 'position'))))
             ->get()
             ->keyBy('name');
 
-        $definitions = [
-            'gm' => [
-                'code' => 'DEV-GM-001',
-                'position' => 'General Manager',
-                'team_id' => null,
-            ],
-            'manager' => [
-                'code' => 'DEV-MGR-001',
-                'position' => 'Manager',
-                'team_id' => null,
-            ],
-            'supervisor' => [
-                'code' => 'DEV-SPV-001',
-                'position' => 'Supervisor',
-                'team_id' => null,
-            ],
-            'worker' => [
-                'code' => 'DEV-WKR-001',
-                'position' => 'Software Engineer',
-                'team_id' => null,
-            ],
-            'hr' => [
-                'code' => 'DEV-HR-001',
-                'position' => 'HR Officer',
-                'team_id' => null,
-            ],
-            'admin' => [
-                'code' => 'DEV-ADM-001',
-                'position' => 'Administrator',
-                'team_id' => null,
-            ],
-            'superadmin' => [
-                'code' => 'DEV-SADM-001',
-                'position' => 'Administrator',
-                'team_id' => null,
-            ],
-        ];
-
         $employees = [];
 
-        foreach ($definitions as $key => $definition) {
-            $employee = Employees::updateOrCreate(
-                ['employee_code' => $definition['code']],
+        foreach ($accounts as $key => $account) {
+            $employees[$key] = Employees::updateOrCreate(
+                ['employee_code' => $account['code']],
                 [
                     'user_id' => $users[$key]->id,
                     'status_employee' => 'active',
-                    'team_id' => $definition['team_id'],
-                    'position_id' => $positions[$definition['position']]->id,
+                    'team_id' => null,
+                    'position_id' => $positions[$account['position']]->id,
                 ],
             );
-
-            $employees[$key] = $employee;
         }
 
         return $employees;
     }
 
-    private function assignDivisionManager(Divisi $divisi, Employees $manager): void
-    {
-        $divisi->update([
-            'manager_id' => $manager->id,
-            'is_active' => 'active',
-        ]);
-    }
-
     /**
+     * @param array<string, Divisi> $divisions
      * @param array<string, Employees> $employees
      */
+    private function seedDivisionAndTeams(array $divisions, array $employees): void
+    {
+        $divisionManagers = [
+            'development' => 'manager-development',
+            'product' => 'manager-product',
+            'infrastructure' => 'manager-infrastructure',
+            'finance' => 'manager-finance',
+            'people' => 'manager-people',
+        ];
+
+        foreach ($divisionManagers as $divisionKey => $managerKey) {
+            $divisions[$divisionKey]->update([
+                'manager_id' => $employees[$managerKey]->id,
+                'is_active' => 'active',
+            ]);
+        }
+
+        $teamDefinitions = [
+            [
+                'key' => 'backend',
+                'name' => 'Backend Engineering',
+                'description' => 'Backend API dan service development.',
+                'division' => 'development',
+                'supervisor' => 'supervisor-backend',
+                'members' => [
+                    'worker-backend-1',
+                    'worker-backend-2',
+                    'worker-backend-3',
+                    'worker-backend-4',
+                ],
+            ],
+            [
+                'key' => 'frontend',
+                'name' => 'Frontend Engineering',
+                'description' => 'Frontend web dan mobile interface delivery.',
+                'division' => 'development',
+                'supervisor' => 'supervisor-frontend',
+                'members' => [
+                    'worker-frontend-1',
+                    'worker-frontend-2',
+                    'worker-frontend-3',
+                ],
+            ],
+            [
+                'key' => 'uiux',
+                'name' => 'UI/UX Design',
+                'description' => 'UX research, wireframe, dan interface design.',
+                'division' => 'product',
+                'supervisor' => 'supervisor-uiux',
+                'members' => [
+                    'worker-uiux-1',
+                    'worker-uiux-2',
+                    'worker-uiux-3',
+                ],
+            ],
+            [
+                'key' => 'product-delivery',
+                'name' => 'Product Delivery',
+                'description' => 'Product analysis, coordination, dan quality delivery.',
+                'division' => 'product',
+                'supervisor' => 'supervisor-product',
+                'members' => [
+                    'worker-product-1',
+                    'worker-product-2',
+                    'worker-product-3',
+                ],
+            ],
+            [
+                'key' => 'devops',
+                'name' => 'DevOps & Cloud',
+                'description' => 'Deployment, cloud infrastructure, dan reliability.',
+                'division' => 'infrastructure',
+                'supervisor' => 'supervisor-devops',
+                'members' => [
+                    'worker-devops-1',
+                    'worker-devops-2',
+                    'worker-devops-3',
+                ],
+            ],
+            [
+                'key' => 'it-support',
+                'name' => 'IT Support',
+                'description' => 'Support perangkat, jaringan, dan user internal.',
+                'division' => 'infrastructure',
+                'supervisor' => 'supervisor-it-support',
+                'members' => [
+                    'worker-it-1',
+                    'worker-it-2',
+                    'worker-it-3',
+                ],
+            ],
+            [
+                'key' => 'finance',
+                'name' => 'Finance',
+                'description' => 'Finance, accounting, dan reporting.',
+                'division' => 'finance',
+                'supervisor' => 'supervisor-finance',
+                'members' => [
+                    'worker-finance-1',
+                    'worker-finance-2',
+                    'worker-finance-3',
+                ],
+            ],
+            [
+                'key' => 'administration',
+                'name' => 'General Administration',
+                'description' => 'Administrasi dan dokumentasi internal.',
+                'division' => 'finance',
+                'supervisor' => 'supervisor-admin',
+                'members' => [
+                    'worker-admin-1',
+                    'worker-admin-2',
+                    'worker-admin-3',
+                ],
+            ],
+            [
+                'key' => 'hr-operations',
+                'name' => 'HR Operations',
+                'description' => 'Rekrutmen dan operasional HR.',
+                'division' => 'people',
+                'supervisor' => 'supervisor-hr',
+                'members' => [
+                    'worker-hr-1',
+                    'worker-hr-2',
+                    'worker-hr-3',
+                ],
+            ],
+            [
+                'key' => 'people-operations',
+                'name' => 'People Operations',
+                'description' => 'Employee experience dan people operations.',
+                'division' => 'people',
+                'supervisor' => 'supervisor-people',
+                'members' => [
+                    'worker-people-1',
+                    'worker-people-2',
+                    'worker-people-3',
+                ],
+            ],
+        ];
+
+        foreach ($teamDefinitions as $definition) {
+            $team = Team::updateOrCreate(
+                [
+                    'name' => $definition['name'],
+                    'divisi_id' => $divisions[$definition['division']]->id,
+                ],
+                [
+                    'description' => $definition['description'],
+                    'is_active' => 'active',
+                    'supervisor_id' => $employees[$definition['supervisor']]->id,
+                ],
+            );
+
+            $employees[$definition['supervisor']]->update([
+                'team_id' => $team->id,
+            ]);
+
+            foreach ($definition['members'] as $memberKey) {
+                $employees[$memberKey]->update([
+                    'team_id' => $team->id,
+                ]);
+            }
+        }
+    }
+
     private function seedWilayah(): void
     {
         if (! DB::table('villages')->exists()) {
@@ -308,6 +560,8 @@ class WorkManagementDevelopmentSeeder extends Seeder
             ->where('short_name', 'BCA')
             ->firstOrFail();
 
+        $employees = array_values($employees);
+
         $villages = DB::table('villages')
             ->where('code', 'like', '32.%')
             ->whereNotNull('postal_code')
@@ -317,41 +571,46 @@ class WorkManagementDevelopmentSeeder extends Seeder
 
         if ($villages->count() < count($employees)) {
             throw new \RuntimeException(
-                'Data desa/kelurahan Jawa Barat belum cukup untuk development seed.',
+                'Data desa/kelurahan Jawa Barat belum cukup untuk development seed 50 employee.',
             );
         }
 
-        $profiles = [
-            'gm' => ['gender' => 'male', 'phone' => 'TESTPHONE-001', 'nik' => 'TEST-NIK-001', 'birth_date' => '1985-01-15', 'birth_address' => 'Bandung, Jawa Barat'],
-            'manager' => ['gender' => 'male', 'phone' => 'TESTPHONE-002', 'nik' => 'TEST-NIK-002', 'birth_date' => '1990-04-22', 'birth_address' => 'Cimahi, Jawa Barat'],
-            'supervisor' => ['gender' => 'female', 'phone' => 'TESTPHONE-003', 'nik' => 'TEST-NIK-003', 'birth_date' => '1995-07-10', 'birth_address' => 'Bandung, Jawa Barat'],
-            'worker' => ['gender' => 'male', 'phone' => 'TESTPHONE-004', 'nik' => 'TEST-NIK-004', 'birth_date' => '1998-11-03', 'birth_address' => 'Cimahi, Jawa Barat'],
-            'hr' => ['gender' => 'female', 'phone' => 'TESTPHONE-005', 'nik' => 'TEST-NIK-005', 'birth_date' => '1992-02-18', 'birth_address' => 'Bandung, Jawa Barat'],
-            'admin' => ['gender' => 'male', 'phone' => 'TESTPHONE-006', 'nik' => 'TEST-NIK-006', 'birth_date' => '1991-08-27', 'birth_address' => 'Garut, Jawa Barat'],
-            'superadmin' => ['gender' => 'male', 'phone' => 'TESTPHONE-007', 'nik' => 'TEST-NIK-007', 'birth_date' => '1988-12-09', 'birth_address' => 'Bandung, Jawa Barat'],
+        $firstNames = [
+            'Muhammad', 'Ahmad', 'Andi', 'Budi', 'Citra', 'Deni', 'Eka', 'Farhan',
+            'Gina', 'Hadi', 'Indra', 'Joko', 'Karina', 'Lukman', 'Maya', 'Niko',
+            'Oki', 'Putri', 'Qori', 'Raka', 'Salsa', 'Taufik', 'Uli', 'Vina',
+            'Wahyu', 'Xena', 'Yudi', 'Zahra', 'Bagas', 'Chandra', 'Daffa', 'Elsya',
+            'Galih', 'Intan', 'Nanda', 'Reza', 'Tiara', 'Yusuf', 'Bima', 'Nadia',
+            'Dimas', 'Siti', 'Fajar', 'Rian', 'Nugraha', 'Pratama', 'Rahma',
+            'Permata', 'Setiawan', 'Wijaya',
         ];
 
-        foreach (array_keys($employees) as $index => $key) {
-            $employee = $employees[$key];
-            $profileData = $profiles[$key];
-            $village = $villages[$index];
+        $addresses = [
+            'Bandung', 'Cimahi', 'Garut', 'Sumedang', 'Subang', 'Purwakarta',
+            'Karawang', 'Tasikmalaya', 'Cianjur', 'Sukabumi', 'Bogor', 'Bekasi',
+        ];
+
+        foreach (array_values($employees) as $index => $employee) {
+            $gender = $index % 3 === 0 ? 'female' : 'male';
+            $nameSeed = $firstNames[$index] ?? 'Employee';
+            $birthAddress = $addresses[$index % count($addresses)];
 
             $profile = Employee_profile::updateOrCreate(
                 ['employee_id' => $employee->id],
                 [
-                    'gender' => $profileData['gender'],
-                    'phone_number' => $profileData['phone'],
-                    'nik' => $profileData['nik'],
-                    'birth_date' => $profileData['birth_date'],
-                    'birth_address' => $profileData['birth_address'],
+                    'gender' => $gender,
+                    'phone_number' => '0812' . str_pad((string) (10000000 + $index), 8, '0', STR_PAD_LEFT),
+                    'nik' => '3273' . str_pad((string) (900000000000 + $index), 12, '0', STR_PAD_LEFT),
+                    'birth_date' => now()->subYears(23 + ($index % 15))->subDays($index)->toDateString(),
+                    'birth_address' => $birthAddress . ', Jawa Barat',
                 ],
             );
 
             EmployeeProfileAddress::updateOrCreate(
                 ['employee_profile_id' => $profile->id],
                 [
-                    'full_address' => 'Jl. Development Test No. ' . ($index + 1) . ', ' . $village->name . ', Jawa Barat ' . $village->postal_code,
-                    'village_code' => $village->code,
+                    'full_address' => 'Jl. HRWork Development No. ' . ($index + 1) . ', ' . $birthAddress . ', Jawa Barat ' . $villages[$index]->postal_code,
+                    'village_code' => $villages[$index]->code,
                 ],
             );
 
@@ -359,8 +618,8 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 ['employee_profile_id' => $profile->id],
                 [
                     'bank_id' => $bank->id,
-                    'account_number' => 'TEST-BANK-' . str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT),
-                    'account_holder' => $employee->user?->name ?? 'HRWork Development',
+                    'account_number' => '12345000' . str_pad((string) ($index + 1), 4, '0', STR_PAD_LEFT),
+                    'account_holder' => $employee->user?->name ?? ($nameSeed . ' HRWork'),
                 ],
             );
         }
@@ -393,54 +652,29 @@ class WorkManagementDevelopmentSeeder extends Seeder
      */
     private function seedContracts(array $employees): void
     {
-        $contracts = [
-            'gm' => [
-                'number' => 'DEV-GM-2026-001',
-                'salary' => 500000,
-                'position' => 'General Manager',
-            ],
-            'manager' => [
-                'number' => 'DEV-MGR-2026-001',
-                'salary' => 350000,
-                'position' => 'Manager',
-            ],
-            'supervisor' => [
-                'number' => 'DEV-SPV-2026-001',
-                'salary' => 275000,
-                'position' => 'Supervisor',
-            ],
-            'worker' => [
-                'number' => 'DEV-WKR-2026-001',
-                'salary' => 225000,
-                'position' => 'Software Engineer',
-            ],
-            'hr' => [
-                'number' => 'DEV-HR-2026-001',
-                'salary' => 275000,
-                'position' => 'HR Officer',
-            ],
-            'admin' => [
-                'number' => 'DEV-ADM-2026-001',
-                'salary' => 250000,
-                'position' => 'Administrator',
-            ],
-            'superadmin' => [
-                'number' => 'DEV-SADM-2026-001',
-                'salary' => 250000,
-                'position' => 'Administrator',
-            ],
-        ];
+        $positions = Position::query()
+            ->get()
+            ->keyBy('name');
 
-        foreach ($contracts as $key => $contract) {
+        foreach ($employees as $index => $employee) {
+            $positionName = $employee->position?->name;
+            $position = $positions[$positionName] ?? null;
+
+            if (! $position) {
+                throw new \RuntimeException(
+                    "Position untuk employee {$employee->employee_code} tidak ditemukan.",
+                );
+            }
+
             EmployeeContract::updateOrCreate(
-                ['contract_number' => $contract['number']],
+                ['contract_number' => 'DEV-' . str_replace('DEV-', '', $employee->employee_code) . '-2026-001'],
                 [
-                    'employee_id' => $employees[$key]->id,
-                    'position_name' => $contract['position'],
+                    'employee_id' => $employee->id,
+                    'position_name' => $position->name,
                     'employement_type' => 'pkwtt',
                     'start_date' => '2026-01-01',
                     'end_date' => null,
-                    'salary_daily' => $contract['salary'],
+                    'salary_daily' => $position->min_salary_daily,
                     'status' => 'active',
                     'notes' => 'Development seed contract.',
                 ],
