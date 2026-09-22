@@ -6,6 +6,7 @@ use App\Models\Divisi;
 use App\Models\Employees;
 use App\Models\MasterProject;
 use App\Models\Task;
+use App\Livewire\Page\Main\WorkManagement\DivisionProjectTeamDetail;
 use App\Models\Team;
 use App\Models\User;
 use App\Service\WorkManagementService;
@@ -65,6 +66,21 @@ class WorkManagementPolicyTest extends TestCase
         $this->assertFalse(Gate::forUser($otherSupervisor->user)->allows('review', $task));
 
         $this->assertNotNull($otherWorker->team);
+    }
+
+    public function test_supervisor_can_only_view_their_assigned_project_team_page(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $otherSupervisor, $otherWorker, $team, $otherTeam, $division] = $this->makeTwoTeams();
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Master');
+        $project = $service->createDivisionProject($master, $division, $gm, 'Project');
+        $service->assignTeam($project, $team, $manager);
+        $service->assignTeam($project, $otherTeam, $manager);
+
+        $this->assertTrue(Gate::forUser($supervisor->user)->allows('viewTeam', [$project, $team]));
+        $this->assertFalse(Gate::forUser($supervisor->user)->allows('viewTeam', [$project, $otherTeam]));
+        $this->assertTrue(Gate::forUser($manager->user)->allows('viewTeam', [$project, $otherTeam]));
     }
 
     private function makeManagers(): array
