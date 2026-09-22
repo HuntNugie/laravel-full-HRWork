@@ -97,6 +97,108 @@ class ManagerSupervisorDashboardTest extends TestCase
             ->assertDontSee('Pilih team');
     }
 
+    public function test_supervisor_can_create_task_for_assigned_project_team(): void
+    {
+        [$supervisorUser, $supervisor, $team, $worker] = $this->makeSupervisorStructure();
+
+        $gmUser = User::factory()->create(['name' => 'GM', 'status' => 'active']);
+        $gm = $this->makeRoleEmployee('GM-CREATE', $gmUser, 'general-manager');
+
+        $master = MasterProject::create([
+            'created_by' => $gm->id,
+            'name' => 'Master Project',
+            'status' => 'in_progress',
+        ]);
+
+        $divisionProject = DivisionProject::create([
+            'master_project_id' => $master->id,
+            'divisi_id' => $team->divisi_id,
+            'manager_id' => $team->divisi->manager_id,
+            'created_by' => $gm->id,
+            'name' => 'Backend Division Project',
+            'is_required' => true,
+            'manual_progress' => 0,
+            'status' => 'in_progress',
+        ]);
+
+        $divisionProject->teams()->attach($team->id, ['assigned_by' => $gm->id]);
+
+        $this->actingAs($supervisorUser);
+
+        Livewire::test(CreateTask::class, [
+            'divisionProject' => $divisionProject,
+            'team' => $team,
+        ])
+            ->assertSet('isSupervisor', true)
+            ->assertSet('team_id', $team->id)
+            ->set('assignee_id', $worker->id)
+            ->set('title', 'Backend API Task')
+            ->set('description', 'Build backend API endpoint.')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('tasks', [
+            'division_project_id' => $divisionProject->id,
+            'team_id' => $team->id,
+            'assignee_id' => $worker->id,
+            'created_by' => $supervisor->id,
+            'title' => 'Backend API Task',
+        ]);
+    }
+
+    public function test_supervisor_cannot_open_another_team_project_page_or_create_task_for_it(): void
+    {
+        [$supervisorUser, $supervisor, $team, $worker] = $this->makeSupervisorStructure();
+
+        $otherSupervisorUser = User::factory()->create(['name' => 'Supervisor Two', 'status' => 'active']);
+        $otherSupervisor = $this->makeRoleEmployee('SUP-OTHER', $otherSupervisorUser, 'supervisor');
+
+        $otherTeam = Team::create([
+            'name' => 'Frontend',
+            'description' => 'Frontend',
+            'is_active' => 'active',
+            'divisi_id' => $team->divisi_id,
+            'supervisor_id' => $otherSupervisor->id,
+        ]);
+
+        $otherWorkerUser = User::factory()->create(['name' => 'Other Worker', 'status' => 'active']);
+        $otherWorker = $this->makeRoleEmployee('WORK-OTHER', $otherWorkerUser, 'task-worker');
+        $otherWorker->update(['team_id' => $otherTeam->id]);
+        $otherSupervisor->update(['team_id' => $otherTeam->id]);
+
+        $gmUser = User::factory()->create(['name' => 'GM', 'status' => 'active']);
+        $gm = $this->makeRoleEmployee('GM-SCOPE', $gmUser, 'general-manager');
+
+        $master = MasterProject::create([
+            'created_by' => $gm->id,
+            'name' => 'Master Project',
+            'status' => 'in_progress',
+        ]);
+
+        $divisionProject = DivisionProject::create([
+            'master_project_id' => $master->id,
+            'divisi_id' => $team->divisi_id,
+            'manager_id' => $team->divisi->manager_id,
+            'created_by' => $gm->id,
+            'name' => 'Division Project',
+            'is_required' => true,
+            'manual_progress' => 0,
+            'status' => 'in_progress',
+        ]);
+
+        $divisionProject->teams()->attach([$team->id => ['assigned_by' => $gm->id]]);
+        $divisionProject->teams()->attach([$otherTeam->id => ['assigned_by' => $gm->id]]);
+
+        $this->actingAs($supervisorUser);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+
+        Livewire::test(CreateTask::class, [
+            'divisionProject' => $divisionProject,
+            'team' => $otherTeam,
+        ]);
+    }
+
     private function makeManagerStructure(): array
     {
         $managerUser = User::factory()->create([
