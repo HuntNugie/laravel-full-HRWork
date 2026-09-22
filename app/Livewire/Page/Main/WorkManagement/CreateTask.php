@@ -110,14 +110,14 @@ class CreateTask extends Component
 
         $supervisorId = Team::whereKey($this->team_id)->value('supervisor_id');
 
+        $managerId = $this->divisionProject->manager_id;
+
         $this->assignees = Employees::query()
             ->where('team_id', $this->team_id)
             ->where('status_employee', 'active')
-            ->whereHas('user', fn ($query) => $query
-                ->where('status', 'active')
-                ->role('task-worker')
-            )
+            ->whereHas('user', fn ($query) => $query->where('status', 'active'))
             ->when($supervisorId, fn ($query) => $query->where('id', '!=', $supervisorId))
+            ->when($managerId, fn ($query) => $query->where('id', '!=', $managerId))
             ->with('user')
             ->orderBy('id')
             ->get();
