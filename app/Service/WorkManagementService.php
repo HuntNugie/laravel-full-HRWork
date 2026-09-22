@@ -155,7 +155,6 @@ class WorkManagementService
     ): Task {
         $this->ensureActiveEmployee($creator);
         $this->ensureActiveEmployee($assignee);
-        $this->ensureTaskWorkerAccount($assignee);
 
         if (! in_array($divisionProject->status, ['draft', 'in_progress', 'revision_required'], true)) {
             throw ValidationException::withMessages(['division_project' => 'Task tidak dapat dibuat setelah division project masuk tahap review atau approval.']);
@@ -200,6 +199,10 @@ class WorkManagementService
                 'status' => Task::STATUS_TO_DO,
                 'due_date' => $dueDate,
             ]);
+
+            // Being assigned an executable task grants the stacked task-worker role.
+            $assignee->user?->assignRole('employee');
+            $assignee->user?->assignRole('task-worker');
 
             if (in_array($divisionProject->status, ['draft', 'revision_required'], true)) {
                 $divisionProject->update(['status' => 'in_progress']);
