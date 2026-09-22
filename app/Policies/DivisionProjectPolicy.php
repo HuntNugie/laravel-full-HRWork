@@ -111,6 +111,16 @@ class DivisionProjectPolicy
             ->exists();
     }
 
+    public function reviewTeamReport(User $user, DivisionProject $divisionProject, Team $team): bool
+    {
+        if (! $user->can('review-division-project') || ! ($employee = $user->employees)) {
+            return false;
+        }
+
+        return (int) $divisionProject->manager_id === (int) $employee->id
+            && $divisionProject->teams()->whereKey($team->id)->exists();
+    }
+
     public function submitToGM(User $user, DivisionProject $divisionProject): bool
     {
         return $user->can('submit-division-project-to-gm')
