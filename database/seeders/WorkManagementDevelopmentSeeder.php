@@ -44,7 +44,8 @@ class WorkManagementDevelopmentSeeder extends Seeder
      * - 31 task workers
      * - HR, administrator, and super-admin accounts
      * - profiles, addresses, bank accounts, status history, contracts,
-     *   benefits, and annual leave entitlements
+     *   benefits, annual leave entitlements, historical attendance,
+     *   and three previous paid payroll periods
      */
     public function run(): void
     {
@@ -736,9 +737,10 @@ class WorkManagementDevelopmentSeeder extends Seeder
      * Seed historical attendance so Daily Status and attendance history have
      * realistic development data immediately after migrate:fresh --seed.
      *
-     * The seed covers the previous 30 calendar days up to yesterday and only
-     * creates records on configured working days. Every employee receives a
-     * completed check-in/check-out record, with deterministic late variations.
+     * The seed covers from the start of the third previous month through
+     * yesterday and only creates records on configured working days. Every
+     * employee receives a completed check-in/check-out record, with
+     * deterministic late variations.
      *
      * @param array<string, Employees> $employees
      */
@@ -759,7 +761,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
         ];
 
         $endDate = today()->subDay()->startOfDay();
-        $startDate = $endDate->copy()->subDays(29);
+        $startDate = today()->subMonths(3)->startOfMonth();
         $seeded = 0;
 
         foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
