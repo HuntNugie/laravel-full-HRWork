@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Bank;
 use App\Models\Benefit;
+use App\Models\Attendances;
 use App\Models\ContractLeaveEntitlements;
 use App\Models\Divisi;
 use App\Models\EmployeeBankAccount;
@@ -15,6 +16,9 @@ use App\Models\LeaveType;
 use App\Models\Position;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\WorkTime;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +57,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $this->seedContracts($employees);
         $this->seedBenefits($employees);
         $this->seedLeaveEntitlement($employees);
+        $this->seedAttendances($employees);
 
         $count = Employees::query()
             ->where('employee_code', 'like', 'DEV-%')
@@ -720,6 +725,93 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 $meal->id => ['amount' => 25000],
             ]);
         }
+    }
+
+    /**
+     * Seed historical attendance so Daily Status and attendance history have
+     * realistic development data immediately after migrate:fresh --seed.
+     *
+     * The seed covers the previous 30 calendar days up to yesterday and only
+     * creates records on configured working days. Every employee receives a
+     * completed check-in/check-out record, with deterministic late variations.
+     *
+     * @param array<string, Employees> $employees
+     */
+    private function seedAttendances(array $employees): void
+    {
+        $workTimes = WorkTime::query()
+            ->get()
+            ->keyBy(fn (WorkTime $workTime) => strtolower(trim($workTime->day_of_week)));
+
+        $dayNames = [
+            1 => 'senin',
+            2 => 'selasa',
+            3 => 'rabu',
+            4 => 'kamis',
+            5 => 'jumat',
+            6 => 'sabtu',
+            7 => 'minggu',
+        ];
+
+        $endDate = today()->subDay()->startOfDay();
+        $startDate = $endDate->copy()->subDays(29);
+        $seeded = 0;
+
+        foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
+            $date = Carbon::instance($date)->startOfDay();
+            $workTime = $workTimes->get($dayNames[$date->dayOfWeekIso]);
+
+            if (! $workTime || ! $workTime->is_working_day) {
+                continue;
+            }
+
+            $workStart = $date->copy()->setTimeFromTimeString($workTime->start_time);
+            $workEnd = $date->copy()->setTimeFromTimeString($workTime->end_time);
+            $workDayNumber = $date->dayOfYear;
+
+            foreach (array_values($employees) as $employeeIndex => $employee) {
+                // Roughly 1 in 9 records is late, with deterministic minutes.
+                $isLate = (($employeeIndex + $workDayNumber) % 9) === 0;
+                $checkInOffset = $isLate
+                    ? 7 + (($employeeIndex * 3 + $workDayNumber) % 14)
+                    : (($employeeIndex + $workDayNumber) % 5);
+
+                $checkIn = $workStart->copy()->addMinutes($checkInOffset);
+
+                // Keep checkout slightly varied while remaining inside a realistic range.
+                $checkOutOffset = $date->isSaturday()
+                    ? 3 + (($employeeIndex + $workDayNumber) % 16)
+                    : 5 + (($employeeIndex * 2 + $workDayNumber) % 26);
+
+                $checkOut = $workEnd->copy()->addMinutes($checkOutOffset);
+                $lateMinutes = $checkIn->gt($workStart)
+                    ? $workStart->diffInMinutes($checkIn)
+                    : 0;
+
+                Attendances::updateOrCreate(
+                    [
+                        'employee_id' => $employee->id,
+                        'date' => $date->toDateString(),
+                    ],
+                    [
+                        'check_in_at' => $checkIn,
+                        'check_in_latitude' => -6.914744 + (($employeeIndex % 7) * 0.0012),
+                        'check_in_longitude' => 107.609810 + (($employeeIndex % 7) * 0.0012),
+                        'check_out_at' => $checkOut,
+                        'check_out_latitude' => -6.914744 + (($employeeIndex % 7) * 0.0012),
+                        'check_out_longitude' => 107.609810 + (($employeeIndex % 7) * 0.0012),
+                        'status' => $isLate ? 'late' : 'present',
+                        'late_minutes' => $lateMinutes,
+                        'work_duration' => $checkIn->diffInMinutes($checkOut),
+                        'notes' => 'Development seed attendance.',
+                    ],
+                );
+
+                $seeded++;
+            }
+        }
+
+        $this->command?->info("Historical attendance seeded: {$seeded} records ({$startDate->toDateString()} s/d {$endDate->toDateString()}).");
     }
 
     /**
