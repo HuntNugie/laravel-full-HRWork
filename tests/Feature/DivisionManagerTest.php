@@ -6,6 +6,7 @@ use App\Livewire\Components\Main\Divisi\FormAdd;
 use App\Livewire\Components\Main\Divisi\FormEdit;
 use App\Models\Divisi;
 use App\Models\Employees;
+use App\Models\Position;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -151,6 +152,71 @@ class DivisionManagerTest extends TestCase
             ->call('update')
             ->assertHasErrors(['managerId']);
     }
+
+    public function test_form_edit_prioritizes_manager_position_when_available(): void
+    {
+        $admin = $this->makeAuthorizedUser();
+
+        $division = Divisi::create([
+            'name' => 'Technology',
+            'description' => 'Technology Division',
+            'is_active' => 'active',
+            'manager_id' => null,
+        ]);
+
+        $managerPosition = Position::create([
+            'name' => 'Manager',
+            'description' => 'Manager position',
+        ]);
+
+        $staffPosition = Position::create([
+            'name' => 'Staff',
+            'description' => 'Staff position',
+        ]);
+
+        $managerUser = User::factory()->create(['name' => 'Priority Manager']);
+        $manager = $this->makeEmployee('PRIORITY-MGR', $managerUser);
+        $manager->update(['position_id' => $managerPosition->id]);
+
+        $staffUser = User::factory()->create(['name' => 'Fallback Staff']);
+        $staff = $this->makeEmployee('FALLBACK-STAFF', $staffUser);
+        $staff->update(['position_id' => $staffPosition->id]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $division->id)
+            ->assertSee('Priority Manager')
+            ->assertDontSee('Fallback Staff');
+    }
+
+    public function test_form_edit_allows_other_position_when_no_manager_position_is_available(): void
+    {
+        $admin = $this->makeAuthorizedUser();
+
+        $division = Divisi::create([
+            'name' => 'Operations',
+            'description' => 'Operations Division',
+            'is_active' => 'active',
+            'manager_id' => null,
+        ]);
+
+        $staffPosition = Position::create([
+            'name' => 'Senior Staff',
+            'description' => 'Senior staff position',
+        ]);
+
+        $staffUser = User::factory()->create(['name' => 'Senior Staff Candidate']);
+        $staff = $this->makeEmployee('SENIOR-STAFF', $staffUser);
+        $staff->update(['position_id' => $staffPosition->id]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $division->id)
+            ->assertSee('Senior Staff Candidate');
+    }
+
 
     public function test_employee_with_a_team_cannot_become_division_manager(): void
     {
