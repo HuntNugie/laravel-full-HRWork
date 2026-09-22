@@ -83,7 +83,7 @@ class WorkManagementServiceTest extends TestCase
             'status' => ProjectReport::STATUS_SUBMITTED,
         ]);
 
-        $service->reviewDivisionProject($divisionProject, $manager, 'approved', 'Laporan Team sudah sesuai.');
+        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved', 'Laporan Team sudah sesuai.');
 
         $this->assertSame('manager_approved', $divisionProject->refresh()->status);
 
@@ -193,7 +193,7 @@ class WorkManagementServiceTest extends TestCase
         $service->reviewTask($task, $supervisor, 'approved');
 
         $service->submitSupervisorReport($divisionProject, $supervisor, 'Draft report.');
-        $service->reviewDivisionProject($divisionProject, $manager, 'rejected', 'Tambahkan detail hasil dan kendala.');
+        $service->reviewTeamReport($divisionProject, $team, $manager, 'rejected', 'Tambahkan detail hasil dan kendala.');
 
         $this->assertSame('revision_required', $divisionProject->refresh()->status);
         $this->assertDatabaseHas('project_reviews', [
