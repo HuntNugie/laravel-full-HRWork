@@ -67,10 +67,10 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $this->seedLeaveEntitlement($employees);
 
         $this->command?->info('Development HR/Work Management data seeded.');
-        $this->command?->line('GM: gm@hrwork.test / password');
-        $this->command?->line('Manager: manager@hrwork.test / password');
-        $this->command?->line('Supervisor: supervisor@hrwork.test / password');
-        $this->command?->line('Task Worker: worker@hrwork.test / password');
+        $this->command?->line('GM: gm.hrwork@gmail.com / password');
+        $this->command?->line('Manager: manager.hrwork@gmail.com / password');
+        $this->command?->line('Supervisor: supervisor.hrwork@gmail.com / password');
+        $this->command?->line('Task Worker: worker.hrwork@gmail.com / password');
     }
 
     private function seedPositions(): void
@@ -139,22 +139,22 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $accounts = [
             'gm' => [
                 'name' => 'GM HRWork',
-                'email' => 'gm@hrwork.test',
+                'email' => 'gm.hrwork@gmail.com',
                 'role' => 'general-manager',
             ],
             'manager' => [
                 'name' => 'Manager Development',
-                'email' => 'manager@hrwork.test',
+                'email' => 'manager.hrwork@gmail.com',
                 'role' => 'manager',
             ],
             'supervisor' => [
                 'name' => 'Supervisor Development',
-                'email' => 'supervisor@hrwork.test',
+                'email' => 'supervisor.hrwork@gmail.com',
                 'role' => 'supervisor',
             ],
             'worker' => [
                 'name' => 'Worker Development',
-                'email' => 'worker@hrwork.test',
+                'email' => 'worker.hrwork@gmail.com',
                 'role' => 'task-worker',
             ],
         ];
