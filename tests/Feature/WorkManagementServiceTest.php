@@ -122,6 +122,55 @@ class WorkManagementServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(5, \App\Models\WorkManagementAudit::query()->count());
     }
 
+    public function test_manager_waits_for_all_supervisor_reports_before_review(): void
+    {
+        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+
+        $secondSupervisor = $this->makeRoleUser('SUP2', 'supervisor');
+        $secondWorker = $this->makeRoleUser('WORK2', 'task-worker');
+
+        $secondTeam = Team::create([
+            'name' => 'Frontend',
+            'description' => 'Frontend',
+            'is_active' => 'active',
+            'divisi_id' => $division->id,
+            'supervisor_id' => $secondSupervisor->id,
+        ]);
+
+        $secondWorker->update(['team_id' => $secondTeam->id]);
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($generalManager, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
+
+        $service->assignTeam($divisionProject, $team, $manager);
+        $service->assignTeam($divisionProject, $secondTeam, $manager);
+
+        foreach ([
+            [$worker, $supervisor, $team, 'Backend task'],
+            [$secondWorker, $secondSupervisor, $secondTeam, 'Frontend task'],
+        ] as [$taskWorker, $taskSupervisor, $assignedTeam, $title]) {
+            $task = $service->createTask(
+                $divisionProject,
+                $assignedTeam,
+                $taskWorker,
+                $taskSupervisor,
+                $title,
+            );
+
+            $service->updateTaskWork($task, $taskWorker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
+            $service->submitTask($task, $taskWorker);
+            $service->reviewTask($task, $taskSupervisor, 'approved');
+        }
+
+        $service->submitSupervisorReport($divisionProject, $supervisor, 'Backend selesai.');
+
+        $this->assertSame('ready_for_review', $divisionProject->refresh()->status);
+
+        $this->expectException(ValidationException::class);
+        $service->reviewDivisionProject($divisionProject, $manager, 'approved');
+    }
+
     public function test_manager_can_reject_supervisor_report_for_revision(): void
     {
         [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
