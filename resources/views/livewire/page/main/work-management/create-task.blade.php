@@ -15,11 +15,7 @@
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
                 <h2 class="text-lg font-semibold text-slate-900">Informasi Task</h2>
-                <p class="text-sm text-slate-500">
-                    {{ $isSupervisor
-                        ? 'Pilih anggota team kamu yang akan mengerjakan task ini.'
-                        : 'Tentukan team dan karyawan yang bertanggung jawab atas task ini.' }}
-                </p>
+                <p class="text-sm text-slate-500">Pilih anggota {{ $team->name }} yang akan mengerjakan task ini.</p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
 
