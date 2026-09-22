@@ -15,7 +15,7 @@
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
                 <h2 class="text-lg font-semibold text-slate-900">Division Projects</h2>
-                <p class="text-sm text-slate-500">Pastikan seluruh division project yang diperlukan sudah siap sebelum keputusan final.</p>
+                <p class="text-sm text-slate-500">Review laporan Manager dari seluruh Division Project sebelum keputusan final.</p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
 
@@ -28,6 +28,7 @@
                             <x-wirekit::table.th>Divisi</x-wirekit::table.th>
                             <x-wirekit::table.th>Manager</x-wirekit::table.th>
                             <x-wirekit::table.th>Status</x-wirekit::table.th>
+                            <x-wirekit::table.th>Laporan Manager</x-wirekit::table.th>
                         </x-wirekit::table.row>
                     </x-wirekit::table.head>
 
@@ -58,10 +59,15 @@
                                         {{ str_replace('_', ' ', $project->status) }}
                                     </span>
                                 </x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <span class="line-clamp-3 text-sm text-slate-700">
+                                        {{ $project->reports->where('report_level', 'manager')->sortByDesc('id')->first()?->content ?? '—' }}
+                                    </span>
+                                </x-wirekit::table.td>
                             </x-wirekit::table.row>
                         @empty
                             <x-wirekit::table.row>
-                                <x-wirekit::table.td colspan="4">
+                                <x-wirekit::table.td colspan="5">
                                     <div class="py-10 text-center text-sm text-slate-500">Belum ada Division Project.</div>
                                 </x-wirekit::table.td>
                             </x-wirekit::table.row>
