@@ -24,12 +24,8 @@ class DatabaseSeeder extends Seeder
             DivisiSeeder::class,
             BankSeeder::class,
 
-            // Existing HR permissions.
-            GivePermissionSeeder::class,
-            EmployeePayrollPermissionSeeder::class,
-
-            // Work Management authorization.
-            WorkManagementPermissionSeeder::class,
+            // Final role -> permission mapping.
+            RolePermissionSeeder::class,
 
             // HR configuration required by the application.
             WorkTimeSeeder::class,
