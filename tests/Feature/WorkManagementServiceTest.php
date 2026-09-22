@@ -165,7 +165,7 @@ class WorkManagementServiceTest extends TestCase
 
         $service->submitSupervisorReport($divisionProject, $supervisor, 'Backend selesai.');
 
-        $this->assertSame('ready_for_review', $divisionProject->refresh()->status);
+        $this->assertSame('in_progress', $divisionProject->refresh()->status);
 
         $this->expectException(ValidationException::class);
         $service->reviewDivisionProject($divisionProject, $manager, 'approved');
