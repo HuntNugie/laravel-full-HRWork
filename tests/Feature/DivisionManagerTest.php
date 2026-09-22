@@ -218,6 +218,89 @@ class DivisionManagerTest extends TestCase
     }
 
 
+    public function test_current_manager_does_not_block_fallback_to_other_positions(): void
+    {
+        $admin = $this->makeAuthorizedUser();
+
+        $division = Divisi::create([
+            'name' => 'Operations',
+            'description' => 'Operations Division',
+            'is_active' => 'active',
+            'manager_id' => null,
+        ]);
+
+        $managerPosition = Position::create([
+            'name' => 'Manager',
+            'description' => 'Manager position',
+        ]);
+
+        $staffPosition = Position::create([
+            'name' => 'Senior Staff',
+            'description' => 'Senior staff position',
+        ]);
+
+        $currentManagerUser = User::factory()->create(['name' => 'Current Manager']);
+        $currentManager = $this->makeEmployee('CURRENT-MGR', $currentManagerUser);
+        $currentManager->update(['position_id' => $managerPosition->id]);
+
+        $staffUser = User::factory()->create(['name' => 'Staff Candidate']);
+        $staff = $this->makeEmployee('STAFF-CANDIDATE', $staffUser);
+        $staff->update(['position_id' => $staffPosition->id]);
+
+        $division->update(['manager_id' => $currentManager->id]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $division->id)
+            ->assertSee('Current Manager')
+            ->assertSee('Staff Candidate');
+    }
+
+    public function test_current_manager_is_not_the_only_priority_manager_when_another_manager_exists(): void
+    {
+        $admin = $this->makeAuthorizedUser();
+
+        $division = Divisi::create([
+            'name' => 'Finance',
+            'description' => 'Finance Division',
+            'is_active' => 'active',
+            'manager_id' => null,
+        ]);
+
+        $managerPosition = Position::create([
+            'name' => 'Manager',
+            'description' => 'Manager position',
+        ]);
+
+        $staffPosition = Position::create([
+            'name' => 'Staff',
+            'description' => 'Staff position',
+        ]);
+
+        $currentManagerUser = User::factory()->create(['name' => 'Current Manager']);
+        $currentManager = $this->makeEmployee('CURRENT-MGR-2', $currentManagerUser);
+        $currentManager->update(['position_id' => $managerPosition->id]);
+
+        $replacementManagerUser = User::factory()->create(['name' => 'Replacement Manager']);
+        $replacementManager = $this->makeEmployee('REPLACEMENT-MGR', $replacementManagerUser);
+        $replacementManager->update(['position_id' => $managerPosition->id]);
+
+        $staffUser = User::factory()->create(['name' => 'Staff Candidate']);
+        $staff = $this->makeEmployee('STAFF-CANDIDATE-2', $staffUser);
+        $staff->update(['position_id' => $staffPosition->id]);
+
+        $division->update(['manager_id' => $currentManager->id]);
+
+        $this->actingAs($admin);
+
+        Livewire::test(FormEdit::class)
+            ->call('open', $division->id)
+            ->assertSee('Current Manager')
+            ->assertSee('Replacement Manager')
+            ->assertDontSee('Staff Candidate');
+    }
+
     public function test_employee_with_a_team_cannot_become_division_manager(): void
     {
         $admin = $this->makeAuthorizedUser();
