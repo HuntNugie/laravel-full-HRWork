@@ -6,6 +6,7 @@ use App\Models\DivisionProject;
 use App\Models\Divisi;
 use App\Models\Employees;
 use App\Models\MasterProject;
+use App\Models\ProjectReport;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
@@ -67,10 +68,41 @@ class WorkManagementServiceTest extends TestCase
         $this->assertSame(75, $divisionProject->manual_progress);
         $this->assertSame('ready_for_review', $divisionProject->status);
 
-        $service->reviewDivisionProject($divisionProject, $manager, 'approved', 'Division accepted.');
+        $service->submitSupervisorReport(
+            $divisionProject,
+            $supervisor,
+            'Semua task Backend selesai dan hasil sudah diverifikasi.',
+        );
 
-        $this->assertSame('completed', $divisionProject->refresh()->status);
+        $this->assertSame('submitted_to_manager', $divisionProject->refresh()->status);
+        $this->assertDatabaseHas('project_reports', [
+            'division_project_id' => $divisionProject->id,
+            'team_id' => $team->id,
+            'reported_by' => $supervisor->id,
+            'report_level' => ProjectReport::LEVEL_SUPERVISOR,
+            'status' => ProjectReport::STATUS_SUBMITTED,
+        ]);
+
+        $service->reviewDivisionProject($divisionProject, $manager, 'approved', 'Laporan Team sudah sesuai.');
+
+        $this->assertSame('manager_approved', $divisionProject->refresh()->status);
+
+        $service->submitDivisionProjectToGM(
+            $divisionProject,
+            $manager,
+            'Division Project telah direview. Seluruh pekerjaan Team telah selesai.',
+        );
+
+        $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
         $this->assertSame('ready_for_review', $master->refresh()->status);
+
+        $this->assertDatabaseHas('project_reports', [
+            'division_project_id' => $divisionProject->id,
+            'team_id' => null,
+            'reported_by' => $manager->id,
+            'report_level' => ProjectReport::LEVEL_MANAGER,
+            'status' => ProjectReport::STATUS_SUBMITTED,
+        ]);
 
         $service->reviewMasterProject($master, $generalManager, 'approved', 'Final approval.');
 
@@ -88,6 +120,48 @@ class WorkManagementServiceTest extends TestCase
         ]);
 
         $this->assertGreaterThanOrEqual(5, \App\Models\WorkManagementAudit::query()->count());
+    }
+
+    public function test_manager_can_reject_supervisor_report_for_revision(): void
+    {
+        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
+
+        $master = $service->createMasterProject($generalManager, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
+        $service->assignTeam($divisionProject, $team, $manager);
+
+        $task = $service->createTask(
+            $divisionProject,
+            $team,
+            $worker,
+            $supervisor,
+            'Completed task',
+        );
+
+        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
+        $service->submitTask($task, $worker);
+        $service->reviewTask($task, $supervisor, 'approved');
+
+        $service->submitSupervisorReport($divisionProject, $supervisor, 'Draft report.');
+        $service->reviewDivisionProject($divisionProject, $manager, 'rejected', 'Tambahkan detail hasil dan kendala.');
+
+        $this->assertSame('revision_required', $divisionProject->refresh()->status);
+        $this->assertDatabaseHas('project_reviews', [
+            'division_project_id' => $divisionProject->id,
+            'reviewer_id' => $manager->id,
+            'reviewer_level' => 'manager',
+            'decision' => 'rejected',
+        ]);
+        $this->assertDatabaseHas('project_reports', [
+            'division_project_id' => $divisionProject->id,
+            'team_id' => $team->id,
+            'report_level' => ProjectReport::LEVEL_SUPERVISOR,
+            'status' => ProjectReport::STATUS_REJECTED,
+        ]);
+
+        $service->submitSupervisorReport($divisionProject, $supervisor, 'Revised report with complete results.');
+        $this->assertSame('submitted_to_manager', $divisionProject->refresh()->status);
     }
 
     public function test_task_can_be_blocked_and_rejected_for_revision(): void
@@ -190,15 +264,15 @@ class WorkManagementServiceTest extends TestCase
             'general-manager' => [
                 'view-master-project','create-master-project','update-master-project','approve-master-project',
                 'view-division-project','create-division-project','update-division-project','assign-project-team',
-                'report-project-progress','review-division-project','view-task','create-task','assign-task',
+                'report-project-progress','submit-division-project-report','review-division-project','submit-division-project-to-gm','view-task','create-task','assign-task',
                 'update-task','update-own-task','submit-task','review-task',
             ],
             'manager' => [
                 'view-master-project','view-division-project','update-division-project','assign-project-team',
-                'report-project-progress','review-division-project','view-task','assign-task','update-task',
+                'report-project-progress','review-division-project','submit-division-project-to-gm','view-task','assign-task','update-task',
             ],
             'supervisor' => [
-                'view-master-project','view-division-project','report-project-progress','view-task',
+                'view-master-project','view-division-project','report-project-progress','submit-division-project-report','view-task',
                 'create-task','assign-task','update-task','review-task',
             ],
             default => ['view-master-project','view-division-project','view-task','update-own-task','submit-task'],
