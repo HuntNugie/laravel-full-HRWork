@@ -13,13 +13,15 @@
         </x-wirekit::stack>
 
         @can('create', \App\Models\Task::class)
-            <x-wirekit::button
-                href="{{ route('work-management.division-projects.tasks.create', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
-                wire:navigate
-                class="bg-[#30AFFF] text-white hover:bg-[#1599E8]"
-            >
-                Buat Task
-            </x-wirekit::button>
+            @if (in_array($divisionProject->status, ['draft', 'in_progress', 'revision_required'], true))
+                <x-wirekit::button
+                    href="{{ route('work-management.division-projects.tasks.create', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
+                    wire:navigate
+                    class="bg-[#30AFFF] text-white hover:bg-[#1599E8]"
+                >
+                    Buat Task
+                </x-wirekit::button>
+            @endif
         @endcan
     </div>
 
