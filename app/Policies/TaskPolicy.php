@@ -36,7 +36,12 @@ class TaskPolicy
 
     public function create(User $user): bool
     {
-        return $user->can('create-task') && $user->employees !== null;
+        if (! $user->can('view-task') || ! ($employee = $user->employees)) {
+            return false;
+        }
+
+        return $this->isGeneralManager($employee)
+            || $employee->user?->hasRole('supervisor');
     }
 
     public function update(User $user, Task $task): bool
