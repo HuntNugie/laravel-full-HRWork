@@ -75,6 +75,8 @@ class PermissionSeeder extends Seeder
             'show-user',
             'show-warning-letter',
             'submit-project-review',
+            'submit-division-project-report',
+            'submit-division-project-to-gm',
             'submit-task',
             'update-attendance',
             'update-benefit',
