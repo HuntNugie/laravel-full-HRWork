@@ -26,36 +26,19 @@
         <x-wirekit::card.body>
             <form wire:submit="save" class="space-y-5">
 
-                @if ($isSupervisor)
-                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Team</p>
-                        <p class="mt-1 text-sm font-semibold text-slate-800">
-                            {{ $teams->firstWhere('id', $team_id)?->name ?? 'Team tidak ditemukan' }}
-                        </p>
-                        <p class="mt-1 text-xs text-slate-500">
-                            Team otomatis menggunakan team yang kamu supervisi.
-                        </p>
-                    </div>
-                @else
-                    <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-700">Team</label>
-                        <select wire:model.live="team_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
-                            <option value="">Pilih team</option>
-                            @foreach ($teams as $team)
-                                <option value="{{ $team->id }}">{{ $team->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('team_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                    </div>
-                @endif
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Team</p>
+                    <p class="mt-1 text-sm font-semibold text-slate-800">{{ $team->name }}</p>
+                    <p class="mt-1 text-xs text-slate-500">
+                        Supervisor: {{ $team->supervisor?->user?->name ?? '—' }}
+                    </p>
+                </div>
 
                 <div>
-                    <label class="mb-2 block text-sm font-medium text-slate-700">
-                        {{ $isSupervisor ? 'Anggota Team' : 'Assignee' }}
-                    </label>
+                    <label class="mb-2 block text-sm font-medium text-slate-700">Anggota Team</label>
                     <select wire:model="assignee_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
                         <option value="">
-                            {{ $isSupervisor ? 'Pilih anggota team' : 'Pilih karyawan' }}
+                            Pilih anggota team
                         </option>
                         @foreach ($assignees as $assignee)
                             <option value="{{ $assignee->id }}">
@@ -88,7 +71,7 @@
                     <x-wirekit::button
                         type="button"
                         variant="outline"
-                        href="{{ route('work-management.division-projects.show', $divisionProject) }}"
+                        href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
                         wire:navigate
                     >
                         Batal
