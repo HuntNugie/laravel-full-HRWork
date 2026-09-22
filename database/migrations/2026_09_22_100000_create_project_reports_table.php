@@ -9,11 +9,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('project_reports')) {
-            return;
-        }
-
-        Schema::create('project_reports', function (Blueprint $table) {
+        if (! Schema::hasTable('project_reports')) {
+            Schema::create('project_reports', function (Blueprint $table) {
             $table->id();
             $table->foreignId('division_project_id')->constrained('division_projects')->restrictOnDelete();
             $table->foreignId('team_id')->nullable()->constrained('teams')->restrictOnDelete();
@@ -25,7 +22,8 @@ return new class extends Migration
 
             $table->index(['division_project_id', 'report_level', 'status']);
             $table->index(['division_project_id', 'team_id', 'created_at']);
-        });
+            });
+        }
 
         $this->extendDivisionProjectStatus();
     }
@@ -62,6 +60,11 @@ return new class extends Migration
         $driver = DB::connection()->getDriverName();
 
         if (in_array($driver, ['mysql', 'mariadb'], true) && Schema::hasTable('division_projects')) {
+            DB::statement("UPDATE division_projects SET status = CASE
+                WHEN status IN ('submitted_to_manager', 'manager_approved', 'submitted_to_gm') THEN 'in_progress'
+                ELSE status
+            END");
+
             DB::statement(
                 "ALTER TABLE division_projects MODIFY status ENUM(
                     'draft',
