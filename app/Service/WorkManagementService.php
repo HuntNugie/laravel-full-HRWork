@@ -107,8 +107,8 @@ class WorkManagementService
         $this->ensureActiveEmployee($actor);
         $this->ensureCanManageDivisionProject($divisionProject, $actor);
 
-        if ($divisionProject->status === 'completed') {
-            throw ValidationException::withMessages(['division_project' => 'Division project yang sudah selesai tidak dapat menerima team baru.']);
+        if (! in_array($divisionProject->status, ['draft', 'in_progress', 'revision_required'], true)) {
+            throw ValidationException::withMessages(['division_project' => 'Team tidak dapat ditambahkan setelah division project masuk tahap review atau approval.']);
         }
 
         if ($team->is_active !== 'active') {
@@ -157,8 +157,8 @@ class WorkManagementService
         $this->ensureActiveEmployee($assignee);
         $this->ensureTaskWorkerAccount($assignee);
 
-        if ($divisionProject->status === 'completed') {
-            throw ValidationException::withMessages(['division_project' => 'Division project sudah selesai.']);
+        if (! in_array($divisionProject->status, ['draft', 'in_progress', 'revision_required'], true)) {
+            throw ValidationException::withMessages(['division_project' => 'Task tidak dapat dibuat setelah division project masuk tahap review atau approval.']);
         }
 
         if (! $divisionProject->teams()->whereKey($team->id)->exists()) {
@@ -386,6 +386,10 @@ class WorkManagementService
         $isSupervisor = $divisionProject->teams->contains(fn ($team) => (int) $team->supervisor_id === (int) $reporter->id);
         if (! $isManager && ! $isSupervisor) {
             throw ValidationException::withMessages(['reporter' => 'Reporter tidak memiliki scope untuk division project ini.']);
+        }
+
+        if (! in_array($divisionProject->status, ['draft', 'in_progress', 'ready_for_review', 'revision_required'], true)) {
+            throw ValidationException::withMessages(['division_project' => 'Progress manual tidak dapat diubah setelah laporan masuk tahap review atau approval.']);
         }
 
         if ($progress < 0 || $progress > 100) {
