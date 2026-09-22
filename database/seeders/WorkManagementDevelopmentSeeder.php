@@ -784,7 +784,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
                     : 5 + (($employeeIndex * 2 + $workDayNumber) % 26);
 
                 $checkOut = $workEnd->copy()->addMinutes($checkOutOffset);
-                $lateMinutes = $checkIn->gt($workStart)
+                $lateMinutes = $isLate
                     ? $workStart->diffInMinutes($checkIn)
                     : 0;
 
