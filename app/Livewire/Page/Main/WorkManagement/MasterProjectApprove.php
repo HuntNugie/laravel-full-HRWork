@@ -19,7 +19,7 @@ class MasterProjectApprove extends Component
     {
         $this->authorize('view', $masterProject);
         $this->authorize('approve', $masterProject);
-        $this->masterProject = $masterProject->load(['divisionProjects.division', 'divisionProjects.manager.user']);
+        $this->masterProject = $masterProject->load(['divisionProjects.division', 'divisionProjects.manager.user', 'divisionProjects.reports.reporter.user']);
     }
 
     public function approve(WorkManagementService $service): void
