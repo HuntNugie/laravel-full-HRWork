@@ -90,7 +90,7 @@ class ManagerSupervisorDashboardTest extends TestCase
 
         $this->actingAs($supervisorUser);
 
-        Livewire::test(CreateTask::class, ['divisionProject' => $divisionProject])
+        Livewire::test(CreateTask::class, ['divisionProject' => $divisionProject, 'team' => $team])
             ->assertSet('isSupervisor', true)
             ->assertSet('team_id', $team->id)
             ->assertSee($worker->user->name)
