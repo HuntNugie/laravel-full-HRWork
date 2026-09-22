@@ -146,6 +146,74 @@ class ManagerSupervisorDashboardTest extends TestCase
         ]);
     }
 
+    public function test_supervisor_can_assign_task_to_plain_employee_and_employee_becomes_task_worker(): void
+    {
+        [$supervisorUser, $supervisor, $team] = $this->makeSupervisorStructure();
+
+        $plainUser = User::factory()->create([
+            'name' => 'Plain Team Member',
+            'status' => 'active',
+        ]);
+        $employeeRole = Role::firstOrCreate([
+            'name' => 'employee',
+            'guard_name' => 'web',
+        ]);
+        $plainUser->assignRole($employeeRole);
+
+        $plainEmployee = Employees::create([
+            'employee_code' => 'EMP-PLAIN',
+            'user_id' => $plainUser->id,
+            'team_id' => $team->id,
+            'position_id' => null,
+            'status_employee' => 'active',
+        ]);
+
+        $gmUser = User::factory()->create(['name' => 'GM', 'status' => 'active']);
+        $gm = $this->makeRoleEmployee('GM-PLAIN', $gmUser, 'general-manager');
+
+        $master = MasterProject::create([
+            'created_by' => $gm->id,
+            'name' => 'Master Project',
+            'status' => 'in_progress',
+        ]);
+
+        $divisionProject = DivisionProject::create([
+            'master_project_id' => $master->id,
+            'divisi_id' => $team->divisi_id,
+            'manager_id' => $team->divisi->manager_id,
+            'created_by' => $gm->id,
+            'name' => 'Backend Division Project',
+            'is_required' => true,
+            'manual_progress' => 0,
+            'status' => 'in_progress',
+        ]);
+
+        $divisionProject->teams()->attach($team->id, ['assigned_by' => $gm->id]);
+
+        $this->assertFalse($plainUser->hasRole('task-worker'));
+
+        $this->actingAs($supervisorUser);
+
+        Livewire::test(CreateTask::class, [
+            'divisionProject' => $divisionProject,
+            'team' => $team,
+        ])
+            ->set('assignee_id', $plainEmployee->id)
+            ->set('title', 'Task for Plain Employee')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $plainUser->refresh();
+
+        $this->assertTrue($plainUser->hasRole('task-worker'));
+        $this->assertDatabaseHas('tasks', [
+            'division_project_id' => $divisionProject->id,
+            'team_id' => $team->id,
+            'assignee_id' => $plainEmployee->id,
+            'created_by' => $supervisor->id,
+        ]);
+    }
+
     public function test_supervisor_cannot_open_another_team_project_page_or_create_task_for_it(): void
     {
         [$supervisorUser, $supervisor, $team, $worker] = $this->makeSupervisorStructure();
