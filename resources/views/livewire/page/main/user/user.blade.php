@@ -196,7 +196,8 @@
 
                     <x-wirekit::select
                         name="roleFilter"
-                        ariaLabel="Filter berdasarkan role"
+                        label="Role"
+                        hideLabel
                         placeholder="Semua role"
                         :options="$roles"
                         wire:model.live="roleFilter"
