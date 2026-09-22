@@ -114,21 +114,47 @@ class FormEdit extends Component
             ->with(['user', 'position'])
             ->availableDivisionManagers($this->divisi?->id);
 
-        $managers = (clone $baseQuery)
+        // Saat edit, manager yang sedang menjabat tetap harus tersedia sebagai
+        // opsi terpilih, tetapi tidak boleh dihitung sebagai kandidat prioritas.
+        $currentManagerId = $this->divisi?->manager_id;
+
+        $candidateQuery = clone $baseQuery;
+
+        if ($currentManagerId) {
+            $candidateQuery->whereKeyNot($currentManagerId);
+        }
+
+        $managers = (clone $candidateQuery)
             ->whereHas('position', function ($query) {
                 $query->where('name', 'Manager');
             })
             ->get();
 
+        // Tidak ada kandidat dengan position Manager selain manager saat ini:
+        // fallback ke employee lain yang memenuhi syarat.
         if ($managers->isEmpty()) {
-            $managers = $baseQuery->get();
+            $managers = $candidateQuery->get();
         }
 
-        $managers = $managers->mapWithKeys(function ($employee) {
-            return [
-                $employee->id => "{$employee->user->name} - " . ($employee->position->name ?? 'Tanpa posisi'),
-            ];
-        });
+        // Manager yang sedang menjabat tetap ditampilkan agar nilai select
+        // yang sedang tersimpan tidak hilang dari daftar opsi.
+        if ($currentManagerId) {
+            $currentManager = (clone $baseQuery)
+                ->whereKey($currentManagerId)
+                ->first();
+
+            if ($currentManager) {
+                $managers->prepend($currentManager);
+            }
+        }
+
+        $managers = $managers
+            ->unique('id')
+            ->mapWithKeys(function ($employee) {
+                return [
+                    $employee->id => "{$employee->user->name} - " . ($employee->position->name ?? 'Tanpa posisi'),
+                ];
+            });
 
         return view('livewire.components.main.divisi.form-edit', [
             'managers' => $managers,
