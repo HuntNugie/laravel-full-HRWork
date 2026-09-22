@@ -80,6 +80,44 @@
         </x-wirekit::card.body>
     </x-wirekit::card>
 
+    <x-wirekit::card>
+        <x-wirekit::card.header>
+            <x-wirekit::stack gap="1">
+                <h2 class="text-lg font-semibold text-slate-900">Hasil / Catatan Pekerjaan dari Employee</h2>
+                <p class="text-sm text-slate-500">Informasi yang ditulis oleh employee selama mengerjakan task ini.</p>
+            </x-wirekit::stack>
+        </x-wirekit::card.header>
+
+        <x-wirekit::card.body>
+            <x-wirekit::stack gap="md">
+                <div>
+                    <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-400">Hasil / Catatan</span>
+                    <p class="whitespace-pre-line text-sm leading-6 text-slate-700">
+                        {{ $task->result ?: 'Belum ada hasil atau catatan pekerjaan.' }}
+                    </p>
+                </div>
+
+                @if ($task->blocked_reason)
+                    <div class="rounded-xl border border-amber-100 bg-amber-50 p-4">
+                        <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-amber-600">Alasan Blocked</span>
+                        <p class="whitespace-pre-line text-sm leading-6 text-amber-800">{{ $task->blocked_reason }}</p>
+                    </div>
+                @endif
+
+                <div class="flex flex-col gap-1 border-t border-slate-100 pt-4 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+                    <span>Employee: {{ $task->assignee?->user?->name ?? '—' }}</span>
+                    <span>
+                        @if ($task->submitted_at)
+                            Disubmit: {{ $task->submitted_at->format('d M Y H:i') }}
+                        @else
+                            Belum disubmit untuk review
+                        @endif
+                    </span>
+                </div>
+            </x-wirekit::stack>
+        </x-wirekit::card.body>
+    </x-wirekit::card>
+
     @can('updateOwn', $task)
         @if (in_array($task->status, ['to_do', 'in_progress', 'blocked']))
             <x-wirekit::card>
