@@ -124,32 +124,6 @@ class DivisionProjectDetail extends Component
         session()->flash('success', 'Laporan Manager berhasil diteruskan ke General Manager.');
     }
 
-    public function review(WorkManagementService $service): void
-    {
-        $this->authorize('review', $this->divisionProject);
-        $this->validate([
-            'reviewDecision' => ['required', 'in:approved,rejected'],
-            'reviewFeedback' => ['nullable', 'string'],
-        ]);
-
-        $employee = Auth::user()?->employees;
-        if (! $employee) {
-            abort(403);
-        }
-
-        $service->reviewDivisionProject(
-            $this->divisionProject,
-            $employee,
-            $this->reviewDecision,
-            $this->reviewFeedback ?: null,
-        );
-
-        $this->reviewDecision = null;
-        $this->reviewFeedback = '';
-        $this->loadProject($this->divisionProject);
-        session()->flash('success', 'Review division project berhasil disimpan.');
-    }
-
     public function render()
     {
         return view('livewire.page.main.work-management.division-project-detail');
