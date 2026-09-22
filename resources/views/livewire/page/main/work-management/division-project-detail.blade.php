@@ -317,7 +317,15 @@
                     <x-wirekit::table.body>
                         @forelse ($divisionProject->teams as $team)
                             <x-wirekit::table.row>
-                                <x-wirekit::table.td><span class="text-sm font-medium text-slate-800">{{ $team->name }}</span></x-wirekit::table.td>
+                                <x-wirekit::table.td>
+                                    <a
+                                        href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
+                                        wire:navigate
+                                        class="text-sm font-semibold text-[#168ED1] hover:underline"
+                                    >
+                                        {{ $team->name }}
+                                    </a>
+                                </x-wirekit::table.td>
                                 <x-wirekit::table.td><span class="text-sm text-slate-600">{{ $team->supervisor?->user?->name ?? '-' }}</span></x-wirekit::table.td>
                             </x-wirekit::table.row>
                         @empty
