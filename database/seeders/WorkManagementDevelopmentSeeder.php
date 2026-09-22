@@ -13,10 +13,14 @@ use App\Models\EmployeeProfileAddress;
 use App\Models\Employee_profile;
 use App\Models\Employees;
 use App\Models\LeaveType;
+use App\Models\Payroll;
+use App\Models\PayrollItem;
+use App\Models\PayrollPeriod;
 use App\Models\Position;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkTime;
+use App\Service\PayrollCalculationService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Seeder;
@@ -58,6 +62,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $this->seedBenefits($employees);
         $this->seedLeaveEntitlement($employees);
         $this->seedAttendances($employees);
+        $this->seedPayrollHistory($employees);
 
         $count = Employees::query()
             ->where('employee_code', 'like', 'DEV-%')
@@ -812,6 +817,178 @@ class WorkManagementDevelopmentSeeder extends Seeder
         }
 
         $this->command?->info("Historical attendance seeded: {$seeded} records ({$startDate->toDateString()} s/d {$endDate->toDateString()}).");
+    }
+
+    /**
+     * Seed three previous completed payroll periods with generated payroll
+     * snapshots and system payroll items. Historical periods are marked paid
+     * to represent the manual payment workflow after HR has completed payment.
+     *
+     * @param array<string, Employees> $employees
+     */
+    private function seedPayrollHistory(array $employees): void
+    {
+        $creator = User::query()
+            ->where('email', 'nugiekurniawan03@gmail.com')
+            ->firstOrFail();
+
+        $payrollCalculationService = app(PayrollCalculationService::class);
+        $currentMonth = today()->startOfMonth();
+
+        for ($monthOffset = 3; $monthOffset >= 1; $monthOffset--) {
+            $startDate = $currentMonth->copy()->subMonths($monthOffset)->startOfMonth();
+            $endDate = $startDate->copy()->endOfMonth();
+            $paymentDate = $endDate->copy()->addDay();
+            $processedAt = $paymentDate->copy()->addDays(1)->setTime(10, 0);
+            $paidAt = $paymentDate->copy()->addDays(4)->setTime(10, 0);
+
+            DB::transaction(function () use (
+                $creator,
+                $employees,
+                $payrollCalculationService,
+                $startDate,
+                $endDate,
+                $paymentDate,
+                $processedAt,
+                $paidAt,
+            ): void {
+                $period = PayrollPeriod::updateOrCreate(
+                    [
+                        'start_date' => $startDate->toDateString(),
+                        'end_date' => $endDate->toDateString(),
+                    ],
+                    [
+                        'name' => 'Payroll ' . $startDate->translatedFormat('F Y'),
+                        'payment_date' => $paymentDate->toDateString(),
+                        'status' => 'paid',
+                        'created_by' => $creator->id,
+                        'processed_by' => $creator->id,
+                        'processed_at' => $processedAt,
+                        'paid_at' => $paidAt,
+                    ],
+                );
+
+                // Rebuild historical payroll rows so the seed remains idempotent.
+                $period->payrolls()->delete();
+
+                $eligibleEmployees = Employees::query()
+                    ->with(['employeeContract.benefits', 'user'])
+                    ->whereHas('user.roles', fn ($query) => $query->where('name', 'employee'))
+                    ->whereHas('employeeContract', function ($query) use ($startDate, $endDate) {
+                        $query
+                            ->where('status', 'active')
+                            ->whereDate('start_date', '<=', $endDate->toDateString())
+                            ->where(function ($query) use ($startDate) {
+                                $query
+                                    ->whereNull('end_date')
+                                    ->orWhereDate('end_date', '>=', $startDate->toDateString());
+                            });
+                    })
+                    ->get();
+
+                foreach ($eligibleEmployees as $employee) {
+                    $contract = $employee->employeeContract
+                        ->filter(function ($contract) use ($startDate, $endDate) {
+                            return $contract->status === 'active'
+                                && $contract->start_date->lte($endDate)
+                                && (!$contract->end_date || $contract->end_date->gte($startDate));
+                        })
+                        ->sortByDesc('start_date')
+                        ->first();
+
+                    if (! $contract) {
+                        continue;
+                    }
+
+                    $calculation = $payrollCalculationService->calculate(
+                        employee: $employee,
+                        contract: $contract,
+                        period: $period,
+                    );
+
+                    $grossAmount = $calculation['salary_amount'] + $calculation['benefit_total'];
+                    $deductionAmount = $calculation['late_deduction_total'];
+                    $netAmount = $grossAmount - $deductionAmount;
+
+                    $payroll = Payroll::create([
+                        'payroll_period_id' => $period->id,
+                        'employee_id' => $employee->id,
+                        'employee_contract_id' => $contract->id,
+                        'position_name' => $contract->position_name,
+                        'salary_daily' => $calculation['salary_daily'],
+                        'working_days' => $calculation['working_days'],
+                        'present_days' => $calculation['present_days'],
+                        'late_days' => $calculation['late_days'],
+                        'absent_days' => $calculation['absent_days'],
+                        'paid_leave_days' => $calculation['paid_leave_days'],
+                        'unpaid_leave_days' => 0,
+                        'paid_days' => $calculation['paid_days'],
+                        'gross_amount' => $grossAmount,
+                        'deduction_amount' => $deductionAmount,
+                        'net_amount' => $netAmount,
+                        'status' => 'paid',
+                        'notes' => 'Historical development payroll seed.',
+                        'processed_at' => $processedAt,
+                        'paid_at' => $paidAt,
+                    ]);
+
+                    $sortOrder = 1;
+
+                    foreach ($calculation['salary_items'] as $salaryItem) {
+                        PayrollItem::create([
+                            'payroll_id' => $payroll->id,
+                            'name' => $salaryItem['name'],
+                            'type' => 'earning',
+                            'category' => 'salary',
+                            'amount' => $salaryItem['amount'],
+                            'quantity' => $salaryItem['quantity'],
+                            'rate' => $salaryItem['rate'],
+                            'source' => 'system',
+                            'description' => 'Historical payroll seed: ' . $salaryItem['quantity'] . ' hari × Rp' . number_format($salaryItem['rate'], 0, ',', '.'),
+                            'sort_order' => $sortOrder++,
+                        ]);
+                    }
+
+                    foreach ($calculation['benefit_items'] as $benefitItem) {
+                        PayrollItem::create([
+                            'payroll_id' => $payroll->id,
+                            'name' => $benefitItem['benefit']->name,
+                            'type' => 'earning',
+                            'category' => 'benefit',
+                            'amount' => $benefitItem['amount'],
+                            'quantity' => $benefitItem['quantity'],
+                            'rate' => $benefitItem['rate'],
+                            'source' => 'system',
+                            'description' => 'Historical payroll seed: tunjangan ' . $benefitItem['quantity'] . ' hari × Rp' . number_format($benefitItem['rate'], 0, ',', '.'),
+                            'sort_order' => $sortOrder++,
+                        ]);
+                    }
+
+                    foreach ($calculation['late_deduction_items'] as $lateDeduction) {
+                        $rate = $lateDeduction['deduction_units'] > 0
+                            ? $lateDeduction['amount'] / $lateDeduction['deduction_units']
+                            : 0;
+
+                        PayrollItem::create([
+                            'payroll_id' => $payroll->id,
+                            'name' => 'Potongan Keterlambatan',
+                            'type' => 'deduction',
+                            'category' => 'late',
+                            'amount' => $lateDeduction['amount'],
+                            'quantity' => $lateDeduction['deduction_units'],
+                            'rate' => $rate,
+                            'source' => 'system',
+                            'description' => 'Historical payroll seed: ' . $lateDeduction['late_count'] . ' keterlambatan pada ' . $lateDeduction['month'],
+                            'sort_order' => $sortOrder++,
+                        ]);
+                    }
+                }
+            });
+
+            $this->command?->line(
+                'Payroll history: ' . $startDate->translatedFormat('F Y') . ' → paid (' . $eligibleEmployees->count() . ' employees).'
+            );
+        }
     }
 
     /**
