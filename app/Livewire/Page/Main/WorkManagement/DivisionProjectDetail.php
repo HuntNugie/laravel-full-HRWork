@@ -21,6 +21,8 @@ class DivisionProjectDetail extends Component
     public string $progressNote = '';
     public ?string $reviewDecision = null;
     public string $reviewFeedback = '';
+    public string $supervisorReport = '';
+    public string $managerReport = '';
 
     public function mount(DivisionProject $divisionProject): void
     {
@@ -74,6 +76,54 @@ class DivisionProjectDetail extends Component
         session()->flash('success', 'Progress manual berhasil dicatat.');
     }
 
+    public function submitSupervisorReport(WorkManagementService $service): void
+    {
+        $this->authorize('submitSupervisorReport', $this->divisionProject);
+
+        $this->validate([
+            'supervisorReport' => ['required', 'string'],
+        ]);
+
+        $employee = Auth::user()?->employees;
+        if (! $employee) {
+            abort(403);
+        }
+
+        $service->submitSupervisorReport(
+            $this->divisionProject,
+            $employee,
+            $this->supervisorReport,
+        );
+
+        $this->supervisorReport = '';
+        $this->loadProject($this->divisionProject);
+        session()->flash('success', 'Laporan Supervisor berhasil dikirim ke Manager.');
+    }
+
+    public function submitToGM(WorkManagementService $service): void
+    {
+        $this->authorize('submitToGM', $this->divisionProject);
+
+        $this->validate([
+            'managerReport' => ['required', 'string'],
+        ]);
+
+        $employee = Auth::user()?->employees;
+        if (! $employee) {
+            abort(403);
+        }
+
+        $service->submitDivisionProjectToGM(
+            $this->divisionProject,
+            $employee,
+            $this->managerReport,
+        );
+
+        $this->managerReport = '';
+        $this->loadProject($this->divisionProject);
+        session()->flash('success', 'Laporan Manager berhasil diteruskan ke General Manager.');
+    }
+
     public function review(WorkManagementService $service): void
     {
         $this->authorize('review', $this->divisionProject);
@@ -117,6 +167,8 @@ class DivisionProjectDetail extends Component
             'tasks.reviews.reviewer.user',
             'progressUpdates.reporter.user',
             'reviews.reviewer.user',
+            'reports.team',
+            'reports.reporter.user',
         ]);
 
         $this->manualProgress = (int) $this->divisionProject->manual_progress;
