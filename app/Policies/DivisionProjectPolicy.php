@@ -78,6 +78,23 @@ class DivisionProjectPolicy
             && (int) $divisionProject->manager_id === (int) $user->employees?->id;
     }
 
+    public function submitSupervisorReport(User $user, DivisionProject $divisionProject): bool
+    {
+        if (! $user->can('submit-division-project-report') || ! ($employee = $user->employees)) {
+            return false;
+        }
+
+        return $divisionProject->teams()
+            ->where('supervisor_id', $employee->id)
+            ->exists();
+    }
+
+    public function submitToGM(User $user, DivisionProject $divisionProject): bool
+    {
+        return $user->can('submit-division-project-to-gm')
+            && (int) $divisionProject->manager_id === (int) $user->employees?->id;
+    }
+
     private function isGeneralManager(?Employees $employee): bool
     {
         return $employee?->user?->hasRole('general-manager') ?? false;
