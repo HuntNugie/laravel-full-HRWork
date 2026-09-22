@@ -62,7 +62,8 @@
 
                     <x-wirekit::select
                         name="filterDivision"
-                        ariaLabel="Filter berdasarkan divisi"
+                        label="Divisi"
+                        hideLabel
                         placeholder="Semua divisi"
                         :options="$divisions"
                         wire:model.live="filterDivision"
@@ -70,7 +71,8 @@
 
                     <x-wirekit::select
                         name="filterTeam"
-                        ariaLabel="Filter berdasarkan team"
+                        label="Team"
+                        hideLabel
                         placeholder="Semua team"
                         :options="$teams"
                         wire:model.live="filterTeam"
@@ -78,7 +80,8 @@
 
                     <x-wirekit::select
                         name="filterPosition"
-                        ariaLabel="Filter berdasarkan position"
+                        label="Position"
+                        hideLabel
                         placeholder="Semua position"
                         :options="$positions"
                         wire:model.live="filterPosition"
