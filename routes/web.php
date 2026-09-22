@@ -64,6 +64,7 @@ use App\Livewire\Page\Main\WorkManagement\CreateDivisionProject;
 use App\Livewire\Page\Main\WorkManagement\CreateMasterProject;
 use App\Livewire\Page\Main\WorkManagement\CreateTask;
 use App\Livewire\Page\Main\WorkManagement\DivisionProjectDetail;
+use App\Livewire\Page\Main\WorkManagement\DivisionProjectTeamDetail;
 use App\Livewire\Page\Main\WorkManagement\MasterProjectApprove;
 use App\Livewire\Page\Main\WorkManagement\MasterProjectDetail;
 use App\Livewire\Page\Main\WorkManagement\MasterProjects;
@@ -228,6 +229,7 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/master-projects/{masterProject}/division-projects/create', CreateDivisionProject::class)->middleware('permission:create-division-project')->name('work-management.master-projects.division-projects.create');
         Route::get('/master-projects/{masterProject}/approve', MasterProjectApprove::class)->middleware('permission:approve-master-project')->name('work-management.master-projects.approve');
         Route::get('/division-projects/{divisionProject}', DivisionProjectDetail::class)->middleware('permission:view-division-project')->name('work-management.division-projects.show');
+        Route::get('/division-projects/{divisionProject}/teams/{team}', DivisionProjectTeamDetail::class)->middleware('permission:view-division-project')->name('work-management.division-projects.teams.show');
         Route::get('/division-projects/{divisionProject}/teams/{team}/tasks/create', CreateTask::class)->middleware('permission:view-task')->name('work-management.division-projects.tasks.create');
         Route::get('/tasks', MyTasks::class)->middleware('permission:view-task')->name('work-management.tasks');
         Route::get('/tasks/{task}', TaskDetail::class)->middleware('permission:view-task')->name('work-management.tasks.show');
