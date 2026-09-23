@@ -35,6 +35,10 @@ class RolePermissionSeeder extends Seeder
                 'view-work-time',
                 'view-warning-letter-my',
                 'show-warning-letter-my',
+                'view-resignation-my',
+                'show-resignation-my',
+                'create-resignation-my',
+                'cancel-resignation-my',
             ],
 
             'hr' => [
@@ -122,6 +126,14 @@ class RolePermissionSeeder extends Seeder
                 'edit-warning-letter',
                 'issue-warning-letter',
                 'cancel-warning-letter',
+                // Resignation
+                'view-resignation',
+                'show-resignation',
+                'approve-resignation',
+                'reject-resignation',
+                'cancel-resignation',
+                'manage-resignation-clearance',
+                'complete-resignation',
             ],
 
             'administrator' => [
