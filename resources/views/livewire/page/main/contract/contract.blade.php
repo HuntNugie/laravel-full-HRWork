@@ -150,12 +150,7 @@
 
                     <x-wirekit::table.body>
 
-                        {{-- =================================================
-                        STATIC DATA
-                        ================================================== --}}
-
-                        {{-- CONTRACT 1 --}}
-                        @foreach ($employees as $employee)
+                        @forelse ($employees as $employee)
                             <x-wirekit::table.row>
 
                                 {{-- Contract --}}
@@ -292,11 +287,27 @@
                                 </x-wirekit::table.td>
 
                             </x-wirekit::table.row>
-                        @endforeach
+                        @empty
+                            <x-wirekit::table.row>
 
+                                <x-wirekit::table.td colspan="8">
 
+                                    <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
 
+                                        <p class="text-sm font-medium text-slate-700">
+                                            Belum ada data contract.
+                                        </p>
 
+                                        <p class="text-sm text-slate-500">
+                                            Tidak ada contract yang sesuai dengan filter yang dipilih.
+                                        </p>
+
+                                    </div>
+
+                                </x-wirekit::table.td>
+
+                            </x-wirekit::table.row>
+                        @endforelse
 
 
                     </x-wirekit::table.body>
