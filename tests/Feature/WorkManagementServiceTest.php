@@ -309,9 +309,14 @@ class WorkManagementServiceTest extends TestCase
         $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan Manager.');
         $this->assertSame(90, $divisionProject->reports()->latest('id')->first()->progress);
 
-        $this->assertThrows(ValidationException::class, function () use ($service, $divisionProject, $manager) {
-            $service->reportManualProgress($divisionProject, $manager, 95, 'Tidak boleh diubah setelah submit.');
-        });
+        $this->expectException(ValidationException::class);
+
+        $service->reportManualProgress(
+            $divisionProject,
+            $manager,
+            95,
+            'Tidak boleh diubah setelah submit.',
+        );
 
         $this->assertSame(90, $divisionProject->refresh()->manual_progress);
     }
