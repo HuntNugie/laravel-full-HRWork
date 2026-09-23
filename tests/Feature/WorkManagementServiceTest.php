@@ -50,7 +50,7 @@ class WorkManagementServiceTest extends TestCase
             'Implement the backend API',
         );
 
-        $service->reportManualProgress($divisionProject, $supervisor, 75, 'Manual checkpoint.');
+        $service->reportManualProgress($divisionProject, $manager, 75, 'Manual checkpoint from Manager.');
 
         $service->updateTaskWork(
             $task,
@@ -147,6 +147,20 @@ class WorkManagementServiceTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $service->reviewMasterProject($master, $otherGeneralManager, 'approved');
+    }
+
+    public function test_supervisor_cannot_report_division_manual_progress(): void
+    {
+        [$generalManager, $manager, $supervisor, , $team, $division] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
+
+        $master = $service->createMasterProject($generalManager, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
+        $service->assignTeam($divisionProject, $team, $manager);
+
+        $this->expectException(ValidationException::class);
+
+        $service->reportManualProgress($divisionProject, $supervisor, 50, 'Supervisor progress.');
     }
 
     public function test_manager_waits_for_all_supervisor_reports_before_review(): void
