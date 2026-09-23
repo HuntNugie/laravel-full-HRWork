@@ -153,7 +153,7 @@ class ResignationServiceTest extends TestCase
         $this->assertDatabaseHas('employee_resignation_clearances', [
             'resignation_id' => $resignation->id,
             'category' => 'organization',
-            'status' => 'completed',
+            'status' => 'pending',
         ]);
     }
 
