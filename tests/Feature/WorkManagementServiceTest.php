@@ -120,6 +120,13 @@ class WorkManagementServiceTest extends TestCase
             'decision' => 'approved',
         ]);
 
+        $this->assertDatabaseHas('project_reports', [
+            'division_project_id' => $divisionProject->id,
+            'reported_by' => $manager->id,
+            'report_level' => ProjectReport::LEVEL_MANAGER,
+            'status' => ProjectReport::STATUS_APPROVED,
+        ]);
+
         $this->assertGreaterThanOrEqual(5, \App\Models\WorkManagementAudit::query()->count());
     }
 
