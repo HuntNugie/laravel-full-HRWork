@@ -130,7 +130,7 @@
                     />
 
                     <div class="md:col-span-2 flex flex-wrap justify-end gap-2">
-                        @can('reject-resignation')
+                        <?php if (auth()->user()->can('reject-resignation')): ?>
                             <x-wirekit::button
                             type="button"
                             surface="outline"
@@ -141,7 +141,7 @@
                             </x-wirekit::button>
                         <?php endif; ?>
 
-                        @can('approve-resignation')
+                        <?php if (auth()->user()->can('approve-resignation')): ?>
                         <x-wirekit::button
                             type="button"
                             class="bg-[#30AFFF] text-white hover:bg-sky-500"
@@ -177,7 +177,7 @@
                                         </p>
                                     </div>
 
-                                    @can('manage-resignation-clearance')
+                                    <?php if (auth()->user()->can('manage-resignation-clearance')): ?>
                                     <div class="flex flex-wrap gap-2">
                                         <x-wirekit::button
                                             type="button"
@@ -240,7 +240,7 @@
                                     wire:model="handoverRecipients.{{ $item->id }}"
                                 />
 
-                                @can('manage-resignation-clearance')
+                                <?php if (auth()->user()->can('manage-resignation-clearance')): ?>
                                 <div class="flex flex-wrap items-end gap-2">
                                     <x-wirekit::button
                                         type="button"
@@ -287,7 +287,7 @@
             </x-wirekit::card.header>
 
             <x-wirekit::card.body>
-                @can('manage-resignation-clearance')
+                <?php if (auth()->user()->can('manage-resignation-clearance')): ?>
                 <div class="flex flex-col gap-4 md:flex-row md:items-end">
                     <div class="flex-1">
                         <x-wirekit::select
@@ -311,7 +311,7 @@
                 <?php endif; ?>
 
                 <div class="mt-4 space-y-2">
-                    @forelse ($resignation->finalPayrolls as $payroll)
+                    <?php if ($resignation->finalPayrolls->isNotEmpty()): foreach ($resignation->finalPayrolls as $payroll): ?>
                         <div class="flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-3 text-sm">
                             <span class="text-emerald-700">
                                 {{ $payroll->period?->name ?? 'Payroll' }}
@@ -334,14 +334,14 @@
 
             <x-wirekit::card.body>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                    @foreach ([
+                    <?php foreach ([
                         'clearance' => 'Clearance',
                         'handover' => 'Handover',
                         'final_payroll' => 'Final Payroll',
                         'organization' => 'Organization',
                         'leave' => 'Leave',
                         'last_working_date' => 'Last Working Day',
-                    ] as $key => $label)
+                    ] as $key => $label): ?>
                         <div class="rounded-xl border border-slate-100 px-4 py-3">
                             <p class="text-xs text-slate-400">{{ $label }}</p>
                             <p class="mt-1 text-sm font-semibold {{ $readiness[$key] ? 'text-emerald-600' : 'text-amber-600' }}">
@@ -376,7 +376,7 @@
 
                 <x-wirekit::card.body>
                     <?php if ($resignation->status === 'approved'): ?>
-                        @can('manage-resignation-clearance')
+                        <?php if (auth()->user()->can('manage-resignation-clearance')): ?>
                             <x-wirekit::textarea
                                 label="Catatan Exit Interview"
                                 name="exitInterviewNotes"
@@ -425,7 +425,7 @@
         </x-wirekit::card.header>
         <x-wirekit::card.body>
             <div class="space-y-4">
-                @forelse ($resignation->histories->sortByDesc('created_at') as $history)
+                <?php if ($resignation->histories->isNotEmpty()): foreach ($resignation->histories->sortByDesc('created_at') as $history): ?>
                     <div class="border-l-2 border-sky-100 pl-4">
                         <p class="text-sm font-semibold text-slate-800">
                             {{ ucfirst($history->to_status) }}
