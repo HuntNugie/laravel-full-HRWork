@@ -32,6 +32,8 @@ class ProjectReport extends Model
 
     protected function casts(): array
     {
-        return [];
+        return [
+            'progress' => 'integer',
+        ];
     }
 }
