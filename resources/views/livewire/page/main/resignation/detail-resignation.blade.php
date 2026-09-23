@@ -123,11 +123,20 @@
                     />
 
                     <x-wirekit::textarea
-                        label="Catatan Review"
+                        label="Catatan Persetujuan"
                         name="actionNote"
                         wire:model="actionNote"
                         rows="4"
                     />
+
+                    <?php if (auth()->user()->can('reject-resignation')): ?>
+                        <x-wirekit::textarea
+                            label="Alasan Penolakan"
+                            name="rejectionReason"
+                            wire:model="rejectionReason"
+                            rows="4"
+                        />
+                    <?php endif; ?>
 
                     <div class="md:col-span-2 flex flex-wrap justify-end gap-2">
                         <?php if (auth()->user()->can('reject-resignation')): ?>
@@ -280,52 +289,7 @@
             </x-wirekit::card>
         </div>
 
-        <x-wirekit::card>
-            <x-wirekit::card.header>
-                <h2 class="text-lg font-semibold text-slate-900">Final Payroll</h2>
-                <p class="text-sm text-slate-500">Hubungkan payroll yang sudah dibayar sebagai bukti penyelesaian finansial.</p>
-            </x-wirekit::card.header>
 
-            <x-wirekit::card.body>
-                <?php if (auth()->user()->can('manage-resignation-clearance')): ?>
-                <div class="flex flex-col gap-4 md:flex-row md:items-end">
-                    <div class="flex-1">
-                        <x-wirekit::select
-                            label="Payroll Paid"
-                            name="selectedPayrollId"
-                            wire:model="selectedPayrollId"
-                            :options="$payrolls->mapWithKeys(fn($payroll) => [
-                                $payroll->id => ($payroll->period?->name ?? 'Payroll') . ' · Rp ' . number_format((float) $payroll->net_amount, 0, ',', '.'),
-                            ])->all()"
-                        />
-                    </div>
-
-                    <x-wirekit::button
-                        type="button"
-                        class="bg-[#30AFFF] text-white hover:bg-sky-500"
-                        wire:click="linkFinalPayroll"
-                    >
-                        Hubungkan Payroll
-                    </x-wirekit::button>
-                </div>
-                <?php endif; ?>
-
-                <div class="mt-4 space-y-2">
-                    <?php if ($resignation->finalPayrolls->isNotEmpty()): foreach ($resignation->finalPayrolls as $payroll): ?>
-                        <div class="flex items-center justify-between rounded-xl bg-emerald-50 px-4 py-3 text-sm">
-                            <span class="text-emerald-700">
-                                {{ $payroll->period?->name ?? 'Payroll' }}
-                            </span>
-                            <span class="font-semibold text-emerald-700">
-                                Paid
-                            </span>
-                        </div>
-                    <?php endforeach; else: ?>
-                        <p class="text-sm text-slate-500">Belum ada payroll akhir yang dihubungkan.</p>
-                    <?php endif; ?>
-                </div>
-            </x-wirekit::card.body>
-        </x-wirekit::card>
         <?php $readiness = $this->readiness(); ?>
         <x-wirekit::card>
             <x-wirekit::card.header>
@@ -337,7 +301,6 @@
                     <?php foreach ([
                         'clearance' => 'Clearance',
                         'handover' => 'Handover',
-                        'final_payroll' => 'Final Payroll',
                         'organization' => 'Organization',
                         'leave' => 'Leave',
                         'last_working_date' => 'Last Working Day',
