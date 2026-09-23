@@ -132,7 +132,7 @@ class DivisionProjectDetail extends Component
     private function loadProject(DivisionProject $divisionProject): void
     {
         $this->divisionProject = $divisionProject->refresh()->load([
-            'masterProject',
+            'masterProject.reviews.reviewer.user',
             'division',
             'manager.user',
             'teams.supervisor.user',
@@ -146,6 +146,15 @@ class DivisionProjectDetail extends Component
         ]);
 
         $this->manualProgress = (int) $this->divisionProject->manual_progress;
+
+        $latestManagerReport = $this->divisionProject->reports
+            ->where('report_level', \App\Models\ProjectReport::LEVEL_MANAGER)
+            ->sortByDesc('id')
+            ->first();
+
+        $this->managerReport = $latestManagerReport?->status === \App\Models\ProjectReport::STATUS_REJECTED
+            ? (string) $latestManagerReport->content
+            : '';
 
         $assignedIds = $this->divisionProject->teams->pluck('id');
 
