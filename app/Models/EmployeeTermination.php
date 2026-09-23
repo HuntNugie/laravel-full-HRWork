@@ -8,9 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Guarded('id')]
 class EmployeeTermination extends Model
 {
-    public const STATUS_SUBMITTED = 'submitted';
-    public const STATUS_APPROVED = 'approved';
-    public const STATUS_REJECTED = 'rejected';
+    public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_COMPLETED = 'completed';
 
@@ -27,11 +25,6 @@ class EmployeeTermination extends Model
     public function initiator()
     {
         return $this->belongsTo(User::class, 'initiated_by');
-    }
-
-    public function reviewer()
-    {
-        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function canceller()
@@ -61,19 +54,14 @@ class EmployeeTermination extends Model
 
     public function isActiveProcess(): bool
     {
-        return in_array($this->status, [
-            self::STATUS_SUBMITTED,
-            self::STATUS_APPROVED,
-        ], true);
+        return $this->status === self::STATUS_IN_PROGRESS;
     }
 
     protected function casts(): array
     {
         return [
             'initiated_at' => 'datetime',
-            'proposed_effective_date' => 'date',
-            'approved_effective_date' => 'date',
-            'reviewed_at' => 'datetime',
+            'effective_date' => 'date',
             'cancelled_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
