@@ -104,11 +104,17 @@ class Employees extends Model
         return $this->hasMany(EmployeeResignation::class, 'employee_id');
     }
 
+    public function terminations()
+    {
+        return $this->hasMany(EmployeeTermination::class, 'employee_id');
+    }
+
     protected function casts(): array
     {
         return [
             'JoinDate' => 'date',
             'ResignDate' => 'date',
+            'TerminationDate' => 'date',
         ];
     }
 }
