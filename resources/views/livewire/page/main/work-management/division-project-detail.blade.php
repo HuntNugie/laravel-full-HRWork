@@ -143,30 +143,38 @@
     @endcan
 
     @can('submitToGM', $divisionProject)
-        @if (in_array($divisionProject->status, ['manager_approved', 'revision_required'], true))
+        @if (in_array($divisionProject->status, ['manager_approved', 'revision_required', 'submitted_to_gm'], true))
             @php
                 $latestManagerReport = $divisionProject->reports
                     ->where('report_level', 'manager')
                     ->sortByDesc('id')
                     ->first();
-                $gmReturnReview = $divisionProject->masterProject->reviews
+                $latestManagerReview = $divisionProject->reviews
                     ->where('reviewer_level', 'general_manager')
-                    ->where('decision', 'rejected')
                     ->sortByDesc('id')
                     ->first();
+                $gmReturnReview = $latestManagerReview?->decision === 'rejected'
+                    ? $latestManagerReview
+                    : null;
                 $resubmitting = $divisionProject->status === 'revision_required';
+                $waitingForGM = $divisionProject->status === 'submitted_to_gm' && $latestManagerReport?->status === 'submitted';
+                $approvedByGM = $latestManagerReport?->status === 'approved';
             @endphp
 
             <x-wirekit::card>
                 <x-wirekit::card.header>
                     <x-wirekit::stack gap="1">
                         <h2 class="text-lg font-semibold text-slate-900">
-                            {{ $resubmitting ? 'Perbaiki & Submit Ulang untuk Review GM' : 'Submit Hasil untuk Review GM' }}
+                            {{ $resubmitting ? 'Perbaiki & Submit Ulang untuk Review GM' : ($waitingForGM ? 'Menunggu Review GM' : ($approvedByGM ? 'Sudah Di-approve GM' : 'Submit Hasil untuk Review GM')) }}
                         </h2>
                         <p class="text-sm text-slate-500">
                             {{ $resubmitting
-                                ? 'Division Project dikembalikan oleh GM. Perbarui hasil dan laporan Manager lalu submit ulang untuk direview.'
-                                : 'Semua laporan Team sudah disetujui. Submit hasil akhir Division Project untuk direview oleh General Manager pembuat Master Project.' }}
+                                ? 'Division Project dikembalikan oleh GM. Perbarui progress dan laporan Manager lalu submit ulang untuk direview.'
+                                : ($waitingForGM
+                                    ? 'Progress dan laporan Manager sudah dikirim dan sedang menunggu approval General Manager.'
+                                    : ($approvedByGM
+                                        ? 'Progress dan laporan Manager sudah disetujui General Manager.'
+                                        : 'Semua laporan Team sudah disetujui. Submit progress dan hasil akhir Division Project untuk direview oleh General Manager pembuat Master Project.')) }}
                         </p>
                     </x-wirekit::stack>
                 </x-wirekit::card.header>
@@ -191,7 +199,8 @@
                         </div>
                     @endif
 
-                    <form wire:submit="submitToGM" class="space-y-4">
+                    @if (! $waitingForGM && ! $approvedByGM)
+                        <form wire:submit="submitToGM" class="space-y-4">
                         <div>
                             <label class="mb-2 block text-sm font-medium text-slate-700">Catatan / Laporan Manager</label>
                             <textarea
@@ -203,12 +212,23 @@
                             @error('managerReport') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="flex justify-end">
-                            <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">
-                                {{ $resubmitting ? 'Submit Ulang untuk Review GM' : 'Submit untuk Review GM' }}
-                            </x-wirekit::button>
-                        </div>
-                    </form>
+                            <div class="flex justify-end">
+                                <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">
+                                    {{ $resubmitting ? 'Submit Ulang untuk Review GM' : 'Submit untuk Review GM' }}
+                                </x-wirekit::button>
+                            </div>
+                        </form>
+                    @else
+                        @if ($waitingForGM)
+                            <div class="rounded-xl border border-violet-100 bg-violet-50 p-4 text-sm text-violet-800">
+                                Menunggu General Manager meninjau progress {{ $latestManagerReport->progress }}% dan laporan Manager.
+                            </div>
+                        @elseif ($approvedByGM)
+                            <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800">
+                                GM telah menyetujui progress {{ $latestManagerReport->progress }}% dan laporan Manager.
+                            </div>
+                        @endif
+                    @endif
                 </x-wirekit::card.body>
             </x-wirekit::card>
         @endif
