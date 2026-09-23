@@ -11,7 +11,6 @@ use App\Models\Employees;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class EmployeeExitActionService
 {
@@ -146,7 +145,12 @@ class EmployeeExitActionService
         }
 
         if (($state['action'] ?? null) === 'release_organization') {
-            if ($employee->team_id === ($after['employee_team_id'] ?? null)) {
+            if (
+                $employee->team_id === ($after['employee_team_id'] ?? null)
+                && (!empty($before['employee_team_id'])
+                    ? Team::query()->whereKey($before['employee_team_id'])->exists()
+                    : true)
+            ) {
                 $employee->update([
                     'team_id' => $before['employee_team_id'] ?? null,
                 ]);
