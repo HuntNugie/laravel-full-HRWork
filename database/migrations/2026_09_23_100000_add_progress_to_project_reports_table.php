@@ -19,11 +19,6 @@ return new class extends Migration
             });
         }
 
-        DB::table('project_reports as reports')
-            ->join('division_projects as projects', 'projects.id', '=', 'reports.division_project_id')
-            ->where('reports.report_level', 'manager')
-            ->whereNull('reports.progress')
-            ->update(['reports.progress' => DB::raw('projects.manual_progress')]);
     }
 
     public function down(): void
