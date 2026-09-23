@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             DivisiSeeder::class,
             BankSeeder::class,
 
-            // Final role -> permission mapping.
+            // Final role -> permission mapping, including employee warning letter access.
             RolePermissionSeeder::class,
 
             // HR configuration required by the application.
