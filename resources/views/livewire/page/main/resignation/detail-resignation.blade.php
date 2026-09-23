@@ -221,34 +221,44 @@
                                 </x-wirekit::badge>
                             </div>
 
-                            <div class="mt-3 flex flex-wrap gap-2">
-                                <x-wirekit::button
-                                    type="button"
-                                    size="sm"
-                                    surface="outline"
-                                    wire:click="updateHandover({{ $item->id }}, 'in_progress')"
-                                >
-                                    Proses
-                                </x-wirekit::button>
+                            <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                                <x-wirekit::select
+                                    label="Dihandover ke"
+                                    name="handoverRecipient-{{ $item->id }}"
+                                    placeholder="Pilih employee"
+                                    :options="$handoverEmployees"
+                                    wire:model="handoverRecipients.{{ $item->id }}"
+                                />
 
-                                <x-wirekit::button
-                                    type="button"
-                                    size="sm"
-                                    surface="outline"
-                                    wire:click="updateHandover({{ $item->id }}, 'completed')"
-                                >
-                                    Selesai
-                                </x-wirekit::button>
+                                <div class="flex flex-wrap items-end gap-2">
+                                    <x-wirekit::button
+                                        type="button"
+                                        size="sm"
+                                        surface="outline"
+                                        wire:click="updateHandover({{ $item->id }}, 'in_progress')"
+                                    >
+                                        Proses
+                                    </x-wirekit::button>
 
-                                <x-wirekit::button
-                                    type="button"
-                                    size="sm"
-                                    surface="outline"
-                                    intent="neutral"
-                                    wire:click="updateHandover({{ $item->id }}, 'not_applicable')"
-                                >
-                                    N/A
-                                </x-wirekit::button>
+                                    <x-wirekit::button
+                                        type="button"
+                                        size="sm"
+                                        surface="outline"
+                                        wire:click="updateHandover({{ $item->id }}, 'completed')"
+                                    >
+                                        Selesai
+                                    </x-wirekit::button>
+
+                                    <x-wirekit::button
+                                        type="button"
+                                        size="sm"
+                                        surface="outline"
+                                        intent="neutral"
+                                        wire:click="updateHandover({{ $item->id }}, 'not_applicable')"
+                                    >
+                                        N/A
+                                    </x-wirekit::button>
+                                </div>
                             </div>
                         </div>
                     @empty
@@ -318,6 +328,7 @@
                         'final_payroll' => 'Final Payroll',
                         'organization' => 'Organization',
                         'leave' => 'Leave',
+                        'last_working_date' => 'Last Working Day',
                     ] as $key => $label)
                         <div class="rounded-xl border border-slate-100 px-4 py-3">
                             <p class="text-xs text-slate-400">{{ $label }}</p>
