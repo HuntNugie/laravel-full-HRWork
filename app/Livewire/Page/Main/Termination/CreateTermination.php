@@ -99,7 +99,7 @@ class CreateTermination extends Component
             $termination = app(TerminationService::class)->create(
                 employee: Employees::query()->findOrFail((int) $this->employeeId),
                 initiatedBy: Auth::user(),
-                proposedEffectiveDate: $this->proposedEffectiveDate,
+                effectiveDate: $this->proposedEffectiveDate,
                 reasonType: $this->reasonType,
                 reason: $this->reason,
                 notes: $this->notes ?: null,
