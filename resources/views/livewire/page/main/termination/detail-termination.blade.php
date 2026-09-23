@@ -9,7 +9,7 @@
 
         <span class="text-sm font-medium text-[#30AFFF]">SDM</span>
         <h1 class="text-2xl font-bold tracking-tight text-slate-900">Detail PHK</h1>
-        <p class="text-sm text-slate-500">Kelola persetujuan, handover, clearance, dan penyelesaian PHK employee.</p>
+        <p class="text-sm text-slate-500">Kelola handover, clearance, dan penyelesaian PHK employee.</p>
     </x-wirekit::stack>
 
     <?php if (session('success')): ?>
@@ -40,9 +40,7 @@
 
                 <?php
                     $statusIntent = match ($termination->status) {
-                        'submitted' => 'warning',
-                        'approved' => 'info',
-                        'rejected' => 'danger',
+                        'in_progress' => 'info',
                         'cancelled' => 'secondary',
                         'completed' => 'success',
                         default => 'secondary',
@@ -79,7 +77,7 @@
             <x-wirekit::card.body>
                 <p class="text-xs font-medium text-slate-400">Tanggal Efektif PHK</p>
                 <p class="mt-1 text-sm font-semibold text-slate-800">
-                    {{ $termination->approved_effective_date?->translatedFormat('d M Y') ?? 'Belum ditetapkan' }}
+                    {{ $termination->effective_date?->translatedFormat('d M Y') ?? '—' }}
                 </p>
             </x-wirekit::card.body>
         </x-wirekit::card>
@@ -131,59 +129,7 @@
         </x-wirekit::card.body>
     </x-wirekit::card>
 
-    <?php if ($termination->status === 'submitted'): ?>
-        <x-wirekit::card>
-            <x-wirekit::card.header>
-                <div>
-                    <h2 class="text-lg font-semibold text-slate-900">Review PHK</h2>
-                    <p class="text-sm text-slate-500">General Manager dapat menyetujui atau menolak pengajuan PHK.</p>
-                </div>
-            </x-wirekit::card.header>
-
-            <x-wirekit::card.body>
-                <div class="grid gap-5 md:grid-cols-2">
-                    <x-wirekit::input
-                        type="date"
-                        label="Tanggal Efektif PHK"
-                        name="approvedEffectiveDate"
-                        wire:model="approvedEffectiveDate"
-                    />
-
-                    <x-wirekit::textarea
-                        label="Catatan Review"
-                        name="actionNote"
-                        wire:model="actionNote"
-                        rows="4"
-                    />
-                </div>
-
-                <div class="mt-5 flex flex-wrap justify-end gap-2">
-                    <?php if (auth()->user()->can('reject-termination')): ?>
-                        <x-wirekit::button
-                            type="button"
-                            surface="outline"
-                            intent="danger"
-                            wire:click="reject"
-                        >
-                            Tolak
-                        </x-wirekit::button>
-                    <?php endif; ?>
-
-                    <?php if (auth()->user()->can('approve-termination')): ?>
-                        <x-wirekit::button
-                            type="button"
-                            class="bg-[#30AFFF] text-white hover:bg-sky-500"
-                            wire:click="approve"
-                        >
-                            Setujui
-                        </x-wirekit::button>
-                    <?php endif; ?>
-                </div>
-            </x-wirekit::card.body>
-        </x-wirekit::card>
-    <?php endif; ?>
-
-    <?php if (in_array($termination->status, ['submitted', 'approved'], true) && auth()->user()->can('cancel-termination')): ?>
+    <?php if ($termination->status === 'in_progress' && auth()->user()->can('cancel-termination')): ?>
         <x-wirekit::card>
             <x-wirekit::card.header>
                 <h2 class="text-lg font-semibold text-slate-900">Batalkan Proses</h2>
@@ -211,7 +157,7 @@
         </x-wirekit::card>
     <?php endif; ?>
 
-    <?php if ($termination->status === 'approved'): ?>
+    <?php if ($termination->status === 'in_progress'): ?>
         <div class="grid gap-4 lg:grid-cols-2">
             <x-wirekit::card>
                 <x-wirekit::card.header>
