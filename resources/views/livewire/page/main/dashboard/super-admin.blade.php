@@ -27,13 +27,13 @@
         };
     @endphp
 
-    <div class="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 px-6 py-7 shadow-sm sm:px-8">
-        <div class="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-[#30AFFF]/10 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-24 left-1/3 size-56 rounded-full bg-cyan-400/5 blur-3xl"></div>
+    <div class="relative overflow-hidden rounded-2xl border border-blue-700 bg-blue-700 px-6 py-7 shadow-sm sm:px-8">
+        <div class="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-cyan-300/20 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-24 left-1/3 size-56 rounded-full bg-blue-300/10 blur-3xl"></div>
 
         <div class="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <x-wirekit::stack gap="sm">
-                <span class="text-sm font-semibold text-[#5DC4FF]">System Administration</span>
+                <span class="text-sm font-semibold text-cyan-100">System Administration</span>
 
                 <div class="space-y-2">
                     <h1 class="text-2xl font-bold tracking-tight text-white sm:text-3xl">
@@ -45,14 +45,14 @@
                 </div>
             </x-wirekit::stack>
 
-            <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Hari ini</p>
+            <div class="rounded-xl border border-white/20 bg-white/10 px-4 py-3">
+                <p class="text-xs font-medium uppercase tracking-wide text-blue-100">Hari ini</p>
                 <p class="mt-1 text-sm font-semibold text-white">{{ $today->format('d M Y') }}</p>
             </div>
         </div>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <x-wirekit::card>
             <x-wirekit::card.body>
                 <x-wirekit::stack gap="sm">
@@ -95,21 +95,6 @@
             </x-wirekit::card.body>
         </x-wirekit::card>
 
-        <x-wirekit::card>
-            <x-wirekit::card.body>
-                <x-wirekit::stack gap="sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium text-slate-500">Active Projects</span>
-                        <span class="size-2.5 rounded-full bg-violet-400"></span>
-                    </div>
-                    <p class="text-3xl font-bold tracking-tight text-slate-900">{{ $masterProjects['active'] }}</p>
-                    <div class="flex items-center gap-3 text-xs">
-                        <span class="text-slate-400">{{ $masterProjects['total'] }} total</span>
-                        <span class="font-semibold text-violet-600">{{ $masterReadyForReview }} siap review</span>
-                    </div>
-                </x-wirekit::stack>
-            </x-wirekit::card.body>
-        </x-wirekit::card>
     </div>
 
     <div class="grid gap-6 xl:grid-cols-3">
