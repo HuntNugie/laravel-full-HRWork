@@ -70,10 +70,7 @@ class ResignationService
         }
 
         $hasActiveTermination = $employee->terminations()
-            ->whereIn('status', [
-                EmployeeTermination::STATUS_SUBMITTED,
-                EmployeeTermination::STATUS_APPROVED,
-            ])
+            ->where('status', EmployeeTermination::STATUS_IN_PROGRESS)
             ->exists();
 
         if ($hasActiveTermination) {
