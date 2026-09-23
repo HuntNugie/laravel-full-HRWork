@@ -38,14 +38,18 @@
                     </p>
                 </div>
 
-                <x-wirekit::badge :intent="match($resignation->status) {
-                    'submitted' => 'warning',
-                    'approved' => 'info',
-                    'rejected' => 'danger',
-                    'cancelled' => 'secondary',
-                    'completed' => 'success',
-                    default => 'secondary',
-                }">
+                @php
+                    $statusIntent = match ($resignation->status) {
+                        'submitted' => 'warning',
+                        'approved' => 'info',
+                        'rejected' => 'danger',
+                        'cancelled' => 'secondary',
+                        'completed' => 'success',
+                        default => 'secondary',
+                    };
+                @endphp
+
+                <x-wirekit::badge :intent="$statusIntent">
                     {{ ucfirst($resignation->status) }}
                 </x-wirekit::badge>
             </div>
@@ -354,7 +358,7 @@
                         type="button"
                         class="bg-[#30AFFF] text-white hover:bg-sky-500"
                         wire:click="complete"
-                        @disabled(!$readiness['ready'])
+                        :disabled="!$readiness['ready']"
                     >
                         Selesaikan Resignation
                     </x-wirekit::button>
