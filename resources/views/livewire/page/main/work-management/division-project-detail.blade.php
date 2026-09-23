@@ -199,6 +199,14 @@
                         </div>
                     @endif
 
+                    <div class="mb-4 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-xs font-semibold uppercase tracking-wide text-blue-700">Progress yang akan dikirim ke GM</span>
+                            <span class="text-lg font-bold text-blue-900">{{ $divisionProject->manual_progress }}%</span>
+                        </div>
+                        <p class="mt-1 text-xs text-blue-700">Nilai ini diambil dari Manual Progress Manager terakhir yang sudah disimpan.</p>
+                    </div>
+
                     @if (! $waitingForGM && ! $approvedByGM)
                         <form wire:submit="submitToGM" class="space-y-4">
                         <div>
