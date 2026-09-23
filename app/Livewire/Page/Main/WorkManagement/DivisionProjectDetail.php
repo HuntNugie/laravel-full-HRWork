@@ -131,7 +131,14 @@ class DivisionProjectDetail extends Component
 
     private function loadProject(DivisionProject $divisionProject): void
     {
-        $this->divisionProject = $divisionProject->refresh()->load([
+        $employee = Auth::user()?->employees;
+        $canSeeManagerData = $employee
+            && (
+                (int) $divisionProject->manager_id === (int) $employee->id
+                || $employee->user?->hasRole('general-manager')
+            );
+
+        $relations = [
             'masterProject.reviews.reviewer.user',
             'division',
             'manager.user',
@@ -139,18 +146,27 @@ class DivisionProjectDetail extends Component
             'tasks.team',
             'tasks.assignee.user',
             'tasks.reviews.reviewer.user',
-            'progressUpdates.reporter.user',
             'reviews.reviewer.user',
-            'reports.team',
-            'reports.reporter.user',
-        ]);
+        ];
 
-        $this->manualProgress = (int) $this->divisionProject->manual_progress;
+        if ($canSeeManagerData) {
+            $relations[] = 'progressUpdates.reporter.user';
+            $relations[] = 'reports.team';
+            $relations[] = 'reports.reporter.user';
+        }
 
-        $latestManagerReport = $this->divisionProject->reports
-            ->where('report_level', \App\Models\ProjectReport::LEVEL_MANAGER)
-            ->sortByDesc('id')
-            ->first();
+        $this->divisionProject = $divisionProject->refresh()->load($relations);
+
+        $this->manualProgress = $canSeeManagerData
+            ? (int) $this->divisionProject->manual_progress
+            : 0;
+
+        $latestManagerReport = $canSeeManagerData
+            ? $this->divisionProject->reports
+                ->where('report_level', \App\Models\ProjectReport::LEVEL_MANAGER)
+                ->sortByDesc('id')
+                ->first()
+            : null;
 
         $this->managerReport = $latestManagerReport?->status === \App\Models\ProjectReport::STATUS_REJECTED
             ? (string) $latestManagerReport->content
