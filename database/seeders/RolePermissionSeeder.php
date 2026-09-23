@@ -187,11 +187,9 @@ class RolePermissionSeeder extends Seeder
                 'submit-task',
                 'review-task',
 
-                // Termination approval
+                // Termination visibility
                 'view-termination',
                 'show-termination',
-                'approve-termination',
-                'reject-termination',
             ],
 
             'manager' => [
