@@ -49,6 +49,9 @@ use App\Livewire\Page\Main\Payroll\DetailPayrollPeriod;
 use App\Livewire\Page\Main\Payroll\EditPayrollEmployee;
 use App\Livewire\Page\Main\Payroll\DetailMyPayroll;
 use App\Livewire\Page\Main\Payroll\ManagementPayroll;
+use App\Livewire\Page\Main\Resignation\DetailResignation;
+use App\Livewire\Page\Main\Resignation\MyResignation;
+use App\Livewire\Page\Main\Resignation\Resignations;
 use App\Livewire\Page\Main\Payroll\MyPayroll;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
@@ -94,6 +97,11 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/my-warning-letters/{warningLetter}', DetailMyWarningLetter::class)
         ->middleware('permission:show-warning-letter-my')
         ->name('warning-letter.my.show');
+
+    Route::get('/my-resignation', MyResignation::class)
+        ->middleware('permission:view-resignation-my')
+        ->name('resignation.my.view');
+
 
     Route::prefix('print')->group(function () {
         Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');
@@ -148,6 +156,16 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/', User::class)->middleware('permission:view-user')->name('user.view');
         Route::get('/{user}/detail', DetailUser::class)->middleware('permission:show-user')->name('user.show');
         Route::get('/{user}/role/detail', DetailRolePermission::class)->middleware('permission:show-user')->name('user.role.show');
+    });
+
+    Route::prefix('resignations')->group(function () {
+        Route::get('/', Resignations::class)
+            ->middleware('permission:view-resignation')
+            ->name('resignation.view');
+
+        Route::get('/{resignation}/detail', DetailResignation::class)
+            ->middleware('permission:show-resignation')
+            ->name('resignation.show');
     });
 
     Route::prefix('benefits')->group(function () {
