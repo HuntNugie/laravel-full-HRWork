@@ -15,16 +15,28 @@ class MasterProjectDetail extends Component
     {
         $this->authorize('view', $masterProject);
 
-        $this->masterProject = $masterProject->load([
+        $employee = auth()->user()?->employees;
+        $canSeeManagerData = $employee
+            && (
+                $employee->user?->hasRole('general-manager')
+                || $masterProject->divisionProjects()->where('manager_id', $employee->id)->exists()
+            );
+
+        $relations = [
             'creator.user',
             'approver.user',
             'reviews.reviewer.user',
             'divisionProjects.division',
             'divisionProjects.manager.user',
-            'divisionProjects.progressUpdates.reporter.user',
-            'divisionProjects.reports.reporter.user',
             'divisionProjects.tasks',
-        ]);
+        ];
+
+        if ($canSeeManagerData) {
+            $relations[] = 'divisionProjects.progressUpdates.reporter.user';
+            $relations[] = 'divisionProjects.reports.reporter.user';
+        }
+
+        $this->masterProject = $masterProject->load($relations);
     }
 
     public function render()
