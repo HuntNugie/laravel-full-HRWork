@@ -49,7 +49,7 @@ class TerminationServiceTest extends TestCase
         return [$user, $employee, $contract];
     }
 
-    public function test_create_termination_prevents_duplicate_active_process(): void
+    public function test_create_termination_starts_process_directly(): void
     {
         Date::setTestNow('2026-09-23');
         [$user, $employee] = $this->makeEmployee();
@@ -58,78 +58,13 @@ class TerminationServiceTest extends TestCase
         $termination = $service->create(
             employee: $employee,
             initiatedBy: $user,
-            proposedEffectiveDate: '2026-10-15',
+            effectiveDate: '2026-10-15',
             reasonType: 'performance',
             reason: 'Kinerja tidak memenuhi target yang ditetapkan.',
         );
 
-        $this->assertSame(EmployeeTermination::STATUS_SUBMITTED, $termination->status);
-
-        $this->expectException(LogicException::class);
-
-        $service->create(
-            employee: $employee->refresh(),
-            initiatedBy: $user,
-            proposedEffectiveDate: '2026-11-15',
-            reasonType: 'disciplinary',
-            reason: 'Pelaksanaan disiplin tidak sesuai ketentuan internal.',
-        );
-    }
-
-    public function test_rejected_termination_keeps_employee_active_and_allows_new_process(): void
-    {
-        Date::setTestNow('2026-09-23');
-        [$user, $employee] = $this->makeEmployee();
-        $service = app(TerminationService::class);
-
-        $first = $service->create(
-            employee: $employee,
-            initiatedBy: $user,
-            proposedEffectiveDate: '2026-10-15',
-            reasonType: 'performance',
-            reason: 'Pengajuan pertama.',
-        );
-
-        $first = $service->reject(
-            termination: $first,
-            reviewer: $user,
-            reason: 'Pengajuan perlu ditinjau kembali.',
-        );
-
-        $this->assertSame(EmployeeTermination::STATUS_REJECTED, $first->status);
-        $this->assertSame('active', $employee->refresh()->status_employee);
-
-        $second = $service->create(
-            employee: $employee->refresh(),
-            initiatedBy: $user,
-            proposedEffectiveDate: '2026-11-15',
-            reasonType: 'restructuring',
-            reason: 'Pengajuan kedua.',
-        );
-
-        $this->assertSame(EmployeeTermination::STATUS_SUBMITTED, $second->status);
-    }
-
-    public function test_approve_creates_clearances_and_handover_items(): void
-    {
-        Date::setTestNow('2026-09-23');
-        [$user, $employee] = $this->makeEmployee();
-
-        $termination = app(TerminationService::class)->create(
-            employee: $employee,
-            initiatedBy: $user,
-            proposedEffectiveDate: '2026-10-15',
-            reasonType: 'restructuring',
-            reason: 'Restrukturisasi organisasi.',
-        );
-
-        $approved = app(TerminationService::class)->approve(
-            termination: $termination,
-            reviewer: $user,
-            approvedEffectiveDate: '2026-10-15',
-        );
-
-        $this->assertSame(EmployeeTermination::STATUS_APPROVED, $approved->status);
+        $this->assertSame(EmployeeTermination::STATUS_IN_PROGRESS, $termination->status);
+        $this->assertSame('2026-10-15', $termination->effective_date?->format('Y-m-d'));
         $this->assertDatabaseCount('employee_termination_clearances', 6);
         $this->assertDatabaseCount('employee_termination_handover_items', 0);
 
@@ -144,6 +79,73 @@ class TerminationServiceTest extends TestCase
             'category' => 'organization',
             'status' => 'completed',
         ]);
+
+        $this->assertDatabaseHas('employee_termination_histories', [
+            'termination_id' => $termination->id,
+            'from_status' => null,
+            'to_status' => EmployeeTermination::STATUS_IN_PROGRESS,
+        ]);
+
+        $this->assertSame('active', $employee->refresh()->status_employee);
+    }
+
+    public function test_create_termination_prevents_duplicate_active_process(): void
+    {
+        Date::setTestNow('2026-09-23');
+        [$user, $employee] = $this->makeEmployee();
+        $service = app(TerminationService::class);
+
+        $service->create(
+            employee: $employee,
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'performance',
+            reason: 'Pengajuan pertama.',
+        );
+
+        $this->expectException(LogicException::class);
+
+        $service->create(
+            employee: $employee->refresh(),
+            initiatedBy: $user,
+            effectiveDate: '2026-11-15',
+            reasonType: 'disciplinary',
+            reason: 'Pengajuan kedua.',
+        );
+    }
+
+    public function test_cancelled_termination_keeps_employee_active_and_allows_new_process(): void
+    {
+        Date::setTestNow('2026-09-23');
+        [$user, $employee] = $this->makeEmployee();
+        $service = app(TerminationService::class);
+
+        $first = $service->create(
+            employee: $employee,
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'performance',
+            reason: 'Proses pertama.',
+        );
+
+        $first = $service->cancel(
+            termination: $first,
+            actor: $user,
+            reason: 'Proses dibatalkan oleh HR.',
+        );
+
+        $this->assertSame(EmployeeTermination::STATUS_CANCELLED, $first->status);
+        $this->assertSame('active', $employee->refresh()->status_employee);
+
+        $second = $service->create(
+            employee: $employee->refresh(),
+            initiatedBy: $user,
+            effectiveDate: '2026-11-15',
+            reasonType: 'restructuring',
+            reason: 'Proses kedua.',
+        );
+
+        $this->assertSame(EmployeeTermination::STATUS_IN_PROGRESS, $second->status);
     }
 
     public function test_completion_requires_clearance_and_effective_date_but_not_payroll(): void
@@ -154,16 +156,15 @@ class TerminationServiceTest extends TestCase
         $termination = app(TerminationService::class)->create(
             employee: $employee,
             initiatedBy: $user,
-            proposedEffectiveDate: '2026-09-20',
+            effectiveDate: '2026-09-20',
             reasonType: 'efficiency',
             reason: 'Kebutuhan organisasi.',
         );
 
-        $termination = app(TerminationService::class)->approve(
-            termination: $termination,
-            reviewer: $user,
-            approvedEffectiveDate: '2026-09-20',
-        );
+        EmployeeTerminationClearance::query()
+            ->where('termination_id', $termination->id)
+            ->where('category', 'asset')
+            ->update(['status' => 'pending']);
 
         $this->expectException(LogicException::class);
 
@@ -212,15 +213,9 @@ class TerminationServiceTest extends TestCase
         $termination = app(TerminationService::class)->create(
             employee: $employee->refresh(),
             initiatedBy: $user,
-            proposedEffectiveDate: '2026-01-01',
+            effectiveDate: '2026-01-01',
             reasonType: 'disciplinary',
             reason: 'Pelanggaran disiplin.',
-        );
-
-        $termination = app(TerminationService::class)->approve(
-            termination: $termination,
-            reviewer: $user,
-            approvedEffectiveDate: '2026-01-01',
         );
 
         EmployeeTerminationClearance::query()
@@ -253,6 +248,12 @@ class TerminationServiceTest extends TestCase
             'old_status' => 'active',
             'new_status' => 'terminated',
             'effective_date' => '2026-01-01',
+        ]);
+
+        $this->assertDatabaseHas('employee_termination_histories', [
+            'termination_id' => $termination->id,
+            'from_status' => EmployeeTermination::STATUS_IN_PROGRESS,
+            'to_status' => EmployeeTermination::STATUS_COMPLETED,
         ]);
     }
 }
