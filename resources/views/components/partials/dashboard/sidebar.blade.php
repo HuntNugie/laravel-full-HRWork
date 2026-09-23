@@ -15,12 +15,14 @@
         @canany(['view-master-project', 'view-task'])
             <x-wirekit::sidebar.group collapsible label="Work Management">
                 @can('view-master-project')
-                    <x-wirekit::sidebar.item href="{{ route('work-management.master-projects') }}" :active="request()->routeIs('work-management.master-projects*')" icon="briefcase" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('work-management.master-projects') }}" :active="request()->routeIs('work-management.master-projects*')"
+                        icon="briefcase" wire:navigate>
                         Master Projects
                     </x-wirekit::sidebar.item>
                 @endcan
                 @can('view-task')
-                    <x-wirekit::sidebar.item href="{{ route('work-management.tasks') }}" :active="request()->routeIs('work-management.tasks*')" icon="clipboard-document-list" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('work-management.tasks') }}" :active="request()->routeIs('work-management.tasks*')"
+                        icon="clipboard-document-list" wire:navigate>
                         Tasks
                     </x-wirekit::sidebar.item>
                 @endcan
@@ -55,7 +57,8 @@
                 @endcan
 
                 @can('view-payroll-my')
-                    <x-wirekit::sidebar.item href="{{ route('payroll.my.view') }}" :active="request()->routeIs('payroll.my.view', 'payroll.my.show')" icon="document-text" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('payroll.my.view') }}" :active="request()->routeIs('payroll.my.view', 'payroll.my.show')" icon="document-text"
+                        wire:navigate>
                         Slip Gaji
                     </x-wirekit::sidebar.item>
                 @endcan
@@ -108,7 +111,8 @@
             <x-wirekit::sidebar.group collapsible label="Organisasi">
 
                 @can('view-divisi')
-                    <x-wirekit::sidebar.item href="{{ route('divisi.view') }}" icon="building" :active="request()->routeIs('divisi.view')" wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('divisi.view') }}" icon="building" :active="request()->routeIs('divisi.view')"
+                        wire:navigate>
                         Manajemen Divisi
                     </x-wirekit::sidebar.item>
                 @endcan
@@ -216,7 +220,7 @@
                 @endcan
 
                 @can('view-management-leave')
-                    <x-wirekit::sidebar.item href="{{ route('leave.manage.view') }}" :active="request()->routeIs('leave.manage].view')" icon="book"
+                    <x-wirekit::sidebar.item href="{{ route('leave.manage.view') }}" :active="request()->routeIs('leave.manage.view')" icon="book"
                         wire:navigate>
                         Manajemen cuti
                     </x-wirekit::sidebar.item>
