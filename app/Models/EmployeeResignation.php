@@ -64,11 +64,6 @@ class EmployeeResignation extends Model
         return $this->hasMany(EmployeeResignationHandoverItem::class, 'resignation_id');
     }
 
-    public function finalPayrolls()
-    {
-        return $this->hasMany(Payroll::class, 'resignation_id');
-    }
-
     public function isActiveProcess(): bool
     {
         return in_array($this->status, [
