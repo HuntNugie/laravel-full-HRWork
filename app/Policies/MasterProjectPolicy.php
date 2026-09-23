@@ -48,7 +48,12 @@ class MasterProjectPolicy
 
     public function approve(User $user, MasterProject $masterProject): bool
     {
-        return $user->can('approve-master-project') && $this->isGeneralManager($user->employees);
+        if (! $user->can('approve-master-project') || ! ($employee = $user->employees)) {
+            return false;
+        }
+
+        return $this->isGeneralManager($employee)
+            && (int) $masterProject->created_by === (int) $employee->id;
     }
 
     private function isGeneralManager(?Employees $employee): bool
