@@ -71,10 +71,9 @@ class Terminations extends Component
             ->paginate(10);
 
         $summary = [
-            'submitted' => (clone $query)->where('status', EmployeeTermination::STATUS_SUBMITTED)->count(),
-            'approved' => (clone $query)->where('status', EmployeeTermination::STATUS_APPROVED)->count(),
+            'in_progress' => (clone $query)->where('status', EmployeeTermination::STATUS_IN_PROGRESS)->count(),
             'completed' => (clone $query)->where('status', EmployeeTermination::STATUS_COMPLETED)->count(),
-            'rejected' => (clone $query)->where('status', EmployeeTermination::STATUS_REJECTED)->count(),
+            'cancelled' => (clone $query)->where('status', EmployeeTermination::STATUS_CANCELLED)->count(),
         ];
 
         $reasonTypes = app(\App\Service\TerminationService::class)->reasonTypes();
