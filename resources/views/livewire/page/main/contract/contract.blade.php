@@ -27,7 +27,7 @@
 
         <x-wirekit::card.header>
 
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex flex-col gap-4">
 
                 <x-wirekit::stack gap="1">
 
@@ -42,21 +42,21 @@
                 </x-wirekit::stack>
 
 
-                {{-- Filters --}}
-                <div class="grid w-full gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                    <div class="xl:col-span-2">
-                        <x-wirekit::input
-                            placeholder="Cari nomor contract atau nama employee"
-                            wire:model.live.debounce.500ms="search"
-                            name="search"
-                            class="text-black"
-                        />
-                    </div>
+                {{-- Search & Filters --}}
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+
+                    <x-wirekit::input
+                        placeholder="Cari nomor contract atau nama employee"
+                        wire:model.live.debounce.500ms="search"
+                        name="search"
+                        class="text-black"
+                    />
 
                     <x-wirekit::select
-                        label="Status"
                         name="statusFilter"
-                        placeholder="Semua Status"
+                        label="Status"
+                        hideLabel
+                        placeholder="Semua status"
                         :options="[
                             'draft' => 'Draft',
                             'active' => 'Active',
@@ -67,9 +67,10 @@
                     />
 
                     <x-wirekit::select
-                        label="Jenis Contract"
                         name="employmentTypeFilter"
-                        placeholder="Semua Jenis"
+                        label="Jenis Contract"
+                        hideLabel
+                        placeholder="Semua jenis contract"
                         :options="[
                             'pkwt' => 'PKWT',
                             'pkwtt' => 'PKWTT',
@@ -79,16 +80,20 @@
                         wire:model.live="employmentTypeFilter"
                     />
 
-                    <div class="flex items-end">
-                        <x-wirekit::button
-                            type="button"
-                            surface="outline"
-                            class="w-full"
-                            wire:click="resetFilters"
-                        >
-                            Reset Filter
-                        </x-wirekit::button>
-                    </div>
+                </div>
+
+                <div class="flex justify-end">
+
+                    <x-wirekit::button
+                        type="button"
+                        intent="neutral"
+                        surface="outline"
+                        size="sm"
+                        wire:click="resetFilters"
+                    >
+                        Reset Filter
+                    </x-wirekit::button>
+
                 </div>
 
             </div>
