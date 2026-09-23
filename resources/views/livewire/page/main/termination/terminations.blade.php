@@ -126,7 +126,7 @@
                                         'completed' => 'success',
                                         default => 'secondary',
                                     }">
-                                        {{ ucfirst($termination->status) }}
+                                        {{ match ($termination->status) { 'in_progress' => 'Sedang berjalan', 'cancelled' => 'Dibatalkan', 'completed' => 'Selesai', default => ucfirst($termination->status) } }}
                                     </x-wirekit::badge>
                                 </x-wirekit::table.td>
 
