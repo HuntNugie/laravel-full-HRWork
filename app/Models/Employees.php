@@ -103,4 +103,12 @@ class Employees extends Model
     {
         return $this->hasMany(EmployeeResignation::class, 'employee_id');
     }
+
+    protected function casts(): array
+    {
+        return [
+            'JoinDate' => 'date',
+            'ResignDate' => 'date',
+        ];
+    }
 }
