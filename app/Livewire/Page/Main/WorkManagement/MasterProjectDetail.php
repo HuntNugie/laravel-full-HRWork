@@ -21,6 +21,8 @@ class MasterProjectDetail extends Component
             'reviews.reviewer.user',
             'divisionProjects.division',
             'divisionProjects.manager.user',
+            'divisionProjects.progressUpdates.reporter.user',
+            'divisionProjects.reports.reporter.user',
             'divisionProjects.tasks',
         ]);
     }
