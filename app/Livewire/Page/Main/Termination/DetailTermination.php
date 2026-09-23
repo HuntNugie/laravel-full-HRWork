@@ -16,8 +16,6 @@ class DetailTermination extends Component
 {
     public EmployeeTermination $termination;
 
-    public string $approvedEffectiveDate = '';
-    public string $actionNote = '';
     public string $cancellationReason = '';
     public array $handoverRecipients = [];
 
@@ -29,7 +27,6 @@ class DetailTermination extends Component
             'employee.team.divisi',
             'employeeContract',
             'initiator',
-            'reviewer',
             'canceller',
             'completer',
             'histories.actor',
@@ -52,54 +49,6 @@ class DetailTermination extends Component
             $this->handoverRecipients[$item->id] = $item->handover_to_employee_id
                 ? (string) $item->handover_to_employee_id
                 : '';
-        }
-    }
-
-    public function approve(): void
-    {
-        abort_unless(Auth::user()->can('approve-termination'), 403);
-
-        $this->validate([
-            'approvedEffectiveDate' => ['required', 'date', 'after_or_equal:today'],
-            'actionNote' => ['nullable', 'string', 'max:5000'],
-        ]);
-
-        try {
-            app(TerminationService::class)->approve(
-                termination: $this->termination,
-                reviewer: Auth::user(),
-                approvedEffectiveDate: $this->approvedEffectiveDate,
-                note: $this->actionNote ?: null,
-            );
-
-            $this->actionNote = '';
-            $this->reload();
-            session()->flash('success', 'Pengajuan PHK berhasil disetujui.');
-        } catch (\LogicException $exception) {
-            $this->addError('action', $exception->getMessage());
-        }
-    }
-
-    public function reject(): void
-    {
-        abort_unless(Auth::user()->can('reject-termination'), 403);
-
-        $this->validate([
-            'actionNote' => ['required', 'string', 'max:5000'],
-        ]);
-
-        try {
-            app(TerminationService::class)->reject(
-                termination: $this->termination,
-                reviewer: Auth::user(),
-                reason: $this->actionNote,
-            );
-
-            $this->actionNote = '';
-            $this->reload();
-            session()->flash('success', 'Pengajuan PHK ditolak.');
-        } catch (\LogicException $exception) {
-            $this->addError('action', $exception->getMessage());
         }
     }
 
@@ -195,8 +144,7 @@ class DetailTermination extends Component
                 'employee.team.divisi',
                 'employeeContract',
                 'initiator',
-                'reviewer',
-                'canceller',
+                    'canceller',
                 'completer',
                 'histories.actor',
                 'clearances.verifier',
