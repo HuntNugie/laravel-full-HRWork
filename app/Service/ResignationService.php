@@ -2,13 +2,11 @@
 
 namespace App\Service;
 
-use App\Models\EmployeeContract;
 use App\Models\EmployeeResignation;
 use App\Models\EmployeeResignationClearance;
 use App\Models\EmployeeResignationHandoverItem;
 use App\Models\EmployeeResignationHistory;
 use App\Models\Employees;
-use App\Models\Payroll;
 use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
@@ -372,56 +370,6 @@ class ResignationService
         });
     }
 
-    public function linkFinalPayroll(
-        EmployeeResignation $resignation,
-        Payroll $payroll,
-        User $actor,
-    ): Payroll {
-        return DB::transaction(function () use ($resignation, $payroll, $actor) {
-            $resignation = EmployeeResignation::query()
-                ->lockForUpdate()
-                ->findOrFail($resignation->id);
-
-            $payroll = Payroll::query()
-                ->with('period')
-                ->lockForUpdate()
-                ->findOrFail($payroll->id);
-
-            if ($resignation->status !== EmployeeResignation::STATUS_APPROVED) {
-                throw new LogicException('Payroll akhir hanya dapat dihubungkan pada resign yang sudah disetujui.');
-            }
-
-            if ((int) $payroll->employee_id !== (int) $resignation->employee_id) {
-                throw new LogicException('Payroll tidak dimiliki oleh employee pada pengajuan resign.');
-            }
-
-            if ($payroll->status !== 'paid') {
-                throw new LogicException('Payroll akhir harus sudah berstatus paid.');
-            }
-
-            if (
-                $resignation->approved_last_working_date
-                && $payroll->period
-                && (
-                    Carbon::parse($payroll->period->start_date)->gt($resignation->approved_last_working_date)
-                    || Carbon::parse($payroll->period->end_date)->lt($resignation->approved_last_working_date)
-                )
-            ) {
-                throw new LogicException('Payroll akhir harus berasal dari periode yang mencakup tanggal terakhir bekerja.');
-            }
-
-            if ($payroll->resignation_id !== null && (int) $payroll->resignation_id !== (int) $resignation->id) {
-                throw new LogicException('Payroll tersebut sudah terhubung dengan resignation lain.');
-            }
-
-            $payroll->update([
-                'resignation_id' => $resignation->id,
-            ]);
-
-            return $payroll->refresh();
-        });
-    }
-
     public function complete(
         EmployeeResignation $resignation,
         User $actor,
@@ -451,22 +399,6 @@ class ResignationService
             $this->ensureHandoverCompleted($resignation);
             $this->ensureLeaveResolved($resignation);
 
-            $hasPaidFinalPayroll = $resignation->finalPayrolls()
-                ->where('status', 'paid')
-                ->exists();
-
-            if (!$hasPaidFinalPayroll) {
-                throw new LogicException('Payroll akhir belum terhubung atau belum berstatus paid.');
-            }
-
-            if ($resignation->employee?->supervisorTeam()->exists()) {
-                throw new LogicException('Employee masih menjadi supervisor Team. Alihkan supervisor terlebih dahulu.');
-            }
-
-            if ($resignation->employee?->managedDivisi()->exists()) {
-                throw new LogicException('Employee masih menjadi manager Divisi. Alihkan manager terlebih dahulu.');
-            }
-
             $employee = Employees::query()
                 ->with('user')
                 ->lockForUpdate()
@@ -475,6 +407,15 @@ class ResignationService
             if ($employee->status_employee !== 'active') {
                 throw new LogicException('Employee sudah tidak aktif sehingga resignation tidak dapat diselesaikan.');
             }
+
+            // Lepaskan seluruh assignment organisasi secara otomatis saat exit difinalisasi.
+            $employee->supervisorTeam()->update([
+                'supervisor_id' => null,
+            ]);
+
+            $employee->managedDivisi()->update([
+                'manager_id' => null,
+            ]);
 
             $employee->update([
                 'status_employee' => 'resign',
@@ -556,12 +497,8 @@ class ResignationService
                 ], true)
         );
 
-        $hasPaidFinalPayroll = $resignation->finalPayrolls()
-            ->where('status', 'paid')
-            ->exists();
-
-        $organizationReady = !$resignation->employee?->supervisorTeam()->exists()
-            && !$resignation->employee?->managedDivisi()->exists();
+        // Assignment organisasi akan dilepas otomatis saat completion.
+        $organizationReady = true;
 
         $leaveReady = !$this->hasUnresolvedLeave($resignation);
 
@@ -572,14 +509,12 @@ class ResignationService
         return [
             'clearance' => $clearanceReady,
             'handover' => $handoverReady,
-            'final_payroll' => $hasPaidFinalPayroll,
             'organization' => $organizationReady,
             'leave' => $leaveReady,
             'last_working_date' => $lastWorkingDateReached,
             'ready' => $lastWorkingDateReached
                 && $clearanceReady
                 && $handoverReady
-                && $hasPaidFinalPayroll
                 && $organizationReady
                 && $leaveReady,
         ];
@@ -611,16 +546,14 @@ class ResignationService
 
         $employee = $resignation->employee()->lockForUpdate()->firstOrFail();
 
-        if (!$employee->supervisorTeam()->exists() && !$employee->managedDivisi()->exists()) {
-            $resignation->clearances()
-                ->where('category', 'organization')
-                ->update([
-                    'status' => EmployeeResignationClearance::STATUS_COMPLETED,
-                    'verified_by' => $reviewer->id,
-                    'verified_at' => now(),
-                    'notes' => 'Tidak ada assignment organisasi yang perlu dialihkan.',
-                ]);
-        }
+        $resignation->clearances()
+            ->where('category', 'organization')
+            ->update([
+                'status' => EmployeeResignationClearance::STATUS_COMPLETED,
+                'verified_by' => $reviewer->id,
+                'verified_at' => now(),
+                'notes' => 'Assignment organisasi akan dilepas otomatis saat resignation selesai.',
+            ]);
     }
 
     private function prepareHandover(EmployeeResignation $resignation): void
