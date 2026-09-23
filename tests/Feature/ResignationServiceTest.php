@@ -19,6 +19,12 @@ class ResignationServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        Date::setTestNow();
+        parent::tearDown();
+    }
+
     private function makeEmployee(): array
     {
         $user = User::factory()->create(['status' => 'active']);
