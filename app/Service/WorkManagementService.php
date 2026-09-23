@@ -597,9 +597,9 @@ class WorkManagementService
             ]);
         }
 
-        if ($divisionProject->status !== 'manager_approved') {
+        if (! in_array($divisionProject->status, ['manager_approved', 'revision_required'], true)) {
             throw ValidationException::withMessages([
-                'division_project' => 'Division project harus disetujui manager sebelum dilaporkan ke General Manager.',
+                'division_project' => 'Division project harus disetujui manager atau sedang dalam tahap revisi sebelum dilaporkan ke General Manager.',
             ]);
         }
 
@@ -634,8 +634,13 @@ class WorkManagementService
     public function reviewMasterProject(MasterProject $masterProject, Employees $reviewer, string $decision, ?string $feedback = null): ProjectReview
     {
         $this->ensureActiveEmployee($reviewer);
+
         if (! $reviewer->user?->hasRole('general-manager')) {
             throw ValidationException::withMessages(['reviewer' => 'Hanya General Manager yang dapat melakukan final approval.']);
+        }
+
+        if ((int) $masterProject->created_by !== (int) $reviewer->id) {
+            throw ValidationException::withMessages(['reviewer' => 'Final approval hanya dapat dilakukan oleh General Manager yang membuat Master Project.']);
         }
 
         if ($masterProject->status !== 'ready_for_review') {
@@ -673,7 +678,7 @@ class WorkManagementService
             } else {
                 $masterProject->divisionProjects()
                     ->where('status', 'submitted_to_gm')
-                    ->update(['status' => 'manager_approved']);
+                    ->update(['status' => 'revision_required']);
 
                 $masterProject->divisionProjects()
                     ->whereHas('reports', function ($query) {
