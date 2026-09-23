@@ -544,6 +544,15 @@ class ResignationService
                 ], true)
         );
 
+        $organizationClearance = $resignation->clearances
+            ->firstWhere('category', 'organization');
+
+        $organizationReady = !$organizationClearance
+            || in_array($organizationClearance->status, [
+                EmployeeResignationClearance::STATUS_COMPLETED,
+                EmployeeResignationClearance::STATUS_NOT_APPLICABLE,
+            ], true);
+
         $handoverReady = $resignation->handoverItems->every(
             fn(EmployeeResignationHandoverItem $item) =>
                 in_array($item->status, [
@@ -553,7 +562,6 @@ class ResignationService
         );
 
         // Assignment organisasi akan dilepas otomatis saat completion.
-        $organizationReady = true;
 
         $leaveReady = !$this->hasUnresolvedLeave($resignation);
 
