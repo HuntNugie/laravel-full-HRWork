@@ -122,6 +122,17 @@ class PermissionSeeder extends Seeder
             'view-warning-letter',
             'view-warning-letter-my',
             'show-warning-letter-my',
+            'view-resignation',
+            'show-resignation',
+            'approve-resignation',
+            'reject-resignation',
+            'cancel-resignation',
+            'manage-resignation-clearance',
+            'complete-resignation',
+            'view-resignation-my',
+            'show-resignation-my',
+            'create-resignation-my',
+            'cancel-resignation-my',
             'view-work-time',
         ];
 
