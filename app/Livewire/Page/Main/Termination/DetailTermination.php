@@ -232,9 +232,11 @@ class DetailTermination extends Component
             ])
             ->all();
 
+        $reasonTypes = app(TerminationService::class)->reasonTypes();
+
         return view(
             'livewire.page.main.termination.detail-termination',
-            compact('handoverEmployees'),
+            compact('handoverEmployees', 'reasonTypes'),
         );
     }
 }
