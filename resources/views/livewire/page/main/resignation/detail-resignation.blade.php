@@ -123,20 +123,11 @@
                     />
 
                     <x-wirekit::textarea
-                        label="Catatan Persetujuan"
+                        label="Catatan Review"
                         name="actionNote"
                         wire:model="actionNote"
                         rows="4"
                     />
-
-                    <?php if (auth()->user()->can('reject-resignation')): ?>
-                        <x-wirekit::textarea
-                            label="Alasan Penolakan"
-                            name="rejectionReason"
-                            wire:model="rejectionReason"
-                            rows="4"
-                        />
-                    <?php endif; ?>
 
                     <div class="md:col-span-2 flex flex-wrap justify-end gap-2">
                         <?php if (auth()->user()->can('reject-resignation')): ?>
