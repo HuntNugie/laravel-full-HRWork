@@ -29,7 +29,7 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my', 'view-warning-letter-my'])
+        @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my', 'view-warning-letter-my', 'view-resignation-my'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
 
                 @can('view-attendance')
@@ -67,6 +67,13 @@
                     <x-wirekit::sidebar.item href="{{ route('warning-letter.my.view') }}" :active="request()->routeIs('warning-letter.my.view', 'warning-letter.my.show')" icon="warning"
                         wire:navigate>
                         Surat Peringatan
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+                @can('view-resignation-my')
+                    <x-wirekit::sidebar.item href="{{ route('resignation.my.view') }}" :active="request()->routeIs('resignation.my.view')" icon="document-text"
+                        wire:navigate>
+                        Pengunduran Diri
                     </x-wirekit::sidebar.item>
                 @endcan
 
@@ -145,7 +152,7 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-employee', 'view-contract'])
+        @canany(['view-employee', 'view-contract', 'view-resignation'])
             <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-employee')
@@ -159,6 +166,13 @@
                     <x-wirekit::sidebar.item href="{{ route('contract.view') }}" :active="request()->routeIs('contract.view')" icon="file-text"
                         wire:navigate>
                         Manajemen kontrak
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+                @can('view-resignation')
+                    <x-wirekit::sidebar.item href="{{ route('resignation.view') }}" :active="request()->routeIs('resignation.view', 'resignation.show')" icon="document-text"
+                        wire:navigate>
+                        Resignation
                     </x-wirekit::sidebar.item>
                 @endcan
 

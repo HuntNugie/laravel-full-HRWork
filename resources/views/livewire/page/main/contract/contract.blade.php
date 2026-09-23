@@ -27,7 +27,7 @@
 
         <x-wirekit::card.header>
 
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex flex-col gap-4">
 
                 <x-wirekit::stack gap="1">
 
@@ -42,11 +42,57 @@
                 </x-wirekit::stack>
 
 
-                {{-- Search --}}
-                <div class="w-full sm:w-72">
+                {{-- Search & Filters --}}
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
 
-                    <x-wirekit::input placeholder="Cari nomor contract atau nama employee"
-                        wire:model.live.debounce.500ms="search" name="search" class="text-black" />
+                    <x-wirekit::input
+                        placeholder="Cari nomor contract atau nama employee"
+                        wire:model.live.debounce.500ms="search"
+                        name="search"
+                        class="text-black"
+                    />
+
+                    <x-wirekit::select
+                        name="statusFilter"
+                        label="Status"
+                        hideLabel
+                        :options="[
+                            '' => 'Semua status',
+                            'draft' => 'Draft',
+                            'active' => 'Active',
+                            'expired' => 'Expired',
+                            'terminated' => 'Terminated',
+                        ]"
+                        wire:model.live="statusFilter"
+                    />
+
+                    <x-wirekit::select
+                        name="employmentTypeFilter"
+                        label="Jenis Contract"
+                        hideLabel
+                        :options="[
+                            '' => 'Semua jenis contract',
+                            'pkwt' => 'PKWT',
+                            'pkwtt' => 'PKWTT',
+                            'intership' => 'Internship',
+                            'freelance' => 'Freelance',
+                        ]"
+                        wire:model.live="employmentTypeFilter"
+                    />
+
+                </div>
+
+                <div class="flex justify-end">
+
+                    <x-wirekit::button
+                        type="button"
+                        intent="neutral"
+                        surface="outline"
+                        size="sm"
+                        wire:click="resetFilters"
+                    >
+                        Reset Filter
+                    </x-wirekit::button>
 
                 </div>
 
@@ -104,12 +150,7 @@
 
                     <x-wirekit::table.body>
 
-                        {{-- =================================================
-                        STATIC DATA
-                        ================================================== --}}
-
-                        {{-- CONTRACT 1 --}}
-                        @foreach ($employees as $employee)
+                        @forelse ($employees as $employee)
                             <x-wirekit::table.row>
 
                                 {{-- Contract --}}
@@ -246,11 +287,27 @@
                                 </x-wirekit::table.td>
 
                             </x-wirekit::table.row>
-                        @endforeach
+                        @empty
+                            <x-wirekit::table.row>
 
+                                <x-wirekit::table.td colspan="8">
 
+                                    <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
 
+                                        <p class="text-sm font-medium text-slate-700">
+                                            Belum ada data contract.
+                                        </p>
 
+                                        <p class="text-sm text-slate-500">
+                                            Tidak ada contract yang sesuai dengan filter yang dipilih.
+                                        </p>
+
+                                    </div>
+
+                                </x-wirekit::table.td>
+
+                            </x-wirekit::table.row>
+                        @endforelse
 
 
                     </x-wirekit::table.body>
