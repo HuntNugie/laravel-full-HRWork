@@ -106,15 +106,6 @@
                                         </div>
                                     @endforeach
 
-                                    <div class="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 text-sm">
-                                        <span class="text-slate-600">Final Payroll</span>
-
-                                        <x-wirekit::badge
-                                            :intent="$resignation->finalPayrolls->contains(fn($payroll) => $payroll->status === 'paid') ? 'success' : 'warning'"
-                                        >
-                                            {{ $resignation->finalPayrolls->contains(fn($payroll) => $payroll->status === 'paid') ? 'Paid' : 'Pending' }}
-                                        </x-wirekit::badge>
-                                    </div>
                                 </div>
                             </x-wirekit::card.body>
                         </x-wirekit::card>
