@@ -120,6 +120,8 @@ class PermissionSeeder extends Seeder
             'view-unpresent-discipline-rule',
             'view-user',
             'view-warning-letter',
+            'view-warning-letter-my',
+            'show-warning-letter-my',
             'view-work-time',
         ];
 

@@ -6,6 +6,7 @@ use App\Models\Attendances;
 use App\Models\Divisi;
 use App\Models\DivisionProject;
 use App\Models\EmployeeAbsenceRequest;
+use App\Models\EmployeeWarningLetter;
 use App\Models\Employees;
 use App\Models\LeaveRequest;
 use App\Models\MasterProject;
@@ -235,6 +236,18 @@ class Dashboard extends Component
             ->where('status', 'pending')
             ->count();
 
+        $issuedWarningLettersCount = EmployeeWarningLetter::query()
+            ->where('employee_id', $employee->id)
+            ->where('status', 'issued')
+            ->count();
+
+        $latestWarningLetter = EmployeeWarningLetter::query()
+            ->where('employee_id', $employee->id)
+            ->where('status', 'issued')
+            ->latest('issued_date')
+            ->latest('id')
+            ->first();
+
         $latestPayroll = Payroll::query()
             ->with('period')
             ->where('employee_id', $employee->id)
@@ -314,6 +327,8 @@ class Dashboard extends Component
             'pendingLeaveCount' => $pendingLeaveCount,
             'pendingAbsenceCount' => $pendingAbsenceCount,
             'latestPayroll' => $latestPayroll,
+            'issuedWarningLettersCount' => $issuedWarningLettersCount,
+            'latestWarningLetter' => $latestWarningLetter,
             'managerDivision' => $managerDivision,
             'managerAttendanceRows' => $managerAttendanceRows,
             'managerAttendanceSummary' => $managerAttendanceSummary,

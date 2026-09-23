@@ -33,6 +33,8 @@ class RolePermissionSeeder extends Seeder
                 'show-payroll-my',
                 'view-leave',
                 'view-work-time',
+                'view-warning-letter-my',
+                'show-warning-letter-my',
             ],
 
             'hr' => [
