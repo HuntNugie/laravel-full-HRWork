@@ -79,6 +79,11 @@ class MyResignation extends Component
             return;
         }
 
+        if ($resignation->status !== EmployeeResignation::STATUS_SUBMITTED) {
+            $this->addError('form', 'Pengajuan yang sudah disetujui harus diproses oleh HR.');
+            return;
+        }
+
         try {
             app(ResignationService::class)->cancel(
                 resignation: $resignation,
