@@ -98,7 +98,7 @@
                 <div>
                     <p class="text-xs font-medium text-slate-400">Jenis Alasan</p>
                     <p class="mt-1 text-sm font-semibold text-slate-800">
-                        {{ $this->terminationReasonTypeLabel ?? ucfirst($termination->reason_type) }}
+                        {{ $reasonTypes[$termination->reason_type] ?? ucfirst($termination->reason_type) }}
                     </p>
                 </div>
 
