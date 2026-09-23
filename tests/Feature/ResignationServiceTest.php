@@ -216,7 +216,10 @@ class ResignationServiceTest extends TestCase
         );
 
         $this->assertSame(EmployeeResignation::STATUS_COMPLETED, $completed->status);
-        $this->assertSame('resign', $employee->refresh()->status_employee);
+        $employee = $employee->refresh();
+
+        $this->assertSame('resign', $employee->status_employee);
+        $this->assertSame('2026-01-01', optional($employee->ResignDate)?->format('Y-m-d'));
         $this->assertSame('inactive', $user->refresh()->status);
         $this->assertSame('terminated', $contract->refresh()->status);
 
