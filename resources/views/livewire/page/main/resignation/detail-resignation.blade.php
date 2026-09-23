@@ -177,27 +177,49 @@
                                         </p>
                                     </div>
 
-                                    <?php if (auth()->user()->can('manage-resignation-clearance')): ?>
-                                    <div class="flex flex-wrap gap-2">
-                                        <x-wirekit::button
-                                            type="button"
-                                            size="sm"
-                                            surface="outline"
-                                            wire:click="updateClearance({{ $clearance->id }}, 'completed')"
-                                        >
-                                            Selesai
-                                        </x-wirekit::button>
+                                    <?php if ($clearance->status === 'completed'): ?>
+                                        <div class="flex flex-col items-start gap-1 sm:items-end">
+                                            <x-wirekit::badge intent="success">
+                                                Selesai
+                                            </x-wirekit::badge>
+                                            <?php if ($clearance->verified_at): ?>
+                                                <p class="text-xs text-slate-400">
+                                                    {{ $clearance->verified_by ? ($clearance->verifier?->name ?? '—') . ' · ' : '' }}{{ $clearance->verified_at->translatedFormat('d M Y H:i') }}
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php elseif ($clearance->status === 'not_applicable'): ?>
+                                        <div class="flex flex-col items-start gap-1 sm:items-end">
+                                            <x-wirekit::badge intent="neutral">
+                                                Tidak Berlaku
+                                            </x-wirekit::badge>
+                                            <?php if ($clearance->verified_at): ?>
+                                                <p class="text-xs text-slate-400">
+                                                    {{ $clearance->verified_by ? ($clearance->verifier?->name ?? '—') . ' · ' : '' }}{{ $clearance->verified_at->translatedFormat('d M Y H:i') }}
+                                                </p>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php elseif (auth()->user()->can('manage-resignation-clearance')): ?>
+                                        <div class="flex flex-wrap gap-2">
+                                            <x-wirekit::button
+                                                type="button"
+                                                size="sm"
+                                                surface="outline"
+                                                wire:click="updateClearance({{ $clearance->id }}, 'completed')"
+                                            >
+                                                Selesai
+                                            </x-wirekit::button>
 
-                                        <x-wirekit::button
-                                            type="button"
-                                            size="sm"
-                                            surface="outline"
-                                            intent="neutral"
-                                            wire:click="updateClearance({{ $clearance->id }}, 'not_applicable')"
-                                        >
-                                            N/A
-                                        </x-wirekit::button>
-                                    </div>
+                                            <x-wirekit::button
+                                                type="button"
+                                                size="sm"
+                                                surface="outline"
+                                                intent="neutral"
+                                                wire:click="updateClearance({{ $clearance->id }}, 'not_applicable')"
+                                            >
+                                                N/A
+                                            </x-wirekit::button>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
