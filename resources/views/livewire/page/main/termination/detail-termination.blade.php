@@ -48,7 +48,7 @@
                 ?>
 
                 <x-wirekit::badge :intent="$statusIntent">
-                    {{ ucfirst($termination->status) }}
+                    {{ match ($termination->status) { 'in_progress' => 'Sedang berjalan', 'cancelled' => 'Dibatalkan', 'completed' => 'Selesai', default => ucfirst($termination->status) } }}
                 </x-wirekit::badge>
             </div>
         </x-wirekit::card.body>
