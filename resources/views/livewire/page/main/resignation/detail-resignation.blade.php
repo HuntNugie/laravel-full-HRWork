@@ -170,11 +170,18 @@
                         <?php foreach ($resignation->clearances as $clearance): ?>
                             <div class="rounded-xl border border-slate-100 p-4">
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <?php $actionHint = match ($clearance->category) {
+                                        'access' => 'Saat selesai, akun user dinonaktifkan. Jika proses exit dibatalkan, status akun dikembalikan.',
+                                        'organization' => 'Saat selesai, assignment team, supervisor, dan manager dilepas. Jika dibatalkan, assignment sebelumnya dipulihkan.',
+                                        default => 'Verifikasi dilakukan manual karena belum ada subsystem otomatis untuk kategori ini.',
+                                    }; ?>
+
                                     <div>
                                         <p class="text-sm font-semibold capitalize text-slate-800">{{ $clearance->category }}</p>
                                         <p class="mt-1 text-xs text-slate-400">
                                             {{ $clearance->notes ?: 'Belum ada catatan.' }}
                                         </p>
+                                        <p class="mt-2 text-xs leading-5 text-sky-600">{{ $actionHint }}</p>
                                     </div>
 
                                     <?php if ($clearance->status === 'completed'): ?>
