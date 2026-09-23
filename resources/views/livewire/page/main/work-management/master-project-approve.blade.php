@@ -28,6 +28,8 @@
                             <x-wirekit::table.th>Divisi</x-wirekit::table.th>
                             <x-wirekit::table.th>Manager</x-wirekit::table.th>
                             <x-wirekit::table.th>Status</x-wirekit::table.th>
+                            <x-wirekit::table.th>Progress Manual</x-wirekit::table.th>
+                            <x-wirekit::table.th>Catatan Progress</x-wirekit::table.th>
                             <x-wirekit::table.th>Laporan Manager</x-wirekit::table.th>
                         </x-wirekit::table.row>
                     </x-wirekit::table.head>
@@ -40,6 +42,7 @@
                                     'ready_for_review' => 'bg-violet-50 text-violet-600',
                                     'submitted_to_gm' => 'bg-blue-50 text-blue-600',
                                     'manager_approved' => 'bg-cyan-50 text-cyan-600',
+                                    'revision_required' => 'bg-amber-50 text-amber-600',
                                     'in_progress' => 'bg-sky-50 text-sky-600',
                                     'rejected' => 'bg-rose-50 text-rose-600',
                                     default => 'bg-slate-100 text-slate-600',
@@ -61,15 +64,59 @@
                                         {{ str_replace('_', ' ', $project->status) }}
                                     </span>
                                 </x-wirekit::table.td>
+                                @php
+                                    $latestProgress = $project->progressUpdates->sortByDesc('id')->first();
+                                    $managerReport = $project->reports
+                                        ->where('report_level', 'manager')
+                                        ->sortByDesc('id')
+                                        ->first();
+                                    $automaticProgress = $project->automaticProgress();
+                                @endphp
+
                                 <x-wirekit::table.td>
-                                    <span class="line-clamp-3 text-sm text-slate-700">
-                                        {{ $project->reports->where('report_level', 'manager')->sortByDesc('id')->first()?->content ?? '—' }}
-                                    </span>
+                                    <div class="min-w-36 space-y-1.5">
+                                        <div class="flex items-center justify-between text-xs text-slate-500">
+                                            <span>Manual</span>
+                                            <span class="font-semibold text-slate-700">{{ $project->manual_progress }}%</span>
+                                        </div>
+                                        <div class="h-2 rounded-full bg-slate-100">
+                                            <div class="h-2 rounded-full bg-[#30AFFF]" style="width: {{ $project->manual_progress }}%"></div>
+                                        </div>
+                                        <span class="text-[11px] text-slate-400">Auto: {{ $automaticProgress }}%</span>
+                                    </div>
+                                </x-wirekit::table.td>
+
+                                <x-wirekit::table.td>
+                                    <div class="max-w-xs">
+                                        <p class="line-clamp-3 text-sm text-slate-700">
+                                            {{ $latestProgress?->note ?: 'Tidak ada catatan progress.' }}
+                                        </p>
+                                        @if ($latestProgress)
+                                            <span class="mt-1 block text-[11px] text-slate-400">
+                                                {{ $latestProgress->reporter?->user?->name ?? '-' }} · {{ $latestProgress->created_at?->format('d M Y H:i') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </x-wirekit::table.td>
+
+                                <x-wirekit::table.td>
+                                    <div class="max-w-sm">
+                                        <p class="line-clamp-4 text-sm text-slate-700">
+                                            {{ $managerReport?->content ?? 'Belum ada laporan Manager.' }}
+                                        </p>
+                                        @if ($managerReport)
+                                            <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                                                <span>{{ $managerReport->reporter?->user?->name ?? '-' }}</span>
+                                                <span>·</span>
+                                                <span>{{ $managerReport->status }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </x-wirekit::table.td>
                             </x-wirekit::table.row>
                         @empty
                             <x-wirekit::table.row>
-                                <x-wirekit::table.td colspan="5">
+                                <x-wirekit::table.td colspan="7">
                                     <div class="py-10 text-center text-sm text-slate-500">Belum ada Division Project.</div>
                                 </x-wirekit::table.td>
                             </x-wirekit::table.row>
