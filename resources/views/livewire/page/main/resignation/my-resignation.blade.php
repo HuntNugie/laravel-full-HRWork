@@ -147,7 +147,7 @@
                     </div>
                 @endif
 
-                @if ($resignation->status === 'submitted')
+                @if ($resignation->status === 'submitted' && auth()->user()->can('cancel-resignation-my'))
                     <div class="mt-6 flex justify-end">
                         <x-wirekit::button
                             type="button"
@@ -164,7 +164,8 @@
         </x-wirekit::card>
     @endif
 
-    @if (!$resignation || in_array($resignation->status, ['rejected', 'cancelled'], true))
+    @if ((!$resignation || in_array($resignation->status, ['rejected', 'cancelled'], true))
+        && auth()->user()->can('create-resignation-my'))
         <x-wirekit::card>
             <x-wirekit::card.header>
                 <h2 class="text-lg font-semibold text-slate-900">
