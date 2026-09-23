@@ -44,6 +44,11 @@ class EmployeeResignation extends Model
         return $this->belongsTo(User::class, 'completed_by');
     }
 
+    public function exitInterviewer()
+    {
+        return $this->belongsTo(User::class, 'exit_interview_by');
+    }
+
     public function histories()
     {
         return $this->hasMany(EmployeeResignationHistory::class, 'resignation_id');
@@ -81,6 +86,7 @@ class EmployeeResignation extends Model
             'reviewed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'completed_at' => 'datetime',
+            'exit_interview_at' => 'datetime',
         ];
     }
 }
