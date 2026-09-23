@@ -12,6 +12,9 @@ use Livewire\Component;
 class CreateTermination extends Component
 {
     public string $employeeId = '';
+    public string $employeeSearch = '';
+    public bool $employeeDropdownOpen = false;
+    public string $selectedEmployeeName = '';
     public string $reasonType = '';
     public string $proposedEffectiveDate = '';
     public string $reason = '';
@@ -22,6 +25,62 @@ class CreateTermination extends Component
         abort_unless(Auth::user()->can('create-termination'), 403);
 
         $this->proposedEffectiveDate = today()->toDateString();
+    }
+
+    public function updatedEmployeeSearch(): void
+    {
+        $this->employeeDropdownOpen = true;
+
+        if ($this->employeeSearch !== $this->selectedEmployeeName) {
+            $this->employeeId = '';
+            $this->selectedEmployeeName = '';
+        }
+    }
+
+    public function openEmployeeDropdown(): void
+    {
+        $this->employeeDropdownOpen = true;
+    }
+
+    public function closeEmployeeDropdown(): void
+    {
+        $this->employeeDropdownOpen = false;
+    }
+
+    public function selectEmployee(int $employeeId): void
+    {
+        $employee = Employees::query()
+            ->whereKey($employeeId)
+            ->where('status_employee', 'active')
+            ->whereHas('user', fn ($query) => $query->where('status', 'active'))
+            ->whereHas('employeeContract', function ($query) {
+                $query
+                    ->where('status', 'active')
+                    ->whereDate('start_date', '<=', today())
+                    ->where(function ($query) {
+                        $query->whereNull('end_date')
+                            ->orWhereDate('end_date', '>=', today());
+                    });
+            })
+            ->with('user')
+            ->firstOrFail();
+
+        $this->employeeId = (string) $employee->id;
+        $this->selectedEmployeeName = ($employee->user?->name ?? '—')
+            . ' · '
+            . ($employee->employee_code ?? '—');
+        $this->employeeSearch = $this->selectedEmployeeName;
+        $this->employeeDropdownOpen = false;
+
+        $this->resetErrorBag('employeeId');
+    }
+
+    public function clearSelectedEmployee(): void
+    {
+        $this->employeeId = '';
+        $this->employeeSearch = '';
+        $this->selectedEmployeeName = '';
+        $this->employeeDropdownOpen = true;
     }
 
     public function save(): void
@@ -55,16 +114,42 @@ class CreateTermination extends Component
 
     public function render()
     {
-        $employees = Employees::query()
-            ->where('status_employee', 'active')
-            ->with('user')
-            ->whereHas('user', fn ($query) => $query->where('status', 'active'))
-            ->orderBy('employee_code')
-            ->get()
-            ->mapWithKeys(fn (Employees $employee) => [
-                $employee->id => ($employee->user?->name ?? '—') . ' · ' . ($employee->employee_code ?? '—'),
-            ])
-            ->all();
+        $employees = collect();
+
+        $search = trim($this->employeeSearch);
+
+        if (mb_strlen($search) >= 2) {
+            $employees = Employees::query()
+                ->where('status_employee', 'active')
+                ->whereHas('user', function ($query) use ($search) {
+                    $query
+                        ->where('status', 'active')
+                        ->where(function ($query) use ($search) {
+                            $query
+                                ->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('email', 'like', '%' . $search . '%');
+                        });
+                })
+                ->orWhere(function ($query) use ($search) {
+                    $query
+                        ->where('status_employee', 'active')
+                        ->where('employee_code', 'like', '%' . $search . '%');
+                })
+                ->whereHas('user', fn ($query) => $query->where('status', 'active'))
+                ->whereHas('employeeContract', function ($query) {
+                    $query
+                        ->where('status', 'active')
+                        ->whereDate('start_date', '<=', today())
+                        ->where(function ($query) {
+                            $query->whereNull('end_date')
+                                ->orWhereDate('end_date', '>=', today());
+                        });
+                })
+                ->with('user')
+                ->orderBy('employee_code')
+                ->limit(10)
+                ->get();
+        }
 
         $reasonTypes = app(TerminationService::class)->reasonTypes();
 
