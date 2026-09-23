@@ -49,12 +49,12 @@ class TerminationService
     public function create(
         Employees $employee,
         User $initiatedBy,
-        string $proposedEffectiveDate,
+        string $effectiveDate,
         string $reasonType,
         string $reason,
         ?string $notes = null,
     ): EmployeeTermination {
-        $date = Carbon::parse($proposedEffectiveDate)->startOfDay();
+        $date = Carbon::parse($effectiveDate)->startOfDay();
         $reasonType = trim($reasonType);
         $reason = trim($reason);
 
@@ -114,10 +114,7 @@ class TerminationService
             }
 
             $hasActiveTermination = $employee->terminations()
-                ->whereIn('status', [
-                    EmployeeTermination::STATUS_SUBMITTED,
-                    EmployeeTermination::STATUS_APPROVED,
-                ])
+                ->where('status', EmployeeTermination::STATUS_IN_PROGRESS)
                 ->exists();
 
             if ($hasActiveTermination) {
@@ -129,118 +126,22 @@ class TerminationService
                 'employee_contract_id' => $contract->id,
                 'initiated_by' => $initiatedBy->id,
                 'initiated_at' => now(),
-                'proposed_effective_date' => $date->toDateString(),
+                'effective_date' => $date->toDateString(),
                 'reason_type' => $reasonType,
                 'reason' => $reason,
                 'notes' => $notes ? trim($notes) : null,
-                'status' => EmployeeTermination::STATUS_SUBMITTED,
+                'status' => EmployeeTermination::STATUS_IN_PROGRESS,
             ]);
+
+            $this->prepareHandover($termination);
+            $this->prepareClearances($termination, $initiatedBy);
 
             $this->recordHistory(
                 termination: $termination,
                 actor: $initiatedBy,
                 fromStatus: null,
-                toStatus: EmployeeTermination::STATUS_SUBMITTED,
-                note: 'Pengajuan PHK dibuat.',
-            );
-
-            return $termination->refresh();
-        });
-    }
-
-    public function approve(
-        EmployeeTermination $termination,
-        User $reviewer,
-        string $approvedEffectiveDate,
-        ?string $note = null,
-    ): EmployeeTermination {
-        $date = Carbon::parse($approvedEffectiveDate)->startOfDay();
-
-        return DB::transaction(function () use (
-            $termination,
-            $reviewer,
-            $date,
-            $note,
-        ) {
-            $termination = EmployeeTermination::query()
-                ->whereKey($termination->id)
-                ->with('employee')
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            if ($termination->status !== EmployeeTermination::STATUS_SUBMITTED) {
-                throw new LogicException('Pengajuan PHK ini tidak sedang menunggu persetujuan.');
-            }
-
-            if (!$termination->employee || $termination->employee->status_employee !== 'active') {
-                throw new LogicException('Karyawan sudah tidak berstatus aktif.');
-            }
-
-            $initiatedDate = $termination->initiated_at
-                ? Carbon::instance($termination->initiated_at)->startOfDay()
-                : today();
-
-            if ($date->lt($initiatedDate)) {
-                throw new LogicException('Tanggal efektif PHK tidak boleh sebelum tanggal pengajuan.');
-            }
-
-            $termination->update([
-                'status' => EmployeeTermination::STATUS_APPROVED,
-                'approved_effective_date' => $date->toDateString(),
-                'reviewed_by' => $reviewer->id,
-                'reviewed_at' => now(),
-                'review_note' => $note ? trim($note) : null,
-            ]);
-
-            $this->prepareHandover($termination);
-            $this->prepareClearances($termination, $reviewer);
-
-            $this->recordHistory(
-                termination: $termination,
-                actor: $reviewer,
-                fromStatus: EmployeeTermination::STATUS_SUBMITTED,
-                toStatus: EmployeeTermination::STATUS_APPROVED,
-                note: $note ? trim($note) : 'Pengajuan PHK disetujui.',
-            );
-
-            return $termination->refresh();
-        });
-    }
-
-    public function reject(
-        EmployeeTermination $termination,
-        User $reviewer,
-        string $reason,
-    ): EmployeeTermination {
-        $reason = trim($reason);
-
-        if ($reason === '') {
-            throw new LogicException('Alasan penolakan wajib diisi.');
-        }
-
-        return DB::transaction(function () use ($termination, $reviewer, $reason) {
-            $termination = EmployeeTermination::query()
-                ->whereKey($termination->id)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            if ($termination->status !== EmployeeTermination::STATUS_SUBMITTED) {
-                throw new LogicException('Hanya pengajuan PHK yang menunggu yang dapat ditolak.');
-            }
-
-            $termination->update([
-                'status' => EmployeeTermination::STATUS_REJECTED,
-                'reviewed_by' => $reviewer->id,
-                'reviewed_at' => now(),
-                'review_note' => $reason,
-            ]);
-
-            $this->recordHistory(
-                termination: $termination,
-                actor: $reviewer,
-                fromStatus: EmployeeTermination::STATUS_SUBMITTED,
-                toStatus: EmployeeTermination::STATUS_REJECTED,
-                note: $reason,
+                toStatus: EmployeeTermination::STATUS_IN_PROGRESS,
+                note: 'Proses PHK dibuat langsung oleh HR.',
             );
 
             return $termination->refresh();
@@ -263,11 +164,8 @@ class TerminationService
                 ->lockForUpdate()
                 ->findOrFail($termination->id);
 
-            if (!in_array($termination->status, [
-                EmployeeTermination::STATUS_SUBMITTED,
-                EmployeeTermination::STATUS_APPROVED,
-            ], true)) {
-                throw new LogicException('Pengajuan PHK ini tidak dapat dibatalkan.');
+            if ($termination->status !== EmployeeTermination::STATUS_IN_PROGRESS) {
+                throw new LogicException('Proses PHK ini tidak dapat dibatalkan.');
             }
 
             $fromStatus = $termination->status;
@@ -312,8 +210,8 @@ class TerminationService
 
             $termination = $clearance->termination()->lockForUpdate()->firstOrFail();
 
-            if ($termination->status !== EmployeeTermination::STATUS_APPROVED) {
-                throw new LogicException('Clearance hanya dapat diproses pada PHK yang sudah disetujui.');
+            if ($termination->status !== EmployeeTermination::STATUS_IN_PROGRESS) {
+                throw new LogicException('Clearance hanya dapat diproses pada PHK yang sedang berjalan.');
             }
 
             $clearance->update([
@@ -356,8 +254,8 @@ class TerminationService
 
             $termination = $item->termination()->lockForUpdate()->firstOrFail();
 
-            if ($termination->status !== EmployeeTermination::STATUS_APPROVED) {
-                throw new LogicException('Handover hanya dapat diproses pada PHK yang sudah disetujui.');
+            if ($termination->status !== EmployeeTermination::STATUS_IN_PROGRESS) {
+                throw new LogicException('Handover hanya dapat diproses pada PHK yang sedang berjalan.');
             }
 
             if ($handoverToEmployeeId !== null) {
@@ -403,11 +301,11 @@ class TerminationService
                 ->lockForUpdate()
                 ->findOrFail($termination->id);
 
-            if ($termination->status !== EmployeeTermination::STATUS_APPROVED) {
-                throw new LogicException('Hanya PHK yang sudah disetujui yang dapat diselesaikan.');
+            if ($termination->status !== EmployeeTermination::STATUS_IN_PROGRESS) {
+                throw new LogicException('Hanya PHK yang sedang berjalan yang dapat diselesaikan.');
             }
 
-            $effectiveDate = $termination->approved_effective_date;
+            $effectiveDate = $termination->effective_date;
 
             if (!$effectiveDate || Carbon::parse($effectiveDate)->isFuture()) {
                 throw new LogicException('Tanggal efektif PHK belum tercapai.');
@@ -476,7 +374,7 @@ class TerminationService
             $this->recordHistory(
                 termination: $termination,
                 actor: $actor,
-                fromStatus: EmployeeTermination::STATUS_APPROVED,
+                fromStatus: EmployeeTermination::STATUS_IN_PROGRESS,
                 toStatus: EmployeeTermination::STATUS_COMPLETED,
                 note: 'Proses PHK selesai.',
             );
@@ -513,8 +411,8 @@ class TerminationService
 
         $leaveReady = !$this->hasUnresolvedLeave($termination);
 
-        $effectiveDateReached = $termination->approved_effective_date
-            ? Carbon::parse($termination->approved_effective_date)->lte(today())
+        $effectiveDateReached = $termination->effective_date
+            ? Carbon::parse($termination->effective_date)->lte(today())
             : false;
 
         return [
@@ -533,7 +431,7 @@ class TerminationService
 
     private function prepareClearances(
         EmployeeTermination $termination,
-        User $reviewer,
+        User $verifier,
     ): void {
         foreach (self::CLEARANCE_CATEGORIES as $category) {
             EmployeeTerminationClearance::query()->firstOrCreate([
@@ -549,7 +447,7 @@ class TerminationService
         if ($termination->handoverItems()->doesntExist()) {
             $work->update([
                 'status' => EmployeeTerminationClearance::STATUS_COMPLETED,
-                'verified_by' => $reviewer->id,
+                'verified_by' => $verifier->id,
                 'verified_at' => now(),
                 'notes' => 'Tidak ada pekerjaan aktif yang perlu dihandover.',
             ]);
@@ -559,7 +457,7 @@ class TerminationService
             ->where('category', 'organization')
             ->update([
                 'status' => EmployeeTerminationClearance::STATUS_COMPLETED,
-                'verified_by' => $reviewer->id,
+                'verified_by' => $verifier->id,
                 'verified_at' => now(),
                 'notes' => 'Assignment organisasi akan dilepas otomatis saat PHK selesai.',
             ]);
@@ -614,7 +512,7 @@ class TerminationService
 
     private function hasUnresolvedLeave(EmployeeTermination $termination): bool
     {
-        $effectiveDate = $termination->approved_effective_date;
+        $effectiveDate = $termination->effective_date;
 
         if (!$effectiveDate) {
             return true;
