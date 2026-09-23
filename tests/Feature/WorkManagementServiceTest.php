@@ -109,6 +109,7 @@ class WorkManagementServiceTest extends TestCase
         $master->refresh();
 
         $this->assertSame('completed', $master->status);
+        $this->assertSame('completed', $divisionProject->refresh()->status);
         $this->assertSame($generalManager->id, $master->approved_by);
         $this->assertNotNull($master->approved_at);
 
@@ -120,6 +121,32 @@ class WorkManagementServiceTest extends TestCase
         ]);
 
         $this->assertGreaterThanOrEqual(5, \App\Models\WorkManagementAudit::query()->count());
+    }
+
+    public function test_gm_can_return_master_project_and_manager_can_resubmit_to_gm(): void
+    {
+        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
+
+        $otherGeneralManager = $this->makeRoleUser('GM2', 'general-manager');
+
+        $master = $service->createMasterProject($generalManager, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
+        $service->assignTeam($divisionProject, $team, $manager);
+
+        $task = $service->createTask($divisionProject, $team, $worker, $supervisor, 'Completed task');
+        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
+        $service->submitTask($task, $worker);
+        $service->reviewTask($task, $supervisor, 'approved');
+
+        $service->submitSupervisorReport($divisionProject, $supervisor, 'Team selesai.');
+        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved', 'OK.');
+        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan awal Manager.');
+
+        $this->assertSame('ready_for_review', $master->refresh()->status);
+
+        $this->expectException(ValidationException::class);
+        $service->reviewMasterProject($master, $otherGeneralManager, 'approved');
     }
 
     public function test_manager_waits_for_all_supervisor_reports_before_review(): void
@@ -169,6 +196,45 @@ class WorkManagementServiceTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $service->reviewDivisionProject($divisionProject, $manager, 'approved');
+    }
+
+    public function test_gm_rejection_returns_submitted_division_projects_for_manager_revision(): void
+    {
+        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
+
+        $master = $service->createMasterProject($generalManager, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
+        $service->assignTeam($divisionProject, $team, $manager);
+
+        $task = $service->createTask($divisionProject, $team, $worker, $supervisor, 'Completed task');
+        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
+        $service->submitTask($task, $worker);
+        $service->reviewTask($task, $supervisor, 'approved');
+
+        $service->submitSupervisorReport($divisionProject, $supervisor, 'Team selesai.');
+        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved');
+        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan awal Manager.');
+
+        $service->reviewMasterProject($master, $generalManager, 'rejected', 'Tambahkan detail hasil akhir dan kendala.');
+
+        $this->assertSame('in_progress', $master->refresh()->status);
+        $this->assertSame('revision_required', $divisionProject->refresh()->status);
+        $this->assertDatabaseHas('project_reports', [
+            'division_project_id' => $divisionProject->id,
+            'report_level' => ProjectReport::LEVEL_MANAGER,
+            'status' => ProjectReport::STATUS_REJECTED,
+        ]);
+
+        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan Manager yang sudah diperbaiki.');
+
+        $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
+        $this->assertSame('ready_for_review', $master->refresh()->status);
+
+        $service->reviewMasterProject($master, $generalManager, 'approved', 'Sudah sesuai.');
+
+        $this->assertSame('completed', $master->refresh()->status);
+        $this->assertSame('completed', $divisionProject->refresh()->status);
     }
 
     public function test_manager_can_reject_supervisor_report_for_revision(): void
