@@ -104,7 +104,7 @@
         </x-wirekit::card.body>
     </x-wirekit::card>
 
-    @if ($resignation->status === 'submitted' && auth()->user()->can('approve-resignation', $resignation))
+    @if ($resignation->status === 'submitted' && auth()->user()->canany(['approve-resignation', 'reject-resignation']))
         <x-wirekit::card>
             <x-wirekit::card.header>
                 <h2 class="text-lg font-semibold text-slate-900">Review Pengajuan</h2>
@@ -322,6 +322,59 @@
                 </div>
             </x-wirekit::card.body>
         </x-wirekit::card>
+
+        @if ($resignation->status === 'approved' || $resignation->status === 'completed')
+            <x-wirekit::card>
+                <x-wirekit::card.header>
+                    <h2 class="text-lg font-semibold text-slate-900">Exit Interview</h2>
+                    <p class="text-sm text-slate-500">
+                        Catatan percakapan akhir antara HR dan employee.
+                    </p>
+                </x-wirekit::card.header>
+
+                <x-wirekit::card.body>
+                    @if ($resignation->status === 'approved')
+                        @can('manage-resignation-clearance')
+                            <x-wirekit::textarea
+                                label="Catatan Exit Interview"
+                                name="exitInterviewNotes"
+                                wire:model="exitInterviewNotes"
+                                rows="5"
+                            />
+
+                            <div class="mt-4 flex justify-end">
+                                <x-wirekit::button
+                                    type="button"
+                                    class="bg-[#30AFFF] text-white hover:bg-sky-500"
+                                    wire:click="saveExitInterview"
+                                >
+                                    Simpan Catatan
+                                </x-wirekit::button>
+                            </div>
+                        @endcan
+                    @endif
+
+                    @if ($resignation->exit_interview_notes)
+                        <div class="{{ $resignation->status === 'approved' ? 'mt-5' : '' }} rounded-xl bg-slate-50 px-4 py-3">
+                            <p class="whitespace-pre-line text-sm leading-6 text-slate-700">
+                                {{ $resignation->exit_interview_notes }}
+                            </p>
+
+                            @if ($resignation->exitInterviewer)
+                                <p class="mt-3 text-xs text-slate-400">
+                                    Diisi oleh {{ $resignation->exitInterviewer->name }}
+                                    pada {{ $resignation->exit_interview_at?->translatedFormat('d M Y H:i') }}
+                                </p>
+                            @endif
+                        </div>
+                    @elseif ($resignation->status === 'completed')
+                        <p class="text-sm text-slate-500">
+                            Belum ada catatan exit interview.
+                        </p>
+                    @endif
+                </x-wirekit::card.body>
+            </x-wirekit::card>
+        @endif
 
         @php($readiness = $this->readiness())
 
