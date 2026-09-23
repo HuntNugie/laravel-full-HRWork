@@ -6,6 +6,7 @@ use App\Models\EmployeeResignation;
 use App\Models\EmployeeResignationClearance;
 use App\Models\EmployeeResignationHandoverItem;
 use App\Models\EmployeeResignationHistory;
+use App\Models\EmployeeTermination;
 use App\Models\Employees;
 use App\Models\Task;
 use App\Models\User;
@@ -66,6 +67,17 @@ class ResignationService
 
         if ($hasActiveResignation) {
             throw new LogicException('Karyawan sudah memiliki proses resign yang masih berjalan.');
+        }
+
+        $hasActiveTermination = $employee->terminations()
+            ->whereIn('status', [
+                EmployeeTermination::STATUS_SUBMITTED,
+                EmployeeTermination::STATUS_APPROVED,
+            ])
+            ->exists();
+
+        if ($hasActiveTermination) {
+            throw new LogicException('Karyawan sudah memiliki proses PHK yang masih berjalan.');
         }
 
         return DB::transaction(function () use (
