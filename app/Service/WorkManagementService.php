@@ -674,6 +674,20 @@ class WorkManagementService
                 $masterProject->divisionProjects()
                     ->where('status', 'submitted_to_gm')
                     ->update(['status' => 'completed']);
+
+                $masterProject->divisionProjects()
+                    ->whereHas('reports', function ($query) {
+                        $query
+                            ->where('report_level', ProjectReport::LEVEL_MANAGER)
+                            ->where('status', ProjectReport::STATUS_SUBMITTED);
+                    })
+                    ->get()
+                    ->each(function (DivisionProject $divisionProject) {
+                        $divisionProject->reports()
+                            ->where('report_level', ProjectReport::LEVEL_MANAGER)
+                            ->where('status', ProjectReport::STATUS_SUBMITTED)
+                            ->update(['status' => ProjectReport::STATUS_APPROVED]);
+                    });
             } else {
                 $masterProject->divisionProjects()
                     ->where('status', 'submitted_to_gm')
