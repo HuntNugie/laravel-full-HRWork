@@ -184,7 +184,7 @@
                                             </x-wirekit::badge>
                                             <?php if ($clearance->verified_at): ?>
                                                 <p class="text-xs text-slate-400">
-                                                    {{ $clearance->verified_by ? ($clearance->verifier?->name ?? '—') . ' · ' : '' }}{{ $clearance->verified_at->translatedFormat('d M Y H:i') }}
+                                                    {{ $clearance->verified_by ? ($clearance->verifier?->name ?? '—') . ' · ' : '' }}{{ \Carbon\Carbon::parse($clearance->verified_at)->translatedFormat('d M Y H:i') }}
                                                 </p>
                                             <?php endif; ?>
                                         </div>
