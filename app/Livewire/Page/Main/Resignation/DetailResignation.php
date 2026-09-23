@@ -8,7 +8,6 @@ use App\Models\EmployeeResignationHandoverItem;
 use App\Models\Payroll;
 use App\Service\ResignationService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
