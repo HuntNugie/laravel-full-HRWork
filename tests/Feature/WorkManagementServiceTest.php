@@ -195,7 +195,7 @@ class WorkManagementServiceTest extends TestCase
         $this->assertSame('in_progress', $divisionProject->refresh()->status);
 
         $this->expectException(ValidationException::class);
-        $service->reviewDivisionProject($divisionProject, $manager, 'approved');
+        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved');
     }
 
     public function test_gm_rejection_returns_submitted_division_projects_for_manager_revision(): void
