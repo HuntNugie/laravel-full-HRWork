@@ -56,4 +56,12 @@ class Payroll extends Model
             'employee_contract_id'
         );
     }
+
+    public function resignation(): BelongsTo
+    {
+        return $this->belongsTo(
+            EmployeeResignation::class,
+            'resignation_id'
+        );
+    }
 }
