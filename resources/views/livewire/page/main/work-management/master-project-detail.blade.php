@@ -123,14 +123,6 @@
                             </span>
                         </div>
 
-                        @php
-                            $latestProgress = $project->progressUpdates->sortByDesc('id')->first();
-                            $managerReport = $project->reports
-                                ->where('report_level', 'manager')
-                                ->sortByDesc('id')
-                                ->first();
-                        @endphp
-
                         <div class="mt-4">
                             <div class="rounded-xl bg-slate-50 p-3">
                                 <div class="flex items-center justify-between text-xs text-slate-500">
@@ -147,6 +139,14 @@
                             (int) $project->manager_id === (int) auth()->user()?->employees?->id
                             || auth()->user()?->hasRole('general-manager')
                         )
+                            @php
+                                $latestProgress = $project->progressUpdates->sortByDesc('id')->first();
+                                $managerReport = $project->reports
+                                    ->where('report_level', 'manager')
+                                    ->sortByDesc('id')
+                                    ->first();
+                            @endphp
+
                             <div class="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
                                 <div class="rounded-xl bg-slate-50 p-3">
                                     <div class="flex items-center justify-between text-xs text-slate-500">
