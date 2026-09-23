@@ -58,6 +58,8 @@ class DetailResignation extends Component
 
     public function approve(): void
     {
+        abort_unless(Auth::user()->can('approve-resignation'), 403);
+
         $this->validate([
             'approvedLastWorkingDate' => ['required', 'date', 'after_or_equal:today'],
             'actionNote' => ['nullable', 'string', 'max:5000'],
@@ -81,6 +83,8 @@ class DetailResignation extends Component
 
     public function reject(): void
     {
+        abort_unless(Auth::user()->can('reject-resignation'), 403);
+
         $this->validate([
             'rejectionReason' => ['required', 'string', 'max:5000'],
         ]);
@@ -102,6 +106,8 @@ class DetailResignation extends Component
 
     public function cancel(): void
     {
+        abort_unless(Auth::user()->can('cancel-resignation'), 403);
+
         try {
             app(ResignationService::class)->cancel(
                 resignation: $this->resignation,
@@ -117,6 +123,8 @@ class DetailResignation extends Component
 
     public function updateClearance(int $clearanceId, string $status): void
     {
+        abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
+
         $clearance = EmployeeResignationClearance::query()
             ->where('resignation_id', $this->resignation->id)
             ->findOrFail($clearanceId);
@@ -137,6 +145,8 @@ class DetailResignation extends Component
 
     public function updateHandover(int $itemId, string $status): void
     {
+        abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
+
         $item = EmployeeResignationHandoverItem::query()
             ->where('resignation_id', $this->resignation->id)
             ->findOrFail($itemId);
@@ -158,6 +168,8 @@ class DetailResignation extends Component
 
     public function saveExitInterview(): void
     {
+        abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
+
         $this->validate([
             'exitInterviewNotes' => ['required', 'string', 'max:10000'],
         ]);
@@ -178,6 +190,8 @@ class DetailResignation extends Component
 
     public function linkFinalPayroll(): void
     {
+        abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
+
         $this->validate([
             'selectedPayrollId' => ['required', 'integer'],
         ]);
@@ -204,6 +218,8 @@ class DetailResignation extends Component
 
     public function complete(): void
     {
+        abort_unless(Auth::user()->can('complete-resignation'), 403);
+
         try {
             app(ResignationService::class)->complete(
                 resignation: $this->resignation,
