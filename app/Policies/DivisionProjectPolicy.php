@@ -123,6 +123,19 @@ class DivisionProjectPolicy
             && (int) $divisionProject->manager_id === (int) $user->employees?->id;
     }
 
+    public function reviewManagerReport(User $user, DivisionProject $divisionProject): bool
+    {
+        if (! $user->can('approve-master-project') || ! ($employee = $user->employees)) {
+            return false;
+        }
+
+        $masterProject = $divisionProject->masterProject;
+
+        return $this->isGeneralManager($employee)
+            && $masterProject !== null
+            && (int) $masterProject->created_by === (int) $employee->id;
+    }
+
     private function isGeneralManager(?Employees $employee): bool
     {
         return $employee?->user?->hasRole('general-manager') ?? false;
