@@ -628,6 +628,88 @@
     </div>
 
 
+    {{-- WARNING LETTER --}}
+    <x-wirekit::card>
+        <x-wirekit::card.header>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">Surat Peringatan</h2>
+                    <p class="text-sm text-slate-500">Ringkasan surat peringatan yang diterbitkan untuk kamu.</p>
+                </x-wirekit::stack>
+
+                @can('view-warning-letter-my')
+                    <x-wirekit::button
+                        href="{{ route('warning-letter.my.view') }}"
+                        size="sm"
+                        intent="neutral"
+                        surface="outline"
+                        wire:navigate
+                    >
+                        Lihat semua
+                    </x-wirekit::button>
+                @endcan
+            </div>
+        </x-wirekit::card.header>
+
+        <x-wirekit::card.body>
+            @if ($latestWarningLetter)
+                <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <x-wirekit::badge intent="warning">
+                                {{ $latestWarningLetter->warning_level }}
+                            </x-wirekit::badge>
+
+                            <span class="text-xs text-slate-400">
+                                {{ $latestWarningLetter->issued_date?->translatedFormat('d F Y') ?? '—' }}
+                            </span>
+                        </div>
+
+                        <p class="mt-3 text-sm font-semibold text-slate-900">
+                            {{ $latestWarningLetter->letter_number ?? 'Nomor surat belum tersedia' }}
+                        </p>
+
+                        <p class="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">
+                            {{ $latestWarningLetter->reason }}
+                        </p>
+
+                        <p class="mt-3 text-xs text-slate-400">
+                            Total surat diterbitkan: {{ $issuedWarningLettersCount }}
+                        </p>
+                    </div>
+
+                    @can('show-warning-letter-my')
+                        <div class="md:self-center">
+                            <x-wirekit::button
+                                href="{{ route('warning-letter.my.show', $latestWarningLetter) }}"
+                                size="sm"
+                                intent="primary"
+                                wire:navigate
+                            >
+                                Lihat detail
+                            </x-wirekit::button>
+                        </div>
+                    @endcan
+                </div>
+            @else
+                <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
+                    <div class="flex items-start gap-3">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+                            <x-wirekit::icon name="check-circle" class="size-5" />
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">Belum ada Surat Peringatan</p>
+                            <p class="mt-1 text-sm leading-6 text-slate-500">
+                                Tidak ada Surat Peringatan yang diterbitkan untuk akun kamu.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </x-wirekit::card.body>
+    </x-wirekit::card>
+
     {{-- ROLE-SCOPED ATTENDANCE --}}
 
     @if ($employee->user->hasRole('manager'))
