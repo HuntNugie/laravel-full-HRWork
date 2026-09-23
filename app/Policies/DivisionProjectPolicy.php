@@ -66,11 +66,7 @@ class DivisionProjectPolicy
             return false;
         }
 
-        if ((int) $divisionProject->manager_id === (int) $employee->id) {
-            return true;
-        }
-
-        return $divisionProject->teams()->where('supervisor_id', $employee->id)->exists();
+        return (int) $divisionProject->manager_id === (int) $employee->id;
     }
 
     public function review(User $user, DivisionProject $divisionProject): bool
