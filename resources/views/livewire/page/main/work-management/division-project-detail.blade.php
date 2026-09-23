@@ -53,14 +53,19 @@
             </x-wirekit::card.body>
         </x-wirekit::card>
 
-        <x-wirekit::card>
-            <x-wirekit::card.body>
-                <x-wirekit::stack gap="1">
-                    <span class="text-sm font-medium text-slate-500">Manual Progress</span>
-                    <span class="text-lg font-bold text-slate-900">{{ $divisionProject->manual_progress }}%</span>
-                </x-wirekit::stack>
-            </x-wirekit::card.body>
-        </x-wirekit::card>
+        @if (
+            (int) $divisionProject->manager_id === (int) auth()->user()?->employees?->id
+            || auth()->user()?->hasRole('general-manager')
+        )
+            <x-wirekit::card>
+                <x-wirekit::card.body>
+                    <x-wirekit::stack gap="1">
+                        <span class="text-sm font-medium text-slate-500">Manual Progress Manager</span>
+                        <span class="text-lg font-bold text-slate-900">{{ $divisionProject->manual_progress }}%</span>
+                    </x-wirekit::stack>
+                </x-wirekit::card.body>
+            </x-wirekit::card>
+        @endif
 
         <x-wirekit::card>
             <x-wirekit::card.body>
@@ -156,12 +161,12 @@
                 <x-wirekit::card.header>
                     <x-wirekit::stack gap="1">
                         <h2 class="text-lg font-semibold text-slate-900">
-                            {{ $resubmitting ? 'Perbaiki & Kirim Ulang ke GM' : 'Submit Division Project ke GM' }}
+                            {{ $resubmitting ? 'Perbaiki & Submit Ulang untuk Review GM' : 'Submit Hasil untuk Review GM' }}
                         </h2>
                         <p class="text-sm text-slate-500">
                             {{ $resubmitting
-                                ? 'Division Project dikembalikan untuk revisi. Perbarui laporan Manager lalu kirim kembali ke General Manager.'
-                                : 'Semua laporan Team sudah disetujui. Manager dapat mengirim hasil akhir Division Project ke General Manager pembuat Master Project.' }}
+                                ? 'Division Project dikembalikan oleh GM. Perbarui hasil dan laporan Manager lalu submit ulang untuk direview.'
+                                : 'Semua laporan Team sudah disetujui. Submit hasil akhir Division Project untuk direview oleh General Manager pembuat Master Project.' }}
                         </p>
                     </x-wirekit::stack>
                 </x-wirekit::card.header>
@@ -200,7 +205,7 @@
 
                         <div class="flex justify-end">
                             <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">
-                                {{ $resubmitting ? 'Kirim Ulang ke GM' : 'Submit to GM' }}
+                                {{ $resubmitting ? 'Submit Ulang untuk Review GM' : 'Submit untuk Review GM' }}
                             </x-wirekit::button>
                         </div>
                     </form>
