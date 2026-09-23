@@ -215,8 +215,7 @@ class DetailResignation extends Component
                 'clearances.verifier',
                 'handoverItems.task',
                 'handoverItems.handoverTo.user',
-                'finalPayrolls.period',
-                'exitInterviewer',
+                    'exitInterviewer',
             ])
             ->findOrFail($this->resignation->id);
 
