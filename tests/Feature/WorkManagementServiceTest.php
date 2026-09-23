@@ -94,7 +94,7 @@ class WorkManagementServiceTest extends TestCase
         );
 
         $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
-        $this->assertSame('ready_for_review', $master->refresh()->status);
+        $this->assertSame('in_progress', $master->refresh()->status);
 
         $this->assertDatabaseHas('project_reports', [
             'division_project_id' => $divisionProject->id,
@@ -102,7 +102,18 @@ class WorkManagementServiceTest extends TestCase
             'reported_by' => $manager->id,
             'report_level' => ProjectReport::LEVEL_MANAGER,
             'status' => ProjectReport::STATUS_SUBMITTED,
+            'progress' => 75,
         ]);
+
+        $service->reviewManagerReport(
+            $divisionProject,
+            $generalManager,
+            'approved',
+            'Progress Manager sudah sesuai.',
+        );
+
+        $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
+        $this->assertSame('ready_for_review', $master->refresh()->status);
 
         $service->reviewMasterProject($master, $generalManager, 'approved', 'Final approval.');
 
@@ -150,10 +161,10 @@ class WorkManagementServiceTest extends TestCase
         $service->reviewTeamReport($divisionProject, $team, $manager, 'approved', 'OK.');
         $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan awal Manager.');
 
-        $this->assertSame('ready_for_review', $master->refresh()->status);
+        $this->assertSame('in_progress', $master->refresh()->status);
 
         $this->expectException(ValidationException::class);
-        $service->reviewMasterProject($master, $otherGeneralManager, 'approved');
+        $service->reviewManagerReport($divisionProject, $otherGeneralManager, 'approved');
     }
 
     public function test_supervisor_cannot_report_division_manual_progress(): void
@@ -237,7 +248,12 @@ class WorkManagementServiceTest extends TestCase
         $service->reviewTeamReport($divisionProject, $team, $manager, 'approved');
         $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan awal Manager.');
 
-        $service->reviewMasterProject($master, $generalManager, 'rejected', 'Tambahkan detail hasil akhir dan kendala.');
+        $service->reviewManagerReport(
+            $divisionProject,
+            $generalManager,
+            'rejected',
+            'Tambahkan detail progress dan hasil akhir.',
+        );
 
         $this->assertSame('in_progress', $master->refresh()->status);
         $this->assertSame('revision_required', $divisionProject->refresh()->status);
@@ -247,9 +263,14 @@ class WorkManagementServiceTest extends TestCase
             'status' => ProjectReport::STATUS_REJECTED,
         ]);
 
+        $service->reportManualProgress($divisionProject, $manager, 100, 'Progress setelah revisi.');
         $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan Manager yang sudah diperbaiki.');
 
         $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
+        $this->assertSame('in_progress', $master->refresh()->status);
+
+        $service->reviewManagerReport($divisionProject, $generalManager, 'approved', 'Sudah sesuai.');
+
         $this->assertSame('ready_for_review', $master->refresh()->status);
 
         $service->reviewMasterProject($master, $generalManager, 'approved', 'Sudah sesuai.');
@@ -284,6 +305,13 @@ class WorkManagementServiceTest extends TestCase
         $this->assertSame('manager_approved', $divisionProject->refresh()->status);
 
         $service->reportManualProgress($divisionProject, $manager, 90, 'Koreksi progress sebelum dikirim ke GM.');
+
+        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan Manager.');
+        $this->assertSame(90, $divisionProject->reports()->latest('id')->first()->progress);
+
+        $this->assertThrows(ValidationException::class, function () use ($service, $divisionProject, $manager) {
+            $service->reportManualProgress($divisionProject, $manager, 95, 'Tidak boleh diubah setelah submit.');
+        });
 
         $this->assertSame(90, $divisionProject->refresh()->manual_progress);
     }
