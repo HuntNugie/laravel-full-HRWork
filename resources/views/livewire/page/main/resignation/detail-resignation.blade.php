@@ -323,6 +323,46 @@
             </x-wirekit::card.body>
         </x-wirekit::card>
 
+        @php($readiness = $this->readiness())
+
+        <x-wirekit::card>
+            <x-wirekit::card.header>
+                <h2 class="text-lg font-semibold text-slate-900">Kesiapan Penyelesaian</h2>
+            </x-wirekit::card.header>
+
+            <x-wirekit::card.body>
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                    @foreach ([
+                        'clearance' => 'Clearance',
+                        'handover' => 'Handover',
+                        'final_payroll' => 'Final Payroll',
+                        'organization' => 'Organization',
+                        'leave' => 'Leave',
+                        'last_working_date' => 'Last Working Day',
+                    ] as $key => $label)
+                        <div class="rounded-xl border border-slate-100 px-4 py-3">
+                            <p class="text-xs text-slate-400">{{ $label }}</p>
+                            <p class="mt-1 text-sm font-semibold {{ $readiness[$key] ? 'text-emerald-600' : 'text-amber-600' }}">
+                                {{ $readiness[$key] ? 'Ready' : 'Pending' }}
+                            </p>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-5 flex justify-end">
+                    <x-wirekit::button
+                        type="button"
+                        class="bg-[#30AFFF] text-white hover:bg-sky-500"
+                        wire:click="complete"
+                        @disabled(!$readiness['ready'])
+                    >
+                        Selesaikan Resignation
+                    </x-wirekit::button>
+                </div>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
+    @endif
+
         @if ($resignation->status === 'approved' || $resignation->status === 'completed')
             <x-wirekit::card>
                 <x-wirekit::card.header>
@@ -376,45 +416,6 @@
             </x-wirekit::card>
         @endif
 
-        @php($readiness = $this->readiness())
-
-        <x-wirekit::card>
-            <x-wirekit::card.header>
-                <h2 class="text-lg font-semibold text-slate-900">Kesiapan Penyelesaian</h2>
-            </x-wirekit::card.header>
-
-            <x-wirekit::card.body>
-                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                    @foreach ([
-                        'clearance' => 'Clearance',
-                        'handover' => 'Handover',
-                        'final_payroll' => 'Final Payroll',
-                        'organization' => 'Organization',
-                        'leave' => 'Leave',
-                        'last_working_date' => 'Last Working Day',
-                    ] as $key => $label)
-                        <div class="rounded-xl border border-slate-100 px-4 py-3">
-                            <p class="text-xs text-slate-400">{{ $label }}</p>
-                            <p class="mt-1 text-sm font-semibold {{ $readiness[$key] ? 'text-emerald-600' : 'text-amber-600' }}">
-                                {{ $readiness[$key] ? 'Ready' : 'Pending' }}
-                            </p>
-                        </div>
-                    @endforeach
-                </div>
-
-                <div class="mt-5 flex justify-end">
-                    <x-wirekit::button
-                        type="button"
-                        class="bg-[#30AFFF] text-white hover:bg-sky-500"
-                        wire:click="complete"
-                        @disabled(!$readiness['ready'])
-                    >
-                        Selesaikan Resignation
-                    </x-wirekit::button>
-                </div>
-            </x-wirekit::card.body>
-        </x-wirekit::card>
-    @endif
 
     <x-wirekit::card>
         <x-wirekit::card.header>
