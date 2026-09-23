@@ -47,6 +47,8 @@ class MyResignation extends Component
 
     public function submit(): void
     {
+        abort_unless(Auth::user()->can('create-resignation-my'), 403);
+
         $this->validate([
             'proposedLastWorkingDate' => ['required', 'date', 'after_or_equal:today'],
             'reason' => ['required', 'string', 'max:5000'],
@@ -73,6 +75,8 @@ class MyResignation extends Component
 
     public function cancel(): void
     {
+        abort_unless(Auth::user()->can('cancel-resignation-my'), 403);
+
         $resignation = $this->resignation;
 
         if (!$resignation) {
