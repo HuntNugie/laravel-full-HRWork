@@ -609,31 +609,129 @@ class WorkManagementService
             ]);
         }
 
+        $existingSubmission = $divisionProject->reports()
+            ->where('report_level', ProjectReport::LEVEL_MANAGER)
+            ->where('status', ProjectReport::STATUS_SUBMITTED)
+            ->exists();
+
+        if ($existingSubmission) {
+            throw ValidationException::withMessages([
+                'division_project' => 'Laporan Manager masih menunggu review General Manager.',
+            ]);
+        }
+
         if (blank(trim($content))) {
             throw ValidationException::withMessages([
                 'content' => 'Laporan Manager wajib diisi.',
             ]);
         }
 
-        return DB::transaction(function () use ($divisionProject, $reporter, $content) {
+        $progress = (int) $divisionProject->manual_progress;
+
+        return DB::transaction(function () use ($divisionProject, $reporter, $content, $progress) {
             $report = $divisionProject->reports()->create([
                 'team_id' => null,
                 'reported_by' => $reporter->id,
                 'report_level' => ProjectReport::LEVEL_MANAGER,
                 'status' => ProjectReport::STATUS_SUBMITTED,
                 'content' => trim($content),
+                'progress' => $progress,
             ]);
 
             $divisionProject->update(['status' => 'submitted_to_gm']);
 
             $this->audit($reporter, $report, 'division_project.manager_report_submitted_to_gm', null, [
                 'division_project_id' => $divisionProject->id,
+                'progress' => $progress,
                 'status' => $report->status,
             ]);
 
             $this->syncMasterProjectStatus($divisionProject->masterProject()->firstOrFail());
 
             return $report->refresh();
+        });
+    }
+
+    public function reviewManagerReport(
+        DivisionProject $divisionProject,
+        Employees $reviewer,
+        string $decision,
+        ?string $feedback = null,
+    ): ProjectReview {
+        $this->ensureActiveEmployee($reviewer);
+
+        $masterProject = $divisionProject->masterProject()->firstOrFail();
+
+        if (! $reviewer->user?->hasRole('general-manager')) {
+            throw ValidationException::withMessages([
+                'reviewer' => 'Hanya General Manager yang dapat mereview laporan Manager.',
+            ]);
+        }
+
+        if ((int) $masterProject->created_by !== (int) $reviewer->id) {
+            throw ValidationException::withMessages([
+                'reviewer' => 'Review laporan Manager hanya dapat dilakukan oleh General Manager yang membuat Master Project.',
+            ]);
+        }
+
+        if ($divisionProject->status !== 'submitted_to_gm') {
+            throw ValidationException::withMessages([
+                'division_project' => 'Division Project belum memiliki laporan Manager yang menunggu review GM.',
+            ]);
+        }
+
+        if (! in_array($decision, ['approved', 'rejected'], true)) {
+            throw ValidationException::withMessages([
+                'decision' => 'Decision review tidak valid.',
+            ]);
+        }
+
+        $report = $divisionProject->reports()
+            ->where('report_level', ProjectReport::LEVEL_MANAGER)
+            ->where('status', ProjectReport::STATUS_SUBMITTED)
+            ->latest('id')
+            ->first();
+
+        if (! $report) {
+            throw ValidationException::withMessages([
+                'report' => 'Belum ada laporan Manager yang menunggu review GM.',
+            ]);
+        }
+
+        return DB::transaction(function () use ($divisionProject, $reviewer, $decision, $feedback, $report, $masterProject) {
+            $review = $divisionProject->reviews()->create([
+                'reviewer_id' => $reviewer->id,
+                'reviewer_level' => 'general_manager',
+                'decision' => $decision,
+                'feedback' => $feedback,
+            ]);
+
+            $old = [
+                'status' => $report->status,
+                'progress' => $report->progress,
+            ];
+
+            $report->update([
+                'status' => $decision === 'approved'
+                    ? ProjectReport::STATUS_APPROVED
+                    : ProjectReport::STATUS_REJECTED,
+            ]);
+
+            if ($decision === 'rejected') {
+                $divisionProject->update(['status' => 'revision_required']);
+                $masterProject->update(['status' => 'in_progress']);
+            } else {
+                $this->syncMasterProjectStatus($masterProject);
+            }
+
+            $this->audit($reviewer, $report, 'division_project.manager_report_reviewed_by_gm', $old, [
+                'status' => $report->status,
+                'progress' => $report->progress,
+                'decision' => $decision,
+                'feedback' => $feedback,
+            ]);
+
+            return $review;
         });
     }
 
@@ -763,8 +861,17 @@ class WorkManagementService
 
         $requiredProjects = $masterProject->divisionProjects()->where('is_required', true)->get();
 
-        if ($requiredProjects->isNotEmpty()
-            && $requiredProjects->every(fn (DivisionProject $project) => $project->status === 'submitted_to_gm')) {
+        $allRequiredManagerReportsApproved = $requiredProjects->isNotEmpty()
+            && $requiredProjects->every(function (DivisionProject $project) {
+                $latest = $project->reports()
+                    ->where('report_level', ProjectReport::LEVEL_MANAGER)
+                    ->latest('id')
+                    ->first();
+
+                return $latest?->status === ProjectReport::STATUS_APPROVED;
+            });
+
+        if ($allRequiredManagerReportsApproved) {
             $masterProject->update(['status' => 'ready_for_review']);
         } elseif ($masterProject->status === 'ready_for_review') {
             $masterProject->update(['status' => 'in_progress']);
