@@ -30,30 +30,17 @@ return new class extends Migration
                 ->nullOnDelete();
 
             $table->timestamp('initiated_at')->nullable();
-
-            $table->date('proposed_effective_date');
-            $table->date('approved_effective_date')->nullable();
+            $table->date('effective_date');
 
             $table->string('reason_type');
             $table->text('reason');
             $table->text('notes')->nullable();
 
             $table->enum('status', [
-                'submitted',
-                'approved',
-                'rejected',
+                'in_progress',
                 'cancelled',
                 'completed',
-            ])->default('submitted');
-
-            $table->foreignId('reviewed_by')->nullable();
-            $table->foreign('reviewed_by', 'et_reviewed_by_fk')
-                ->references('id')
-                ->on('users')
-                ->nullOnDelete();
-
-            $table->timestamp('reviewed_at')->nullable();
-            $table->text('review_note')->nullable();
+            ])->default('in_progress');
 
             $table->foreignId('cancelled_by')->nullable();
             $table->foreign('cancelled_by', 'et_cancelled_by_fk')
@@ -75,7 +62,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['employee_id', 'status']);
-            $table->index(['status', 'proposed_effective_date']);
+            $table->index(['status', 'effective_date']);
             $table->index(['reason_type', 'status']);
         });
 
