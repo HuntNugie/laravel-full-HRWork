@@ -322,6 +322,14 @@ class ResignationService
                 }
             }
 
+            if (
+                $status === EmployeeResignationHandoverItem::STATUS_COMPLETED
+                && $item->task_id !== null
+                && $handoverToEmployeeId === null
+            ) {
+                throw new LogicException('Penerima handover wajib ditentukan sebelum pekerjaan diselesaikan.');
+            }
+
             $item->update([
                 'status' => $status,
                 'handover_to_employee_id' => $handoverToEmployeeId,
@@ -331,6 +339,36 @@ class ResignationService
             ]);
 
             return $item->refresh();
+        });
+    }
+
+    public function updateExitInterview(
+        EmployeeResignation $resignation,
+        User $actor,
+        ?string $notes,
+    ): EmployeeResignation {
+        return DB::transaction(function () use ($resignation, $actor, $notes) {
+            $resignation = EmployeeResignation::query()
+                ->lockForUpdate()
+                ->findOrFail($resignation->id);
+
+            if ($resignation->status !== EmployeeResignation::STATUS_APPROVED) {
+                throw new LogicException('Exit interview hanya dapat diperbarui sebelum resignation selesai.');
+            }
+
+            $notes = trim((string) $notes);
+
+            if ($notes === '') {
+                throw new LogicException('Catatan exit interview wajib diisi.');
+            }
+
+            $resignation->update([
+                'exit_interview_notes' => $notes,
+                'exit_interview_by' => $actor->id,
+                'exit_interview_at' => now(),
+            ]);
+
+            return $resignation->refresh();
         });
     }
 
@@ -345,6 +383,7 @@ class ResignationService
                 ->findOrFail($resignation->id);
 
             $payroll = Payroll::query()
+                ->with('period')
                 ->lockForUpdate()
                 ->findOrFail($payroll->id);
 
@@ -358,6 +397,17 @@ class ResignationService
 
             if ($payroll->status !== 'paid') {
                 throw new LogicException('Payroll akhir harus sudah berstatus paid.');
+            }
+
+            if (
+                $resignation->approved_last_working_date
+                && $payroll->period
+                && (
+                    Carbon::parse($payroll->period->start_date)->gt($resignation->approved_last_working_date)
+                    || Carbon::parse($payroll->period->end_date)->lt($resignation->approved_last_working_date)
+                )
+            ) {
+                throw new LogicException('Payroll akhir harus berasal dari periode yang mencakup tanggal terakhir bekerja.');
             }
 
             if ($payroll->resignation_id !== null && (int) $payroll->resignation_id !== (int) $resignation->id) {
@@ -514,13 +564,23 @@ class ResignationService
 
         $leaveReady = !$this->hasUnresolvedLeave($resignation);
 
+        $lastWorkingDateReached = $resignation->approved_last_working_date
+            ? Carbon::parse($resignation->approved_last_working_date)->lte(today())
+            : false;
+
         return [
             'clearance' => $clearanceReady,
             'handover' => $handoverReady,
             'final_payroll' => $hasPaidFinalPayroll,
             'organization' => $organizationReady,
             'leave' => $leaveReady,
-            'ready' => $clearanceReady && $handoverReady && $hasPaidFinalPayroll && $organizationReady && $leaveReady,
+            'last_working_date' => $lastWorkingDateReached,
+            'ready' => $lastWorkingDateReached
+                && $clearanceReady
+                && $handoverReady
+                && $hasPaidFinalPayroll
+                && $organizationReady
+                && $leaveReady,
         ];
     }
 
