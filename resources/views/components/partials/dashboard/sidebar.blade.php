@@ -227,15 +227,9 @@
                 @endcan
 
 
-                {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
-                Training & TNA
-            </x-wirekit::sidebar.item> --}}
-
-
-
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-benefit', 'view-payroll', 'view-payroll-my'])
+        @canany(['view-benefit', 'view-payroll'])
 
             <x-wirekit::sidebar.group collapsible label="Kompensasi">
                 @can('view-payroll')
