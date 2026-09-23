@@ -18,12 +18,11 @@
         </div>
     </x-wirekit::stack>
 
-    <div class="grid gap-4 md:grid-cols-4">
+    <div class="grid gap-4 md:grid-cols-3">
         @foreach ([
-            ['label' => 'Menunggu Persetujuan', 'key' => 'submitted', 'intent' => 'warning'],
-            ['label' => 'Disetujui', 'key' => 'approved', 'intent' => 'info'],
+            ['label' => 'Sedang Berjalan', 'key' => 'in_progress', 'intent' => 'info'],
             ['label' => 'Selesai', 'key' => 'completed', 'intent' => 'success'],
-            ['label' => 'Ditolak', 'key' => 'rejected', 'intent' => 'danger'],
+            ['label' => 'Dibatalkan', 'key' => 'cancelled', 'intent' => 'secondary'],
         ] as $item)
             <x-wirekit::card>
                 <x-wirekit::card.body>
@@ -55,9 +54,7 @@
                         hideLabel
                         :options="[
                             '' => 'Semua status',
-                            'submitted' => 'Menunggu persetujuan',
-                            'approved' => 'Disetujui',
-                            'rejected' => 'Ditolak',
+                            'in_progress' => 'Sedang berjalan',
                             'cancelled' => 'Dibatalkan',
                             'completed' => 'Selesai',
                         ]"
@@ -119,14 +116,12 @@
                                 </x-wirekit::table.td>
 
                                 <x-wirekit::table.td>
-                                    {{ $termination->approved_effective_date?->translatedFormat('d M Y') ?? $termination->proposed_effective_date?->translatedFormat('d M Y') }}
+                                    {{ $termination->effective_date?->translatedFormat('d M Y') ?? '—' }}
                                 </x-wirekit::table.td>
 
                                 <x-wirekit::table.td>
                                     <x-wirekit::badge :intent="match($termination->status) {
-                                        'submitted' => 'warning',
-                                        'approved' => 'info',
-                                        'rejected' => 'danger',
+                                        'in_progress' => 'info',
                                         'cancelled' => 'secondary',
                                         'completed' => 'success',
                                         default => 'secondary',
