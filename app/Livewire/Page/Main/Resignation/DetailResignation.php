@@ -255,7 +255,7 @@ class DetailResignation extends Component
 
         $handoverEmployees = Employees::query()
             ->where('status_employee', 'active')
-            ->whereKeyNot($this->resignation->employee_id)
+            ->where('id', '!=', $this->resignation->employee_id)
             ->with('user')
             ->orderBy('employee_code')
             ->get()
