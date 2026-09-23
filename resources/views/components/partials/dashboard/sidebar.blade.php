@@ -170,7 +170,7 @@
                 @endcan
 
                 @can('view-resignation')
-                    <x-wirekit::sidebar.item href="{{ route('resignation.view') }}" :active="request()->routeIs('resignation.view', 'resignation.show')" icon="logout"
+                    <x-wirekit::sidebar.item href="{{ route('resignation.view') }}" :active="request()->routeIs('resignation.view', 'resignation.show')" icon="document-text"
                         wire:navigate>
                         Resignation
                     </x-wirekit::sidebar.item>
