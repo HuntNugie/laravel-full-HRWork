@@ -161,11 +161,22 @@ class TerminationService
 
         return DB::transaction(function () use ($termination, $actor, $reason) {
             $termination = EmployeeTermination::query()
+                ->with(['clearances', 'handoverItems'])
                 ->lockForUpdate()
                 ->findOrFail($termination->id);
 
             if ($termination->status !== EmployeeTermination::STATUS_IN_PROGRESS) {
                 throw new LogicException('Proses PHK ini tidak dapat dibatalkan.');
+            }
+
+            $exitActions = app(EmployeeExitActionService::class);
+
+            foreach ($termination->handoverItems as $item) {
+                $exitActions->rollbackHandover($item);
+            }
+
+            foreach ($termination->clearances as $clearance) {
+                $exitActions->rollbackClearance($clearance);
             }
 
             $fromStatus = $termination->status;
@@ -214,12 +225,31 @@ class TerminationService
                 throw new LogicException('Clearance hanya dapat diproses pada PHK yang sedang berjalan.');
             }
 
+            $previousStatus = $clearance->status;
+
+            if (
+                in_array($previousStatus, [
+                    EmployeeTerminationClearance::STATUS_COMPLETED,
+                    EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,
+                ], true)
+                && $status !== EmployeeTerminationClearance::STATUS_COMPLETED
+            ) {
+                app(EmployeeExitActionService::class)->rollbackClearance($clearance);
+            }
+
             $clearance->update([
                 'status' => $status,
                 'notes' => $notes ? trim($notes) : null,
                 'verified_by' => $verifier->id,
                 'verified_at' => now(),
             ]);
+
+            if ($status === EmployeeTerminationClearance::STATUS_COMPLETED) {
+                app(EmployeeExitActionService::class)->applyClearance(
+                    clearance: $clearance->refresh(),
+                    actor: $verifier,
+                );
+            }
 
             return $clearance->refresh();
         });
@@ -258,6 +288,8 @@ class TerminationService
                 throw new LogicException('Handover hanya dapat diproses pada PHK yang sedang berjalan.');
             }
 
+            $previousStatus = $item->status;
+
             if ($handoverToEmployeeId !== null) {
                 $employee = Employees::query()->find($handoverToEmployeeId);
 
@@ -274,6 +306,13 @@ class TerminationService
                 throw new LogicException('Penerima handover wajib ditentukan sebelum pekerjaan diselesaikan.');
             }
 
+            if (
+                $previousStatus === EmployeeTerminationHandoverItem::STATUS_COMPLETED
+                && $status !== EmployeeTerminationHandoverItem::STATUS_COMPLETED
+            ) {
+                app(EmployeeExitActionService::class)->rollbackHandover($item);
+            }
+
             $item->update([
                 'status' => $status,
                 'handover_to_employee_id' => $handoverToEmployeeId,
@@ -281,6 +320,13 @@ class TerminationService
                 'verified_by' => $verifier->id,
                 'verified_at' => now(),
             ]);
+
+            if ($status === EmployeeTerminationHandoverItem::STATUS_COMPLETED) {
+                app(EmployeeExitActionService::class)->applyHandover(
+                    item: $item->refresh(),
+                    actor: $verifier,
+                );
+            }
 
             return $item->refresh();
         });
@@ -453,14 +499,6 @@ class TerminationService
             ]);
         }
 
-        $termination->clearances()
-            ->where('category', 'organization')
-            ->update([
-                'status' => EmployeeTerminationClearance::STATUS_COMPLETED,
-                'verified_by' => $verifier->id,
-                'verified_at' => now(),
-                'notes' => 'Assignment organisasi akan dilepas otomatis saat PHK selesai.',
-            ]);
     }
 
     private function prepareHandover(EmployeeTermination $termination): void
