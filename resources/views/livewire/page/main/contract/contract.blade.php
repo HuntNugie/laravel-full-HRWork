@@ -56,8 +56,8 @@
                         name="statusFilter"
                         label="Status"
                         hideLabel
-                        placeholder="Semua status"
                         :options="[
+                            '' => 'Semua status',
                             'draft' => 'Draft',
                             'active' => 'Active',
                             'expired' => 'Expired',
@@ -70,8 +70,8 @@
                         name="employmentTypeFilter"
                         label="Jenis Contract"
                         hideLabel
-                        placeholder="Semua jenis contract"
                         :options="[
+                            '' => 'Semua jenis contract',
                             'pkwt' => 'PKWT',
                             'pkwtt' => 'PKWTT',
                             'intership' => 'Internship',
