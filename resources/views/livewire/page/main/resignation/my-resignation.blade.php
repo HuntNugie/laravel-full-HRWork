@@ -146,7 +146,8 @@
                 @endif
             </x-wirekit::card.body>
         </x-wirekit::card>
-    @else
+    @if (!$resignation || in_array($resignation->status, ['rejected', 'cancelled'], true))
+        <div class="mt-6">
         <x-wirekit::card>
             <x-wirekit::card.header>
                 <h2 class="text-lg font-semibold text-slate-900">Ajukan Pengunduran Diri</h2>
@@ -192,6 +193,6 @@
                 </div>
             </x-wirekit::card.body>
         </x-wirekit::card>
+        </div>
     @endif
-
 </x-wirekit::stack>
