@@ -258,6 +258,36 @@ class WorkManagementServiceTest extends TestCase
         $this->assertSame('completed', $divisionProject->refresh()->status);
     }
 
+    public function test_manager_can_update_manual_progress_until_submitted_to_gm(): void
+    {
+        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
+
+        $master = $service->createMasterProject($generalManager, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
+        $service->assignTeam($divisionProject, $team, $manager);
+
+        $task = $service->createTask($divisionProject, $team, $worker, $supervisor, 'Completed task');
+        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
+        $service->submitTask($task, $worker);
+        $service->reviewTask($task, $supervisor, 'approved');
+
+        $service->submitSupervisorReport($divisionProject, $supervisor, 'Team selesai.');
+
+        $this->assertSame('submitted_to_manager', $divisionProject->refresh()->status);
+
+        $service->reportManualProgress($divisionProject, $manager, 100, 'Progress final Manager.');
+
+        $this->assertSame(100, $divisionProject->refresh()->manual_progress);
+
+        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved', 'OK.');
+        $this->assertSame('manager_approved', $divisionProject->refresh()->status);
+
+        $service->reportManualProgress($divisionProject, $manager, 90, 'Koreksi progress sebelum dikirim ke GM.');
+
+        $this->assertSame(90, $divisionProject->refresh()->manual_progress);
+    }
+
     public function test_manager_can_reject_supervisor_report_for_revision(): void
     {
         [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
