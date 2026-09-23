@@ -11,7 +11,16 @@
         </x-wirekit::stack>
 
         <div class="flex flex-wrap gap-2">
-            @if ($masterProject->status === 'ready_for_review')
+            @php
+                $hasManagerSubmissionForReview = $masterProject->divisionProjects->contains(function ($project) {
+                    return $project->reports
+                        ->where('report_level', 'manager')
+                        ->where('status', 'submitted')
+                        ->isNotEmpty();
+                });
+            @endphp
+
+            @if ($hasManagerSubmissionForReview || $masterProject->status === 'ready_for_review')
                 @can('approve', $masterProject)
                     <x-wirekit::button
                         type="button"
@@ -19,7 +28,7 @@
                         href="{{ route('work-management.master-projects.approve', $masterProject) }}"
                         wire:navigate
                     >
-                        Final Approval GM
+                        {{ $masterProject->status === 'ready_for_review' ? 'Review & Final Approval GM' : 'Review Progress Manager' }}
                     </x-wirekit::button>
                 @endcan
             @endif
