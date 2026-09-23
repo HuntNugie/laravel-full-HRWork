@@ -478,6 +478,7 @@ class ResignationService
 
             $employee->update([
                 'status_employee' => 'resign',
+                'ResignDate' => Carbon::parse($lastWorkingDate)->toDateString(),
                 'team_id' => null,
             ]);
 
