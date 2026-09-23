@@ -39,7 +39,6 @@ class MyResignation extends Component
                 'histories.actor',
                 'clearances.verifier',
                 'handoverItems.handoverTo',
-                'finalPayrolls',
             ])
             ->latest('id')
             ->first();
