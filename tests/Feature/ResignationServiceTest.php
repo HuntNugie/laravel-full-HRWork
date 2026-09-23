@@ -11,6 +11,7 @@ use App\Models\PayrollPeriod;
 use App\Models\User;
 use App\Service\ResignationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Date;
 use LogicException;
 use Tests\TestCase;
 
@@ -120,6 +121,7 @@ class ResignationServiceTest extends TestCase
 
     public function test_completion_requires_paid_final_payroll_and_clearance(): void
     {
+        Date::setTestNow('2026-10-20');
         [$user, $employee, $contract] = $this->makeEmployee();
 
         $resignation = app(ResignationService::class)->create(
@@ -153,6 +155,7 @@ class ResignationServiceTest extends TestCase
 
     public function test_completion_updates_employee_user_contract_and_status_history(): void
     {
+        Date::setTestNow('2026-01-02');
         [$user, $employee, $contract] = $this->makeEmployee();
 
         $resignation = app(ResignationService::class)->create(
