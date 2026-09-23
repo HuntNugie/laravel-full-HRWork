@@ -127,7 +127,7 @@ class ResignationServiceTest extends TestCase
 
     public function test_completion_requires_paid_final_payroll_and_clearance(): void
     {
-        Date::setTestNow('2026-10-20');
+        Date::setTestNow('2026-09-20');
         [$user, $employee, $contract] = $this->makeEmployee();
 
         $resignation = app(ResignationService::class)->create(
@@ -161,7 +161,7 @@ class ResignationServiceTest extends TestCase
 
     public function test_completion_updates_employee_user_contract_and_status_history(): void
     {
-        Date::setTestNow('2026-01-02');
+        Date::setTestNow('2026-01-01');
         [$user, $employee, $contract] = $this->makeEmployee();
 
         $resignation = app(ResignationService::class)->create(
