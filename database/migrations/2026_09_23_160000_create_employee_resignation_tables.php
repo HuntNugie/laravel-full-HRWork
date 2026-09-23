@@ -62,6 +62,13 @@ return new class extends Migration
 
             $table->timestamp('completed_at')->nullable();
 
+            $table->text('exit_interview_notes')->nullable();
+            $table->foreignId('exit_interview_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+            $table->timestamp('exit_interview_at')->nullable();
+
             $table->timestamps();
 
             $table->index(['employee_id', 'status']);
