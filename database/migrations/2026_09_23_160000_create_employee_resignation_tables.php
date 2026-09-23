@@ -10,18 +10,22 @@ return new class extends Migration
     {
         Schema::create('employee_resignations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')
-                ->constrained('employees')
+            $table->foreignId('employee_id');
+            $table->foreign('employee_id', 'er_employee_fk')
+                ->references('id')
+                ->on('employees')
                 ->restrictOnDelete();
 
-            $table->foreignId('employee_contract_id')
-                ->nullable()
-                ->constrained('employee_contracts')
+            $table->foreignId('employee_contract_id')->nullable();
+            $table->foreign('employee_contract_id', 'er_contract_fk')
+                ->references('id')
+                ->on('employee_contracts')
                 ->restrictOnDelete();
 
-            $table->foreignId('submitted_by')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('submitted_by')->nullable();
+            $table->foreign('submitted_by', 'er_submitted_by_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
 
             $table->timestamp('submitted_at')->nullable();
@@ -39,33 +43,37 @@ return new class extends Migration
                 'completed',
             ])->default('submitted');
 
-            $table->foreignId('reviewed_by')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('reviewed_by')->nullable();
+            $table->foreign('reviewed_by', 'er_reviewed_by_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
 
             $table->timestamp('reviewed_at')->nullable();
 
             $table->text('rejection_reason')->nullable();
 
-            $table->foreignId('cancelled_by')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('cancelled_by')->nullable();
+            $table->foreign('cancelled_by', 'er_cancelled_by_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
 
             $table->timestamp('cancelled_at')->nullable();
 
-            $table->foreignId('completed_by')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('completed_by')->nullable();
+            $table->foreign('completed_by', 'er_completed_by_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
 
             $table->timestamp('completed_at')->nullable();
 
             $table->text('exit_interview_notes')->nullable();
-            $table->foreignId('exit_interview_by')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('exit_interview_by')->nullable();
+            $table->foreign('exit_interview_by', 'er_exit_interview_by_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
             $table->timestamp('exit_interview_at')->nullable();
 
@@ -78,13 +86,16 @@ return new class extends Migration
         Schema::create('employee_resignation_histories', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('resignation_id')
-                ->constrained('employee_resignations')
+            $table->foreignId('resignation_id');
+            $table->foreign('resignation_id', 'erh_resignation_fk')
+                ->references('id')
+                ->on('employee_resignations')
                 ->cascadeOnDelete();
 
-            $table->foreignId('actor_id')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('actor_id')->nullable();
+            $table->foreign('actor_id', 'erh_actor_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
 
             $table->string('from_status')->nullable();
@@ -98,8 +109,10 @@ return new class extends Migration
         Schema::create('employee_resignation_clearances', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('resignation_id')
-                ->constrained('employee_resignations')
+            $table->foreignId('resignation_id');
+            $table->foreign('resignation_id', 'erc_resignation_fk')
+                ->references('id')
+                ->on('employee_resignations')
                 ->cascadeOnDelete();
 
             $table->string('category');
@@ -111,9 +124,10 @@ return new class extends Migration
 
             $table->text('notes')->nullable();
 
-            $table->foreignId('verified_by')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('verified_by')->nullable();
+            $table->foreign('verified_by', 'erc_verified_by_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
 
             $table->timestamp('verified_at')->nullable();
@@ -126,21 +140,25 @@ return new class extends Migration
         Schema::create('employee_resignation_handover_items', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('resignation_id')
-                ->constrained('employee_resignations')
+            $table->foreignId('resignation_id');
+            $table->foreign('resignation_id', 'erhi_resignation_fk')
+                ->references('id')
+                ->on('employee_resignations')
                 ->cascadeOnDelete();
 
-            $table->foreignId('task_id')
-                ->nullable()
-                ->constrained('tasks')
+            $table->foreignId('task_id')->nullable();
+            $table->foreign('task_id', 'erhi_task_fk')
+                ->references('id')
+                ->on('tasks')
                 ->nullOnDelete();
 
             $table->string('title');
             $table->text('description')->nullable();
 
-            $table->foreignId('handover_to_employee_id')
-                ->nullable()
-                ->constrained('employees')
+            $table->foreignId('handover_to_employee_id')->nullable();
+            $table->foreign('handover_to_employee_id', 'erhi_handover_employee_fk')
+                ->references('id')
+                ->on('employees')
                 ->nullOnDelete();
 
             $table->enum('status', [
@@ -152,9 +170,10 @@ return new class extends Migration
 
             $table->text('notes')->nullable();
 
-            $table->foreignId('verified_by')
-                ->nullable()
-                ->constrained('users')
+            $table->foreignId('verified_by')->nullable();
+            $table->foreign('verified_by', 'erhi_verified_by_fk')
+                ->references('id')
+                ->on('users')
                 ->nullOnDelete();
 
             $table->timestamp('verified_at')->nullable();
@@ -166,8 +185,11 @@ return new class extends Migration
         Schema::table('payrolls', function (Blueprint $table) {
             $table->foreignId('resignation_id')
                 ->nullable()
-                ->after('employee_contract_id')
-                ->constrained('employee_resignations')
+                ->after('employee_contract_id');
+
+            $table->foreign('resignation_id', 'payroll_resignation_fk')
+                ->references('id')
+                ->on('employee_resignations')
                 ->nullOnDelete();
 
             $table->index('resignation_id');
