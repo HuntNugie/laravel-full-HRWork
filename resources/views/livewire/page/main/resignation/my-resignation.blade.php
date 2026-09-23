@@ -33,8 +33,12 @@
             <x-wirekit::card.header>
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h2 class="text-lg font-semibold text-slate-900">Status Pengunduran Diri</h2>
-                        <p class="text-sm text-slate-500">Riwayat pengajuan terakhir Anda.</p>
+                        <h2 class="text-lg font-semibold text-slate-900">
+                            Status Pengunduran Diri
+                        </h2>
+                        <p class="text-sm text-slate-500">
+                            Riwayat pengajuan terakhir Anda.
+                        </p>
                     </div>
 
                     <x-wirekit::badge :intent="match($resignation->status) {
@@ -90,9 +94,13 @@
                                 <div class="mt-4 space-y-2">
                                     @foreach ($resignation->clearances as $clearance)
                                         <div class="flex items-center justify-between gap-4 text-sm">
-                                            <span class="capitalize text-slate-600">{{ $clearance->category }}</span>
+                                            <span class="capitalize text-slate-600">
+                                                {{ $clearance->category }}
+                                            </span>
+
                                             <x-wirekit::badge
-                                                :intent="in_array($clearance->status, ['completed', 'not_applicable'], true) ? 'success' : 'warning'">
+                                                :intent="in_array($clearance->status, ['completed', 'not_applicable'], true) ? 'success' : 'warning'"
+                                            >
                                                 {{ $clearance->status === 'not_applicable' ? 'N/A' : ucfirst($clearance->status) }}
                                             </x-wirekit::badge>
                                         </div>
@@ -100,7 +108,10 @@
 
                                     <div class="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 text-sm">
                                         <span class="text-slate-600">Final Payroll</span>
-                                        <x-wirekit::badge :intent="$resignation->finalPayrolls->contains(fn($payroll) => $payroll->status === 'paid') ? 'success' : 'warning'">
+
+                                        <x-wirekit::badge
+                                            :intent="$resignation->finalPayrolls->contains(fn($payroll) => $payroll->status === 'paid') ? 'success' : 'warning'"
+                                        >
                                             {{ $resignation->finalPayrolls->contains(fn($payroll) => $payroll->status === 'paid') ? 'Paid' : 'Pending' }}
                                         </x-wirekit::badge>
                                     </div>
@@ -114,13 +125,18 @@
 
                                 @forelse ($resignation->handoverItems as $item)
                                     <div class="border-b border-slate-100 py-3 last:border-b-0">
-                                        <p class="text-sm font-medium text-slate-800">{{ $item->title }}</p>
+                                        <p class="text-sm font-medium text-slate-800">
+                                            {{ $item->title }}
+                                        </p>
+
                                         <p class="mt-1 text-xs text-slate-500">
                                             {{ $item->status === 'not_applicable' ? 'Tidak berlaku' : ucfirst(str_replace('_', ' ', $item->status)) }}
                                         </p>
                                     </div>
                                 @empty
-                                    <p class="py-4 text-sm text-slate-500">Tidak ada pekerjaan aktif yang perlu dihandover.</p>
+                                    <p class="py-4 text-sm text-slate-500">
+                                        Tidak ada pekerjaan aktif yang perlu dihandover.
+                                    </p>
                                 @endforelse
                             </x-wirekit::card.body>
                         </x-wirekit::card>
@@ -131,7 +147,7 @@
                     </div>
                 @endif
 
-                @if (in_array($resignation->status, ['submitted', 'approved'], true))
+                @if ($resignation->status === 'submitted')
                     <div class="mt-6 flex justify-end">
                         <x-wirekit::button
                             type="button"
@@ -146,12 +162,18 @@
                 @endif
             </x-wirekit::card.body>
         </x-wirekit::card>
+    @endif
+
     @if (!$resignation || in_array($resignation->status, ['rejected', 'cancelled'], true))
-        <div class="mt-6">
         <x-wirekit::card>
             <x-wirekit::card.header>
-                <h2 class="text-lg font-semibold text-slate-900">Ajukan Pengunduran Diri</h2>
-                <p class="text-sm text-slate-500">Isi rencana tanggal terakhir bekerja dan alasan pengunduran diri.</p>
+                <h2 class="text-lg font-semibold text-slate-900">
+                    Ajukan Pengunduran Diri
+                </h2>
+
+                <p class="text-sm text-slate-500">
+                    Isi rencana tanggal terakhir bekerja dan alasan pengunduran diri.
+                </p>
             </x-wirekit::card.header>
 
             <x-wirekit::card.body>
@@ -193,6 +215,6 @@
                 </div>
             </x-wirekit::card.body>
         </x-wirekit::card>
-        </div>
     @endif
+
 </x-wirekit::stack>
