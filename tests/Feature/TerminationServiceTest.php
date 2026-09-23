@@ -7,6 +7,9 @@ use App\Models\EmployeeContract;
 use App\Models\EmployeeTermination;
 use App\Models\EmployeeTerminationClearance;
 use App\Models\Employees;
+use App\Models\DivisionProject;
+use App\Models\MasterProject;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Service\TerminationService;
@@ -146,6 +149,150 @@ class TerminationServiceTest extends TestCase
         );
 
         $this->assertSame(EmployeeTermination::STATUS_IN_PROGRESS, $second->status);
+    }
+
+    public function test_clearance_actions_apply_and_cancel_restores_previous_state(): void
+    {
+        Date::setTestNow('2026-09-23');
+        [$user, $employee] = $this->makeEmployee();
+
+        $divisi = Divisi::create([
+            'name' => 'Engineering ' . uniqid(),
+            'description' => 'Engineering',
+            'is_active' => 'active',
+            'manager_id' => $employee->id,
+        ]);
+
+        $team = Team::create([
+            'name' => 'Backend ' . uniqid(),
+            'divisi_id' => $divisi->id,
+            'description' => 'Backend',
+            'is_active' => 'active',
+            'supervisor_id' => $employee->id,
+        ]);
+
+        $employee->update(['team_id' => $team->id]);
+
+        $termination = app(TerminationService::class)->create(
+            employee: $employee->refresh(),
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'performance',
+            reason: 'Kinerja tidak memenuhi target.',
+        );
+
+        $service = app(TerminationService::class);
+
+        $organization = EmployeeTerminationClearance::query()
+            ->where('termination_id', $termination->id)
+            ->where('category', 'organization')
+            ->firstOrFail();
+
+        $access = EmployeeTerminationClearance::query()
+            ->where('termination_id', $termination->id)
+            ->where('category', 'access')
+            ->firstOrFail();
+
+        $service->updateClearance($organization, $user, 'completed');
+        $service->updateClearance($access, $user, 'completed');
+
+        $this->assertNull($employee->refresh()->team_id);
+        $this->assertNull($team->refresh()->supervisor_id);
+        $this->assertNull($divisi->refresh()->manager_id);
+        $this->assertSame('inactive', $user->refresh()->status);
+
+        $service->cancel(
+            termination: $termination->refresh(),
+            actor: $user,
+            reason: 'Proses PHK dibatalkan oleh HR.',
+        );
+
+        $this->assertSame('active', $employee->refresh()->status_employee);
+        $this->assertSame($team->id, $employee->team_id);
+        $this->assertSame($employee->id, $team->refresh()->supervisor_id);
+        $this->assertSame($employee->id, $divisi->refresh()->manager_id);
+        $this->assertSame('active', $user->refresh()->status);
+    }
+
+    public function test_handover_reassigns_task_and_cancel_restores_original_assignee(): void
+    {
+        Date::setTestNow('2026-09-23');
+        [$user, $employee] = $this->makeEmployee();
+        [, $recipient] = $this->makeEmployee();
+
+        $divisi = Divisi::create([
+            'name' => 'Product ' . uniqid(),
+            'description' => 'Product',
+            'is_active' => 'active',
+            'manager_id' => $employee->id,
+        ]);
+
+        $team = Team::create([
+            'name' => 'Product Team ' . uniqid(),
+            'divisi_id' => $divisi->id,
+            'description' => 'Product',
+            'is_active' => 'active',
+            'supervisor_id' => $employee->id,
+        ]);
+
+        $employee->update(['team_id' => $team->id]);
+        $recipient->update(['team_id' => $team->id]);
+
+        $masterProject = MasterProject::create([
+            'created_by' => $employee->id,
+            'name' => 'Master Project ' . uniqid(),
+            'description' => 'Test',
+            'status' => 'in_progress',
+        ]);
+
+        $divisionProject = DivisionProject::create([
+            'master_project_id' => $masterProject->id,
+            'divisi_id' => $divisi->id,
+            'manager_id' => $employee->id,
+            'created_by' => $employee->id,
+            'name' => 'Division Project ' . uniqid(),
+            'description' => 'Test',
+            'status' => 'in_progress',
+            'is_required' => true,
+            'manual_progress' => 0,
+        ]);
+
+        $task = Task::create([
+            'division_project_id' => $divisionProject->id,
+            'team_id' => $team->id,
+            'assignee_id' => $employee->id,
+            'created_by' => $employee->id,
+            'title' => 'Task handover ' . uniqid(),
+            'description' => 'Test handover',
+            'status' => Task::STATUS_IN_PROGRESS,
+        ]);
+
+        $termination = app(TerminationService::class)->create(
+            employee: $employee->refresh(),
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'restructuring',
+            reason: 'Restrukturisasi organisasi.',
+        );
+
+        $item = $termination->handoverItems()->firstOrFail();
+
+        app(TerminationService::class)->updateHandover(
+            item: $item,
+            verifier: $user,
+            status: 'completed',
+            handoverToEmployeeId: $recipient->id,
+        );
+
+        $this->assertSame($recipient->id, $task->refresh()->assignee_id);
+
+        app(TerminationService::class)->cancel(
+            termination: $termination->refresh(),
+            actor: $user,
+            reason: 'Proses dibatalkan.',
+        );
+
+        $this->assertSame($employee->id, $task->refresh()->assignee_id);
     }
 
     public function test_completion_requires_clearance_and_effective_date_but_not_payroll(): void
