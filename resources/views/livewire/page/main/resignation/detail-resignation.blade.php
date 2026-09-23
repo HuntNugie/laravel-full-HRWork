@@ -12,17 +12,17 @@
         <p class="text-sm text-slate-500">Kelola approval, handover, clearance, dan penyelesaian exit employee.</p>
     </x-wirekit::stack>
 
-    @if (session('success'))
+    <?php if (session('success')): ?>
         <div class="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             {{ session('success') }}
         </div>
-    @endif
+    <?php endif; ?>
 
-    @error('action')
+    <?php if ($errors->has('action')): ?>
         <div class="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {{ $message }}
+            {{ $errors->first('action') }}
         </div>
-    @enderror
+    <?php endif; ?>
 
     <x-wirekit::card>
         <x-wirekit::card.body>
@@ -38,7 +38,7 @@
                     </p>
                 </div>
 
-                @php
+                <?php
                     $statusIntent = match ($resignation->status) {
                         'submitted' => 'warning',
                         'approved' => 'info',
@@ -47,7 +47,7 @@
                         'completed' => 'success',
                         default => 'secondary',
                     };
-                @endphp
+                ?>
 
                 <x-wirekit::badge :intent="$statusIntent">
                     {{ ucfirst($resignation->status) }}
@@ -92,23 +92,23 @@
         <x-wirekit::card.body>
             <p class="whitespace-pre-line text-sm leading-6 text-slate-700">{{ $resignation->reason }}</p>
 
-            @if ($resignation->notes)
+            <?php if ($resignation->notes): ?>
                 <div class="mt-5 rounded-xl bg-slate-50 px-4 py-3">
                     <p class="text-xs font-medium text-slate-400">Catatan</p>
                     <p class="mt-1 whitespace-pre-line text-sm text-slate-600">{{ $resignation->notes }}</p>
                 </div>
-            @endif
+            <?php endif; ?>
 
-            @if ($resignation->rejection_reason)
+            <?php if ($resignation->rejection_reason): ?>
                 <div class="mt-5 rounded-xl bg-red-50 px-4 py-3">
                     <p class="text-xs font-medium text-red-500">Alasan Penolakan</p>
                     <p class="mt-1 whitespace-pre-line text-sm text-red-700">{{ $resignation->rejection_reason }}</p>
                 </div>
-            @endif
+            <?php endif; ?>
         </x-wirekit::card.body>
     </x-wirekit::card>
 
-    @if ($resignation->status === 'submitted' && auth()->user()->canany(['approve-resignation', 'reject-resignation']))
+    <?php if ($resignation->status === 'submitted' && auth()->user()->canany(['approve-resignation', 'reject-resignation'])): ?>
         <x-wirekit::card>
             <x-wirekit::card.header>
                 <h2 class="text-lg font-semibold text-slate-900">Review Pengajuan</h2>
@@ -139,7 +139,7 @@
                         >
                             Tolak
                             </x-wirekit::button>
-                        @endcan
+                        <?php endif; ?>
 
                         @can('approve-resignation')
                         <x-wirekit::button
@@ -149,14 +149,14 @@
                         >
                             Setujui
                         </x-wirekit::button>
-                        @endcan
+                        <?php endif; ?>
                     </div>
                 </div>
             </x-wirekit::card.body>
         </x-wirekit::card>
-    @endif
+    <?php endif; ?>
 
-    @if ($resignation->status === 'approved')
+    <?php if ($resignation->status === 'approved'): ?>
         <div class="grid gap-4 lg:grid-cols-2">
             <x-wirekit::card>
                 <x-wirekit::card.header>
@@ -167,7 +167,7 @@
                 </x-wirekit::card.header>
                 <x-wirekit::card.body>
                     <div class="space-y-3">
-                        @foreach ($resignation->clearances as $clearance)
+                        <?php foreach ($resignation->clearances as $clearance): ?>
                             <div class="rounded-xl border border-slate-100 p-4">
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
@@ -198,10 +198,10 @@
                                             N/A
                                         </x-wirekit::button>
                                     </div>
-                                    @endcan
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; ?>
                     </div>
                 </x-wirekit::card.body>
             </x-wirekit::card>
@@ -214,16 +214,16 @@
                     </div>
                 </x-wirekit::card.header>
                 <x-wirekit::card.body>
-                    @forelse ($resignation->handoverItems as $item)
+                    <?php if ($resignation->handoverItems->isNotEmpty()): foreach ($resignation->handoverItems as $item): ?>
                         <div class="rounded-xl border border-slate-100 p-4">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <p class="text-sm font-semibold text-slate-800">{{ $item->title }}</p>
-                                    @if ($item->task)
+                                    <?php if ($item->task): ?>
                                         <p class="mt-1 text-xs text-slate-400">
                                             Status task: {{ str_replace('_', ' ', $item->task->status) }}
                                         </p>
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
 
                                 <x-wirekit::badge :intent="$item->status === 'completed' ? 'success' : 'warning'">
@@ -270,12 +270,12 @@
                                         N/A
                                     </x-wirekit::button>
                                 </div>
-                                @endcan
+                                <?php endif; ?>
                             </div>
                         </div>
-                    @empty
+                    <?php endforeach; else: ?>
                         <p class="text-sm text-slate-500">Tidak ada pekerjaan aktif yang terdeteksi.</p>
-                    @endforelse
+                    <?php endif; ?>
                 </x-wirekit::card.body>
             </x-wirekit::card>
         </div>
@@ -308,7 +308,7 @@
                         Hubungkan Payroll
                     </x-wirekit::button>
                 </div>
-                @endcan
+                <?php endif; ?>
 
                 <div class="mt-4 space-y-2">
                     @forelse ($resignation->finalPayrolls as $payroll)
@@ -320,15 +320,13 @@
                                 Paid
                             </span>
                         </div>
-                    @empty
+                    <?php endforeach; else: ?>
                         <p class="text-sm text-slate-500">Belum ada payroll akhir yang dihubungkan.</p>
-                    @endforelse
+                    <?php endif; ?>
                 </div>
             </x-wirekit::card.body>
         </x-wirekit::card>
-
-        @php($readiness = $this->readiness())
-
+        <?php $readiness = $this->readiness(); ?>
         <x-wirekit::card>
             <x-wirekit::card.header>
                 <h2 class="text-lg font-semibold text-slate-900">Kesiapan Penyelesaian</h2>
@@ -350,7 +348,7 @@
                                 {{ $readiness[$key] ? 'Ready' : 'Pending' }}
                             </p>
                         </div>
-                    @endforeach
+                    <?php endforeach; ?>
                 </div>
 
                 <div class="mt-5 flex justify-end">
@@ -365,9 +363,9 @@
                 </div>
             </x-wirekit::card.body>
         </x-wirekit::card>
-    @endif
+    <?php endif; ?>
 
-        @if ($resignation->status === 'approved' || $resignation->status === 'completed')
+        <?php if ($resignation->status === 'approved' || $resignation->status === 'completed'): ?>
             <x-wirekit::card>
                 <x-wirekit::card.header>
                     <h2 class="text-lg font-semibold text-slate-900">Exit Interview</h2>
@@ -377,7 +375,7 @@
                 </x-wirekit::card.header>
 
                 <x-wirekit::card.body>
-                    @if ($resignation->status === 'approved')
+                    <?php if ($resignation->status === 'approved'): ?>
                         @can('manage-resignation-clearance')
                             <x-wirekit::textarea
                                 label="Catatan Exit Interview"
@@ -395,30 +393,30 @@
                                     Simpan Catatan
                                 </x-wirekit::button>
                             </div>
-                        @endcan
-                    @endif
+                        <?php endif; ?>
+                    <?php endif; ?>
 
-                    @if ($resignation->exit_interview_notes)
+                    <?php if ($resignation->exit_interview_notes): ?>
                         <div class="{{ $resignation->status === 'approved' ? 'mt-5' : '' }} rounded-xl bg-slate-50 px-4 py-3">
                             <p class="whitespace-pre-line text-sm leading-6 text-slate-700">
                                 {{ $resignation->exit_interview_notes }}
                             </p>
 
-                            @if ($resignation->exitInterviewer)
+                            <?php if ($resignation->exitInterviewer): ?>
                                 <p class="mt-3 text-xs text-slate-400">
                                     Diisi oleh {{ $resignation->exitInterviewer->name }}
                                     pada {{ $resignation->exit_interview_at?->translatedFormat('d M Y H:i') }}
                                 </p>
-                            @endif
+                            <?php endif; ?>
                         </div>
-                    @elseif ($resignation->status === 'completed')
+                    <?php elseif ($resignation->status === 'completed'): ?>
                         <p class="text-sm text-slate-500">
                             Belum ada catatan exit interview.
                         </p>
-                    @endif
+                    <?php endif; ?>
                 </x-wirekit::card.body>
             </x-wirekit::card>
-        @endif
+        <?php endif; ?>
 
 
     <x-wirekit::card>
@@ -436,13 +434,13 @@
                             {{ $history->created_at?->translatedFormat('d M Y H:i') }}
                             · {{ $history->actor?->name ?? 'System' }}
                         </p>
-                        @if ($history->note)
+                        <?php if ($history->note): ?>
                             <p class="mt-1 whitespace-pre-line text-sm text-slate-600">{{ $history->note }}</p>
-                        @endif
+                        <?php endif; ?>
                     </div>
-                @empty
+                <?php endforeach; else: ?>
                     <p class="text-sm text-slate-500">Belum ada aktivitas.</p>
-                @endforelse
+                <?php endif; ?>
             </div>
         </x-wirekit::card.body>
     </x-wirekit::card>
