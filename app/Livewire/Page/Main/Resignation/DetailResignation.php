@@ -17,7 +17,6 @@ class DetailResignation extends Component
     public EmployeeResignation $resignation;
 
     public string $approvedLastWorkingDate = '';
-    public string $rejectionReason = '';
     public string $actionNote = '';
     public string $exitInterviewNotes = '';
     public array $handoverRecipients = [];
@@ -83,17 +82,17 @@ class DetailResignation extends Component
         abort_unless(Auth::user()->can('reject-resignation'), 403);
 
         $this->validate([
-            'rejectionReason' => ['required', 'string', 'max:5000'],
+            'actionNote' => ['required', 'string', 'max:5000'],
         ]);
 
         try {
             app(ResignationService::class)->reject(
                 resignation: $this->resignation,
                 reviewer: Auth::user(),
-                reason: $this->rejectionReason,
+                reason: $this->actionNote,
             );
 
-            $this->rejectionReason = '';
+            $this->actionNote = '';
             $this->reload();
             session()->flash('success', 'Pengajuan resign ditolak.');
         } catch (\LogicException $exception) {
