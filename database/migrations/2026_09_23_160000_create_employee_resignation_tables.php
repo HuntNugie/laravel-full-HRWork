@@ -199,7 +199,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('payrolls', function (Blueprint $table) {
-            $table->dropForeign(['resignation_id']);
+            $table->dropForeign('payroll_resignation_fk');
             $table->dropIndex(['resignation_id']);
             $table->dropColumn('resignation_id');
         });
