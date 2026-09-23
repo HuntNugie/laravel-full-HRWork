@@ -105,10 +105,17 @@
                                             {{ $managerReport?->content ?? 'Belum ada laporan Manager.' }}
                                         </p>
                                         @if ($managerReport)
-                                            <div class="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                                                <span>{{ $managerReport->reporter?->user?->name ?? '-' }}</span>
-                                                <span>·</span>
-                                                <span>{{ $managerReport->status }}</span>
+                                            <div class="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                                                <span class="text-slate-400">{{ $managerReport->reporter?->user?->name ?? '-' }}</span>
+                                                <span class="text-slate-300">·</span>
+                                                <span class="rounded-full px-2 py-0.5 font-medium
+                                                    {{ match ($managerReport->status) {
+                                                        'approved' => 'bg-emerald-50 text-emerald-600',
+                                                        'rejected' => 'bg-rose-50 text-rose-600',
+                                                        default => 'bg-violet-50 text-violet-600',
+                                                    } }}">
+                                                    {{ $managerReport->status === 'submitted' ? 'Menunggu Approval GM' : ucfirst($managerReport->status) }}
+                                                </span>
                                             </div>
                                         @endif
                                     </div>
