@@ -20,6 +20,8 @@ class DetailResignation extends Component
     public string $rejectionReason = '';
     public string $actionNote = '';
     public string $selectedPayrollId = '';
+    public string $exitInterviewNotes = '';
+    public array $handoverRecipients = [];
 
     public function mount(EmployeeResignation $resignation): void
     {
@@ -34,11 +36,13 @@ class DetailResignation extends Component
             'handoverItems.task',
             'handoverItems.handoverTo.user',
             'finalPayrolls.period',
+            'exitInterviewer',
         ]);
 
         $this->approvedLastWorkingDate = $this->resignation->approved_last_working_date?->toDateString()
             ?? $this->resignation->proposed_last_working_date?->toDateString()
             ?? today()->toDateString();
+        $this->exitInterviewNotes = $this->resignation->exit_interview_notes ?? '';
     }
 
     public function approve(): void
@@ -131,11 +135,31 @@ class DetailResignation extends Component
                 item: $item,
                 verifier: Auth::user(),
                 status: $status,
-                handoverToEmployeeId: $item->handover_to_employee_id,
+                handoverToEmployeeId: $this->handoverRecipients[$itemId] ?? null,
                 notes: null,
             );
 
             $this->reload();
+        } catch (\LogicException $exception) {
+            $this->addError('action', $exception->getMessage());
+        }
+    }
+
+    public function saveExitInterview(): void
+    {
+        $this->validate([
+            'exitInterviewNotes' => ['required', 'string', 'max:10000'],
+        ]);
+
+        try {
+            app(ResignationService::class)->updateExitInterview(
+                resignation: $this->resignation,
+                actor: Auth::user(),
+                notes: $this->exitInterviewNotes,
+            );
+
+            $this->reload();
+            session()->flash('success', 'Exit interview berhasil disimpan.');
         } catch (\LogicException $exception) {
             $this->addError('action', $exception->getMessage());
         }
@@ -196,6 +220,7 @@ class DetailResignation extends Component
                 'handoverItems.task',
                 'handoverItems.handoverTo.user',
                 'finalPayrolls.period',
+                'exitInterviewer',
             ])
             ->findOrFail($this->resignation->id);
     }
