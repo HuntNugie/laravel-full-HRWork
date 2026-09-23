@@ -37,6 +37,8 @@ use App\Livewire\Page\Main\Employee\Employee;
 use App\Livewire\Page\Main\Employee\HistoryContract;
 use App\Livewire\Page\Main\Employee\MyContract;
 use App\Livewire\Page\Main\Employee\MyData;
+use App\Livewire\Page\Main\Employee\MyWarningLetters;
+use App\Livewire\Page\Main\Employee\DetailMyWarningLetter;
 use App\Livewire\Page\Main\Holiday\Holiday;
 use App\Livewire\Page\Main\Leave\DetailLeaveType;
 use App\Livewire\Page\Main\Leave\LeaveRequest;
@@ -86,6 +88,12 @@ Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/my-data', MyData::class)->middleware("permission:view-data-my")->name('my-data');
     Route::get('/my-contract', MyContract::class)->middleware("permission:view-contract-my")->name('my-contract');
     Route::get('/my-contract/{contract}', DetailMyContract::class)->middleware("permission:show-contract-my")->name('my-contract.show');
+    Route::get('/my-warning-letters', MyWarningLetters::class)
+        ->middleware('permission:view-warning-letter-my')
+        ->name('warning-letter.my.view');
+    Route::get('/my-warning-letters/{warningLetter}', DetailMyWarningLetter::class)
+        ->middleware('permission:show-warning-letter-my')
+        ->name('warning-letter.my.show');
 
     Route::prefix('print')->group(function () {
         Route::get('employee/{employee}/contract/{contract}', PrintContractEmployeeController::class)->name('print.contract.employee');
