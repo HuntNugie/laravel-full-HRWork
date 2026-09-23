@@ -6,6 +6,7 @@ use App\Models\EmployeeResignation;
 use App\Models\EmployeeResignationClearance;
 use App\Models\EmployeeResignationHandoverItem;
 use App\Models\Payroll;
+use App\Models\Employees;
 use App\Service\ResignationService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -43,6 +44,16 @@ class DetailResignation extends Component
             ?? $this->resignation->proposed_last_working_date?->toDateString()
             ?? today()->toDateString();
         $this->exitInterviewNotes = $this->resignation->exit_interview_notes ?? '';
+        $this->syncHandoverRecipients();
+    }
+
+    private function syncHandoverRecipients(): void
+    {
+        foreach ($this->resignation->handoverItems as $item) {
+            $this->handoverRecipients[$item->id] = $item->handover_to_employee_id
+                ? (string) $item->handover_to_employee_id
+                : '';
+        }
     }
 
     public function approve(): void
@@ -223,6 +234,9 @@ class DetailResignation extends Component
                 'exitInterviewer',
             ])
             ->findOrFail($this->resignation->id);
+
+        $this->exitInterviewNotes = $this->resignation->exit_interview_notes ?? '';
+        $this->syncHandoverRecipients();
     }
 
     public function readiness(): array
@@ -239,9 +253,20 @@ class DetailResignation extends Component
             ->latest('id')
             ->get();
 
+        $handoverEmployees = Employees::query()
+            ->where('status_employee', 'active')
+            ->whereKeyNot($this->resignation->employee_id)
+            ->with('user')
+            ->orderBy('employee_code')
+            ->get()
+            ->mapWithKeys(fn (Employees $employee) => [
+                $employee->id => ($employee->user?->name ?? '—') . ' · ' . ($employee->employee_code ?? '—'),
+            ])
+            ->all();
+
         return view(
             'livewire.page.main.resignation.detail-resignation',
-            compact('payrolls')
+            compact('payrolls', 'handoverEmployees')
         );
     }
 }
