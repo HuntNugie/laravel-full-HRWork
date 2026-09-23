@@ -121,21 +121,16 @@ class CreateTermination extends Component
         if (mb_strlen($search) >= 2) {
             $employees = Employees::query()
                 ->where('status_employee', 'active')
-                ->whereHas('user', function ($query) use ($search) {
+                ->whereHas('user', fn ($query) => $query->where('status', 'active'))
+                ->where(function ($query) use ($search) {
                     $query
-                        ->where('status', 'active')
-                        ->where(function ($query) use ($search) {
+                        ->where('employee_code', 'like', '%' . $search . '%')
+                        ->orWhereHas('user', function ($query) use ($search) {
                             $query
                                 ->where('name', 'like', '%' . $search . '%')
                                 ->orWhere('email', 'like', '%' . $search . '%');
                         });
                 })
-                ->orWhere(function ($query) use ($search) {
-                    $query
-                        ->where('status_employee', 'active')
-                        ->where('employee_code', 'like', '%' . $search . '%');
-                })
-                ->whereHas('user', fn ($query) => $query->where('status', 'active'))
                 ->whereHas('employeeContract', function ($query) {
                     $query
                         ->where('status', 'active')
