@@ -131,7 +131,7 @@
                                 ->first();
                         @endphp
 
-                        <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                        <div class="mt-4">
                             <div class="rounded-xl bg-slate-50 p-3">
                                 <div class="flex items-center justify-between text-xs text-slate-500">
                                     <span>Automatic progress</span>
@@ -141,37 +141,44 @@
                                     <div class="h-2 rounded-full bg-[#30AFFF]" style="width: {{ $automaticProgress }}%"></div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="rounded-xl bg-slate-50 p-3">
-                                <div class="flex items-center justify-between text-xs text-slate-500">
-                                    <span>Manual progress</span>
-                                    <span class="font-semibold text-slate-700">{{ $project->manual_progress }}%</span>
+                        @if (
+                            (int) $project->manager_id === (int) auth()->user()?->employees?->id
+                            || auth()->user()?->hasRole('general-manager')
+                        )
+                            <div class="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                <div class="rounded-xl bg-slate-50 p-3">
+                                    <div class="flex items-center justify-between text-xs text-slate-500">
+                                        <span>Manual progress Manager</span>
+                                        <span class="font-semibold text-slate-700">{{ $project->manual_progress }}%</span>
+                                    </div>
+                                    <div class="mt-2 h-2 rounded-full bg-slate-200">
+                                        <div class="h-2 rounded-full bg-[#30AFFF]" style="width: {{ $project->manual_progress }}%"></div>
+                                    </div>
+                                    @if ($latestProgress)
+                                        <p class="mt-2 text-xs leading-5 text-slate-600">{{ $latestProgress->note ?: 'Tidak ada catatan progress.' }}</p>
+                                        <p class="mt-1 text-[11px] text-slate-400">
+                                            {{ $latestProgress->reporter?->user?->name ?? '-' }} · {{ $latestProgress->created_at?->format('d M Y H:i') }}
+                                        </p>
+                                    @else
+                                        <p class="mt-2 text-xs text-slate-400">Belum ada catatan progress manual.</p>
+                                    @endif
                                 </div>
-                                <div class="mt-2 h-2 rounded-full bg-slate-200">
-                                    <div class="h-2 rounded-full bg-[#30AFFF]" style="width: {{ $project->manual_progress }}%"></div>
-                                </div>
-                                @if ($latestProgress)
-                                    <p class="mt-2 text-xs leading-5 text-slate-600">{{ $latestProgress->note ?: 'Tidak ada catatan progress.' }}</p>
-                                    <p class="mt-1 text-[11px] text-slate-400">
-                                        {{ $latestProgress->reporter?->user?->name ?? '-' }} · {{ $latestProgress->created_at?->format('d M Y H:i') }}
+
+                                <div class="rounded-xl bg-slate-50 p-3">
+                                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Laporan Manager</div>
+                                    <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
+                                        {{ $managerReport?->content ?? 'Belum ada laporan Manager ke GM.' }}
                                     </p>
-                                @else
-                                    <p class="mt-2 text-xs text-slate-400">Belum ada catatan progress manual.</p>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="mt-3 rounded-xl border border-slate-100 p-3">
-                            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Laporan Manager</div>
-                            <p class="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
-                                {{ $managerReport?->content ?? 'Belum ada laporan Manager ke GM.' }}
-                            </p>
-                            @if ($managerReport)
-                                <div class="mt-1 text-[11px] text-slate-400">
-                                    {{ $managerReport->reporter?->user?->name ?? '-' }} · status {{ $managerReport->status }}
+                                    @if ($managerReport)
+                                        <div class="mt-1 text-[11px] text-slate-400">
+                                            {{ $managerReport->reporter?->user?->name ?? '-' }} · status {{ $managerReport->status }}
+                                        </div>
+                                    @endif
                                 </div>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <div class="flex flex-col items-center justify-center py-12 text-center">
