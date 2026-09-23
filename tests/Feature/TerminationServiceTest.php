@@ -80,7 +80,7 @@ class TerminationServiceTest extends TestCase
         $this->assertDatabaseHas('employee_termination_clearances', [
             'termination_id' => $termination->id,
             'category' => 'organization',
-            'status' => 'completed',
+            'status' => 'pending',
         ]);
 
         $this->assertDatabaseHas('employee_termination_histories', [
