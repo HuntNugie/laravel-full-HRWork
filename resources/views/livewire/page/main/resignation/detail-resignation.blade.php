@@ -104,7 +104,7 @@
         </x-wirekit::card.body>
     </x-wirekit::card>
 
-    @if ($resignation->status === 'submitted')
+    @if ($resignation->status === 'submitted' && auth()->user()->can('approve-resignation', $resignation))
         <x-wirekit::card>
             <x-wirekit::card.header>
                 <h2 class="text-lg font-semibold text-slate-900">Review Pengajuan</h2>
@@ -126,15 +126,18 @@
                     />
 
                     <div class="md:col-span-2 flex flex-wrap justify-end gap-2">
-                        <x-wirekit::button
+                        @can('reject-resignation')
+                            <x-wirekit::button
                             type="button"
                             surface="outline"
                             intent="danger"
                             wire:click="reject"
                         >
                             Tolak
-                        </x-wirekit::button>
+                            </x-wirekit::button>
+                        @endcan
 
+                        @can('approve-resignation')
                         <x-wirekit::button
                             type="button"
                             class="bg-[#30AFFF] text-white hover:bg-sky-500"
@@ -142,6 +145,7 @@
                         >
                             Setujui
                         </x-wirekit::button>
+                        @endcan
                     </div>
                 </div>
             </x-wirekit::card.body>
@@ -169,6 +173,7 @@
                                         </p>
                                     </div>
 
+                                    @can('manage-resignation-clearance')
                                     <div class="flex flex-wrap gap-2">
                                         <x-wirekit::button
                                             type="button"
@@ -189,6 +194,7 @@
                                             N/A
                                         </x-wirekit::button>
                                     </div>
+                                    @endcan
                                 </div>
                             </div>
                         @endforeach
@@ -230,6 +236,7 @@
                                     wire:model="handoverRecipients.{{ $item->id }}"
                                 />
 
+                                @can('manage-resignation-clearance')
                                 <div class="flex flex-wrap items-end gap-2">
                                     <x-wirekit::button
                                         type="button"
@@ -259,6 +266,7 @@
                                         N/A
                                     </x-wirekit::button>
                                 </div>
+                                @endcan
                             </div>
                         </div>
                     @empty
@@ -275,6 +283,7 @@
             </x-wirekit::card.header>
 
             <x-wirekit::card.body>
+                @can('manage-resignation-clearance')
                 <div class="flex flex-col gap-4 md:flex-row md:items-end">
                     <div class="flex-1">
                         <x-wirekit::select
@@ -295,6 +304,7 @@
                         Hubungkan Payroll
                     </x-wirekit::button>
                 </div>
+                @endcan
 
                 <div class="mt-4 space-y-2">
                     @forelse ($resignation->finalPayrolls as $payroll)
