@@ -181,30 +181,10 @@ return new class extends Migration
 
             $table->index(['resignation_id', 'status']);
         });
-
-        Schema::table('payrolls', function (Blueprint $table) {
-            $table->foreignId('resignation_id')
-                ->nullable()
-                ->after('employee_contract_id');
-
-            $table->foreign('resignation_id', 'payroll_resignation_fk')
-                ->references('id')
-                ->on('employee_resignations')
-                ->nullOnDelete();
-
-            $table->index('resignation_id');
-        });
     }
 
     public function down(): void
-    {
-        Schema::table('payrolls', function (Blueprint $table) {
-            $table->dropForeign('payroll_resignation_fk');
-            $table->dropIndex(['resignation_id']);
-            $table->dropColumn('resignation_id');
-        });
-
-        Schema::dropIfExists('employee_resignation_handover_items');
+    {        Schema::dropIfExists('employee_resignation_handover_items');
         Schema::dropIfExists('employee_resignation_clearances');
         Schema::dropIfExists('employee_resignation_histories');
         Schema::dropIfExists('employee_resignations');
