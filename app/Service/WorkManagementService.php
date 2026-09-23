@@ -802,13 +802,21 @@ class WorkManagementService
                     ->whereHas('reports', function ($query) {
                         $query
                             ->where('report_level', ProjectReport::LEVEL_MANAGER)
-                            ->where('status', ProjectReport::STATUS_SUBMITTED);
+                            ->whereIn('status', [
+                                ProjectReport::STATUS_SUBMITTED,
+                                ProjectReport::STATUS_APPROVED,
+                            ]);
                     })
                     ->get()
                     ->each(function (DivisionProject $divisionProject) {
+                        $divisionProject->update(['status' => 'revision_required']);
+
                         $divisionProject->reports()
                             ->where('report_level', ProjectReport::LEVEL_MANAGER)
-                            ->where('status', ProjectReport::STATUS_SUBMITTED)
+                            ->whereIn('status', [
+                                ProjectReport::STATUS_SUBMITTED,
+                                ProjectReport::STATUS_APPROVED,
+                            ])
                             ->update(['status' => ProjectReport::STATUS_REJECTED]);
                     });
             }
