@@ -29,7 +29,7 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my'])
+        @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my', 'view-warning-letter-my'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
 
                 @can('view-attendance')
@@ -60,6 +60,13 @@
                     <x-wirekit::sidebar.item href="{{ route('payroll.my.view') }}" :active="request()->routeIs('payroll.my.view', 'payroll.my.show')" icon="document-text"
                         wire:navigate>
                         Slip Gaji
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+                @can('view-warning-letter-my')
+                    <x-wirekit::sidebar.item href="{{ route('warning-letter.my.view') }}" :active="request()->routeIs('warning-letter.my.view', 'warning-letter.my.show')" icon="warning"
+                        wire:navigate>
+                        Surat Peringatan
                     </x-wirekit::sidebar.item>
                 @endcan
 
