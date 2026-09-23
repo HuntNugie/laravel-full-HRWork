@@ -390,8 +390,15 @@ class WorkManagementService
             throw ValidationException::withMessages(['reporter' => 'Manual progress Division Project hanya dapat dilaporkan oleh Manager.']);
         }
 
-        if (! in_array($divisionProject->status, ['draft', 'in_progress', 'ready_for_review', 'revision_required'], true)) {
-            throw ValidationException::withMessages(['division_project' => 'Progress manual tidak dapat diubah setelah laporan masuk tahap review atau approval.']);
+        if (! in_array($divisionProject->status, [
+            'draft',
+            'in_progress',
+            'ready_for_review',
+            'submitted_to_manager',
+            'manager_approved',
+            'revision_required',
+        ], true)) {
+            throw ValidationException::withMessages(['division_project' => 'Progress manual hanya dapat diubah sebelum Division Project dikirim ke GM.']);
         }
 
         if ($progress < 0 || $progress > 100) {
