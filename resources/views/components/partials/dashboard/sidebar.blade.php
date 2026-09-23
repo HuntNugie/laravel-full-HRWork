@@ -29,7 +29,7 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my', 'view-warning-letter-my'])
+        @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my', 'view-warning-letter-my', 'view-resignation-my'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
 
                 @can('view-attendance')
@@ -67,6 +67,13 @@
                     <x-wirekit::sidebar.item href="{{ route('warning-letter.my.view') }}" :active="request()->routeIs('warning-letter.my.view', 'warning-letter.my.show')" icon="warning"
                         wire:navigate>
                         Surat Peringatan
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+                @can('view-resignation-my')
+                    <x-wirekit::sidebar.item href="{{ route('resignation.my.view') }}" :active="request()->routeIs('resignation.my.view')" icon="document-text"
+                        wire:navigate>
+                        Pengunduran Diri
                     </x-wirekit::sidebar.item>
                 @endcan
 
@@ -145,7 +152,7 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-employee', 'view-contract'])
+                @canany(['view-employee', 'view-contract', 'view-resignation'])
             <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-employee')
@@ -162,77 +169,12 @@
                     </x-wirekit::sidebar.item>
                 @endcan
 
-
-
-
-                {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
-                Training & TNA
-            </x-wirekit::sidebar.item> --}}
-
-
-
-            </x-wirekit::sidebar.group>
-        @endcanany
-        @canany(['view-monitor-attendance', 'history-attendance', 'view-status-daily'])
-
-            <x-wirekit::sidebar.group collapsible label="Presensi">
-
-
-                @can('view-monitor-attendance')
-                    <x-wirekit::sidebar.item href="{{ route('attendance.monitor.view') }}" :active="request()->routeIs('attendance.monitor.view')" icon="star"
+                @can('view-resignation')
+                    <x-wirekit::sidebar.item href="{{ route('resignation.view') }}" :active="request()->routeIs('resignation.view', 'resignation.show')" icon="logout"
                         wire:navigate>
-                        Monitoring Presensi
+                        Resignation
                     </x-wirekit::sidebar.item>
                 @endcan
-                @can('history-attendance')
-                    <x-wirekit::sidebar.item href="{{ route('attendance.history.view') }}" :active="request()->routeIs('attendance.history.view')" icon="calendar"
-                        wire:navigate>
-                        Riwayat Presensi
-                    </x-wirekit::sidebar.item>
-                @endcan
-
-                @can('view-status-daily')
-                    <x-wirekit::sidebar.item href="{{ route('attendance.daily-status.view') }}" :active="request()->routeIs('attendance.daily-status.view')"
-                        icon="globe" wire:navigate>
-                        Status harian
-                    </x-wirekit::sidebar.item>
-                @endcan
-
-
-                {{-- <x-wirekit::sidebar.item href="#" icon="academic-cap" wire:navigate>
-                Training & TNA
-            </x-wirekit::sidebar.item> --}}
-
-
-
-            </x-wirekit::sidebar.group>
-        @endcanany
-
-        @canany(['view-manage-absence', 'view-type-leave'])
-
-            <x-wirekit::sidebar.group collapsible label="Cuti dan izin">
-
-
-                @can('view-manage-absence')
-                    <x-wirekit::sidebar.item href="{{ route('absence.view') }}" :active="request()->routeIs('absence.view')" icon="cloud"
-                        wire:navigate>
-                        Pengajuan izin dan sakit
-                    </x-wirekit::sidebar.item>
-                @endcan
-                @can('view-type-leave')
-                    <x-wirekit::sidebar.item href="{{ route('leave.type.view') }}" :active="request()->routeIs('leave.type.view')" icon="tag"
-                        wire:navigate>
-                        Jenis cuti
-                    </x-wirekit::sidebar.item>
-                @endcan
-
-                @can('view-management-leave')
-                    <x-wirekit::sidebar.item href="{{ route('leave.manage.view') }}" :active="request()->routeIs('leave.manage.view')" icon="book"
-                        wire:navigate>
-                        Manajemen cuti
-                    </x-wirekit::sidebar.item>
-                @endcan
-
 
             </x-wirekit::sidebar.group>
         @endcanany
