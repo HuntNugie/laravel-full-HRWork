@@ -5,7 +5,6 @@ namespace App\Livewire\Page\Main\Resignation;
 use App\Models\EmployeeResignation;
 use App\Models\EmployeeResignationClearance;
 use App\Models\EmployeeResignationHandoverItem;
-use App\Models\Payroll;
 use App\Models\Employees;
 use App\Service\ResignationService;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +19,6 @@ class DetailResignation extends Component
     public string $approvedLastWorkingDate = '';
     public string $rejectionReason = '';
     public string $actionNote = '';
-    public string $selectedPayrollId = '';
     public string $exitInterviewNotes = '';
     public array $handoverRecipients = [];
 
@@ -36,7 +34,6 @@ class DetailResignation extends Component
             'clearances.verifier',
             'handoverItems.task',
             'handoverItems.handoverTo.user',
-            'finalPayrolls.period',
             'exitInterviewer',
         ]);
 
@@ -188,34 +185,6 @@ class DetailResignation extends Component
         }
     }
 
-    public function linkFinalPayroll(): void
-    {
-        abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
-
-        $this->validate([
-            'selectedPayrollId' => ['required', 'integer'],
-        ]);
-
-        $payroll = Payroll::query()
-            ->where('employee_id', $this->resignation->employee_id)
-            ->whereKey($this->selectedPayrollId)
-            ->firstOrFail();
-
-        try {
-            app(ResignationService::class)->linkFinalPayroll(
-                resignation: $this->resignation,
-                payroll: $payroll,
-                actor: Auth::user(),
-            );
-
-            $this->selectedPayrollId = '';
-            $this->reload();
-            session()->flash('success', 'Payroll akhir berhasil dihubungkan.');
-        } catch (\LogicException $exception) {
-            $this->addError('action', $exception->getMessage());
-        }
-    }
-
     public function complete(): void
     {
         abort_unless(Auth::user()->can('complete-resignation'), 403);
@@ -262,13 +231,6 @@ class DetailResignation extends Component
 
     public function render()
     {
-        $payrolls = Payroll::query()
-            ->with('period')
-            ->where('employee_id', $this->resignation->employee_id)
-            ->where('status', 'paid')
-            ->latest('id')
-            ->get();
-
         $handoverEmployees = Employees::query()
             ->where('status_employee', 'active')
             ->where('id', '!=', $this->resignation->employee_id)
@@ -282,7 +244,7 @@ class DetailResignation extends Component
 
         return view(
             'livewire.page.main.resignation.detail-resignation',
-            compact('payrolls', 'handoverEmployees')
+            compact('handoverEmployees')
         );
     }
 }
