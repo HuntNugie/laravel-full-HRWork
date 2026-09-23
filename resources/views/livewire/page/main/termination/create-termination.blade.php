@@ -29,13 +29,90 @@
         <x-wirekit::card.body>
             <div class="grid gap-5 md:grid-cols-2">
 
-                <x-wirekit::select
-                    name="employeeId"
-                    label="Employee"
-                    placeholder="Pilih employee"
-                    :options="$employees"
-                    wire:model="employeeId"
-                />
+                <div class="relative" wire:click.outside="closeEmployeeDropdown">
+                    <label for="employeeSearch" class="mb-2 block text-sm font-medium text-slate-700">
+                        Employee
+                    </label>
+
+                    <div class="relative">
+                        <input
+                            id="employeeSearch"
+                            type="text"
+                            value="{{ $employeeSearch }}"
+                            placeholder="Cari nama atau employee code..."
+                            autocomplete="off"
+                            wire:model.live.debounce.300ms="employeeSearch"
+                            wire:focus="openEmployeeDropdown"
+                            wire:keydown.escape="closeEmployeeDropdown"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 outline-none transition focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20"
+                        />
+
+                        @if ($employeeId)
+                            <button
+                                type="button"
+                                wire:click="clearSelectedEmployee"
+                                class="absolute right-2 top-1/2 inline-flex -translate-y-1/2 items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                                aria-label="Hapus karyawan terpilih"
+                            >
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        @endif
+                    </div>
+
+                    @if ($errors->has('employeeId'))
+                        <p class="mt-1.5 text-xs text-red-600">{{ $errors->first('employeeId') }}</p>
+                    @endif
+
+                    @if ($employeeDropdownOpen && ! $employeeId)
+                        <div class="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                            @if (mb_strlen(trim($employeeSearch)) < 2)
+                                <div class="px-4 py-4 text-sm text-slate-500">
+                                    Ketik minimal 2 karakter untuk mencari karyawan.
+                                </div>
+                            @elseif ($employees->isEmpty())
+                                <div class="px-4 py-4 text-sm text-slate-500">
+                                    Karyawan aktif yang sesuai tidak ditemukan.
+                                </div>
+                            @else
+                                <div class="max-h-64 overflow-y-auto py-1">
+                                    @foreach ($employees as $employee)
+                                        <button
+                                            type="button"
+                                            wire:key="termination-employee-{{ $employee->id }}"
+                                            wire:click="selectEmployee({{ $employee->id }})"
+                                            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-sky-50"
+                                        >
+                                            <div class="min-w-0">
+                                                <p class="truncate text-sm font-medium text-slate-900">
+                                                    {{ $employee->user?->name ?? '—' }}
+                                                </p>
+                                                <p class="mt-0.5 truncate text-xs text-slate-500">
+                                                    {{ $employee->employee_code ?? '—' }}
+                                                </p>
+                                            </div>
+
+                                            <span class="shrink-0 text-xs font-medium text-[#30AFFF]">
+                                                Pilih
+                                            </span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if ($employeeId && $selectedEmployeeName)
+                        <div class="mt-2 flex items-center gap-2 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5">
+                            <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-xs font-semibold text-[#30AFFF]">
+                                ✓
+                            </span>
+                            <div class="min-w-0">
+                                <p class="truncate text-xs font-medium text-sky-900">Karyawan terpilih</p>
+                                <p class="truncate text-sm text-sky-700">{{ $selectedEmployeeName }}</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
 
                 <x-wirekit::select
                     name="reasonType"
