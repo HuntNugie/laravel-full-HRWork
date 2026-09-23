@@ -35,10 +35,6 @@ class DetailTermination extends Component
             'handoverItems.handoverTo.user',
         ]);
 
-        $this->approvedEffectiveDate =
-            $this->termination->approved_effective_date?->toDateString()
-            ?? $this->termination->proposed_effective_date?->toDateString()
-            ?? today()->toDateString();
 
         $this->syncHandoverRecipients();
     }
@@ -153,10 +149,6 @@ class DetailTermination extends Component
             ])
             ->findOrFail($this->termination->id);
 
-        $this->approvedEffectiveDate =
-            $this->termination->approved_effective_date?->toDateString()
-            ?? $this->termination->proposed_effective_date?->toDateString()
-            ?? today()->toDateString();
 
         $this->syncHandoverRecipients();
     }
