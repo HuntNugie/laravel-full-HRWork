@@ -68,7 +68,7 @@
             <x-wirekit::card.body>
                 <p class="text-xs font-medium text-slate-400">Tanggal yang diajukan</p>
                 <p class="mt-1 text-sm font-semibold text-slate-800">
-                    {{ $termination->proposed_effective_date?->translatedFormat('d M Y') ?? '—' }}
+                    {{ $termination->effective_date?->translatedFormat('d M Y') ?? '—' }}
                 </p>
             </x-wirekit::card.body>
         </x-wirekit::card>
