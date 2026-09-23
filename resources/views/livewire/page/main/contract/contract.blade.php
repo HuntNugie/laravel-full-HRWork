@@ -42,12 +42,53 @@
                 </x-wirekit::stack>
 
 
-                {{-- Search --}}
-                <div class="w-full sm:w-72">
+                {{-- Filters --}}
+                <div class="grid w-full gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                    <div class="xl:col-span-2">
+                        <x-wirekit::input
+                            placeholder="Cari nomor contract atau nama employee"
+                            wire:model.live.debounce.500ms="search"
+                            name="search"
+                            class="text-black"
+                        />
+                    </div>
 
-                    <x-wirekit::input placeholder="Cari nomor contract atau nama employee"
-                        wire:model.live.debounce.500ms="search" name="search" class="text-black" />
+                    <x-wirekit::select
+                        label="Status"
+                        name="statusFilter"
+                        placeholder="Semua Status"
+                        :options="[
+                            'draft' => 'Draft',
+                            'active' => 'Active',
+                            'expired' => 'Expired',
+                            'terminated' => 'Terminated',
+                        ]"
+                        wire:model.live="statusFilter"
+                    />
 
+                    <x-wirekit::select
+                        label="Jenis Contract"
+                        name="employmentTypeFilter"
+                        placeholder="Semua Jenis"
+                        :options="[
+                            'pkwt' => 'PKWT',
+                            'pkwtt' => 'PKWTT',
+                            'intership' => 'Internship',
+                            'freelance' => 'Freelance',
+                        ]"
+                        wire:model.live="employmentTypeFilter"
+                    />
+
+                    <div class="flex items-end">
+                        <x-wirekit::button
+                            type="button"
+                            surface="outline"
+                            class="w-full"
+                            wire:click="resetFilters"
+                        >
+                            Reset Filter
+                        </x-wirekit::button>
+                    </div>
                 </div>
 
             </div>
