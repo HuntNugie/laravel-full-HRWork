@@ -136,8 +136,6 @@ class PermissionSeeder extends Seeder
             'view-termination',
             'show-termination',
             'create-termination',
-            'approve-termination',
-            'reject-termination',
             'cancel-termination',
             'manage-termination-clearance',
             'complete-termination',
