@@ -157,8 +157,8 @@ class ResignationService
                 ]))),
             ]);
 
-            $this->prepareClearances($resignation, $reviewer);
             $this->prepareHandover($resignation);
+            $this->prepareClearances($resignation, $reviewer);
             $this->recordHistory(
                 resignation: $resignation,
                 actor: $reviewer,
