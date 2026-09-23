@@ -384,11 +384,10 @@ class WorkManagementService
     public function reportManualProgress(DivisionProject $divisionProject, Employees $reporter, int $progress, ?string $note = null): ProjectProgressUpdate
     {
         $this->ensureActiveEmployee($reporter);
-        $divisionProject->loadMissing('teams');
+
         $isManager = (int) $divisionProject->manager_id === (int) $reporter->id;
-        $isSupervisor = $divisionProject->teams->contains(fn ($team) => (int) $team->supervisor_id === (int) $reporter->id);
-        if (! $isManager && ! $isSupervisor) {
-            throw ValidationException::withMessages(['reporter' => 'Reporter tidak memiliki scope untuk division project ini.']);
+        if (! $isManager) {
+            throw ValidationException::withMessages(['reporter' => 'Manual progress Division Project hanya dapat dilaporkan oleh Manager.']);
         }
 
         if (! in_array($divisionProject->status, ['draft', 'in_progress', 'ready_for_review', 'revision_required'], true)) {
