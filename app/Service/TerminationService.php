@@ -445,6 +445,15 @@ class TerminationService
                 ], true)
         );
 
+        $organizationClearance = $termination->clearances
+            ->firstWhere('category', 'organization');
+
+        $organizationReady = !$organizationClearance
+            || in_array($organizationClearance->status, [
+                EmployeeTerminationClearance::STATUS_COMPLETED,
+                EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,
+            ], true);
+
         $handoverReady = $termination->handoverItems->every(
             fn (EmployeeTerminationHandoverItem $item) =>
                 in_array($item->status, [
@@ -453,7 +462,6 @@ class TerminationService
                 ], true)
         );
 
-        $organizationReady = true;
 
         $leaveReady = !$this->hasUnresolvedLeave($termination);
 
