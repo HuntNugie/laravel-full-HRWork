@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Divisi;
 use App\Models\EmployeeContract;
 use App\Models\EmployeeResignation;
 use App\Models\EmployeeResignationClearance;
 use App\Models\Employees;
-use App\Models\Payroll;
-use App\Models\PayrollPeriod;
+use App\Models\Team;
 use App\Models\User;
 use App\Service\ResignationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,8 +49,9 @@ class ResignationServiceTest extends TestCase
         return [$user, $employee, $contract];
     }
 
-    public function test_create_resignation_requires_active_employee_and_prevents_duplicate_active_process(): void
+    public function test_create_resignation_prevents_duplicate_active_process(): void
     {
+        Date::setTestNow('2026-09-23');
         [$user, $employee, $contract] = $this->makeEmployee();
         $service = app(ResignationService::class);
 
@@ -70,13 +71,61 @@ class ResignationServiceTest extends TestCase
             employee: $employee->refresh(),
             submittedBy: $user,
             proposedLastWorkingDate: '2026-11-15',
-            reason: 'Pengajuan kedua.',
+            reason: 'Pengajuan kedua saat proses pertama masih berjalan.',
         );
+    }
+
+    public function test_rejected_resignation_can_be_resubmitted_and_rejected_again(): void
+    {
+        Date::setTestNow('2026-09-23');
+        [$user, $employee] = $this->makeEmployee();
+        $service = app(ResignationService::class);
+
+        $first = $service->create(
+            employee: $employee,
+            submittedBy: $user,
+            proposedLastWorkingDate: '2026-10-15',
+            reason: 'Pengajuan pertama.',
+        );
+
+        $first = $service->reject(
+            resignation: $first,
+            reviewer: $user,
+            reason: 'Belum dapat diproses saat ini.',
+        );
+
+        $this->assertSame(EmployeeResignation::STATUS_REJECTED, $first->status);
+        $this->assertSame('active', $employee->refresh()->status_employee);
+
+        $second = $service->create(
+            employee: $employee->refresh(),
+            submittedBy: $user,
+            proposedLastWorkingDate: '2026-11-15',
+            reason: 'Pengajuan kedua setelah pengajuan pertama ditolak.',
+        );
+
+        $second = $service->reject(
+            resignation: $second,
+            reviewer: $user,
+            reason: 'Masih perlu dipertimbangkan.',
+        );
+
+        $this->assertSame(EmployeeResignation::STATUS_REJECTED, $second->status);
+        $this->assertSame(2, EmployeeResignation::query()
+            ->where('employee_id', $employee->id)
+            ->count());
+        $this->assertDatabaseHas('employee_resignation_histories', [
+            'resignation_id' => $second->id,
+            'to_status' => 'rejected',
+            'note' => 'Masih perlu dipertimbangkan.',
+        ]);
     }
 
     public function test_approve_creates_clearances_and_handover_items(): void
     {
+        Date::setTestNow('2026-09-23');
         [$user, $employee] = $this->makeEmployee();
+
         $resignation = app(ResignationService::class)->create(
             employee: $employee,
             submittedBy: $user,
@@ -98,10 +147,16 @@ class ResignationServiceTest extends TestCase
             'category' => 'work',
             'status' => 'completed',
         ]);
+        $this->assertDatabaseHas('employee_resignation_clearances', [
+            'resignation_id' => $resignation->id,
+            'category' => 'organization',
+            'status' => 'completed',
+        ]);
     }
 
     public function test_reject_records_reason_without_changing_employee_status(): void
     {
+        Date::setTestNow('2026-09-23');
         [$user, $employee] = $this->makeEmployee();
 
         $resignation = app(ResignationService::class)->create(
@@ -125,7 +180,7 @@ class ResignationServiceTest extends TestCase
         ]);
     }
 
-    public function test_completion_requires_paid_final_payroll_and_clearance(): void
+    public function test_completion_requires_clearance_and_last_working_date_but_not_payroll(): void
     {
         Date::setTestNow('2026-09-20');
         [$user, $employee, $contract] = $this->makeEmployee();
@@ -159,13 +214,35 @@ class ResignationServiceTest extends TestCase
         ]);
     }
 
-    public function test_completion_updates_employee_user_contract_and_status_history(): void
+    public function test_completion_releases_assignments_and_deactivates_account_without_payroll_link(): void
     {
         Date::setTestNow('2026-01-01');
         [$user, $employee, $contract] = $this->makeEmployee();
 
+        $divisi = Divisi::create([
+            'name' => 'Engineering ' . uniqid(),
+            'description' => 'Engineering',
+            'is_active' => 'active',
+        ]);
+
+        $team = Team::create([
+            'name' => 'Backend ' . uniqid(),
+            'divisi_id' => $divisi->id,
+            'description' => 'Backend',
+            'is_active' => 'active',
+            'supervisor_id' => $employee->id,
+        ]);
+
+        $employee->update([
+            'team_id' => $team->id,
+        ]);
+
+        $divisi->update([
+            'manager_id' => $employee->id,
+        ]);
+
         $resignation = app(ResignationService::class)->create(
-            employee: $employee,
+            employee: $employee->refresh(),
             submittedBy: $user,
             proposedLastWorkingDate: '2026-01-01',
             reason: 'Alasan.',
@@ -185,31 +262,6 @@ class ResignationServiceTest extends TestCase
                 'verified_at' => now(),
             ]);
 
-        $period = PayrollPeriod::create([
-            'name' => 'January 2026',
-            'start_date' => '2026-01-01',
-            'end_date' => '2026-01-31',
-            'status' => 'paid',
-            'created_by' => $user->id,
-            'paid_at' => now(),
-        ]);
-
-        $payroll = Payroll::create([
-            'payroll_period_id' => $period->id,
-            'employee_id' => $employee->id,
-            'employee_contract_id' => $contract->id,
-            'position_name' => 'Backend Developer',
-            'salary_daily' => 100000,
-            'status' => 'paid',
-            'net_amount' => 100000,
-        ]);
-
-        app(ResignationService::class)->linkFinalPayroll(
-            resignation: $resignation,
-            payroll: $payroll,
-            actor: $user,
-        );
-
         $completed = app(ResignationService::class)->complete(
             resignation: $resignation,
             actor: $user,
@@ -220,6 +272,9 @@ class ResignationServiceTest extends TestCase
 
         $this->assertSame('resign', $employee->status_employee);
         $this->assertSame('2026-01-01', optional($employee->ResignDate)?->format('Y-m-d'));
+        $this->assertNull($employee->team_id);
+        $this->assertNull($team->refresh()->supervisor_id);
+        $this->assertNull($divisi->refresh()->manager_id);
         $this->assertSame('inactive', $user->refresh()->status);
         $this->assertSame('terminated', $contract->refresh()->status);
 
