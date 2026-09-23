@@ -626,9 +626,22 @@ class ResignationService
             return true;
         }
 
+        $date = Carbon::parse($lastWorkingDate)->toDateString();
+
         return $resignation->employee?->leaveRequest()
-            ->whereIn('status', ['pending', 'approved'])
-            ->whereDate('end_date', '>', Carbon::parse($lastWorkingDate)->toDateString())
+            ->where(function ($query) use ($date) {
+                $query
+                    ->where(function ($query) use ($date) {
+                        $query
+                            ->where('status', 'pending')
+                            ->whereDate('start_date', '<=', $date);
+                    })
+                    ->orWhere(function ($query) use ($date) {
+                        $query
+                            ->where('status', 'approved')
+                            ->whereDate('end_date', '>', $date);
+                    });
+            })
             ->exists() ?? false;
     }
 
