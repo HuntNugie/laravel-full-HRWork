@@ -109,7 +109,7 @@
                                         model="Gemini 3.8 Flash"
                                         announce="all"
                                     >
-                                        {!! Str::markdown($message['content'], ['html_input' => 'strip']) !!}
+                                        {!! \Illuminate\Support\Str::markdown($message['content'], ['html_input' => 'strip']) !!}
                                     </x-wirekit::assistant-message>
                                 </div>
                             @endif
