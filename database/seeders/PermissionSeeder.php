@@ -94,6 +94,7 @@ class PermissionSeeder extends Seeder
             'update-user',
             'update-work-time',
             'view-absence',
+            'view-ai-assistant',
             'view-attendance',
             'view-benefit',
             'view-contract',
