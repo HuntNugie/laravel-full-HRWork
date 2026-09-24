@@ -26,6 +26,7 @@
                 --color-wk-bg-input: #ffffff;
                 --color-wk-text: #0f172a;
                 --color-wk-text-muted: #64748b;
+                --color-wk-text-subtle: #94a3b8;
                 --color-wk-border: #dbeaf4;
                 --color-wk-border-subtle: #e6f0f6;
                 --color-wk-accent: #30AFFF;
@@ -74,29 +75,57 @@
                             </div>
                         </div>
                     @else
-                        @foreach ($messages as $message)
+                        @foreach ($messages as $index => $message)
                             @if ($message['role'] === 'user')
                                 <x-wirekit::message
+                                    wire:key="message-user-{{ $index }}"
                                     :author="['name' => 'Kamu']"
                                     side="right"
                                 >
                                     {{ $message['content'] }}
                                 </x-wirekit::message>
                             @else
-                                <x-wirekit::assistant-message model="Gemini 3.8 Flash">
-                                    {{ $message['content'] }}
-                                </x-wirekit::assistant-message>
+                                <div wire:key="message-assistant-{{ $index }}" class="space-y-3">
+                                    @foreach ($message['tool_calls'] ?? [] as $call)
+                                        <x-wirekit::tool-call
+                                            wire:key="tool-call-{{ $call['id'] }}"
+                                            :name="$call['name']"
+                                            :status="$call['status']"
+                                            :seconds="$call['seconds'] ?? null"
+                                            :arguments="$call['arguments']"
+                                        >
+                                            @if ($call['status'] === 'done')
+                                                Pencarian data karyawan selesai.
+                                            @elseif ($call['status'] === 'failed')
+                                                {{ $call['result'] ?? 'Tool gagal dijalankan.' }}
+                                            @else
+                                                Sedang menjalankan pencarian data karyawan...
+                                            @endif
+                                        </x-wirekit::tool-call>
+                                    @endforeach
+
+                                    <x-wirekit::assistant-message
+                                        :name="'HRWork AI'"
+                                        model="Gemini 3.8 Flash"
+                                        announce="all"
+                                    >
+                                        {!! Str::markdown($message['content'], ['html_input' => 'strip']) !!}
+                                    </x-wirekit::assistant-message>
+                                </div>
                             @endif
                         @endforeach
-
-                        @if ($isLoading)
-                            <x-wirekit::chat-marker status shimmer intent="info">
-                                AI sedang berpikir...
-                            </x-wirekit::chat-marker>
-                        @endif
                     @endif
 
                 </x-wirekit::stack>
+
+                <x-slot:footer>
+                    <div wire:loading wire:target="send">
+                        <x-wirekit::message-typing
+                            author="HRWork AI"
+                            announce
+                        />
+                    </div>
+                </x-slot:footer>
             </x-wirekit::conversation>
 
             @if ($errorMessage)
