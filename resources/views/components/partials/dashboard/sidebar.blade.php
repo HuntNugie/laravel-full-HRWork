@@ -8,6 +8,12 @@
                 Dashboard
             </x-wirekit::sidebar.item>
 
+            @can('view-ai-assistant')
+                <x-wirekit::sidebar.item href="{{ route('ai.assistant') }}" :active="request()->routeIs('ai.assistant')" icon="sparkles" wire:navigate>
+                    HRWork AI
+                </x-wirekit::sidebar.item>
+            @endcan
+
         </x-wirekit::sidebar.group>
 
 
