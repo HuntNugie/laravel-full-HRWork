@@ -12,15 +12,15 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
-use Laravel\Ai\Concerns\HasConversations;
 
 #[Fillable(['name', 'email', 'password', 'status'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements HasMedia
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasRoles, HasConversations;
+    use HasFactory, Notifiable, HasRoles;
     use InteractsWithMedia;
+
     /**
      * Get the attributes that should be cast.
      *
@@ -42,6 +42,7 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->hasMany(EmployeeAbsenceRequest::class, 'user_id');
     }
+
     protected function casts(): array
     {
         return [
