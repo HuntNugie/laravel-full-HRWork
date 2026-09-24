@@ -85,25 +85,7 @@
                                     {{ $message['content'] }}
                                 </x-wirekit::message>
                             @else
-                                <div wire:key="message-assistant-{{ $index }}" class="space-y-3">
-                                    @foreach ($message['tool_calls'] ?? [] as $call)
-                                        <x-wirekit::tool-call
-                                            wire:key="tool-call-{{ $call['id'] }}"
-                                            :name="$call['name']"
-                                            :status="$call['status']"
-                                            :seconds="$call['seconds'] ?? null"
-                                            :arguments="$call['arguments']"
-                                        >
-                                            @if ($call['status'] === 'done')
-                                                Pencarian data karyawan selesai.
-                                            @elseif ($call['status'] === 'failed')
-                                                {{ $call['result'] ?? 'Tool gagal dijalankan.' }}
-                                            @else
-                                                Sedang menjalankan pencarian data karyawan...
-                                            @endif
-                                        </x-wirekit::tool-call>
-                                    @endforeach
-
+                                <div wire:key="message-assistant-{{ $index }}">
                                     <x-wirekit::assistant-message
                                         :name="'HRWork AI'"
                                         model="Gemini 3.8 Flash"
