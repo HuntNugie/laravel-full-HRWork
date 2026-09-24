@@ -1,7 +1,7 @@
 <div class="min-h-[calc(100vh-7rem)]">
     <div class="mx-auto flex h-full max-w-6xl flex-col gap-6">
 
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
             <div>
                 <div class="flex items-center gap-3">
                     <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#30AFFF]/10 text-[#30AFFF] ring-1 ring-[#30AFFF]/20">
@@ -17,16 +17,6 @@
                     </div>
                 </div>
             </div>
-
-            <x-wirekit::button
-                wire:click="newConversation"
-                wire:loading.attr="disabled"
-                variant="outline"
-                size="sm"
-                icon="plus"
-            >
-                Percakapan baru
-            </x-wirekit::button>
         </div>
 
         <div class="flex min-h-[620px] flex-1 flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
