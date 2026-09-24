@@ -3,11 +3,10 @@
 namespace App\Livewire\Page\Main\AI;
 
 use App\Ai\Agents\HRAssistant;
-use Livewire\Attributes\Layout;
-use Livewire\Component;
-use Laravel\Ai\Responses\Data\ToolCall as ToolCallData;
 use Laravel\Ai\Streaming\Events\ToolCall as ToolCallEvent;
 use Laravel\Ai\Streaming\Events\ToolResult as ToolResultEvent;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 use Throwable;
 
 #[Layout('layouts.main', ['title' => 'HRWork AI'])]
@@ -35,19 +34,6 @@ class Assistant extends Component
 
     public ?string $errorMessage = null;
 
-    /**
-     * @var array<string, array{
-     *     id: string,
-     *     name: string,
-     *     arguments: array<string, mixed>,
-     *     status: string,
-     *     started_at: int,
-     *     result?: string,
-     *     seconds?: int|null
-     * }>
-     */
-    public array $toolCalls = [];
-
     public function send(): void
     {
         $this->validate([
@@ -66,7 +52,6 @@ class Assistant extends Component
 
         $this->errorMessage = null;
         $this->isLoading = true;
-        $this->toolCalls = [];
 
         $this->messages[] = [
             'role' => 'user',
@@ -81,13 +66,15 @@ class Assistant extends Component
                 model: config('ai.providers.9router.models.text.default')
             );
 
+            $toolCalls = [];
+
             // Drain the SSE stream completely so Laravel AI can execute local
             // tools and continue the agent loop until the final answer.
             foreach ($response as $event) {
                 if ($event instanceof ToolCallEvent) {
                     $call = $event->toolCall;
 
-                    $this->toolCalls[$call->id] = [
+                    $toolCalls[$call->id] = [
                         'id' => $call->id,
                         'name' => $call->name,
                         'arguments' => $call->arguments,
@@ -101,22 +88,20 @@ class Assistant extends Component
                 if ($event instanceof ToolResultEvent && ! $event->preliminary) {
                     $callId = $event->toolResult->id;
 
-                    if (! isset($this->toolCalls[$callId])) {
-                        $this->toolCalls[$callId] = [
-                            'id' => $callId,
-                            'name' => $event->toolResult->name,
-                            'arguments' => $event->toolResult->arguments,
-                            'status' => $event->successful ? 'done' : 'failed',
-                            'started_at' => $event->timestamp,
-                        ];
-                    }
+                    $toolCalls[$callId] ??= [
+                        'id' => $callId,
+                        'name' => $event->toolResult->name,
+                        'arguments' => $event->toolResult->arguments,
+                        'status' => $event->successful ? 'done' : 'failed',
+                        'started_at' => $event->timestamp,
+                    ];
 
-                    $startedAt = $this->toolCalls[$callId]['started_at'];
+                    $startedAt = $toolCalls[$callId]['started_at'];
 
-                    $this->toolCalls[$callId]['status'] = $event->successful ? 'done' : 'failed';
-                    $this->toolCalls[$callId]['result'] = $event->error
+                    $toolCalls[$callId]['status'] = $event->successful ? 'done' : 'failed';
+                    $toolCalls[$callId]['result'] = $event->error
                         ?? $event->toolResult->text();
-                    $this->toolCalls[$callId]['seconds'] = max(
+                    $toolCalls[$callId]['seconds'] = max(
                         0,
                         $event->timestamp - $startedAt
                     );
@@ -126,7 +111,7 @@ class Assistant extends Component
             $this->messages[] = [
                 'role' => 'assistant',
                 'content' => $response->text ?? '',
-                'tool_calls' => array_values($this->toolCalls),
+                'tool_calls' => array_values($toolCalls),
             ];
         } catch (Throwable $exception) {
             report($exception);
