@@ -2,14 +2,12 @@
 
 namespace App\Ai\Agents;
 
-use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
-use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Promptable;
 
-class HRAssistant implements Agent, Conversational
+class HRAssistant implements Agent
 {
-    use Promptable, RemembersConversations;
+    use Promptable;
 
     /**
      * Get the instructions that the agent should follow.
