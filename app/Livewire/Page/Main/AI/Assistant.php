@@ -43,15 +43,21 @@ class Assistant extends Component
         $this->prompt = '';
 
         try {
-            $response = HRAssistant::make()->prompt(
+            $response = HRAssistant::make()->stream(
                 $prompt,
                 provider: '9router',
                 model: config('ai.providers.9router.models.text.default')
             );
 
+            // Drain the SSE stream completely so Laravel AI can process
+            // tool calls and continue the agent loop until the final answer.
+            foreach ($response as $event) {
+                // The UI currently renders the completed answer as one message.
+            }
+
             $this->messages[] = [
                 'role' => 'assistant',
-                'content' => $response->text,
+                'content' => $response->text ?? '',
             ];
         } catch (Throwable $exception) {
             report($exception);
