@@ -3,7 +3,6 @@
 namespace App\Livewire\Page\Main\AI;
 
 use App\Ai\Agents\HRAssistant;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Throwable;
@@ -12,8 +11,6 @@ use Throwable;
 class Assistant extends Component
 {
     public string $prompt = '';
-
-    public ?string $conversationId = null;
 
     public array $messages = [];
 
@@ -46,18 +43,11 @@ class Assistant extends Component
         $this->prompt = '';
 
         try {
-            $response = HRAssistant::make()
-                ->continueOrStart(
-                    $this->conversationId,
-                    as: Auth::user()
-                )
-                ->prompt(
-                    $prompt,
-                    provider: '9router',
-                    model: config('ai.providers.9router.models.text.default')
-                );
-
-            $this->conversationId = $response->conversationId;
+            $response = HRAssistant::make()->prompt(
+                $prompt,
+                provider: '9router',
+                model: config('ai.providers.9router.models.text.default')
+            );
 
             $this->messages[] = [
                 'role' => 'assistant',
@@ -72,17 +62,6 @@ class Assistant extends Component
         } finally {
             $this->isLoading = false;
         }
-    }
-
-    public function newConversation(): void
-    {
-        $this->reset([
-            'prompt',
-            'conversationId',
-            'messages',
-            'errorMessage',
-        ]);
-        $this->isLoading = false;
     }
 
     public function render()
