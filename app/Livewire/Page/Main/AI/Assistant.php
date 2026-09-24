@@ -1,0 +1,92 @@
+<?php
+
+namespace App\Livewire\Page\Main\AI;
+
+use App\Ai\Agents\HRAssistant;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use Throwable;
+
+#[Layout('layouts.main', ['title' => 'HRWork AI'])]
+class Assistant extends Component
+{
+    public string $prompt = '';
+
+    public ?string $conversationId = null;
+
+    public array $messages = [];
+
+    public bool $isLoading = false;
+
+    public ?string $errorMessage = null;
+
+    public function send(): void
+    {
+        $this->validate([
+            'prompt' => ['required', 'string', 'max:5000'],
+        ]);
+
+        if ($this->isLoading) {
+            return;
+        }
+
+        $prompt = trim($this->prompt);
+
+        if ($prompt === '') {
+            return;
+        }
+
+        $this->errorMessage = null;
+        $this->isLoading = true;
+        $this->messages[] = [
+            'role' => 'user',
+            'content' => $prompt,
+        ];
+        $this->prompt = '';
+
+        try {
+            $response = HRAssistant::make()
+                ->continueOrStart(
+                    $this->conversationId,
+                    as: Auth::user()
+                )
+                ->prompt(
+                    $prompt,
+                    provider: '9router',
+                    model: config('ai.providers.9router.models.text.default')
+                );
+
+            $this->conversationId = $response->conversationId;
+
+            $this->messages[] = [
+                'role' => 'assistant',
+                'content' => $response->text,
+            ];
+        } catch (Throwable $exception) {
+            report($exception);
+
+            array_pop($this->messages);
+
+            $this->errorMessage = 'Terjadi kesalahan saat menghubungi AI. Silakan coba lagi.';
+        } finally {
+            $this->isLoading = false;
+        }
+    }
+
+    public function newConversation(): void
+    {
+        $this->reset([
+            'prompt',
+            'conversationId',
+            'messages',
+            'errorMessage',
+        ]);
+        $this->isLoading = false;
+    }
+
+    public function render()
+    {
+        return view('livewire.page.main.ai.assistant');
+    }
+}
