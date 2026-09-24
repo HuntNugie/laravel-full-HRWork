@@ -4,21 +4,21 @@ namespace Tests\Feature;
 
 use App\Models\Divisi;
 use App\Models\EmployeeContract;
-use App\Models\EmployeeResignation;
-use App\Models\EmployeeResignationClearance;
+use App\Models\EmployeeTermination;
+use App\Models\EmployeeTerminationClearance;
 use App\Models\Employees;
-use App\Models\Task;
-use App\Models\MasterProject;
 use App\Models\DivisionProject;
+use App\Models\MasterProject;
+use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
-use App\Service\ResignationService;
+use App\Service\TerminationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Date;
 use LogicException;
 use Tests\TestCase;
 
-class ResignationServiceTest extends TestCase
+class TerminationServiceTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -52,135 +52,103 @@ class ResignationServiceTest extends TestCase
         return [$user, $employee, $contract];
     }
 
-    public function test_create_resignation_prevents_duplicate_active_process(): void
+    public function test_create_termination_starts_process_directly(): void
     {
         Date::setTestNow('2026-09-23');
-        [$user, $employee, $contract] = $this->makeEmployee();
-        $service = app(ResignationService::class);
+        [$user, $employee] = $this->makeEmployee();
+        $service = app(TerminationService::class);
 
-        $resignation = $service->create(
+        $termination = $service->create(
             employee: $employee,
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-10-15',
-            reason: 'Pindah pekerjaan.',
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'performance',
+            reason: 'Kinerja tidak memenuhi target yang ditetapkan.',
         );
 
-        $this->assertSame(EmployeeResignation::STATUS_SUBMITTED, $resignation->status);
-        $this->assertSame($contract->id, $resignation->employee_contract_id);
+        $this->assertSame(EmployeeTermination::STATUS_IN_PROGRESS, $termination->status);
+        $this->assertSame('2026-10-15', $termination->effective_date?->format('Y-m-d'));
+        $this->assertDatabaseCount('employee_termination_clearances', 6);
+        $this->assertDatabaseCount('employee_termination_handover_items', 0);
+
+        $this->assertDatabaseHas('employee_termination_clearances', [
+            'termination_id' => $termination->id,
+            'category' => 'work',
+            'status' => 'completed',
+        ]);
+
+        $this->assertDatabaseHas('employee_termination_clearances', [
+            'termination_id' => $termination->id,
+            'category' => 'organization',
+            'status' => 'pending',
+        ]);
+
+        $this->assertDatabaseHas('employee_termination_histories', [
+            'termination_id' => $termination->id,
+            'from_status' => null,
+            'to_status' => EmployeeTermination::STATUS_IN_PROGRESS,
+        ]);
+
+        $this->assertSame('active', $employee->refresh()->status_employee);
+    }
+
+    public function test_create_termination_prevents_duplicate_active_process(): void
+    {
+        Date::setTestNow('2026-09-23');
+        [$user, $employee] = $this->makeEmployee();
+        $service = app(TerminationService::class);
+
+        $service->create(
+            employee: $employee,
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'performance',
+            reason: 'Pengajuan pertama.',
+        );
 
         $this->expectException(LogicException::class);
 
         $service->create(
             employee: $employee->refresh(),
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-11-15',
-            reason: 'Pengajuan kedua saat proses pertama masih berjalan.',
+            initiatedBy: $user,
+            effectiveDate: '2026-11-15',
+            reasonType: 'disciplinary',
+            reason: 'Pengajuan kedua.',
         );
     }
 
-    public function test_rejected_resignation_can_be_resubmitted_and_rejected_again(): void
+    public function test_cancelled_termination_keeps_employee_active_and_allows_new_process(): void
     {
         Date::setTestNow('2026-09-23');
         [$user, $employee] = $this->makeEmployee();
-        $service = app(ResignationService::class);
+        $service = app(TerminationService::class);
 
         $first = $service->create(
             employee: $employee,
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-10-15',
-            reason: 'Pengajuan pertama.',
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'performance',
+            reason: 'Proses pertama.',
         );
 
-        $first = $service->reject(
-            resignation: $first,
-            reviewer: $user,
-            reason: 'Belum dapat diproses saat ini.',
+        $first = $service->cancel(
+            termination: $first,
+            actor: $user,
+            reason: 'Proses dibatalkan oleh HR.',
         );
 
-        $this->assertSame(EmployeeResignation::STATUS_REJECTED, $first->status);
+        $this->assertSame(EmployeeTermination::STATUS_CANCELLED, $first->status);
         $this->assertSame('active', $employee->refresh()->status_employee);
 
         $second = $service->create(
             employee: $employee->refresh(),
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-11-15',
-            reason: 'Pengajuan kedua setelah pengajuan pertama ditolak.',
+            initiatedBy: $user,
+            effectiveDate: '2026-11-15',
+            reasonType: 'restructuring',
+            reason: 'Proses kedua.',
         );
 
-        $second = $service->reject(
-            resignation: $second,
-            reviewer: $user,
-            reason: 'Masih perlu dipertimbangkan.',
-        );
-
-        $this->assertSame(EmployeeResignation::STATUS_REJECTED, $second->status);
-        $this->assertSame(2, EmployeeResignation::query()
-            ->where('employee_id', $employee->id)
-            ->count());
-        $this->assertDatabaseHas('employee_resignation_histories', [
-            'resignation_id' => $second->id,
-            'to_status' => 'rejected',
-            'note' => 'Masih perlu dipertimbangkan.',
-        ]);
-    }
-
-    public function test_approve_creates_clearances_and_handover_items(): void
-    {
-        Date::setTestNow('2026-09-23');
-        [$user, $employee] = $this->makeEmployee();
-
-        $resignation = app(ResignationService::class)->create(
-            employee: $employee,
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-10-15',
-            reason: 'Alasan.',
-        );
-
-        $approved = app(ResignationService::class)->approve(
-            resignation: $resignation,
-            reviewer: $user,
-            approvedLastWorkingDate: '2026-10-15',
-        );
-
-        $this->assertSame(EmployeeResignation::STATUS_APPROVED, $approved->status);
-        $this->assertDatabaseCount('employee_resignation_clearances', 6);
-        $this->assertDatabaseCount('employee_resignation_handover_items', 0);
-        $this->assertDatabaseHas('employee_resignation_clearances', [
-            'resignation_id' => $resignation->id,
-            'category' => 'work',
-            'status' => 'completed',
-        ]);
-        $this->assertDatabaseHas('employee_resignation_clearances', [
-            'resignation_id' => $resignation->id,
-            'category' => 'organization',
-            'status' => 'pending',
-        ]);
-    }
-
-    public function test_reject_records_reason_without_changing_employee_status(): void
-    {
-        Date::setTestNow('2026-09-23');
-        [$user, $employee] = $this->makeEmployee();
-
-        $resignation = app(ResignationService::class)->create(
-            employee: $employee,
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-10-15',
-            reason: 'Alasan.',
-        );
-
-        $rejected = app(ResignationService::class)->reject(
-            resignation: $resignation,
-            reviewer: $user,
-            reason: 'Belum dapat diproses.',
-        );
-
-        $this->assertSame(EmployeeResignation::STATUS_REJECTED, $rejected->status);
-        $this->assertSame('active', $employee->refresh()->status_employee);
-        $this->assertDatabaseHas('employee_resignation_histories', [
-            'resignation_id' => $resignation->id,
-            'to_status' => 'rejected',
-        ]);
+        $this->assertSame(EmployeeTermination::STATUS_IN_PROGRESS, $second->status);
     }
 
     public function test_clearance_actions_apply_and_cancel_restores_previous_state(): void
@@ -205,28 +173,23 @@ class ResignationServiceTest extends TestCase
 
         $employee->update(['team_id' => $team->id]);
 
-        $resignation = app(ResignationService::class)->create(
+        $termination = app(TerminationService::class)->create(
             employee: $employee->refresh(),
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-10-15',
-            reason: 'Pindah pekerjaan.',
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'performance',
+            reason: 'Kinerja tidak memenuhi target.',
         );
 
-        $resignation = app(ResignationService::class)->approve(
-            resignation: $resignation,
-            reviewer: $user,
-            approvedLastWorkingDate: '2026-10-15',
-        );
+        $service = app(TerminationService::class);
 
-        $service = app(ResignationService::class);
-
-        $organization = EmployeeResignationClearance::query()
-            ->where('resignation_id', $resignation->id)
+        $organization = EmployeeTerminationClearance::query()
+            ->where('termination_id', $termination->id)
             ->where('category', 'organization')
             ->firstOrFail();
 
-        $access = EmployeeResignationClearance::query()
-            ->where('resignation_id', $resignation->id)
+        $access = EmployeeTerminationClearance::query()
+            ->where('termination_id', $termination->id)
             ->where('category', 'access')
             ->firstOrFail();
 
@@ -239,8 +202,9 @@ class ResignationServiceTest extends TestCase
         $this->assertSame('inactive', $user->refresh()->status);
 
         $service->cancel(
-            resignation: $resignation->refresh(),
+            termination: $termination->refresh(),
             actor: $user,
+            reason: 'Proses PHK dibatalkan oleh HR.',
         );
 
         $this->assertSame('active', $employee->refresh()->status_employee);
@@ -303,22 +267,17 @@ class ResignationServiceTest extends TestCase
             'status' => Task::STATUS_IN_PROGRESS,
         ]);
 
-        $resignation = app(ResignationService::class)->create(
+        $termination = app(TerminationService::class)->create(
             employee: $employee->refresh(),
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-10-15',
-            reason: 'Pindah pekerjaan.',
+            initiatedBy: $user,
+            effectiveDate: '2026-10-15',
+            reasonType: 'restructuring',
+            reason: 'Restrukturisasi organisasi.',
         );
 
-        $resignation = app(ResignationService::class)->approve(
-            resignation: $resignation,
-            reviewer: $user,
-            approvedLastWorkingDate: '2026-10-15',
-        );
+        $item = $termination->handoverItems()->firstOrFail();
 
-        $item = $resignation->handoverItems()->firstOrFail();
-
-        app(ResignationService::class)->updateHandover(
+        app(TerminationService::class)->updateHandover(
             item: $item,
             verifier: $user,
             status: 'completed',
@@ -327,49 +286,51 @@ class ResignationServiceTest extends TestCase
 
         $this->assertSame($recipient->id, $task->refresh()->assignee_id);
 
-        app(ResignationService::class)->cancel(
-            resignation: $resignation->refresh(),
+        app(TerminationService::class)->cancel(
+            termination: $termination->refresh(),
             actor: $user,
+            reason: 'Proses dibatalkan.',
         );
 
         $this->assertSame($employee->id, $task->refresh()->assignee_id);
     }
 
-    public function test_completion_requires_clearance_and_last_working_date_but_not_payroll(): void
+    public function test_completion_requires_clearance_and_effective_date_but_not_payroll(): void
     {
         Date::setTestNow('2026-09-20');
         [$user, $employee, $contract] = $this->makeEmployee();
 
-        $resignation = app(ResignationService::class)->create(
+        $termination = app(TerminationService::class)->create(
             employee: $employee,
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-09-20',
-            reason: 'Alasan.',
+            initiatedBy: $user,
+            effectiveDate: '2026-09-20',
+            reasonType: 'efficiency',
+            reason: 'Kebutuhan organisasi.',
         );
 
-        $resignation = app(ResignationService::class)->approve(
-            resignation: $resignation,
-            reviewer: $user,
-            approvedLastWorkingDate: '2026-09-20',
-        );
+        EmployeeTerminationClearance::query()
+            ->where('termination_id', $termination->id)
+            ->where('category', 'asset')
+            ->update(['status' => 'pending']);
 
         $this->expectException(LogicException::class);
-        app(ResignationService::class)->complete(
-            resignation: $resignation,
+
+        app(TerminationService::class)->complete(
+            termination: $termination,
             actor: $user,
         );
 
         $this->assertSame('active', $employee->refresh()->status_employee);
         $this->assertSame('active', $contract->refresh()->status);
 
-        $this->assertDatabaseHas('employee_resignation_clearances', [
-            'resignation_id' => $resignation->id,
+        $this->assertDatabaseHas('employee_termination_clearances', [
+            'termination_id' => $termination->id,
             'category' => 'asset',
             'status' => 'pending',
         ]);
     }
 
-    public function test_completion_releases_assignments_and_deactivates_account_without_payroll_link(): void
+    public function test_completion_releases_assignments_deactivates_account_and_terminates_contract(): void
     {
         Date::setTestNow('2026-01-01');
         [$user, $employee, $contract] = $this->makeEmployee();
@@ -396,37 +357,33 @@ class ResignationServiceTest extends TestCase
             'manager_id' => $employee->id,
         ]);
 
-        $resignation = app(ResignationService::class)->create(
+        $termination = app(TerminationService::class)->create(
             employee: $employee->refresh(),
-            submittedBy: $user,
-            proposedLastWorkingDate: '2026-01-01',
-            reason: 'Alasan.',
+            initiatedBy: $user,
+            effectiveDate: '2026-01-01',
+            reasonType: 'disciplinary',
+            reason: 'Pelanggaran disiplin.',
         );
 
-        $resignation = app(ResignationService::class)->approve(
-            resignation: $resignation,
-            reviewer: $user,
-            approvedLastWorkingDate: '2026-01-01',
-        );
-
-        EmployeeResignationClearance::query()
-            ->where('resignation_id', $resignation->id)
+        EmployeeTerminationClearance::query()
+            ->where('termination_id', $termination->id)
             ->update([
                 'status' => 'completed',
                 'verified_by' => $user->id,
                 'verified_at' => now(),
             ]);
 
-        $completed = app(ResignationService::class)->complete(
-            resignation: $resignation,
+        $completed = app(TerminationService::class)->complete(
+            termination: $termination,
             actor: $user,
         );
 
-        $this->assertSame(EmployeeResignation::STATUS_COMPLETED, $completed->status);
+        $this->assertSame(EmployeeTermination::STATUS_COMPLETED, $completed->status);
+
         $employee = $employee->refresh();
 
-        $this->assertSame('resign', $employee->status_employee);
-        $this->assertSame('2026-01-01', optional($employee->ResignDate)?->format('Y-m-d'));
+        $this->assertSame('terminated', $employee->status_employee);
+        $this->assertSame('2026-01-01', optional($employee->TerminationDate)?->format('Y-m-d'));
         $this->assertNull($employee->team_id);
         $this->assertNull($team->refresh()->supervisor_id);
         $this->assertNull($divisi->refresh()->manager_id);
@@ -436,8 +393,14 @@ class ResignationServiceTest extends TestCase
         $this->assertDatabaseHas('employee_status_histories', [
             'employee_id' => $employee->id,
             'old_status' => 'active',
-            'new_status' => 'resign',
+            'new_status' => 'terminated',
             'effective_date' => '2026-01-01',
+        ]);
+
+        $this->assertDatabaseHas('employee_termination_histories', [
+            'termination_id' => $termination->id,
+            'from_status' => EmployeeTermination::STATUS_IN_PROGRESS,
+            'to_status' => EmployeeTermination::STATUS_COMPLETED,
         ]);
     }
 }

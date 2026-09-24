@@ -52,6 +52,9 @@ use App\Livewire\Page\Main\Payroll\ManagementPayroll;
 use App\Livewire\Page\Main\Resignation\DetailResignation;
 use App\Livewire\Page\Main\Resignation\MyResignation;
 use App\Livewire\Page\Main\Resignation\Resignations;
+use App\Livewire\Page\Main\Termination\CreateTermination;
+use App\Livewire\Page\Main\Termination\DetailTermination;
+use App\Livewire\Page\Main\Termination\Terminations;
 use App\Livewire\Page\Main\Payroll\MyPayroll;
 use App\Livewire\Page\Main\Position\DetailPosition;
 use App\Livewire\Page\Main\Position\Position;
@@ -166,6 +169,20 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/{resignation}/detail', DetailResignation::class)
             ->middleware('permission:show-resignation')
             ->name('resignation.show');
+    });
+
+    Route::prefix('terminations')->group(function () {
+        Route::get('/', Terminations::class)
+            ->middleware('permission:view-termination')
+            ->name('termination.view');
+
+        Route::get('/create', CreateTermination::class)
+            ->middleware('permission:create-termination')
+            ->name('termination.create');
+
+        Route::get('/{termination}/detail', DetailTermination::class)
+            ->middleware('permission:show-termination')
+            ->name('termination.show');
     });
 
     Route::prefix('benefits')->group(function () {

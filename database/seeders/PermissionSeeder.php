@@ -133,6 +133,12 @@ class PermissionSeeder extends Seeder
             'show-resignation-my',
             'create-resignation-my',
             'cancel-resignation-my',
+            'view-termination',
+            'show-termination',
+            'create-termination',
+            'cancel-termination',
+            'manage-termination-clearance',
+            'complete-termination',
             'view-work-time',
         ];
 

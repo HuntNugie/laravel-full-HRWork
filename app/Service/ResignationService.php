@@ -6,6 +6,7 @@ use App\Models\EmployeeResignation;
 use App\Models\EmployeeResignationClearance;
 use App\Models\EmployeeResignationHandoverItem;
 use App\Models\EmployeeResignationHistory;
+use App\Models\EmployeeTermination;
 use App\Models\Employees;
 use App\Models\Task;
 use App\Models\User;
@@ -66,6 +67,14 @@ class ResignationService
 
         if ($hasActiveResignation) {
             throw new LogicException('Karyawan sudah memiliki proses resign yang masih berjalan.');
+        }
+
+        $hasActiveTermination = $employee->terminations()
+            ->where('status', EmployeeTermination::STATUS_IN_PROGRESS)
+            ->exists();
+
+        if ($hasActiveTermination) {
+            throw new LogicException('Karyawan sudah memiliki proses PHK yang masih berjalan.');
         }
 
         return DB::transaction(function () use (
@@ -215,6 +224,7 @@ class ResignationService
     ): EmployeeResignation {
         return DB::transaction(function () use ($resignation, $actor) {
             $resignation = EmployeeResignation::query()
+                ->with(['clearances', 'handoverItems'])
                 ->lockForUpdate()
                 ->findOrFail($resignation->id);
 
@@ -223,6 +233,16 @@ class ResignationService
                 EmployeeResignation::STATUS_APPROVED,
             ], true)) {
                 throw new LogicException('Pengajuan resign ini tidak dapat dibatalkan.');
+            }
+
+            $exitActions = app(EmployeeExitActionService::class);
+
+            foreach ($resignation->handoverItems as $item) {
+                $exitActions->rollbackHandover($item);
+            }
+
+            foreach ($resignation->clearances as $clearance) {
+                $exitActions->rollbackClearance($clearance);
             }
 
             $resignation->update([
@@ -268,12 +288,31 @@ class ResignationService
                 throw new LogicException('Clearance hanya dapat diproses pada resign yang sudah disetujui.');
             }
 
+            $previousStatus = $clearance->status;
+
+            if (
+                in_array($previousStatus, [
+                    EmployeeResignationClearance::STATUS_COMPLETED,
+                    EmployeeResignationClearance::STATUS_NOT_APPLICABLE,
+                ], true)
+                && $status !== EmployeeResignationClearance::STATUS_COMPLETED
+            ) {
+                app(EmployeeExitActionService::class)->rollbackClearance($clearance);
+            }
+
             $clearance->update([
                 'status' => $status,
                 'notes' => $notes ? trim($notes) : null,
                 'verified_by' => $verifier->id,
                 'verified_at' => now(),
             ]);
+
+            if ($status === EmployeeResignationClearance::STATUS_COMPLETED) {
+                app(EmployeeExitActionService::class)->applyClearance(
+                    clearance: $clearance->refresh(),
+                    actor: $verifier,
+                );
+            }
 
             return $clearance->refresh();
         });
@@ -312,6 +351,8 @@ class ResignationService
                 throw new LogicException('Handover hanya dapat diproses pada resign yang sudah disetujui.');
             }
 
+            $previousStatus = $item->status;
+
             if ($handoverToEmployeeId !== null) {
                 $employee = Employees::query()->find($handoverToEmployeeId);
 
@@ -328,6 +369,13 @@ class ResignationService
                 throw new LogicException('Penerima handover wajib ditentukan sebelum pekerjaan diselesaikan.');
             }
 
+            if (
+                $previousStatus === EmployeeResignationHandoverItem::STATUS_COMPLETED
+                && $status !== EmployeeResignationHandoverItem::STATUS_COMPLETED
+            ) {
+                app(EmployeeExitActionService::class)->rollbackHandover($item);
+            }
+
             $item->update([
                 'status' => $status,
                 'handover_to_employee_id' => $handoverToEmployeeId,
@@ -335,6 +383,13 @@ class ResignationService
                 'verified_by' => $verifier->id,
                 'verified_at' => now(),
             ]);
+
+            if ($status === EmployeeResignationHandoverItem::STATUS_COMPLETED) {
+                app(EmployeeExitActionService::class)->applyHandover(
+                    item: $item->refresh(),
+                    actor: $verifier,
+                );
+            }
 
             return $item->refresh();
         });
@@ -489,6 +544,15 @@ class ResignationService
                 ], true)
         );
 
+        $organizationClearance = $resignation->clearances
+            ->firstWhere('category', 'organization');
+
+        $organizationReady = !$organizationClearance
+            || in_array($organizationClearance->status, [
+                EmployeeResignationClearance::STATUS_COMPLETED,
+                EmployeeResignationClearance::STATUS_NOT_APPLICABLE,
+            ], true);
+
         $handoverReady = $resignation->handoverItems->every(
             fn(EmployeeResignationHandoverItem $item) =>
                 in_array($item->status, [
@@ -498,7 +562,6 @@ class ResignationService
         );
 
         // Assignment organisasi akan dilepas otomatis saat completion.
-        $organizationReady = true;
 
         $leaveReady = !$this->hasUnresolvedLeave($resignation);
 
@@ -544,16 +607,7 @@ class ResignationService
             ]);
         }
 
-        $employee = $resignation->employee()->lockForUpdate()->firstOrFail();
-
-        $resignation->clearances()
-            ->where('category', 'organization')
-            ->update([
-                'status' => EmployeeResignationClearance::STATUS_COMPLETED,
-                'verified_by' => $reviewer->id,
-                'verified_at' => now(),
-                'notes' => 'Assignment organisasi akan dilepas otomatis saat resignation selesai.',
-            ]);
+        $resignation->employee()->lockForUpdate()->firstOrFail();
     }
 
     private function prepareHandover(EmployeeResignation $resignation): void

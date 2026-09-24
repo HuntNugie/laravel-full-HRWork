@@ -587,6 +587,18 @@
 
                         </div>
 
+                        @if ($employee?->TerminationDate)
+                            <div>
+                                <span class="text-xs font-medium text-slate-400">
+                                    Tanggal PHK
+                                </span>
+
+                                <p class="mt-1 text-sm font-medium text-slate-800">
+                                    {{ $employee->TerminationDate->translatedFormat('d M Y') }}
+                                </p>
+                            </div>
+                        @endif
+
                     </div>
                 @else
                     <div>

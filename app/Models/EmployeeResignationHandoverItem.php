@@ -32,4 +32,12 @@ class EmployeeResignationHandoverItem extends Model
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
+
+    protected function casts(): array
+    {
+        return [
+            'action_state' => 'array',
+            'verified_at' => 'datetime',
+        ];
+    }
 }

@@ -152,7 +152,7 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-employee', 'view-contract', 'view-resignation'])
+        @canany(['view-employee', 'view-contract', 'view-resignation', 'view-termination'])
             <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-employee')
@@ -173,6 +173,13 @@
                     <x-wirekit::sidebar.item href="{{ route('resignation.view') }}" :active="request()->routeIs('resignation.view', 'resignation.show')" icon="document-text"
                         wire:navigate>
                         Resignation
+                    </x-wirekit::sidebar.item>
+                @endcan
+
+                @can('view-termination')
+                    <x-wirekit::sidebar.item href="{{ route('termination.view') }}" :active="request()->routeIs('termination.view', 'termination.create', 'termination.show')" icon="user-minus"
+                        wire:navigate>
+                        PHK / Termination
                     </x-wirekit::sidebar.item>
                 @endcan
 

@@ -134,6 +134,14 @@ class RolePermissionSeeder extends Seeder
                 'cancel-resignation',
                 'manage-resignation-clearance',
                 'complete-resignation',
+
+                // Termination
+                'view-termination',
+                'show-termination',
+                'create-termination',
+                'cancel-termination',
+                'manage-termination-clearance',
+                'complete-termination',
             ],
 
             'administrator' => [
@@ -178,6 +186,10 @@ class RolePermissionSeeder extends Seeder
                 'update-own-task',
                 'submit-task',
                 'review-task',
+
+                // Termination visibility
+                'view-termination',
+                'show-termination',
             ],
 
             'manager' => [
