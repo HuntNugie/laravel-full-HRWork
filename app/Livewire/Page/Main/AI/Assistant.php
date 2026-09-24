@@ -5,6 +5,9 @@ namespace App\Livewire\Page\Main\AI;
 use App\Ai\Agents\HRAssistant;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Laravel\Ai\Responses\Data\ToolCall as ToolCallData;
+use Laravel\Ai\Streaming\Events\ToolCall as ToolCallEvent;
+use Laravel\Ai\Streaming\Events\ToolResult as ToolResultEvent;
 use Throwable;
 
 #[Layout('layouts.main', ['title' => 'HRWork AI'])]
@@ -12,11 +15,38 @@ class Assistant extends Component
 {
     public string $prompt = '';
 
+    /**
+     * @var list<array{
+     *     role: string,
+     *     content: string,
+     *     tool_calls?: list<array{
+     *         id: string,
+     *         name: string,
+     *         status: string,
+     *         arguments: array<string, mixed>|string,
+     *         seconds?: int|null,
+     *         result?: string
+     *     }>
+     * }>
+     */
     public array $messages = [];
 
     public bool $isLoading = false;
 
     public ?string $errorMessage = null;
+
+    /**
+     * @var array<string, array{
+     *     id: string,
+     *     name: string,
+     *     arguments: array<string, mixed>,
+     *     status: string,
+     *     started_at: int,
+     *     result?: string,
+     *     seconds?: int|null
+     * }>
+     */
+    public array $toolCalls = [];
 
     public function send(): void
     {
@@ -36,6 +66,8 @@ class Assistant extends Component
 
         $this->errorMessage = null;
         $this->isLoading = true;
+        $this->toolCalls = [];
+
         $this->messages[] = [
             'role' => 'user',
             'content' => $prompt,
@@ -49,15 +81,52 @@ class Assistant extends Component
                 model: config('ai.providers.9router.models.text.default')
             );
 
-            // Drain the SSE stream completely so Laravel AI can process
-            // tool calls and continue the agent loop until the final answer.
+            // Drain the SSE stream completely so Laravel AI can execute local
+            // tools and continue the agent loop until the final answer.
             foreach ($response as $event) {
-                // The UI currently renders the completed answer as one message.
+                if ($event instanceof ToolCallEvent) {
+                    $call = $event->toolCall;
+
+                    $this->toolCalls[$call->id] = [
+                        'id' => $call->id,
+                        'name' => $call->name,
+                        'arguments' => $call->arguments,
+                        'status' => 'running',
+                        'started_at' => $event->timestamp,
+                    ];
+
+                    continue;
+                }
+
+                if ($event instanceof ToolResultEvent && ! $event->preliminary) {
+                    $callId = $event->toolResult->id;
+
+                    if (! isset($this->toolCalls[$callId])) {
+                        $this->toolCalls[$callId] = [
+                            'id' => $callId,
+                            'name' => $event->toolResult->name,
+                            'arguments' => $event->toolResult->arguments,
+                            'status' => $event->successful ? 'done' : 'failed',
+                            'started_at' => $event->timestamp,
+                        ];
+                    }
+
+                    $startedAt = $this->toolCalls[$callId]['started_at'];
+
+                    $this->toolCalls[$callId]['status'] = $event->successful ? 'done' : 'failed';
+                    $this->toolCalls[$callId]['result'] = $event->error
+                        ?? $event->toolResult->text();
+                    $this->toolCalls[$callId]['seconds'] = max(
+                        0,
+                        $event->timestamp - $startedAt
+                    );
+                }
             }
 
             $this->messages[] = [
                 'role' => 'assistant',
                 'content' => $response->text ?? '',
+                'tool_calls' => array_values($this->toolCalls),
             ];
         } catch (Throwable $exception) {
             report($exception);
