@@ -1,7 +1,7 @@
 <?php
 
-use IlluminateDatabaseSchemaBlueprint;
-use IlluminateSupportFacadesSchema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Ai\Migrations\AiMigration;
 
 return new class extends AiMigration
