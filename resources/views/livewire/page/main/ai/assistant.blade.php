@@ -2,7 +2,6 @@
     <div class="mx-auto flex h-full max-w-6xl flex-col gap-6">
 
         <div>
-            <div>
                 <div class="flex items-center gap-3">
                     <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#30AFFF]/10 text-[#30AFFF] ring-1 ring-[#30AFFF]/20">
                         <x-wirekit::icon name="sparkles" class="h-6 w-6" />
@@ -34,7 +33,8 @@
 
                             <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">
                                 Untuk saat ini AI digunakan sebagai chat foundation. Tool untuk membaca
-                                data HRWork akan ditambahkan bertahap setelah smoke test berhasil.
+                                data HRWork akan ditambahkan bertahap setelah smoke test berhasil.<br>
+                                Chat hanya ditampilkan selama halaman ini terbuka dan tidak disimpan sebagai riwayat.
                             </p>
 
                             <div class="mt-8 grid gap-3 text-left sm:grid-cols-2">
