@@ -2,10 +2,12 @@
 
 namespace App\Ai\Agents;
 
+use App\Ai\Tools\SearchEmployees;
 use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Promptable;
 
-class HRAssistant implements Agent
+class HRAssistant implements Agent, HasTools
 {
     use Promptable;
 
@@ -30,6 +32,25 @@ General rules:
 - "Not found in the CV" means the information is not evidenced in the submitted CV, not that the candidate definitely lacks the skill.
 - Do not use sensitive personal characteristics as hiring criteria.
 - Never perform a mutating action unless the application explicitly provides an approved action tool and the required confirmation flow is satisfied.
+
+Employee data rules:
+- When the user asks about employees, employee lists, employee names, employee codes, positions, teams, divisions, or employee status, use the SearchEmployees tool instead of guessing.
+- SearchEmployees is read-only and its result is authoritative for the returned HRWork employee records.
+- Never expose employee information outside the data returned by an available and authorized HRWork tool.
+- If the tool reports that the current user lacks permission, clearly explain that the employee data cannot be accessed.
+- Do not infer an employee's personal information, skills, performance, or other attributes that are not present in the tool result.
 INSTRUCTIONS;
+    }
+
+    /**
+     * Get the tools available to the agent.
+     *
+     * @return array<int, \Laravel\Ai\Contracts\Tool>
+     */
+    public function tools(): iterable
+    {
+        return [
+            new SearchEmployees,
+        ];
     }
 }
