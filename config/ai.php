@@ -4,13 +4,6 @@ return [
 
     'default' => '9router',
 
-    'default_for_images' => '9router',
-    'default_for_audio' => '9router',
-    'default_for_transcription' => '9router',
-    'default_for_embeddings' => '9router',
-    'default_for_reranking' => '9router',
-    'default_for_classification' => '9router',
-
     'conversations' => [
         'connection' => env('AI_CONVERSATIONS_CONNECTION'),
         'tables' => [
