@@ -46,11 +46,9 @@ class WorkManagementPermissionSeeder extends Seeder
             'general-manager' => [
                 'view-master-project',
                 'create-master-project',
-                'update-master-project',
                 'approve-master-project',
                 'view-division-project',
                 'create-division-project',
-                'update-division-project',
                 'assign-project-team',
                 'review-division-project',
                 'view-task',
