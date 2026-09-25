@@ -3,6 +3,7 @@
 namespace App\Livewire\Page\Main\AI;
 
 use App\Ai\Agents\HRAssistant;
+use Laravel\Ai\Streaming\Events\TextDelta;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Throwable;
@@ -51,10 +52,13 @@ class Assistant extends Component
                 model: config('ai.providers.9router.models.text.default')
             );
 
-            // Drain the SSE stream completely so Laravel AI can execute
-            // tool calls and continue the agent loop until the final answer.
             foreach ($response as $event) {
-                // The UI currently renders the completed answer as one message.
+                if ($event instanceof TextDelta && $event->delta !== '') {
+                    $this->stream(
+                        content: $event->delta,
+                        el: '#hrwork-ai-stream'
+                    );
+                }
             }
 
             $this->messages[] = [
