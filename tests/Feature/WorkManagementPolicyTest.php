@@ -18,6 +18,16 @@ class WorkManagementPolicyTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_general_manager_can_create_master_project(): void
+    {
+        $gm = $this->makeRoleUser('GM-CREATE', 'general-manager');
+        $manager = $this->makeRoleUser('MAN-CREATE', 'manager');
+
+        $this->assertTrue(Gate::forUser($gm->user)->allows('create', \App\Models\MasterProject::class));
+        $this->assertFalse(Gate::forUser($manager->user)->allows('create', \App\Models\MasterProject::class));
+    }
+
+
     public function test_manager_can_only_view_their_division_projects(): void
     {
         [$managerA, $managerB, $gm, $divisionA, $divisionB] = $this->makeManagers();
