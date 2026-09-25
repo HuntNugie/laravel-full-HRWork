@@ -5,7 +5,10 @@ namespace App\Service;
 use App\Models\ContractLeaveEntitlements;
 use App\Models\EmployeeContract;
 use App\Models\Employees;
+use App\Models\Holidays;
 use App\Models\LeaveRequest;
+use App\Models\WorkTime;
+use Carbon\CarbonPeriod;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -33,22 +36,72 @@ class LeaveRequestService
 
     public function usedDays(ContractLeaveEntitlements $entitlement, int $year): int
     {
-        return (int) LeaveRequest::query()
-            ->where('employee_contract_id', $entitlement->employee_contract_id)
-            ->where('leave_type_id', $entitlement->leave_type_id)
-            ->where('status', 'approved')
-            ->whereYear('start_date', $year)
-            ->sum('total_days');
+        return $this->sumWorkingLeaveDays(
+            entitlement: $entitlement,
+            year: $year,
+            status: 'approved',
+        );
     }
 
     public function pendingDays(ContractLeaveEntitlements $entitlement, int $year): int
     {
-        return (int) LeaveRequest::query()
-            ->where('employee_contract_id', $entitlement->employee_contract_id)
-            ->where('leave_type_id', $entitlement->leave_type_id)
-            ->where('status', 'pending')
-            ->whereYear('start_date', $year)
-            ->sum('total_days');
+        return $this->sumWorkingLeaveDays(
+            entitlement: $entitlement,
+            year: $year,
+            status: 'pending',
+        );
+    }
+
+    /**
+     * Count only dates that are scheduled as working days and are not holidays.
+     *
+     * A leave range may span weekends, non-working WorkTime entries, and
+     * registered holidays. Those dates do not consume leave entitlement.
+     */
+    public function countWorkingLeaveDays(
+        CarbonInterface|string $startDate,
+        CarbonInterface|string $endDate,
+    ): int {
+        $start = $this->normalizeDate($startDate);
+        $end = $this->normalizeDate($endDate);
+
+        if ($start->gt($end)) {
+            return 0;
+        }
+
+        $workTimes = WorkTime::query()
+            ->get()
+            ->keyBy(
+                fn (WorkTime $workTime) => strtolower(trim($workTime->day_of_week))
+            );
+
+        $holidays = Holidays::query()
+            ->whereBetween('date', [
+                $start->toDateString(),
+                $end->toDateString(),
+            ])
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            ->flip();
+
+        return collect(CarbonPeriod::create($start, $end))
+            ->filter(function (CarbonInterface $date) use ($workTimes, $holidays): bool {
+                $dayName = [
+                    1 => 'senin',
+                    2 => 'selasa',
+                    3 => 'rabu',
+                    4 => 'kamis',
+                    5 => 'jumat',
+                    6 => 'sabtu',
+                    7 => 'minggu',
+                ][$date->dayOfWeekIso];
+
+                $workTime = $workTimes->get($dayName);
+
+                return $workTime?->is_working_day === true
+                    && ! $holidays->has($date->toDateString());
+            })
+            ->count();
     }
 
     public function remainingDays(ContractLeaveEntitlements $entitlement, int $year): int
@@ -119,7 +172,14 @@ class LeaveRequestService
                 );
             }
 
-            $totalDays = $start->diffInDays($end) + 1;
+            $totalDays = $this->countWorkingLeaveDays($start, $end);
+
+            if ($totalDays <= 0) {
+                throw new LogicException(
+                    'Periode yang dipilih tidak memiliki jadwal kerja yang dapat dihitung sebagai cuti.'
+                );
+            }
+
             $leaveYear = $start->year;
 
             $availableDays = $this->remainingDays($entitlement, $leaveYear);
@@ -143,25 +203,21 @@ class LeaveRequestService
                 );
             }
 
+            $workingDates = $this->workingLeaveDates($start, $end);
+
             $hasAbsenceOverlap = $employee->employeeAbsenceRequest()
                 ->whereIn('status', ['pending', 'approved'])
-                ->whereBetween('date', [
-                    $start->toDateString(),
-                    $end->toDateString(),
-                ])
+                ->whereIn('date', $workingDates)
                 ->exists();
 
             if ($hasAbsenceOverlap) {
                 throw new LogicException(
-                    'Periode cuti bertabrakan dengan pengajuan sakit/izin yang masih aktif.'
+                    'Periode cuti bertabrakan dengan pengajuan sakit/izin pada salah satu jadwal kerja.'
                 );
             }
 
             $hasAttendance = $employee->attendances()
-                ->whereBetween('date', [
-                    $start->toDateString(),
-                    $end->toDateString(),
-                ])
+                ->whereIn('date', $workingDates)
                 ->whereNotNull('check_in_at')
                 ->exists();
 
@@ -242,22 +298,29 @@ class LeaveRequestService
                 );
             }
 
+            $totalDays = $this->countWorkingLeaveDays($start, $end);
+
+            if ($totalDays <= 0) {
+                throw new LogicException(
+                    'Periode cuti tidak memiliki jadwal kerja yang dapat dihitung sebagai cuti.'
+                );
+            }
+
             $availableDays = $this->remainingDays(
                 entitlement: $entitlement,
                 year: $start->year,
             );
 
-            if ((int) $leaveRequest->total_days > $availableDays) {
+            if ($totalDays > $availableDays) {
                 throw new LogicException(
-                    "Pengajuan {$leaveRequest->total_days} hari tidak dapat disetujui. Sisa jatah yang tersedia hanya {$availableDays} hari."
+                    "Pengajuan {$totalDays} hari tidak dapat disetujui. Sisa jatah yang tersedia hanya {$availableDays} hari."
                 );
             }
 
+            $workingDates = $this->workingLeaveDates($start, $end);
+
             $hasAttendance = $employee->attendances()
-                ->whereBetween('date', [
-                    $start->toDateString(),
-                    $end->toDateString(),
-                ])
+                ->whereIn('date', $workingDates)
                 ->whereNotNull('check_in_at')
                 ->exists();
 
@@ -269,10 +332,7 @@ class LeaveRequestService
 
             $hasOtherAbsence = $employee->employeeAbsenceRequest()
                 ->whereIn('status', ['pending', 'approved'])
-                ->whereBetween('date', [
-                    $start->toDateString(),
-                    $end->toDateString(),
-                ])
+                ->whereIn('date', $workingDates)
                 ->exists();
 
             if ($hasOtherAbsence) {
@@ -282,6 +342,7 @@ class LeaveRequestService
             }
 
             $leaveRequest->update([
+                'total_days' => $totalDays,
                 'status' => 'approved',
                 'approved_by' => $approvedBy,
                 'approved_at' => now(),
@@ -364,6 +425,72 @@ class LeaveRequestService
             })
             ->orderByDesc('start_date')
             ->first();
+    }
+
+    private function sumWorkingLeaveDays(
+        ContractLeaveEntitlements $entitlement,
+        int $year,
+        string $status,
+    ): int {
+        return (int) LeaveRequest::query()
+            ->where('employee_contract_id', $entitlement->employee_contract_id)
+            ->where('leave_type_id', $entitlement->leave_type_id)
+            ->where('status', $status)
+            ->whereYear('start_date', $year)
+            ->get(['start_date', 'end_date'])
+            ->sum(fn (LeaveRequest $request) => $this->countWorkingLeaveDays(
+                $request->start_date,
+                $request->end_date,
+            ));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function workingLeaveDates(CarbonInterface|string $startDate, CarbonInterface|string $endDate): array
+    {
+        $start = $this->normalizeDate($startDate);
+        $end = $this->normalizeDate($endDate);
+
+        if ($start->gt($end)) {
+            return [];
+        }
+
+        $workTimes = WorkTime::query()
+            ->get()
+            ->keyBy(
+                fn (WorkTime $workTime) => strtolower(trim($workTime->day_of_week))
+            );
+
+        $holidays = Holidays::query()
+            ->whereBetween('date', [
+                $start->toDateString(),
+                $end->toDateString(),
+            ])
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            ->flip();
+
+        return collect(CarbonPeriod::create($start, $end))
+            ->filter(function (CarbonInterface $date) use ($workTimes, $holidays): bool {
+                $dayName = [
+                    1 => 'senin',
+                    2 => 'selasa',
+                    3 => 'rabu',
+                    4 => 'kamis',
+                    5 => 'jumat',
+                    6 => 'sabtu',
+                    7 => 'minggu',
+                ][$date->dayOfWeekIso];
+
+                $workTime = $workTimes->get($dayName);
+
+                return $workTime?->is_working_day === true
+                    && ! $holidays->has($date->toDateString());
+            })
+            ->map(fn (CarbonInterface $date) => $date->toDateString())
+            ->values()
+            ->all();
     }
 
     private function normalizeDate(CarbonInterface|string $date): Carbon
