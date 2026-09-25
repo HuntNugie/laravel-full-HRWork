@@ -425,6 +425,48 @@
 
                             <x-wirekit::card.body>
                                 <div class="space-y-5">
+                                    <div class="rounded-2xl border border-sky-100 bg-sky-50/50 p-4">
+                                        <div class="flex flex-col gap-1">
+                                            <p class="text-xl font-semibold tracking-tight text-slate-900">
+                                                {{ $candidate['name'] ?? 'Nama kandidat tidak ditemukan' }}
+                                            </p>
+                                            <p class="text-sm text-[#168fd8]">
+                                                {{ $candidate['current_or_targeted_title'] ?? 'Posisi/jabatan tidak ditemukan' }}
+                                            </p>
+                                            @if (!empty($candidate['headline']))
+                                                <p class="mt-1 text-sm leading-5 text-slate-600">
+                                                    {{ $candidate['headline'] }}
+                                                </p>
+                                            @endif
+                                        </div>
+
+                                        @php
+                                            $contact = $candidate['contact'] ?? [];
+                                        @endphp
+
+                                        <div class="mt-4 grid gap-2 sm:grid-cols-2">
+                                            @foreach ([
+                                                'Email' => $contact['email'] ?? '',
+                                                'Telepon' => $contact['phone'] ?? '',
+                                                'Lokasi' => $contact['location'] ?? '',
+                                                'LinkedIn' => $contact['linkedin'] ?? '',
+                                                'Portfolio' => $contact['portfolio'] ?? '',
+                                                'Website' => $contact['website'] ?? '',
+                                            ] as $label => $value)
+                                                @if (filled($value))
+                                                    <div class="flex min-w-0 items-start gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-sky-100">
+                                                        <span class="w-20 shrink-0 text-xs font-medium text-slate-400">
+                                                            {{ $label }}
+                                                        </span>
+                                                        <span class="min-w-0 break-all text-xs text-slate-700">
+                                                            {{ $value }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+
                                     <div>
                                         <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
                                             Profile Summary
