@@ -30,29 +30,79 @@
                     </div>
 
                     <div>
-                        <label for="employeeSearch" class="mb-2 block text-sm font-medium text-slate-700">Cari Task Worker</label>
-                        <div class="relative">
-                            <x-wirekit::input
-                                id="employeeSearch"
-                                type="search"
-                                wire:model.live.debounce.300ms="employeeSearch"
-                                placeholder="Cari nama atau employee code..."
-                            />
+                        <label for="employeeSearch" class="mb-2 block text-sm font-medium text-slate-700">Task Worker</label>
+
+                        @php
+                            $selectedEmployee = $assignees->firstWhere('id', $assignee_id);
+                        @endphp
+
+                        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                            <div class="border-b border-slate-100 p-2">
+                                <x-wirekit::input
+                                    id="employeeSearch"
+                                    type="search"
+                                    wire:model.live.debounce.300ms="employeeSearch"
+                                    placeholder="Cari nama atau employee code..."
+                                />
+                            </div>
+
+                            <div class="max-h-64 overflow-y-auto">
+                                @forelse ($this->filteredAssignees as $employee)
+                                    <button
+                                        type="button"
+                                        wire:click="selectAssignee({{ $employee->id }})"
+                                        class="flex w-full items-center justify-between gap-3 border-b border-slate-50 px-3 py-2.5 text-left last:border-b-0 hover:bg-sky-50"
+                                    >
+                                        <div class="min-w-0">
+                                            <p class="truncate text-sm font-medium text-slate-800">
+                                                {{ $employee->user?->name ?? '-' }}
+                                            </p>
+                                            <p class="text-xs text-slate-400">
+                                                {{ $employee->employee_code }}
+                                            </p>
+                                        </div>
+
+                                        @if ((int) $assignee_id === (int) $employee->id)
+                                            <span class="shrink-0 rounded-full bg-sky-100 px-2 py-1 text-xs font-medium text-sky-700">
+                                                Dipilih
+                                            </span>
+                                        @endif
+                                    </button>
+                                @empty
+                                    <div class="px-3 py-8 text-center text-sm text-slate-400">
+                                        Tidak ada employee yang cocok.
+                                    </div>
+                                @endforelse
+                            </div>
                         </div>
+
+                        @if ($selectedEmployee)
+                            <div class="mt-2 flex items-center justify-between gap-3 rounded-xl border border-sky-100 bg-sky-50 px-3 py-2.5">
+                                <div class="min-w-0">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-sky-600">Task Worker terpilih</p>
+                                    <p class="truncate text-sm font-semibold text-slate-800">
+                                        {{ $selectedEmployee->user?->name ?? '-' }}
+                                    </p>
+                                    <p class="text-xs text-slate-500">{{ $selectedEmployee->employee_code }}</p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    wire:click="$set('assignee_id', null)"
+                                    class="shrink-0 text-xs font-medium text-sky-700 hover:underline"
+                                >
+                                    Ganti
+                                </button>
+                            </div>
+                        @endif
+
                         <p class="mt-1 text-xs text-slate-400">
-                            {{ $this->filteredAssignees->count() }} employee ditemukan dari {{ $assignees->count() }} anggota Team.
+                            Menampilkan seluruh anggota Team. Ketik untuk memfilter berdasarkan nama atau employee code.
                         </p>
 
-                        <label for="assignee_id" class="sr-only">Task Worker</label>
-                        <select id="assignee_id" wire:model="assignee_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
-                            <option value="">Pilih Employee</option>
-                            @forelse ($this->filteredAssignees as $employee)
-                                <option value="{{ $employee->id }}">{{ $employee->user?->name ?? '-' }} · {{ $employee->employee_code }}</option>
-                            @empty
-                                <option value="" disabled>Tidak ada employee yang cocok</option>
-                            @endforelse
-                        </select>
-                        @error('assignee_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                        @error('assignee_id')
+                            <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
 
