@@ -3,7 +3,6 @@
 namespace App\Livewire\Page\Main\WorkManagement;
 
 use App\Models\DivisionProject;
-use App\Models\ProjectReport;
 use App\Models\Task;
 use App\Models\Team;
 use App\Service\WorkManagementService;
@@ -12,17 +11,13 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.main', ['title' => 'Team Progress'])]
+#[Layout('layouts.main', ['title' => 'Team Work Board'])]
 class DivisionProjectTeamDetail extends Component
 {
     public DivisionProject $divisionProject;
     public Team $team;
     public Collection $tasks;
-    public ?ProjectReport $latestSupervisorReport = null;
-
-    public string $supervisorReport = '';
-    public ?string $reviewDecision = null;
-    public string $reviewFeedback = '';
+    public Collection $members;
 
     public function mount(DivisionProject $divisionProject, Team $team): void
     {
@@ -34,60 +29,25 @@ class DivisionProjectTeamDetail extends Component
 
         $this->divisionProject = $divisionProject;
         $this->team = $team;
-
         $this->loadPage();
     }
 
-    public function submitSupervisorReport(WorkManagementService $service): void
+    public function toggleTask(Task $task, WorkManagementService $service, bool $completed): void
     {
-        $this->authorize('submitSupervisorReport', $this->divisionProject);
+        $this->authorize('updateOwn', $task);
 
-        $this->validate([
-            'supervisorReport' => ['required', 'string'],
-        ]);
-
-        $employee = Auth::user()?->employees;
-        if (! $employee || (int) $this->team->supervisor_id !== (int) $employee->id) {
-            abort(403);
+        if ((int) $task->team_id !== (int) $this->team->id) {
+            abort(404);
         }
 
-        $service->submitSupervisorReport(
-            $this->divisionProject,
-            $employee,
-            $this->supervisorReport,
-        );
-
-        $this->supervisorReport = '';
-        $this->loadPage();
-        session()->flash('success', 'Laporan Team berhasil dikirim ke Manager.');
-    }
-
-    public function reviewSupervisorReport(WorkManagementService $service): void
-    {
-        $this->authorize('reviewTeamReport', [$this->divisionProject, $this->team]);
-
-        $this->validate([
-            'reviewDecision' => ['required', 'in:approved,rejected'],
-            'reviewFeedback' => ['nullable', 'string'],
-        ]);
-
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
 
-        $service->reviewTeamReport(
-            $this->divisionProject,
-            $this->team,
-            $employee,
-            $this->reviewDecision,
-            $this->reviewFeedback ?: null,
-        );
-
-        $this->reviewDecision = null;
-        $this->reviewFeedback = '';
+        $service->toggleTaskCompletion($task, $employee, $completed);
         $this->loadPage();
-        session()->flash('success', 'Review laporan Supervisor berhasil disimpan.');
     }
 
     public function render()
@@ -95,33 +55,37 @@ class DivisionProjectTeamDetail extends Component
         return view('livewire.page.main.work-management.division-project-team-detail');
     }
 
-    public function getAutomaticProgressProperty(): int
+    public function getCompletionLabelProperty(): string
     {
         $activeTasks = $this->tasks->reject(
             fn (Task $task) => $task->status === Task::STATUS_CANCELLED
         );
 
         if ($activeTasks->isEmpty()) {
-            return 0;
+            return '0 / 0 selesai';
         }
 
-        return (int) round($activeTasks->avg(fn (Task $task) => (int) $task->progress));
+        return $activeTasks->where('status', Task::STATUS_DONE)->count()
+            . ' / '
+            . $activeTasks->count()
+            . ' selesai';
     }
 
     private function loadPage(): void
     {
-        $this->team->load('supervisor.user');
+        $this->team = $this->team->refresh()->load([
+            'supervisor.user',
+            'employees.user',
+        ]);
+
+        $this->members = $this->team->employees
+            ->sortBy(fn ($employee) => (int) $employee->id)
+            ->values();
 
         $this->tasks = $this->divisionProject->tasks()
             ->where('team_id', $this->team->id)
-            ->with(['assignee.user', 'reviews.reviewer.user'])
+            ->with('assignee.user')
             ->orderByDesc('id')
             ->get();
-
-        $this->latestSupervisorReport = $this->divisionProject->reports()
-            ->where('report_level', ProjectReport::LEVEL_SUPERVISOR)
-            ->where('team_id', $this->team->id)
-            ->latest('id')
-            ->first();
     }
 }
