@@ -4,9 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Divisi;
 use App\Models\Employees;
-use App\Models\Permission;
-use App\Models\MasterProject;
-use App\Models\Role;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
@@ -194,7 +193,7 @@ class WorkManagementServiceTest extends TestCase
     public function test_master_project_can_be_completed_only_after_all_divisions_are_complete(): void
     {
         [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
-        [$secondSupervisor, , $secondTeam, $secondDivision] = $this->makeAdditionalStructure('Frontend');
+        [$secondSupervisor, $secondWorker, $secondTeam, $secondDivision] = $this->makeAdditionalStructure('Frontend');
 
         $service = app(WorkManagementService::class);
 
@@ -217,13 +216,6 @@ class WorkManagementServiceTest extends TestCase
         );
 
         $backendTask = $service->createTask($backend, $team, $worker, $supervisor, 'Backend task');
-        $secondWorker = $secondTeam->employees()->whereKey('>', 0)->whereKeyNot($secondSupervisor->id)->first();
-
-        if (! $secondWorker) {
-            $secondWorker = $this->makeRoleUser('WORK-2', 'task-worker');
-            $secondWorker->update(['team_id' => $secondTeam->id]);
-        }
-
         $frontendTask = $service->createTask($frontend, $secondTeam, $secondWorker, $secondSupervisor, 'Frontend task');
 
         $service->toggleTaskCompletion($backendTask, $worker, true);
@@ -247,18 +239,29 @@ class WorkManagementServiceTest extends TestCase
         $this->assertSame('completed', $master->refresh()->status);
     }
 
-    public function test_non_gm_cannot_create_master_project_and_non_supervisor_cannot_create_task(): void
+    public function test_non_gm_cannot_create_master_project(): void
     {
-        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
-
+        [$gm, $manager] = $this->makeStructure();
         $service = app(WorkManagementService::class);
 
         $this->expectException(ValidationException::class);
         $service->createMasterProject($manager, 'Not allowed');
+    }
 
+    public function test_non_supervisor_cannot_create_task(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
         $master = $service->createMasterProject($gm, 'Allowed');
-        $divisionProject = $service->createDivisionProject($master, $division, $gm, 'Division', initialTeam: $team);
+        $divisionProject = $service->createDivisionProject(
+            $master,
+            $division,
+            $gm,
+            'Division',
+            initialTeam: $team,
+        );
 
+        $this->expectException(ValidationException::class);
         $service->createTask(
             $divisionProject,
             $team,
