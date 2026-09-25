@@ -85,7 +85,8 @@
                             type="checkbox"
                             wire:click="toggleCompletion"
                             @checked($isDone)
-                            class="mt-1 size-5 rounded border-slate-300 text-[#30AFFF] focus:ring-[#30AFFF]/20"
+                            @disabled(in_array($task->divisionProject?->status, ['submitted_to_gm', 'completed'], true))
+                            class="mt-1 size-5 rounded border-slate-300 text-[#30AFFF] focus:ring-[#30AFFF]/20 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                     @endif
                 @else
