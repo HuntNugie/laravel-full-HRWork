@@ -27,7 +27,7 @@ class GetEmployeeDetails extends HRTool implements Tool
         $employee = Employees::query()
             ->with([
                 'user:id,name,email,status',
-                'profile:id,employee_id,gender,phone_number,birth_date',
+                'profile:id,employee_id,gender,phone_number,nik,birth_date,birth_address',
                 'position:id,name',
                 'team:id,name,divisi_id,supervisor_id',
                 'team.divisi:id,name,manager_id',
@@ -38,16 +38,16 @@ class GetEmployeeDetails extends HRTool implements Tool
                     $contractQuery->select([
                         'employee_contracts.id',
                         'employee_contracts.employee_id',
-                        'employee_contracts.contract_numnber',
+                        'employee_contracts.contract_number',
                         'employee_contracts.employement_type',
                         'employee_contracts.start_date',
                         'employee_contracts.end_date',
                         'employee_contracts.salary_daily',
                         'employee_contracts.status',
-                        'employee_contracts.position_id',
+                        'employee_contracts.position_name',
+                        'employee_contracts.notes',
                     ]);
                 },
-                'latestEmployeeContract.position:id,name',
             ])
             ->withCount([
                 'employeeContract as contract_count',
@@ -93,7 +93,9 @@ class GetEmployeeDetails extends HRTool implements Tool
                 'profile' => [
                     'gender' => $employee->profile?->gender,
                     'phone_number' => $employee->profile?->phone_number,
+                    'nik' => $employee->profile?->nik,
                     'birth_date' => $employee->profile?->birth_date?->toDateString(),
+                    'birth_address' => $employee->profile?->birth_address,
                 ],
                 'organization' => [
                     'position' => $employee->position?->name,
@@ -102,9 +104,9 @@ class GetEmployeeDetails extends HRTool implements Tool
                     'supervisor' => $employee->team?->supervisor?->user?->name,
                 ],
                 'latest_contract' => $employee->latestEmployeeContract ? [
-                    'number' => $employee->latestEmployeeContract->contract_numnber,
+                    'number' => $employee->latestEmployeeContract->contract_number,
                     'employment_type' => $employee->latestEmployeeContract->employement_type,
-                    'position' => $employee->latestEmployeeContract->position?->name,
+                    'position' => $employee->latestEmployeeContract->position_name,
                     'start_date' => $employee->latestEmployeeContract->start_date?->toDateString(),
                     'end_date' => $employee->latestEmployeeContract->end_date?->toDateString(),
                     'salary_daily' => (string) $employee->latestEmployeeContract->salary_daily,
