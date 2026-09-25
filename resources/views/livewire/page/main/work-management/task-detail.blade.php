@@ -83,7 +83,7 @@
                     @if (! $isCancelled)
                         <input
                             type="checkbox"
-                            wire:click="toggleCompletion($event.target.checked)"
+                            wire:click="toggleCompletion"
                             @checked($isDone)
                             class="mt-1 size-5 rounded border-slate-300 text-[#30AFFF] focus:ring-[#30AFFF]/20"
                         >
