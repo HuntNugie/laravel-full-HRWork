@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Page\Main\WorkManagement\DivisionProjectTeamDetail;
 use App\Models\Divisi;
 use App\Models\Employees;
 use App\Models\MasterProject;
@@ -109,7 +108,7 @@ class WorkManagementPolicyTest extends TestCase
         $this->assertNotNull($team);
     }
 
-    private function makeDivisionProject(Employees $gm, Divisi $division): MasterProject|\App\Models\DivisionProject
+    private function makeDivisionProject(Employees $gm, Divisi $division): \App\Models\DivisionProject
     {
         $master = app(WorkManagementService::class)->createMasterProject($gm, uniqid('Master ', true));
         return app(WorkManagementService::class)->createDivisionProject(
