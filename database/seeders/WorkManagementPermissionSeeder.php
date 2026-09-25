@@ -51,21 +51,18 @@ class WorkManagementPermissionSeeder extends Seeder
                 'create-division-project',
                 'assign-project-team',
                 'review-division-project',
-                'view-task',
             ],
 
             'manager' => [
                 'view-master-project',
                 'view-division-project',
                 'assign-project-team',
-                'view-task',
                 'submit-division-project-to-gm',
             ],
 
             'supervisor' => [
                 'view-master-project',
                 'view-division-project',
-                'view-task',
                 'create-task',
             ],
 
