@@ -109,7 +109,7 @@
                         <div class="text-right">
                             <x-wirekit::icon name="clock" class="ml-auto size-5 text-slate-400" />
                             <p class="mt-1 text-xs leading-5 text-slate-400">
-                                Sabtu/Minggu nonaktif di Work Time dan hari libur tidak mengurangi jatah cuti.
+                                Hari yang ditandai non-working di Work Time dan hari libur tidak mengurangi jatah cuti.
                             </p>
                         </div>
 
