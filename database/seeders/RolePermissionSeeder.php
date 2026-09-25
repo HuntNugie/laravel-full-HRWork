@@ -166,7 +166,6 @@ class RolePermissionSeeder extends Seeder
                 'view-division-project',
                 'view-task',
                 'create-task',
-                'update-task',
             ],
 
             'task-worker' => [
