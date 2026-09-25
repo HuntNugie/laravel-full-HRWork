@@ -17,6 +17,8 @@ class Assistant extends Component
 
     public bool $isLoading = false;
 
+    public string $streamedAnswer = '';
+
     public ?string $errorMessage = null;
 
     public function send(?string $submittedPrompt = null): void
@@ -38,6 +40,7 @@ class Assistant extends Component
 
         $this->errorMessage = null;
         $this->isLoading = true;
+        $this->streamedAnswer = '';
 
         $this->messages[] = [
             'role' => 'user',
@@ -53,17 +56,22 @@ class Assistant extends Component
             );
 
             foreach ($response as $event) {
-                if ($event instanceof TextDelta && $event->delta !== '') {
-                    $this->stream(
-                        content: $event->delta,
-                        el: '#hrwork-ai-stream'
-                    );
+                if (! $event instanceof TextDelta || $event->delta === '') {
+                    continue;
                 }
+
+                $this->streamedAnswer .= $event->delta;
+
+                $this->stream(
+                    to: 'answer',
+                    content: $event->delta,
+                    replace: false,
+                );
             }
 
             $this->messages[] = [
                 'role' => 'assistant',
-                'content' => $response->text ?? '',
+                'content' => $response->text ?? $this->streamedAnswer,
             ];
         } catch (Throwable $exception) {
             report($exception);
