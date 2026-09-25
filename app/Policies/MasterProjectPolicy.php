@@ -38,8 +38,8 @@ class MasterProjectPolicy
 
     public function create(User $user): bool
     {
-        return $user->can('create-master-project')
-            && $this->isGeneralManager($user->employees);
+        // Master Project creation is explicitly a General Manager responsibility.
+        return $this->isGeneralManager($user->employees);
     }
 
     public function update(User $user, MasterProject $masterProject): bool
