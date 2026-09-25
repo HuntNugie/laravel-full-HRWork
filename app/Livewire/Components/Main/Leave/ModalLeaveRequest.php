@@ -109,7 +109,8 @@ class ModalLeaveRequest extends Component
             return;
         }
 
-        $this->totalDays = $start->diffInDays($end) + 1;
+        $this->totalDays = app(LeaveRequestService::class)
+            ->countWorkingLeaveDays($start, $end);
     }
 
     public function submit(LeaveRequestService $leaveRequestService): void

@@ -101,12 +101,17 @@
                             </p>
 
                             <p class="mt-1 text-lg font-semibold text-slate-800">
-                                {{ $totalDays }} Hari
+                                {{ $totalDays }} Hari Kerja
                             </p>
 
                         </div>
 
-                        <x-wirekit::icon name="clock" class="size-5 text-slate-400" />
+                        <div class="text-right">
+                            <x-wirekit::icon name="clock" class="ml-auto size-5 text-slate-400" />
+                            <p class="mt-1 text-xs leading-5 text-slate-400">
+                                Hari yang ditandai non-working di Work Time dan hari libur tidak mengurangi jatah cuti.
+                            </p>
+                        </div>
 
                     </div>
 
