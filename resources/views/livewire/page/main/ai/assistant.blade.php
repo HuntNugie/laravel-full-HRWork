@@ -1,5 +1,24 @@
 <div class="min-h-[calc(100vh-7rem)] bg-sky-50/30">
-    <div class="mx-auto flex h-full max-w-6xl flex-col gap-5">
+    <div
+        class="mx-auto flex h-full max-w-6xl flex-col gap-5"
+        x-data="{
+            streamVisible: false,
+            hasAnswer: false,
+            syncStreamState() {
+                const target = this.$refs.streamAnswer;
+
+                if (target?.textContent.trim() !== '') {
+                    this.streamVisible = true;
+                    this.hasAnswer = true;
+                }
+            },
+            resetStream() {
+                this.streamVisible = false;
+                this.hasAnswer = false;
+            },
+        }"
+        x-on:stream-finished.window="resetStream()"
+    >
 
         <div class="flex items-center gap-3 px-1">
             <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#30AFFF]/10 text-[#30AFFF] ring-1 ring-[#30AFFF]/20">
@@ -98,48 +117,47 @@
                         @endif
                     @endforeach
 
-                    @if ($isAsking)
-                        <div
-                            wire:key="active-assistant-stream"
-                            x-data="{ hasAnswer: false }"
-                            class="flex flex-col gap-2"
+                    {{-- Keep the stream target mounted permanently so Livewire
+                         can write tokens into it during the active request. --}}
+                    <div
+                        x-show="streamVisible"
+                        x-cloak
+                        wire:key="active-assistant-stream"
+                    >
+                        <x-wirekit::assistant-message
+                            :name="'HRWork AI'"
+                            model="{{ config('ai.providers.9router.models.text.default') }}"
+                            streaming
+                            announce="sentence"
                         >
-                            <div
-                                x-show="!hasAnswer"
-                                x-cloak
-                            >
-                                <x-wirekit::message-typing
-                                    author="HRWork AI"
-                                    announce
-                                />
-                            </div>
+                            <span
+                                id="hrwork-ai-stream-answer"
+                                x-ref="streamAnswer"
+                                wire:stream="answer"
+                                x-init="
+                                    const observer = new MutationObserver(() => syncStreamState());
 
-                            <x-wirekit::assistant-message
-                                :name="'HRWork AI'"
-                                model="{{ config('ai.providers.9router.models.text.default') }}"
-                                streaming
-                                announce="sentence"
-                            >
-                                <span
-                                    id="hrwork-ai-stream-answer"
-                                    wire:stream="answer"
-                                    x-init="
-                                        const observer = new MutationObserver(() => {
-                                            hasAnswer = $el.textContent.trim() !== '';
-                                        });
+                                    observer.observe($el, {
+                                        childList: true,
+                                        characterData: true,
+                                        subtree: true,
+                                    });
+                                "
+                            ></span>
+                        </x-wirekit::assistant-message>
+                    </div>
 
-                                        observer.observe($el, {
-                                            childList: true,
-                                            characterData: true,
-                                            subtree: true,
-                                        });
-
-                                        hasAnswer = $el.textContent.trim() !== '';
-                                    "
-                                >{{ $answer }}</span>
-                            </x-wirekit::assistant-message>
-                        </div>
-                    @endif
+                    {{-- WireKit typing indicator stays visible while the send action
+                         is streaming. wire:loading removes it when the response ends. --}}
+                    <div
+                        wire:loading
+                        wire:target="send"
+                    >
+                        <x-wirekit::message-typing
+                            author="HRWork AI"
+                            announce
+                        />
+                    </div>
 
                 </x-wirekit::stack>
             </x-wirekit::conversation>
@@ -152,7 +170,7 @@
         </div>
 
         <div class="rounded-3xl border border-sky-100 bg-sky-50/70 p-3 shadow-sm sm:p-4">
-            <form wire:submit="submitPrompt">
+            <form wire:submit="send">
                 <div class="rounded-2xl border border-sky-100 bg-white p-2 shadow-sm transition focus-within:border-[#30AFFF]/60 focus-within:ring-2 focus-within:ring-[#30AFFF]/10">
                     <textarea
                         wire:model="prompt"
@@ -160,7 +178,7 @@
                         maxlength="5000"
                         placeholder="Tanyakan sesuatu tentang HR, kebijakan, atau data HRWork..."
                         class="w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0"
-                        @disabled($isAsking)
+                        wire:loading.attr="disabled"\n                        wire:target="send"
                     ></textarea>
 
                     <div class="flex items-center justify-between gap-3 px-2 pb-1">
