@@ -12,7 +12,7 @@ class SearchAttendance extends HRTool implements Tool
 {
     public function description(): Stringable|string
     {
-        return 'Search attendance records in HRWork by employee, date range, status, or lateness. Returns check-in, check-out, work duration, late minutes, status, and notes. Read-only.';
+        return 'Search attendance records in HRWork by employee identity, date range, status, or lateness. Prefer employee_code or exact employee identity from the conversation; employee_id is only a canonical internal identifier and must not be guessed. Returns check-in, check-out, work duration, late minutes, status, and notes. Read-only.';
     }
 
     public function handle(Request $request): Stringable|string
@@ -22,6 +22,7 @@ class SearchAttendance extends HRTool implements Tool
         }
 
         $query = $this->value($request['query'] ?? '');
+        $employeeCode = $this->value($request['employee_code'] ?? '');
         $employeeId = $request['employee_id'] ?? null;
         $from = $this->optionalDate($request['from_date'] ?? null);
         $to = $this->optionalDate($request['to_date'] ?? null);
@@ -29,10 +30,25 @@ class SearchAttendance extends HRTool implements Tool
         $lateOnly = filter_var($request['late_only'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $limit = min(max((int) ($request['limit'] ?? 20), 1), 50);
 
+        $resolved = $this->resolveEmployee(
+            $employeeId,
+            $employeeCode,
+            $employeeCode === '' ? $query : ''
+        );
+
+        if ($resolved['error']) {
+            return $this->json([
+                'success' => false,
+                'message' => $resolved['message'],
+            ]);
+        }
+
+        $resolvedEmployeeId = $resolved['employee_id'];
+
         $rows = Attendances::query()
             ->with(['employees.user:id,name,email'])
-            ->when($employeeId, fn ($q) => $q->where('employee_id', (int) $employeeId))
-            ->when($query !== '', function ($q) use ($query) {
+            ->when($resolvedEmployeeId !== null, fn ($q) => $q->where('employee_id', $resolvedEmployeeId))
+            ->when($resolvedEmployeeId === null && $query !== '', function ($q) use ($query) {
                 $q->whereHas('employees', function ($employeeQuery) use ($query) {
                     $employeeQuery->where('employee_code', 'like', "%{$query}%")
                         ->orWhereHas('user', function ($userQuery) use ($query) {
@@ -81,6 +97,7 @@ class SearchAttendance extends HRTool implements Tool
     {
         return [
             'employee_id' => $schema->integer(),
+            'employee_code' => $schema->string(),
             'query' => $schema->string(),
             'from_date' => $schema->string(),
             'to_date' => $schema->string(),
