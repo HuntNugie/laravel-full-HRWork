@@ -19,6 +19,17 @@
                 </x-wirekit::sidebar.item>
             @endcan
 
+            @can('view-cv-analyzer')
+                <x-wirekit::sidebar.item
+                    href="{{ route('ai.cv-analyzer') }}"
+                    :active="request()->routeIs('ai.cv-analyzer')"
+                    icon="document-magnifying-glass"
+                    wire:navigate
+                >
+                    CV Analyzer
+                </x-wirekit::sidebar.item>
+            @endcan
+
         </x-wirekit::sidebar.group>
 
 
