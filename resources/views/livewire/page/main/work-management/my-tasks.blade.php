@@ -6,8 +6,8 @@
                 <span class="text-sm text-slate-400">/ Tasks</span>
             </div>
 
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">Tasks</h1>
-            <p class="text-sm text-slate-500">Daftar task sesuai scope role Anda.</p>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">My Tasks</h1>
+            <p class="text-sm text-slate-500">Daftar task yang ditugaskan kepada Anda.</p>
         </x-wirekit::stack>
     </div>
 
@@ -49,7 +49,6 @@
                         <x-wirekit::table.row>
                             <x-wirekit::table.th>Task</x-wirekit::table.th>
                             <x-wirekit::table.th>Project</x-wirekit::table.th>
-                            <x-wirekit::table.th>Employee</x-wirekit::table.th>
                             <x-wirekit::table.th>Status</x-wirekit::table.th>
                             <x-wirekit::table.th>Deadline</x-wirekit::table.th>
                             <x-wirekit::table.th align="right">Aksi</x-wirekit::table.th>
@@ -78,8 +77,6 @@
 
                                 <x-wirekit::table.td>{{ $task->divisionProject?->name ?? '—' }}</x-wirekit::table.td>
 
-                                <x-wirekit::table.td>{{ $task->assignee?->user?->name ?? '—' }}</x-wirekit::table.td>
-
                                 <x-wirekit::table.td>
                                     <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium
                                         {{ $done ? 'bg-emerald-50 text-emerald-600' : ($cancelled ? 'bg-rose-50 text-rose-600' : 'bg-sky-50 text-sky-600') }}">
@@ -103,7 +100,7 @@
                             </x-wirekit::table.row>
                         @empty
                             <x-wirekit::table.row>
-                                <x-wirekit::table.td colspan="6">
+                                <x-wirekit::table.td colspan="5">
                                     <div class="py-12 text-center text-sm text-slate-500">Belum ada task.</div>
                                 </x-wirekit::table.td>
                             </x-wirekit::table.row>
