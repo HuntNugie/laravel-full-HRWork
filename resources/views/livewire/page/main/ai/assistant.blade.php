@@ -123,7 +123,7 @@
                             <div wire:key="message-assistant-{{ $index }}">
                                 <x-wirekit::assistant-message
                                     :name="'HRWork AI'"
-                                    model="Gemini 3.8 Flash"
+                                    model="{{ config('ai.providers.9router.models.text.default') }}"
                                     announce="all"
                                 >
                                     {!! \Illuminate\Support\Str::markdown($message['content'], ['html_input' => 'strip']) !!}
