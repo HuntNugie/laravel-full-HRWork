@@ -30,12 +30,27 @@
                     </div>
 
                     <div>
-                        <label for="assignee_id" class="mb-2 block text-sm font-medium text-slate-700">Task Worker</label>
-                        <select id="assignee_id" wire:model="assignee_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                        <label for="employeeSearch" class="mb-2 block text-sm font-medium text-slate-700">Cari Task Worker</label>
+                        <div class="relative">
+                            <x-wirekit::input
+                                id="employeeSearch"
+                                type="search"
+                                wire:model.live.debounce.300ms="employeeSearch"
+                                placeholder="Cari nama atau employee code..."
+                            />
+                        </div>
+                        <p class="mt-1 text-xs text-slate-400">
+                            {{ $this->filteredAssignees->count() }} employee ditemukan dari {{ $assignees->count() }} anggota Team.
+                        </p>
+
+                        <label for="assignee_id" class="sr-only">Task Worker</label>
+                        <select id="assignee_id" wire:model="assignee_id" class="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
                             <option value="">Pilih Employee</option>
-                            @foreach ($assignees as $employee)
+                            @forelse ($this->filteredAssignees as $employee)
                                 <option value="{{ $employee->id }}">{{ $employee->user?->name ?? '-' }} · {{ $employee->employee_code }}</option>
-                            @endforeach
+                            @empty
+                                <option value="" disabled>Tidak ada employee yang cocok</option>
+                            @endforelse
                         </select>
                         @error('assignee_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
                     </div>
