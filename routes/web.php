@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PrintContractEmployeeController;
+use App\Http\Controllers\PrintMasterProjectSummaryController;
 use App\Http\Controllers\PrintDivisionProjectCompletionController;
 use App\Http\Controllers\PrintPayrollPaymentController;
 use App\Http\Controllers\PrintPayrollSlipController;
@@ -280,6 +281,9 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/master-projects', MasterProjects::class)->middleware('permission:view-master-project')->name('work-management.master-projects');
         Route::get('/master-projects/create', CreateMasterProject::class)->middleware('role:general-manager')->name('work-management.master-projects.create');
         Route::get('/master-projects/{masterProject}', MasterProjectDetail::class)->middleware('permission:view-master-project')->name('work-management.master-projects.show');
+        Route::get('/master-projects/{masterProject}/summary-report', PrintMasterProjectSummaryController::class)
+            ->middleware('role:general-manager')
+            ->name('work-management.master-projects.summary-report');
         Route::get('/master-projects/{masterProject}/division-projects/create', CreateDivisionProject::class)->middleware('permission:create-division-project')->name('work-management.master-projects.division-projects.create');
         Route::get('/master-projects/{masterProject}/approve', MasterProjectApprove::class)->middleware('permission:approve-master-project')->name('work-management.master-projects.approve');
         Route::get('/division-projects/{divisionProject}', DivisionProjectDetail::class)->middleware('permission:view-division-project')->name('work-management.division-projects.show');

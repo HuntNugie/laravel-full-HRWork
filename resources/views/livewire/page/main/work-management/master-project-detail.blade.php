@@ -27,17 +27,31 @@
             </p>
         </x-wirekit::stack>
 
-        @can('create-division-project')
-            @if ($masterProject->status !== 'completed')
+        <div class="flex flex-wrap gap-2">
+            @if ($masterProject->status === 'completed' && auth()->user()?->hasRole('general-manager'))
                 <x-wirekit::button
-                    href="{{ route('work-management.master-projects.division-projects.create', $masterProject) }}"
-                    wire:navigate
-                    class="bg-[#30AFFF] text-white hover:bg-[#1599E8]"
+                    type="button"
+                    href="{{ route('work-management.master-projects.summary-report', $masterProject) }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
                 >
-                    Buat Division Project
+                    <x-wirekit::icon name="printer" />
+                    Cetak Rekap Master Project
                 </x-wirekit::button>
             @endif
-        @endcan
+
+            @can('create-division-project')
+                @if ($masterProject->status !== 'completed')
+                    <x-wirekit::button
+                        href="{{ route('work-management.master-projects.division-projects.create', $masterProject) }}"
+                        wire:navigate
+                        class="bg-[#30AFFF] text-white hover:bg-[#1599E8]"
+                    >
+                        Buat Division Project
+                    </x-wirekit::button>
+                @endif
+            @endcan
+        </div>
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
