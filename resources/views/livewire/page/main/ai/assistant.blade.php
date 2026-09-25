@@ -159,8 +159,7 @@
                             :name="'HRWork AI'"
                             model="{{ config('ai.providers.9router.models.text.default') }}"
                             streaming
-                            announce="all"
-                            x-on:stream-finished.window="flush()"
+                            announce="sentence"
                         >
                             <span
                                 wire:stream="answer"
