@@ -245,10 +245,14 @@
 
                             <x-wirekit::table.row>
                                 <x-wirekit::table.td>
-                                    <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate
-                                        class="text-sm font-semibold text-[#168ED1] hover:underline">
-                                        {{ $task->title }}
-                                    </a>
+                                    @if ((int) $task->assignee_id === (int) auth()->user()?->employees?->id)
+                                        <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate
+                                            class="text-sm font-semibold text-[#168ED1] hover:underline">
+                                            {{ $task->title }}
+                                        </a>
+                                    @else
+                                        <span class="text-sm font-semibold text-slate-800">{{ $task->title }}</span>
+                                    @endif
                                 </x-wirekit::table.td>
                                 <x-wirekit::table.td>{{ $task->team?->name ?? '-' }}</x-wirekit::table.td>
                                 <x-wirekit::table.td>{{ $task->assignee?->user?->name ?? '-' }}</x-wirekit::table.td>
