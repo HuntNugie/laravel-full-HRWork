@@ -6,8 +6,10 @@ use App\Models\ContractLeaveEntitlements;
 use App\Models\EmployeeAbsenceRequest;
 use App\Models\EmployeeContract;
 use App\Models\Employees;
+use App\Models\Holidays;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use App\Models\WorkTime;
 use App\Models\User;
 use App\Service\LeaveRequestService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -50,6 +52,23 @@ class LeaveRequestServiceTest extends TestCase
             'days' => 12,
         ]);
 
+        foreach ([
+            'senin' => true,
+            'selasa' => true,
+            'rabu' => true,
+            'kamis' => true,
+            'jumat' => true,
+            'sabtu' => false,
+            'minggu' => false,
+        ] as $day => $isWorkingDay) {
+            WorkTime::create([
+                'day_of_week' => $day,
+                'start_time' => '09:00:00',
+                'end_time' => '17:00:00',
+                'is_working_day' => $isWorkingDay,
+            ]);
+        }
+
         return [$user, $employee, $contract, $leaveType, $entitlement];
     }
 
@@ -73,6 +92,49 @@ class LeaveRequestServiceTest extends TestCase
             'total_days' => 3,
             'status' => 'pending',
         ]);
+    }
+
+    public function test_create_pending_counts_only_scheduled_workdays_and_excludes_holidays(): void
+    {
+        [, $employee, $contract, $leaveType] = $this->makeEmployee();
+
+        Holidays::create([
+            'name' => 'Libur Nasional',
+            'description' => 'Hari libur yang terdaftar',
+            'date' => '2026-09-23',
+        ]);
+
+        $request = app(LeaveRequestService::class)->createPending(
+            employee: $employee,
+            leaveTypeId: $leaveType->id,
+            startDate: '2026-09-22',
+            endDate: '2026-09-27',
+            reason: 'Keperluan keluarga',
+        );
+
+        $this->assertDatabaseHas('leave_requests', [
+            'id' => $request->id,
+            'employee_contract_id' => $contract->id,
+            'start_date' => '2026-09-22',
+            'end_date' => '2026-09-27',
+            'total_days' => 3,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_create_pending_rejects_range_without_scheduled_workday(): void
+    {
+        [, $employee, , $leaveType] = $this->makeEmployee();
+
+        $this->expectException(LogicException::class);
+
+        app(LeaveRequestService::class)->createPending(
+            employee: $employee,
+            leaveTypeId: $leaveType->id,
+            startDate: '2026-09-26',
+            endDate: '2026-09-27',
+            reason: 'Keperluan keluarga',
+        );
     }
 
     public function test_create_pending_rejects_period_outside_contract(): void
