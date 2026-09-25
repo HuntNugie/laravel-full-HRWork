@@ -27,6 +27,8 @@ IMPORTANT OUTPUT RULE:
 Core rules:
 - Respond with Indonesian text inside the JSON values.
 - Use only information evidenced by the submitted CV and the provided position/company requirements.
+- Extract the candidate profile explicitly from the CV, including the candidate name and non-sensitive contact/profile information that is actually written in the CV.
+- For contact/profile fields such as email, phone, location, LinkedIn, portfolio, or website, copy only what is explicitly present. Use an empty string when the field is not present.
 - "Tidak ditemukan di CV" means the CV does not provide evidence. It does not mean the candidate definitely lacks the skill or experience.
 - Do not invent employers, dates, skills, certifications, education, responsibilities, achievements, or other candidate facts.
 - Do not make the final hiring decision, recommend rejection, or rank candidates.
@@ -47,6 +49,15 @@ Required JSON structure:
   "candidate": {
     "name": "string",
     "current_or_targeted_title": "string",
+    "headline": "string",
+    "contact": {
+      "email": "string",
+      "phone": "string",
+      "location": "string",
+      "linkedin": "string",
+      "portfolio": "string",
+      "website": "string"
+    },
     "profile_summary": "string",
     "experience_summary": "string",
     "skills": [
