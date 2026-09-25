@@ -36,7 +36,7 @@ class SearchLeave extends HRTool implements Tool
 
         if ($kind !== 'absence') {
             $leaveRequests = LeaveRequest::query()
-                ->with(['employees.user:id,name,email', 'leaveType:id,name', 'employeeContract:id,contract_numnber'])
+                ->with(['employees.user:id,name,email', 'leaveType:id,name', 'employeeContract:id,contract_number'])
                 ->when($employeeId, fn ($q) => $q->where('employee_id', (int) $employeeId))
                 ->when($query !== '', function ($q) use ($query) {
                     $q->whereHas('employees', function ($employeeQuery) use ($query) {
@@ -90,7 +90,7 @@ class SearchLeave extends HRTool implements Tool
                 'total_days' => (int) $item->total_days,
                 'status' => $item->status,
                 'reason' => $item->reason,
-                'contract_number' => $item->employeeContract?->contract_numnber,
+                'contract_number' => $item->employeeContract?->contract_number,
             ])->values()->all(),
             'absence_requests' => $absenceRequests->map(fn (EmployeeAbsenceRequest $item) => [
                 'employee_id' => $item->employee_id,
@@ -116,7 +116,7 @@ class SearchLeave extends HRTool implements Tool
 
                 $result['leave_balance'] = [
                     'employee_id' => $employee->id,
-                    'contract_number' => $contract->contract_numnber,
+                    'contract_number' => $contract->contract_number,
                     'entitlements' => $contract->contractLeave->map(fn ($entitlement) => [
                         'leave_type' => $entitlement->leaveType?->name,
                         'entitled_days' => (int) $entitlement->days,
