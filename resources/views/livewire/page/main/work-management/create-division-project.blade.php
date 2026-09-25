@@ -15,7 +15,7 @@
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
                 <h2 class="text-lg font-semibold text-slate-900">Informasi Division Project</h2>
-                <p class="text-sm text-slate-500">GM menentukan divisi dan, bila sudah siap, dapat langsung memilih Team awal.</p>
+                <p class="text-sm text-slate-500">GM menentukan divisi dan informasi dasar Division Project. Team ditentukan kemudian pada halaman project.</p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
 
@@ -30,20 +30,6 @@
                         @endforeach
                     </select>
                     @error('divisi_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                </div>
-
-                <div>
-                    <label for="team_id" class="mb-2 block text-sm font-medium text-slate-700">Team</label>
-                    <select id="team_id" wire:model="team_id" @disabled(!$divisi_id) class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
-                        <option value="">{{ $divisi_id ? 'Pilih Team' : 'Pilih Divisi terlebih dahulu' }}</option>
-                        @foreach ($teams as $team)
-                            <option value="{{ $team->id }}">
-                                {{ $team->name }} — Supervisor: {{ $team->supervisor?->user?->name ?? '-' }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('team_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                    <p class="mt-1 text-xs text-slate-400">Manager tetap dapat menambahkan Team lain dari halaman Division Project saat project berjalan.</p>
                 </div>
 
                 <div>
