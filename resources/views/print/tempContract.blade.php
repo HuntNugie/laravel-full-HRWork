@@ -532,17 +532,20 @@
                         </tr>
 
 
-                        <tr class="salary-total-row">
-                            <td>
-                                <strong>Total Gaji + Tunjangan / Bulan</strong>
-                            </td>
+                        <<<<<<< HEAD <tr class="salary-total-row">
+                            =======
+                            <tr style="background-color: yellow">
+                                >>>>>>> 8bd6628 (update: tempContract)
+                                <td>
+                                    <strong>Total Gaji + Tunjangan / Bulan</strong>
+                                </td>
 
-                            <td class="amount">
-                                <strong>
-                                    Rp{{ number_format($monthlyTotalCompensation, 0, ',', '.') }}
-                                </strong>
-                            </td>
-                        </tr>
+                                <td class="amount">
+                                    <strong>
+                                        Rp{{ number_format($monthlyTotalCompensation, 0, ',', '.') }}
+                                    </strong>
+                                </td>
+                            </tr>
                     </tbody>
                 </table>
 
