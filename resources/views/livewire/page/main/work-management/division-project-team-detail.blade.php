@@ -103,101 +103,124 @@
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
                 <h2 class="text-lg font-semibold text-slate-900">Task Board</h2>
-                <p class="text-sm text-slate-500">Board sederhana untuk memantau task Team seperti kanban lite.</p>
+                <p class="text-sm text-slate-500">
+                    Pantau pekerjaan Team dalam tampilan kanban. Task Worker cukup mencentang task saat selesai.
+                </p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
 
         <x-wirekit::card.body>
-            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <div class="rounded-xl bg-slate-50 p-4">
-                    <div class="mb-3 flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-slate-800">Perlu Dikerjakan</h3>
-                        <span class="rounded-full bg-white px-2.5 py-1 text-xs text-slate-500">{{ $todoTasks->count() }}</span>
-                    </div>
-
-                    <div class="space-y-3">
-                        @forelse ($todoTasks as $task)
-                            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="min-w-0">
-                                        <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate
-                                            class="text-sm font-semibold text-[#168ED1] hover:underline">
-                                            {{ $task->title }}
-                                        </a>
-                                        <p class="mt-1 text-xs text-slate-400">
-                                            {{ $task->assignee?->user?->name ?? 'Belum ada assignee' }}
-                                            · Deadline {{ $task->due_date?->format('d M Y') ?? '—' }}
-                                        </p>
-                                    </div>
-
+            <x-wirekit::kanban>
+                <x-wirekit::kanban-column
+                    label="Perlu Dikerjakan"
+                    :count="$todoTasks->count()"
+                    intent="info"
+                >
+                    @forelse ($todoTasks as $task)
+                        <x-wirekit::card>
+                            <x-wirekit::card.body>
+                                <div class="flex items-start gap-3">
                                     @if ($canModifyTasks)
                                         @can('updateOwn', $task)
                                             <button
                                                 type="button"
                                                 wire:click="toggleTask({{ $task->id }}, true)"
-                                                class="flex size-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-400 hover:border-[#30AFFF] hover:text-[#30AFFF]"
+                                                class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-400 transition hover:border-[#30AFFF] hover:bg-sky-50 hover:text-[#30AFFF]"
                                                 title="Tandai selesai"
+                                                aria-label="Tandai {{ $task->title }} selesai"
                                             >
-                                                <x-wirekit::icon name="check" class="size-4" />
+                                                <x-wirekit::icon name="check" class="size-3.5" />
                                             </button>
                                         @endcan
                                     @endif
+
+                                    <div class="min-w-0 flex-1">
+                                        <a
+                                            href="{{ route('work-management.tasks.show', $task) }}"
+                                            wire:navigate
+                                            class="text-sm font-semibold text-[#168ED1] hover:underline"
+                                        >
+                                            {{ $task->title }}
+                                        </a>
+
+                                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                                            <span>{{ $task->assignee?->user?->name ?? 'Belum ada assignee' }}</span>
+                                            <span>•</span>
+                                            <span>Deadline {{ $task->due_date?->format('d M Y') ?? '—' }}</span>
+                                        </div>
+
+                                        @if ($task->description)
+                                            <p class="mt-3 text-xs leading-5 text-slate-500">
+                                                {{ $task->description }}
+                                            </p>
+                                        @endif
+                                    </div>
                                 </div>
+                            </x-wirekit::card.body>
+                        </x-wirekit::card>
+                    @empty
+                        <div class="flex min-h-32 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 text-center text-sm text-slate-400">
+                            Semua task Team sudah selesai.
+                        </div>
+                    @endforelse
+                </x-wirekit::kanban-column>
 
-                                <p class="mt-3 text-xs leading-5 text-slate-500">
-                                    {{ $task->description ?: 'Tidak ada deskripsi.' }}
-                                </p>
-                            </div>
-                        @empty
-                            <div class="py-8 text-center text-sm text-slate-500">Tidak ada task yang sedang dikerjakan.</div>
-                        @endforelse
-                    </div>
-                </div>
-
-                <div class="rounded-xl bg-emerald-50/50 p-4">
-                    <div class="mb-3 flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-slate-800">Selesai</h3>
-                        <span class="rounded-full bg-white px-2.5 py-1 text-xs text-emerald-600">{{ $doneTasks->count() }}</span>
-                    </div>
-
-                    <div class="space-y-3">
-                        @forelse ($doneTasks as $task)
-                            <div class="rounded-xl border border-emerald-100 bg-white p-4">
+                <x-wirekit::kanban-column
+                    label="Selesai"
+                    :count="$doneTasks->count()"
+                    intent="success"
+                >
+                    @forelse ($doneTasks as $task)
+                        <x-wirekit::card>
+                            <x-wirekit::card.body>
                                 <div class="flex items-start gap-3">
                                     @if ($canModifyTasks)
                                         @can('updateOwn', $task)
                                             <button
                                                 type="button"
                                                 wire:click="toggleTask({{ $task->id }}, false)"
-                                                class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white"
+                                                class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-emerald-500 bg-emerald-500 text-white transition hover:opacity-80"
                                                 title="Buka kembali task"
+                                                aria-label="Buka kembali {{ $task->title }}"
                                             >
-                                                <x-wirekit::icon name="check" class="size-3" />
+                                                <x-wirekit::icon name="check" class="size-3.5" />
                                             </button>
+                                        @else
+                                            <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-emerald-500 bg-emerald-500 text-white">
+                                                <x-wirekit::icon name="check" class="size-3.5" />
+                                            </span>
                                         @endcan
                                     @else
-                                        <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white">
-                                            <x-wirekit::icon name="check" class="size-3" />
+                                        <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-emerald-500 bg-emerald-500 text-white">
+                                            <x-wirekit::icon name="check" class="size-3.5" />
                                         </span>
                                     @endif
 
-                                    <div class="min-w-0">
-                                        <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate
-                                            class="text-sm font-semibold text-emerald-700 hover:underline">
+                                    <div class="min-w-0 flex-1">
+                                        <a
+                                            href="{{ route('work-management.tasks.show', $task) }}"
+                                            wire:navigate
+                                            class="text-sm font-semibold text-emerald-700 hover:underline"
+                                        >
                                             {{ $task->title }}
                                         </a>
-                                        <p class="mt-1 text-xs text-slate-400">
-                                            {{ $task->assignee?->user?->name ?? '-' }}
-                                        </p>
+
+                                        <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                                            <span>{{ $task->assignee?->user?->name ?? '-' }}</span>
+                                            <span>•</span>
+                                            <span>Selesai</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @empty
-                            <div class="py-8 text-center text-sm text-slate-500">Belum ada task selesai.</div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
+                            </x-wirekit::card.body>
+                        </x-wirekit::card>
+                    @empty
+                        <div class="flex min-h-32 items-center justify-center rounded-xl border border-dashed border-emerald-100 bg-emerald-50/40 px-4 text-center text-sm text-slate-400">
+                            Belum ada task yang selesai.
+                        </div>
+                    @endforelse
+                </x-wirekit::kanban-column>
+            </x-wirekit::kanban>
         </x-wirekit::card.body>
     </x-wirekit::card>
 </x-wirekit::stack>
