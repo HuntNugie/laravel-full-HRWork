@@ -22,7 +22,18 @@ class SearchResignations extends HRTool implements Tool
         }
 
         $query = $this->value($request['query'] ?? '');
+        $employeeCode = $this->value($request['employee_code'] ?? '');
         $employeeId = $request['employee_id'] ?? null;
+        $resolved = $this->resolveEmployee($employeeId, $employeeCode, $employeeCode === '' ? $query : '');
+
+        if ($resolved['error']) {
+            return $this->json([
+                'success' => false,
+                'message' => $resolved['message'],
+            ]);
+        }
+
+        $employeeId = $resolved['employee_id'];
         $status = $this->value($request['status'] ?? '');
         $activeOnly = filter_var($request['active_only'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $from = $this->optionalDate($request['from_date'] ?? null);
@@ -84,6 +95,7 @@ class SearchResignations extends HRTool implements Tool
     {
         return [
             'employee_id' => $schema->integer(),
+            'employee_code' => $schema->string(),
             'query' => $schema->string(),
             'status' => $schema->string(),
             'active_only' => $schema->boolean(),
