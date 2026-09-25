@@ -43,6 +43,27 @@ class WorkManagementPolicyTest extends TestCase
         $this->assertTrue(Gate::forUser($managerB->user)->allows('view', $projectB));
     }
 
+    public function test_task_detail_is_private_to_assignee(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $otherWorker, $team, $division] = $this->makeTaskScope();
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Master');
+        $project = $service->createDivisionProject($master, $division, $gm, 'Project', initialTeam: $team);
+        $task = $service->createTask($project, $team, $worker, $supervisor, 'Private task');
+
+        $this->assertTrue(Gate::forUser($worker->user)->allows('view', $task));
+        $this->assertFalse(Gate::forUser($otherWorker->user)->allows('view', $task));
+        $this->assertFalse(Gate::forUser($supervisor->user)->allows('view', $task));
+        $this->assertFalse(Gate::forUser($manager->user)->allows('view', $task));
+        $this->assertFalse(Gate::forUser($gm->user)->allows('view', $task));
+
+        $this->assertTrue(Gate::forUser($worker->user)->allows('viewAny', Task::class));
+        $this->assertFalse(Gate::forUser($manager->user)->allows('viewAny', Task::class));
+        $this->assertFalse(Gate::forUser($supervisor->user)->allows('viewAny', Task::class));
+        $this->assertFalse(Gate::forUser($gm->user)->allows('viewAny', Task::class));
+    }
+
     public function test_task_worker_can_only_toggle_own_task(): void
     {
         [$gm, $manager, $supervisor, $worker, $otherWorker, $team, $division] = $this->makeTaskScope();
@@ -305,16 +326,16 @@ class WorkManagementPolicyTest extends TestCase
     {
         return match ($roleName) {
             'general-manager' => [
-                'view-master-project','create-master-project','update-master-project','approve-master-project',
-                'view-division-project','create-division-project','update-division-project','assign-project-team',
-                'review-division-project','view-task','update-task',
+                'view-master-project','create-master-project','approve-master-project',
+                'view-division-project','create-division-project','assign-project-team',
+                'review-division-project',
             ],
             'manager' => [
-                'view-master-project','view-division-project','assign-project-team','view-task','update-task',
+                'view-master-project','view-division-project','assign-project-team',
                 'submit-division-project-to-gm',
             ],
             'supervisor' => [
-                'view-master-project','view-division-project','view-task','create-task','update-task',
+                'view-master-project','view-division-project','create-task',
             ],
             default => [
                 'view-master-project','view-division-project','view-task','update-own-task',
