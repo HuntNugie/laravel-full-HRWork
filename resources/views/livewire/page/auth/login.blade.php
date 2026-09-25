@@ -22,24 +22,24 @@
 
         {{-- Login --}}
         <x-wirekit::form wire:submit="authenticate">
-            @error("login_error")
+            @error('login_error')
                 <x-wirekit::alert variant="danger">{{ $message }}</x-wirekit::alert>
             @enderror
             <x-wirekit::stack gap="md">
 
-                <x-wirekit::input name="email" wire:model.debounce.live.500ms="email" label="Email"
-                    placeholder="nama@perusahaan.com" class="text-black" />
+                <x-wirekit::input name="email" wire:model="email" label="Email" placeholder="nama@perusahaan.com"
+                    class="text-black" />
 
-                <x-wirekit::password-input name="password" label="Password" wire:model.debounce.live.500ms="password"
-                   />
+                <x-wirekit::password-input name="password" label="Password" wire:model="password" />
 
 
                 <x-wirekit::checkbox name="remember" wire:model="remember" label="Ingat Saya" class="my-5" />
 
 
-                <x-wirekit::button type="submit" color="primary" class="w-full bg-[#30AFFF] text-white
+                <x-wirekit::button type="submit" color="primary"
+                    class="w-full bg-[#30AFFF] text-white
                                            hover:bg-sky-500
-                                           focus:ring-2 focus:ring-[#92EEFF]" :disabled="!$this->canSubmit()">
+                                           focus:ring-2 focus:ring-[#92EEFF]">
                     Masuk ke Sistem
                 </x-wirekit::button>
 
