@@ -101,7 +101,7 @@ class CVAnalyzer extends Component
                 model: config('ai.providers.9router.models.text.default'),
             );
 
-            $structured = $response->toArray();
+            $structured = $this->decodeAnalysisResponse($response->text);
 
             $requiredKeys = [
                 'candidate',
@@ -118,7 +118,7 @@ class CVAnalyzer extends Component
 
             if ($missingKeys !== []) {
                 throw new \RuntimeException(
-                    'AI tidak mengembalikan structured output CV yang lengkap. Bagian yang tidak tersedia: '
+                    'AI tidak mengembalikan JSON analisis CV yang lengkap. Bagian yang tidak tersedia: '
                     . implode(', ', $missingKeys)
                 );
             }
@@ -153,6 +153,40 @@ class CVAnalyzer extends Component
         ]);
 
         $this->resetErrorBag();
+    }
+
+    protected function decodeAnalysisResponse(string $text): array
+    {
+        $text = trim($text);
+
+        if ($text === '') {
+            throw new \RuntimeException('AI mengembalikan response kosong.');
+        }
+
+        if (preg_match('/\\x60\\x60\\x60(?:json)?\\s*(.*?)\\s*\\x60\\x60\\x60/si', $text, $matches) === 1) {
+            $text = trim($matches[1]);
+        }
+
+        $decoded = json_decode($text, true);
+
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        $start = strpos($text, '{');
+        $end = strrpos($text, '}');
+
+        if ($start !== false && $end !== false && $end > $start) {
+            $decoded = json_decode(substr($text, $start, $end - $start + 1), true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        throw new \RuntimeException(
+            'AI mengembalikan output yang bukan JSON valid.'
+        );
     }
 
     protected function buildPrompt(
