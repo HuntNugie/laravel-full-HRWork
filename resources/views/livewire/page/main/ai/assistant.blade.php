@@ -132,6 +132,15 @@
                         @endif
                     @endforeach
 
+                    <div
+                        id="hrwork-ai-stream"
+                        x-show="submitting"
+                        x-cloak
+                        class="max-w-3xl rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-700 whitespace-pre-wrap break-words"
+                        aria-live="polite"
+                        aria-label="Respons HRWork AI sedang diproses"
+                    ></div>
+
                     <template x-if="submitting && pendingMessage">
                         <div x-cloak>
                             <x-wirekit::message
