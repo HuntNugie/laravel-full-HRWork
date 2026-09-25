@@ -399,7 +399,6 @@ class WorkManagementServiceTest extends TestCase
                 'view-division-project',
                 'view-task',
                 'create-task',
-                'update-task',
             ],
             default => [
                 'view-master-project',
