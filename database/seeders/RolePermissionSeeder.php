@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Employees;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -207,6 +208,8 @@ class RolePermissionSeeder extends Seeder
         }
 
         $this->syncWorkManagementIdentityRoles();
+    }
+
     /**
      * Repair Work Management identity roles for existing employee records.
      *
@@ -233,7 +236,5 @@ class RolePermissionSeeder extends Seeder
                     $user->assignRole('general-manager');
                 }
             });
-    }
-
     }
 }
