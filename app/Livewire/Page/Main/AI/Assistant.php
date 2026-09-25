@@ -13,44 +13,63 @@ class Assistant extends Component
 {
     public string $prompt = '';
 
+    public string $question = '';
+
+    public string $answer = '';
+
     public array $messages = [];
 
-    public bool $isLoading = false;
-
-    public string $streamedAnswer = '';
+    public bool $isAsking = false;
 
     public ?string $errorMessage = null;
 
-    public function send(?string $submittedPrompt = null): void
+    /**
+     * Start a new assistant turn.
+     *
+     * This follows Livewire's recommended chat streaming flow:
+     * submit the prompt first, then trigger the streamed ask() call.
+     */
+    public function submitPrompt(): void
     {
-        $prompt = trim($submittedPrompt ?? $this->prompt);
+        $prompt = trim($this->prompt);
 
         validator(
             ['prompt' => $prompt],
             ['prompt' => ['required', 'string', 'max:5000']]
         )->validate();
 
-        if ($this->isLoading) {
-            return;
-        }
-
-        if ($prompt === '') {
+        if ($this->isAsking || $prompt === '') {
             return;
         }
 
         $this->errorMessage = null;
-        $this->isLoading = true;
-        $this->streamedAnswer = '';
+        $this->question = $prompt;
+        $this->prompt = '';
+        $this->answer = '';
+        $this->isAsking = true;
 
         $this->messages[] = [
             'role' => 'user',
             'content' => $prompt,
         ];
-        $this->prompt = '';
+
+        // Start the second request after the user turn has been rendered.
+        // This keeps the stream target in the DOM before the first token arrives.
+        $this->js('$wire.ask()');
+    }
+
+    /**
+     * Stream the assistant response into the active WireKit assistant message.
+     */
+    public function ask(): void
+    {
+        if (! $this->isAsking || trim($this->question) === '') {
+            return;
+        }
 
         try {
             $response = HRAssistant::make()->stream(
-                $prompt,
+                $this->question,
                 provider: '9router',
                 model: config('ai.providers.9router.models.text.default')
             );
@@ -60,27 +79,30 @@ class Assistant extends Component
                     continue;
                 }
 
-                $this->streamedAnswer .= $event->delta;
-
                 $this->stream(
-                    to: 'answer',
                     content: $event->delta,
+                    el: '#hrwork-ai-stream-answer',
                     replace: false,
                 );
             }
 
+            $this->answer = $response->text ?? $this->answer;
+
             $this->messages[] = [
                 'role' => 'assistant',
-                'content' => $response->text ?? $this->streamedAnswer,
+                'content' => $this->answer,
             ];
         } catch (Throwable $exception) {
             report($exception);
 
-            array_pop($this->messages);
+            if (($this->messages[array_key_last($this->messages)]['role'] ?? null) === 'user') {
+                array_pop($this->messages);
+            }
 
+            $this->answer = '';
             $this->errorMessage = 'Terjadi kesalahan saat menghubungi AI. Silakan coba lagi.';
         } finally {
-            $this->isLoading = false;
+            $this->isAsking = false;
         }
     }
 
