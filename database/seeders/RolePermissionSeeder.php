@@ -149,7 +149,6 @@ class RolePermissionSeeder extends Seeder
                 'create-division-project',
                 'assign-project-team',
                 'review-division-project',
-                'view-task',
                 'view-termination',
                 'show-termination',
             ],
@@ -158,14 +157,12 @@ class RolePermissionSeeder extends Seeder
                 'view-master-project',
                 'view-division-project',
                 'assign-project-team',
-                'view-task',
                 'submit-division-project-to-gm',
             ],
 
             'supervisor' => [
                 'view-master-project',
                 'view-division-project',
-                'view-task',
                 'create-task',
             ],
 
