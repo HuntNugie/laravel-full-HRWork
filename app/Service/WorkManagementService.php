@@ -431,10 +431,12 @@ class WorkManagementService
                 'feedback' => $feedback,
             ]);
 
+            $masterProject = $divisionProject->masterProject()->firstOrFail();
+
             if ($divisionProject->status === 'completed') {
-                $this->syncMasterProjectStatus(
-                    $divisionProject->masterProject()->firstOrFail()
-                );
+                $this->syncMasterProjectStatus($masterProject);
+            } else {
+                $masterProject->update(['status' => 'in_progress']);
             }
 
             return $divisionProject->refresh();
