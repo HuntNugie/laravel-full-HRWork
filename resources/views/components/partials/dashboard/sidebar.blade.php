@@ -251,7 +251,7 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-manage-absence', 'view-type-leave'])
+        @canany(['view-manage-absence', 'view-type-leave', 'view-management-leave'])
 
             <x-wirekit::sidebar.group collapsible label="Cuti dan izin">
 
