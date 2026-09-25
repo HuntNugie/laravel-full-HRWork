@@ -284,8 +284,8 @@ Route::middleware(['auth', 'isActive'])->group(function () {
         Route::get('/division-projects/{divisionProject}', DivisionProjectDetail::class)->middleware('permission:view-division-project')->name('work-management.division-projects.show');
         Route::get('/division-projects/{divisionProject}/teams/{team}', DivisionProjectTeamDetail::class)->middleware('permission:view-division-project')->name('work-management.division-projects.teams.show');
         Route::get('/division-projects/{divisionProject}/teams/{team}/tasks/create', CreateTask::class)->middleware('permission:create-task')->name('work-management.division-projects.tasks.create');
-        Route::get('/tasks', MyTasks::class)->middleware('permission:view-task')->name('work-management.tasks');
-        Route::get('/tasks/{task}', TaskDetail::class)->middleware('permission:view-task')->name('work-management.tasks.show');
+        Route::get('/tasks', MyTasks::class)->middleware('role:task-worker')->name('work-management.tasks');
+        Route::get('/tasks/{task}', TaskDetail::class)->middleware('role:task-worker')->name('work-management.tasks.show');
     });
     Route::prefix('discipline')->group(function () {
         Route::get('/late', LateDiciplineRule::class)
