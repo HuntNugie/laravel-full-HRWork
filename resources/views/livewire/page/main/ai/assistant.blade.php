@@ -13,15 +13,14 @@
 
                 this.pendingMessage = value;
 
-                // Clear the composer immediately. The submitted text remains
-                // visible as the optimistic user message inside the chat thread.
+                // Clear only the visible composer. The submitted value is passed
+                // directly to Livewire so it remains intact on the server.
                 this.$refs.prompt.value = '';
-                this.$refs.prompt.dispatchEvent(new Event('input', { bubbles: true }));
 
                 this.submitting = true;
 
                 try {
-                    await this.$wire.send();
+                    await this.$wire.send(value);
                 } finally {
                     this.submitting = false;
                     this.pendingMessage = '';
