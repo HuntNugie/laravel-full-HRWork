@@ -23,7 +23,7 @@
                 <x-wirekit::sidebar.item
                     href="{{ route('ai.cv-analyzer') }}"
                     :active="request()->routeIs('ai.cv-analyzer')"
-                    icon="document-magnifying-glass"
+                    icon="document-text"
                     wire:navigate
                 >
                     CV Analyzer
