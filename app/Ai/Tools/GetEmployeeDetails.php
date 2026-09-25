@@ -12,7 +12,7 @@ class GetEmployeeDetails extends HRTool implements Tool
 {
     public function description(): Stringable|string
     {
-        return 'Get a detailed HRWork employee profile after an employee has been identified. Includes job, organization, employment status, contract summary, and exit history summary. Use this for employee-specific details instead of guessing.';
+        return 'Get a detailed HRWork employee profile after an employee has been identified. employee_id is optional when an employee_id was returned by SearchEmployees. You may also identify the employee by employee_code or a name/email query. Use this tool for detailed profile, organization, contract summary, or employment history. Do not ask the user for an internal employee_id when SearchEmployees already identified the employee.';
     }
 
     public function handle(Request $request): Stringable|string
@@ -22,6 +22,7 @@ class GetEmployeeDetails extends HRTool implements Tool
         }
 
         $employeeId = $request['employee_id'] ?? null;
+        $employeeCode = $this->value($request['employee_code'] ?? '');
         $query = $this->value($request['query'] ?? '');
 
         $employee = Employees::query()
@@ -43,7 +44,10 @@ class GetEmployeeDetails extends HRTool implements Tool
                 'terminations as termination_count',
             ])
             ->when($employeeId, fn ($q) => $q->whereKey((int) $employeeId))
-            ->when(! $employeeId && $query !== '', function ($q) use ($query) {
+            ->when(! $employeeId && $employeeCode !== '', function ($q) use ($employeeCode) {
+                $q->where('employee_code', $employeeCode);
+            })
+            ->when(! $employeeId && $employeeCode === '' && $query !== '', function ($q) use ($query) {
                 $q->where(function ($builder) use ($query) {
                     $builder
                         ->where('employee_code', 'like', "%{$query}%")
@@ -113,6 +117,7 @@ class GetEmployeeDetails extends HRTool implements Tool
     {
         return [
             'employee_id' => $schema->integer(),
+            'employee_code' => $schema->string(),
             'query' => $schema->string(),
         ];
     }
