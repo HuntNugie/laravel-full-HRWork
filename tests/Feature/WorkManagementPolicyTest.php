@@ -79,6 +79,32 @@ class WorkManagementPolicyTest extends TestCase
         $this->assertTrue(Gate::forUser($gm->user)->allows('reviewCompletion', $project));
     }
 
+    public function test_task_worker_can_view_only_their_own_team_page(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $otherSupervisor, $otherWorker, $team, $otherTeam, $division] = $this->makeTwoTeams();
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Master');
+        $project = $service->createDivisionProject($master, $division, $gm, 'Project', initialTeam: $team);
+        $service->assignTeam($project, $otherTeam, $manager);
+
+        $this->assertTrue(
+            Gate::forUser($worker->user)->allows('viewTeam', [$project, $team])
+        );
+
+        $this->assertFalse(
+            Gate::forUser($worker->user)->allows('viewTeam', [$project, $otherTeam])
+        );
+
+        $this->assertTrue(
+            Gate::forUser($manager->user)->allows('viewTeam', [$project, $otherTeam])
+        );
+
+        $this->assertTrue(
+            Gate::forUser($gm->user)->allows('viewTeam', [$project, $otherTeam])
+        );
+    }
+
     public function test_supervisor_can_view_only_their_team_page(): void
     {
         [$gm, $manager, $supervisor, $worker, $otherSupervisor, $otherWorker, $team, $otherTeam, $division] = $this->makeTwoTeams();
