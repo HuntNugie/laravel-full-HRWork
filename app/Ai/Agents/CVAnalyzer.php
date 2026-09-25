@@ -42,14 +42,14 @@ INSTRUCTIONS;
 
     public function schema(JsonSchema $schema): array
     {
-        $requirement = fn ($schema) => [
+        $requirement = fn ($schema) => $schema->object(fn ($schema) => [
             'requirement' => $schema->string()->required(),
             'status' => $schema->string()
                 ->enum(['met', 'partial', 'not_found', 'conflicting', 'not_assessed'])
                 ->required(),
             'evidence' => $schema->string()->required(),
             'notes' => $schema->string()->required(),
-        ];
+        ]);
 
         return [
             'candidate' => $schema->object(fn ($schema) => [
