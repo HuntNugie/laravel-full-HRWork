@@ -108,6 +108,18 @@ class CreateTask extends Component
         })->values();
     }
 
+    public function selectAssignee(int $employeeId): void
+    {
+        $employee = $this->assignees->firstWhere('id', $employeeId);
+
+        if (! $employee) {
+            return;
+        }
+
+        $this->assignee_id = $employeeId;
+        $this->employeeSearch = '';
+    }
+
     private function loadAssignees(): void
     {
         $this->assignees = Employees::query()
