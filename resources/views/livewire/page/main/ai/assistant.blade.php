@@ -3,6 +3,7 @@
         class="mx-auto flex h-full max-w-6xl flex-col gap-5"
         x-data="{
             submitting: false,
+            streamStarted: false,
             pendingMessage: '',
             async submitPrompt() {
                 const value = this.$refs.prompt?.value?.trim() ?? '';
@@ -12,11 +13,16 @@
                 }
 
                 this.pendingMessage = value;
+                this.streamStarted = false;
 
-                // Clear the previous streamed answer before revealing the
-                // streaming assistant turn for a new request.
-                if (this.$refs.streamAnswer) {
-                    this.$refs.streamAnswer.textContent = '';
+                // Keep the streaming target mounted in the DOM from the start.
+                // Only clear its visible contents before the next request.
+                if (this.$refs.streamHost) {
+                    const streamTarget = this.$refs.streamHost.querySelector('[wire\\:stream="answer"]');
+
+                    if (streamTarget) {
+                        streamTarget.textContent = '';
+                    }
                 }
 
                 // Clear only the visible composer. The submitted value is passed
@@ -29,10 +35,12 @@
                     await this.$wire.send(value);
                 } finally {
                     this.submitting = false;
+                    this.streamStarted = false;
                     this.pendingMessage = '';
                 }
             },
         }"
+        x-on:hrwork-ai-stream-started.window="streamStarted = true"
     >
 
         <div class="flex items-center gap-3 px-1">
@@ -138,10 +146,14 @@
                         @endif
                     @endforeach
 
+                    {{-- The stream target stays mounted so Livewire can append
+                         chunks immediately. It is only revealed after the first
+                         text delta arrives. --}}
                     <div
-                        x-show="submitting"
+                        x-ref="streamHost"
+                        x-show="submitting && streamStarted"
                         x-cloak
-                        x-transition.opacity.duration.100ms
+                        wire:key="active-assistant-stream"
                     >
                         <x-wirekit::assistant-message
                             :name="'HRWork AI'"
@@ -151,11 +163,35 @@
                             x-on:stream-finished.window="flush()"
                         >
                             <span
-                                x-ref="streamAnswer"
                                 wire:stream="answer"
+                                x-data
+                                x-init="
+                                    const observer = new MutationObserver(() => {
+                                        if ($el.textContent.trim() !== '') {
+                                            window.dispatchEvent(new CustomEvent('hrwork-ai-stream-started'));
+                                        }
+                                    });
+
+                                    observer.observe($el, {
+                                        childList: true,
+                                        characterData: true,
+                                        subtree: true,
+                                    });
+                                "
                             >{{ $streamedAnswer }}</span>
                         </x-wirekit::assistant-message>
                     </div>
+
+                    {{-- Keep the typing indicator visible while the model is
+                         working and before the first text chunk arrives. --}}
+                    <template x-if="submitting && !streamStarted">
+                        <div x-cloak>
+                            <x-wirekit::message-typing
+                                author="HRWork AI"
+                                announce
+                            />
+                        </div>
+                    </template>
 
                     <template x-if="submitting && pendingMessage">
                         <div x-cloak>
