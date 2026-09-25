@@ -20,6 +20,7 @@ class CreateTask extends Component
     public Collection $assignees;
 
     public ?int $assignee_id = null;
+    public string $employeeSearch = '';
     public string $title = '';
     public string $description = '';
     public ?string $due_date = null;
@@ -89,6 +90,22 @@ class CreateTask extends Component
     public function render()
     {
         return view('livewire.page.main.work-management.create-task');
+    }
+
+    public function getFilteredAssigneesProperty(): Collection
+    {
+        $search = mb_strtolower(trim($this->employeeSearch));
+
+        if ($search === '') {
+            return $this->assignees;
+        }
+
+        return $this->assignees->filter(function (Employees $employee) use ($search): bool {
+            $name = mb_strtolower((string) ($employee->user?->name ?? ''));
+            $code = mb_strtolower((string) $employee->employee_code);
+
+            return str_contains($name, $search) || str_contains($code, $search);
+        })->values();
     }
 
     private function loadAssignees(): void
