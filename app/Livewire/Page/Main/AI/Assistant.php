@@ -3,7 +3,6 @@
 namespace App\Livewire\Page\Main\AI;
 
 use App\Ai\Agents\HRAssistant;
-use Laravel\Ai\Streaming\Events\TextDelta;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Throwable;
@@ -13,9 +12,9 @@ class Assistant extends Component
 {
     public string $prompt = '';
 
-    public string $answer = '';
-
     public array $messages = [];
+
+    public bool $isLoading = false;
 
     public ?string $errorMessage = null;
 
@@ -28,18 +27,21 @@ class Assistant extends Component
             ['prompt' => ['required', 'string', 'max:5000']]
         )->validate();
 
+        if ($this->isLoading) {
+            return;
+        }
+
         if ($prompt === '') {
             return;
         }
 
         $this->errorMessage = null;
-        $this->answer = '';
+        $this->isLoading = true;
 
         $this->messages[] = [
             'role' => 'user',
             'content' => $prompt,
         ];
-
         $this->prompt = '';
 
         try {
@@ -49,35 +51,24 @@ class Assistant extends Component
                 model: config('ai.providers.9router.models.text.default')
             );
 
+            // Drain the SSE stream completely so Laravel AI can execute
+            // tool calls and continue the agent loop until the final answer.
             foreach ($response as $event) {
-                if (! $event instanceof TextDelta || $event->delta === '') {
-                    continue;
-                }
-
-                $this->answer .= $event->delta;
-
-                $this->stream(
-                    content: $event->delta,
-                    el: '#hrwork-ai-stream-answer',
-                    replace: false,
-                );
+                // The UI currently renders the completed answer as one message.
             }
 
             $this->messages[] = [
                 'role' => 'assistant',
-                'content' => $response->text ?? $this->answer,
+                'content' => $response->text ?? '',
             ];
-
-            $this->answer = '';
         } catch (Throwable $exception) {
             report($exception);
 
-            if (($this->messages[array_key_last($this->messages)]['role'] ?? null) === 'user') {
-                array_pop($this->messages);
-            }
+            array_pop($this->messages);
 
-            $this->answer = '';
             $this->errorMessage = 'Terjadi kesalahan saat menghubungi AI. Silakan coba lagi.';
+        } finally {
+            $this->isLoading = false;
         }
     }
 
