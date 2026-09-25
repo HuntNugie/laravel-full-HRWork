@@ -119,8 +119,6 @@ class RolePermissionSeeder extends Seeder
                 'cancel-resignation',
                 'manage-resignation-clearance',
                 'complete-resignation',
-                'view-termination',
-                'show-termination',
                 'create-termination',
                 'cancel-termination',
                 'manage-termination-clearance',
