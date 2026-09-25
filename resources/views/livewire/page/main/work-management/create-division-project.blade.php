@@ -72,14 +72,6 @@
                     </div>
                 </div>
 
-                <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4">
-                    <input type="checkbox" wire:model="is_required" class="mt-0.5 rounded border-slate-300 text-[#30AFFF] focus:ring-[#30AFFF]/20" />
-                    <span>
-                        <span class="block text-sm font-medium text-slate-700">Project wajib</span>
-                        <span class="mt-1 block text-xs text-slate-500">Tetap dipertahankan untuk kompatibilitas data lama. Workflow baru mengharuskan semua Division Project selesai sebelum Master Project selesai.</span>
-                    </span>
-                </label>
-
                 <div class="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
                     <x-wirekit::button type="button" variant="outline" href="{{ route('work-management.master-projects.show', $masterProject) }}" wire:navigate>
                         Batal
