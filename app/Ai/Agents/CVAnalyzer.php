@@ -72,7 +72,8 @@ INSTRUCTIONS;
                 )->required(),
             ])->required(),
 
-            'position_alignment' => $schema->object(fn ($schema) use ($requirement) => [
+            'position_alignment' => $schema->object(function ($schema) use ($requirement) {
+                return [
                 'status' => $schema->string()
                     ->enum(['strong', 'moderate', 'limited', 'not_assessed'])
                     ->required(),
@@ -90,9 +91,11 @@ INSTRUCTIONS;
                         'notes' => $schema->string()->required(),
                     ]))
                     ->required(),
-            ])->required(),
+                ];
+            })->required(),
 
-            'company_alignment' => $schema->object(fn ($schema) use ($requirement) => [
+            'company_alignment' => $schema->object(function ($schema) use ($requirement) {
+                return [
                 'status' => $schema->string()
                     ->enum(['strong', 'moderate', 'limited', 'not_assessed'])
                     ->required(),
@@ -100,7 +103,8 @@ INSTRUCTIONS;
                 'criteria' => $schema->array()
                     ->items($requirement($schema))
                     ->required(),
-            ])->required(),
+                ];
+            })->required(),
 
             'strengths' => $schema->array()
                 ->items($schema->string())
