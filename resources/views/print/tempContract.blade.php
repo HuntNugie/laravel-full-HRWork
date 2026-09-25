@@ -517,11 +517,7 @@
                             </tr>
                         @endforeach
 
-                        <tr>
-                            <td><strong>Total tunjangan aktual per hari</strong></td>
-                            <td class="amount"><strong>Rp{{ number_format($dailyBenefitTotal, 0, ',', '.') }}</strong>
-                            </td>
-                        </tr>
+
                         <tr>
                             <td><strong>Total tunjangan untuk 1 bulan penuh</strong></td>
                             <td class="amount">
@@ -529,40 +525,7 @@
                             </td>
 
                         </tr>
-                        <tr>
-                            <td>
-                                <strong>Total Tunjangan / Hari</strong>
-                            </td>
 
-                            <td class="amount">
-                                <strong>
-                                    Rp{{ number_format($dailyBenefitTotal, 0, ',', '.') }}
-                                </strong>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>Total Tunjangan / Bulan</strong>
-                            </td>
-
-                            <td class="amount">
-                                <strong>
-                                    Rp{{ number_format($monthlyBenefitTotal, 0, ',', '.') }}
-                                </strong>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>
-                                <strong>Total Gaji + Tunjangan / Hari</strong>
-                            </td>
-
-                            <td class="amount">
-                                <strong>
-                                    Rp{{ number_format($dailyTotalCompensation, 0, ',', '.') }}
-                                </strong>
-                            </td>
-                        </tr>
 
                         <tr>
                             <td>
