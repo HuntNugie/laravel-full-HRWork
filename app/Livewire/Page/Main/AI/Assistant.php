@@ -18,17 +18,18 @@ class Assistant extends Component
 
     public ?string $errorMessage = null;
 
-    public function send(): void
+    public function send(?string $submittedPrompt = null): void
     {
-        $this->validate([
-            'prompt' => ['required', 'string', 'max:5000'],
-        ]);
+        $prompt = trim($submittedPrompt ?? $this->prompt);
+
+        validator(
+            ['prompt' => $prompt],
+            ['prompt' => ['required', 'string', 'max:5000']]
+        )->validate();
 
         if ($this->isLoading) {
             return;
         }
-
-        $prompt = trim($this->prompt);
 
         if ($prompt === '') {
             return;
