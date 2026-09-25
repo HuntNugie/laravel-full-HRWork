@@ -19,49 +19,38 @@ class CreateTask extends Component
     public Team $team;
     public Collection $assignees;
 
-    public ?int $team_id = null;
     public ?int $assignee_id = null;
     public string $title = '';
     public string $description = '';
     public ?string $due_date = null;
-    public bool $isSupervisor = false;
 
     public function mount(DivisionProject $divisionProject, Team $team): void
     {
         $this->authorize('create', Task::class);
 
         $this->divisionProject = $divisionProject->load('teams');
-        $this->assignees = collect();
 
         if (! $this->divisionProject->teams->contains('id', $team->id)) {
             abort(404);
         }
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
 
-        $this->team = $team->load('supervisor.user');
-        $this->team_id = $team->id;
-
-        if ($employee->user?->hasRole('supervisor')) {
-            if ((int) $this->team->supervisor_id !== (int) $employee->id) {
-                abort(403);
-            }
-
-            $this->isSupervisor = true;
-        } elseif (! $employee->user?->hasRole('general-manager')) {
+        if ((int) $team->supervisor_id !== (int) $employee->id) {
             abort(403);
         }
 
+        $this->team = $team->load('supervisor.user');
         $this->loadAssignees();
     }
 
     protected function rules(): array
     {
         return [
-            'team_id' => ['required', 'integer', 'exists:teams,id'],
             'assignee_id' => ['required', 'integer', 'exists:employees,id'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -72,9 +61,10 @@ class CreateTask extends Component
     public function save(WorkManagementService $service): void
     {
         $this->authorize('create', Task::class);
-        $validated = $this->validate();
 
+        $validated = $this->validate();
         $creator = Auth::user()?->employees;
+
         if (! $creator) {
             abort(403);
         }
@@ -103,21 +93,11 @@ class CreateTask extends Component
 
     private function loadAssignees(): void
     {
-        if (! $this->team_id) {
-            $this->assignees = collect();
-            return;
-        }
-
-        $supervisorId = Team::whereKey($this->team_id)->value('supervisor_id');
-
-        $managerId = $this->divisionProject->manager_id;
-
         $this->assignees = Employees::query()
-            ->where('team_id', $this->team_id)
+            ->where('team_id', $this->team->id)
+            ->where('id', '!=', $this->team->supervisor_id)
             ->where('status_employee', 'active')
             ->whereHas('user', fn ($query) => $query->where('status', 'active'))
-            ->when($supervisorId, fn ($query) => $query->where('id', '!=', $supervisorId))
-            ->when($managerId, fn ($query) => $query->where('id', '!=', $managerId))
             ->with('user')
             ->orderBy('id')
             ->get();
