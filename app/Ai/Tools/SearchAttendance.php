@@ -12,7 +12,7 @@ class SearchAttendance extends HRTool implements Tool
 {
     public function description(): Stringable|string
     {
-        return 'Search attendance records in HRWork by employee identity, date range, status, or lateness. Prefer employee_code or exact employee identity from the conversation; employee_id is only a canonical internal identifier and must not be guessed. Returns check-in, check-out, work duration, late minutes, status, and notes. Read-only.';
+        return 'Search attendance records in HRWork by employee identity, date range, status, or lateness. Prefer employee_code from a freshly resolved employee identity; employee_id is only a canonical internal identifier and must never be guessed or carried forward without verification. Returns check-in, check-out, work duration, late minutes, status, and notes. Read-only.';
     }
 
     public function handle(Request $request): Stringable|string
