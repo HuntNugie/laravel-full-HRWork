@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.main', ['title' => 'Tasks'])]
+#[Layout('layouts.main', ['title' => 'My Tasks'])]
 class MyTasks extends Component
 {
     public Collection $tasks;
@@ -38,25 +38,12 @@ class MyTasks extends Component
 
     private function applyScope($query, Employees $employee): void
     {
-        if ($employee->user?->hasRole('general-manager')) {
+        if (! $employee->user?->hasRole('task-worker')) {
+            $query->whereKey(0);
             return;
         }
 
-        if ($employee->user?->hasRole('manager')) {
-            $query->whereHas('divisionProject', fn ($q) => $q->where('manager_id', $employee->id));
-            return;
-        }
-
-        if ($employee->user?->hasRole('supervisor')) {
-            $query->whereHas('team', fn ($q) => $q->where('supervisor_id', $employee->id));
-            return;
-        }
-
-        if ($employee->user?->hasRole('task-worker')) {
-            $query->where('assignee_id', $employee->id);
-            return;
-        }
-
-        $query->whereKey(0);
+        $query->where('assignee_id', $employee->id);
     }
+
 }
