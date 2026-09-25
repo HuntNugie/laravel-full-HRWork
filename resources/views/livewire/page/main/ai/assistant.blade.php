@@ -1,47 +1,5 @@
 <div class="min-h-[calc(100vh-7rem)] bg-sky-50/30">
-    <div
-        class="mx-auto flex h-full max-w-6xl flex-col gap-5"
-        x-data="{
-            submitting: false,
-            streamStarted: false,
-            pendingMessage: '',
-            async submitPrompt() {
-                const value = this.$refs.prompt?.value?.trim() ?? '';
-
-                if (!value || this.submitting) {
-                    return;
-                }
-
-                this.pendingMessage = value;
-                this.streamStarted = false;
-
-                // Keep the streaming target mounted in the DOM from the start.
-                // Only clear its visible contents before the next request.
-                if (this.$refs.streamHost) {
-                    const streamTarget = this.$refs.streamHost.querySelector('[wire\\:stream="answer"]');
-
-                    if (streamTarget) {
-                        streamTarget.textContent = '';
-                    }
-                }
-
-                // Clear only the visible composer. The submitted value is passed
-                // directly to Livewire so it remains intact on the server.
-                this.$refs.prompt.value = '';
-
-                this.submitting = true;
-
-                try {
-                    await this.$wire.send(value);
-                } finally {
-                    this.submitting = false;
-                    this.streamStarted = false;
-                    this.pendingMessage = '';
-                }
-            },
-        }"
-        x-on:hrwork-ai-stream-started.window="streamStarted = true"
-    >
+    <div class="mx-auto flex h-full max-w-6xl flex-col gap-5">
 
         <div class="flex items-center gap-3 px-1">
             <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#30AFFF]/10 text-[#30AFFF] ring-1 ring-[#30AFFF]/20">
@@ -84,37 +42,37 @@
 
                     @if ($messages === [])
                         <div class="flex min-h-[460px] items-center justify-center">
-                                <div class="w-full max-w-2xl text-center">
-                                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#30AFFF]/10 text-[#30AFFF] ring-1 ring-[#30AFFF]/10">
-                                        <x-wirekit::icon name="sparkles" class="h-8 w-8" />
-                                    </div>
-
-                                    <h2 class="mt-6 text-2xl font-semibold tracking-tight text-slate-900">
-                                        Apa yang ingin kamu tanyakan?
-                                    </h2>
-
-                                    <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">
-                                        Tanyakan seputar HR, kebijakan, atau data HRWork.
-                                        Chat hanya ditampilkan selama halaman ini terbuka dan tidak disimpan sebagai riwayat.
-                                    </p>
-
-                                    <div class="mt-8 grid gap-3 text-left sm:grid-cols-2">
-                                        @foreach ([
-                                            'Jelaskan fungsi HRWork AI.',
-                                            'Apa yang bisa dibantu AI dalam HRIS?',
-                                            'Bagaimana nanti AI mengakses data karyawan?',
-                                            'Apa batasan AI dalam proses HR?'
-                                        ] as $suggestion)
-                                            <button
-                                                type="button"
-                                                wire:click="$set('prompt', @js($suggestion))"
-                                                class="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-left text-sm text-slate-700 transition hover:border-[#30AFFF]/40 hover:bg-[#30AFFF]/10 hover:text-[#168fd8]"
-                                            >
-                                                {{ $suggestion }}
-                                            </button>
-                                        @endforeach
-                                    </div>
+                            <div class="w-full max-w-2xl text-center">
+                                <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#30AFFF]/10 text-[#30AFFF] ring-1 ring-[#30AFFF]/10">
+                                    <x-wirekit::icon name="sparkles" class="h-8 w-8" />
                                 </div>
+
+                                <h2 class="mt-6 text-2xl font-semibold tracking-tight text-slate-900">
+                                    Apa yang ingin kamu tanyakan?
+                                </h2>
+
+                                <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">
+                                    Tanyakan seputar HR, kebijakan, atau data HRWork.
+                                    Chat hanya ditampilkan selama halaman ini terbuka dan tidak disimpan sebagai riwayat.
+                                </p>
+
+                                <div class="mt-8 grid gap-3 text-left sm:grid-cols-2">
+                                    @foreach ([
+                                        'Jelaskan fungsi HRWork AI.',
+                                        'Apa yang bisa dibantu AI dalam HRIS?',
+                                        'Bagaimana nanti AI mengakses data karyawan?',
+                                        'Apa batasan AI dalam proses HR?'
+                                    ] as $suggestion)
+                                        <button
+                                            type="button"
+                                            wire:click="$set('prompt', @js($suggestion))"
+                                            class="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-left text-sm text-slate-700 transition hover:border-[#30AFFF]/40 hover:bg-[#30AFFF]/10 hover:text-[#168fd8]"
+                                        >
+                                            {{ $suggestion }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                     @endif
 
@@ -132,7 +90,7 @@
                                 <x-wirekit::assistant-message
                                     :name="'HRWork AI'"
                                     model="{{ config('ai.providers.9router.models.text.default') }}"
-                                    announce="all"
+                                    announce="sentence"
                                 >
                                     {!! \Illuminate\Support\Str::markdown($message['content'], ['html_input' => 'strip']) !!}
                                 </x-wirekit::assistant-message>
@@ -140,62 +98,48 @@
                         @endif
                     @endforeach
 
-                    {{-- The stream target stays mounted so Livewire can append
-                         chunks immediately. It is only revealed after the first
-                         text delta arrives. --}}
-                    <div
-                        x-ref="streamHost"
-                        x-show="submitting && streamStarted"
-                        x-cloak
-                        wire:key="active-assistant-stream"
-                    >
-                        <x-wirekit::assistant-message
-                            :name="'HRWork AI'"
-                            model="{{ config('ai.providers.9router.models.text.default') }}"
-                            streaming
-                            announce="sentence"
+                    @if ($isAsking)
+                        <div
+                            wire:key="active-assistant-stream"
+                            x-data="{ hasAnswer: false }"
+                            class="flex flex-col gap-2"
                         >
-                            <span
-                                wire:stream="answer"
-                                x-data
-                                x-init="
-                                    const observer = new MutationObserver(() => {
-                                        if ($el.textContent.trim() !== '') {
-                                            window.dispatchEvent(new CustomEvent('hrwork-ai-stream-started'));
-                                        }
-                                    });
-
-                                    observer.observe($el, {
-                                        childList: true,
-                                        characterData: true,
-                                        subtree: true,
-                                    });
-                                "
-                            >{{ $streamedAnswer }}</span>
-                        </x-wirekit::assistant-message>
-                    </div>
-
-                    {{-- Keep the typing indicator visible while the model is
-                         working and before the first text chunk arrives. --}}
-                    <template x-if="submitting && !streamStarted">
-                        <div x-cloak>
-                            <x-wirekit::message-typing
-                                author="HRWork AI"
-                                announce
-                            />
-                        </div>
-                    </template>
-
-                    <template x-if="submitting && pendingMessage">
-                        <div x-cloak>
-                            <x-wirekit::message
-                                :author="['name' => 'Kamu']"
-                                side="right"
+                            <div
+                                x-show="!hasAnswer"
+                                x-cloak
                             >
-                                <span x-text="pendingMessage"></span>
-                            </x-wirekit::message>
+                                <x-wirekit::message-typing
+                                    author="HRWork AI"
+                                    announce
+                                />
+                            </div>
+
+                            <x-wirekit::assistant-message
+                                :name="'HRWork AI'"
+                                model="{{ config('ai.providers.9router.models.text.default') }}"
+                                streaming
+                                announce="sentence"
+                            >
+                                <span
+                                    id="hrwork-ai-stream-answer"
+                                    wire:stream="answer"
+                                    x-init="
+                                        const observer = new MutationObserver(() => {
+                                            hasAnswer = $el.textContent.trim() !== '';
+                                        });
+
+                                        observer.observe($el, {
+                                            childList: true,
+                                            characterData: true,
+                                            subtree: true,
+                                        });
+
+                                        hasAnswer = $el.textContent.trim() !== '';
+                                    "
+                                >{{ $answer }}</span>
+                            </x-wirekit::assistant-message>
                         </div>
-                    </template>
+                    @endif
 
                 </x-wirekit::stack>
             </x-wirekit::conversation>
@@ -208,17 +152,15 @@
         </div>
 
         <div class="rounded-3xl border border-sky-100 bg-sky-50/70 p-3 shadow-sm sm:p-4">
-            <form x-on:submit.prevent="submitPrompt">
+            <form wire:submit="submitPrompt">
                 <div class="rounded-2xl border border-sky-100 bg-white p-2 shadow-sm transition focus-within:border-[#30AFFF]/60 focus-within:ring-2 focus-within:ring-[#30AFFF]/10">
                     <textarea
-                        x-ref="prompt"
                         wire:model="prompt"
                         rows="3"
                         maxlength="5000"
                         placeholder="Tanyakan sesuatu tentang HR, kebijakan, atau data HRWork..."
                         class="w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0"
-                        x-bind:disabled="submitting"
-                        wire:loading.attr="disabled"
+                        @disabled($isAsking)
                     ></textarea>
 
                     <div class="flex items-center justify-between gap-3 px-2 pb-1">
@@ -228,10 +170,9 @@
 
                         <x-wirekit::button
                             type="submit"
-                            x-bind:disabled="submitting"
-                            wire:loading.attr="disabled"
                             size="sm"
                             icon="paper-airplane"
+                            @disabled($isAsking)
                         >
                             Kirim
                         </x-wirekit::button>
