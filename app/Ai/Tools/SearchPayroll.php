@@ -25,7 +25,7 @@ class SearchPayroll extends HRTool implements Tool
         $query = $this->value($request['query'] ?? '');
         $employeeCode = $this->value($request['employee_code'] ?? '');
         $employeeId = $request['employee_id'] ?? null;
-        $resolved = $this->resolveEmployee($employeeId, $employeeCode, $employeeCode === '' ? $query : '');
+        $resolved = $this->resolveEmployee($employeeId, $employeeCode);
 
         if ($resolved['error']) {
             return $this->json([
