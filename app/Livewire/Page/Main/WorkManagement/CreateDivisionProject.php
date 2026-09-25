@@ -59,7 +59,7 @@ class CreateDivisionProject extends Component
     {
         return [
             'divisi_id' => ['required', 'integer', 'exists:divisis,id'],
-            'team_id' => ['nullable', 'integer', 'exists:teams,id'],
+            'team_id' => ['required', 'integer', 'exists:teams,id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'start_date' => ['nullable', 'date'],
