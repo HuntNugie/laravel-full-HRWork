@@ -135,13 +135,17 @@
                                     @endif
 
                                     <div class="min-w-0 flex-1">
-                                        <a
-                                            href="{{ route('work-management.tasks.show', $task) }}"
-                                            wire:navigate
-                                            class="text-sm font-semibold text-[#168ED1] hover:underline"
-                                        >
-                                            {{ $task->title }}
-                                        </a>
+                                        @if ((int) $task->assignee_id === (int) auth()->user()?->employees?->id)
+                                            <a
+                                                href="{{ route('work-management.tasks.show', $task) }}"
+                                                wire:navigate
+                                                class="text-sm font-semibold text-[#168ED1] hover:underline"
+                                            >
+                                                {{ $task->title }}
+                                            </a>
+                                        @else
+                                            <p class="text-sm font-semibold text-slate-800">{{ $task->title }}</p>
+                                        @endif
 
                                         <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
                                             <span>{{ $task->assignee?->user?->name ?? 'Belum ada assignee' }}</span>
@@ -197,13 +201,17 @@
                                     @endif
 
                                     <div class="min-w-0 flex-1">
-                                        <a
-                                            href="{{ route('work-management.tasks.show', $task) }}"
-                                            wire:navigate
-                                            class="text-sm font-semibold text-emerald-700 hover:underline"
-                                        >
-                                            {{ $task->title }}
-                                        </a>
+                                        @if ((int) $task->assignee_id === (int) auth()->user()?->employees?->id)
+                                            <a
+                                                href="{{ route('work-management.tasks.show', $task) }}"
+                                                wire:navigate
+                                                class="text-sm font-semibold text-emerald-700 hover:underline"
+                                            >
+                                                {{ $task->title }}
+                                            </a>
+                                        @else
+                                            <p class="text-sm font-semibold text-emerald-700">{{ $task->title }}</p>
+                                        @endif
 
                                         <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-400">
                                             <span>{{ $task->assignee?->user?->name ?? '-' }}</span>
