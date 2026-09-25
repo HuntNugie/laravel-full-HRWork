@@ -46,10 +46,8 @@ class MasterProjectDetail extends Component
 
         $this->divisionProjects = $query->get();
 
-        if ($this->divisionProjects->isEmpty()) {
-            abort(403);
-        }
-
+        // A newly created Master Project can legitimately have no Division Project yet.
+        // GM needs to land on its detail page so they can create the first Division Project.
         $this->masterProject = $masterProject->load([
             'creator.user',
             'approver.user',
