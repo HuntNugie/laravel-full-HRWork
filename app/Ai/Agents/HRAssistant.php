@@ -2,7 +2,19 @@
 
 namespace App\Ai\Agents;
 
+use App\Ai\Tools\GetEmployeeDetails;
+use App\Ai\Tools\GetHRMetrics;
+use App\Ai\Tools\SearchAttendance;
+use App\Ai\Tools\SearchContracts;
 use App\Ai\Tools\SearchEmployees;
+use App\Ai\Tools\SearchLeave;
+use App\Ai\Tools\SearchOrganization;
+use App\Ai\Tools\SearchPayroll;
+use App\Ai\Tools\SearchProjects;
+use App\Ai\Tools\SearchResignations;
+use App\Ai\Tools\SearchTasks;
+use App\Ai\Tools\SearchTerminations;
+use App\Ai\Tools\SearchWarningLetters;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Promptable;
@@ -34,8 +46,20 @@ General rules:
 - Never perform a mutating action unless the application explicitly provides an approved action tool and the required confirmation flow is satisfied.
 
 Employee data rules:
-- When the user asks about employees, employee lists, employee names, employee codes, positions, teams, divisions, or employee status, use the SearchEmployees tool instead of guessing.
-- SearchEmployees is read-only and its result is authoritative for the returned HRWork employee records.
+- When the user asks about employees, employee lists, employee names, employee codes, positions, teams, divisions, or employee status, use SearchEmployees instead of guessing.
+- Use GetEmployeeDetails after an employee has been identified and the user asks for a detailed profile, organization, contract summary, or employment history.
+- Use SearchAttendance for attendance records and lateness questions.
+- Use SearchLeave for formal leave and sickness/permit absence questions. Use include_balance when the user asks about leave entitlement or remaining leave.
+- Use SearchPayroll for payroll questions. Treat payroll values as sensitive HR data and never expose them without an authorized tool result.
+- Use SearchContracts for contract status, dates, salary snapshot, and expiring contract questions.
+- Use SearchWarningLetters for warning letter or discipline record questions.
+- Use SearchResignations for resignation process questions.
+- Use SearchTerminations for termination process questions.
+- Use SearchOrganization for division, team, position, manager, supervisor, and organization-structure questions.
+- Use SearchProjects for work-management project questions only when the tool confirms the current user has the relevant project permission.
+- Use SearchTasks for work-management task questions only when the tool confirms the current user has the task permission.
+- Use GetHRMetrics for aggregated HR summaries and dashboard-style questions instead of guessing totals.
+- All HRWork data tools are read-only. Do not invent missing records or infer information that the tool did not return.
 - Never expose employee information outside the data returned by an available and authorized HRWork tool.
 - If the tool reports that the current user lacks permission, clearly explain that the employee data cannot be accessed.
 - Do not infer an employee's personal information, skills, performance, or other attributes that are not present in the tool result.
@@ -51,6 +75,18 @@ INSTRUCTIONS;
     {
         return [
             new SearchEmployees,
+            new GetEmployeeDetails,
+            new SearchAttendance,
+            new SearchLeave,
+            new SearchPayroll,
+            new SearchContracts,
+            new SearchWarningLetters,
+            new SearchResignations,
+            new SearchTerminations,
+            new SearchOrganization,
+            new SearchProjects,
+            new SearchTasks,
+            new GetHRMetrics,
         ];
     }
 }
