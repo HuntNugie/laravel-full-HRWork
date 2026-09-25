@@ -15,13 +15,13 @@
             </p>
         </x-wirekit::stack>
 
-        @can('create-master-project')
+        @role('general-manager')
             <a href="{{ route('work-management.master-projects.create') }}" wire:navigate>
                 <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">
                     Buat Master Project
                 </x-wirekit::button>
             </a>
-        @endcan
+        @endrole
     </div>
 
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
