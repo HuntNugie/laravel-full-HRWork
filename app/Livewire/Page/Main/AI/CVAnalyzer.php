@@ -101,15 +101,37 @@ class CVAnalyzer extends Component
                 model: config('ai.providers.9router.models.text.default'),
             );
 
+            $structured = $response->toArray();
+
+            $requiredKeys = [
+                'candidate',
+                'position_alignment',
+                'company_alignment',
+                'strengths',
+                'gaps',
+                'verification_items',
+                'interview_questions',
+                'feedback',
+            ];
+
+            $missingKeys = array_values(array_diff($requiredKeys, array_keys($structured)));
+
+            if ($missingKeys !== []) {
+                throw new \RuntimeException(
+                    'AI tidak mengembalikan structured output CV yang lengkap. Bagian yang tidak tersedia: '
+                    . implode(', ', $missingKeys)
+                );
+            }
+
             $this->analysisResult = [
-                'candidate' => $response['candidate'],
-                'position_alignment' => $response['position_alignment'],
-                'company_alignment' => $response['company_alignment'],
-                'strengths' => $response['strengths'],
-                'gaps' => $response['gaps'],
-                'verification_items' => $response['verification_items'],
-                'interview_questions' => $response['interview_questions'],
-                'feedback' => $response['feedback'],
+                'candidate' => $structured['candidate'],
+                'position_alignment' => $structured['position_alignment'],
+                'company_alignment' => $structured['company_alignment'],
+                'strengths' => $structured['strengths'],
+                'gaps' => $structured['gaps'],
+                'verification_items' => $structured['verification_items'],
+                'interview_questions' => $structured['interview_questions'],
+                'feedback' => $structured['feedback'],
             ];
         } catch (Throwable $exception) {
             report($exception);
