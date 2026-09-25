@@ -172,6 +172,11 @@
             white-space: nowrap;
         }
 
+        .salary-table .salary-total-row td {
+            background: #e5e7eb;
+            font-weight: 700;
+        }
+
         .summary-table td {
             border: 1px solid #222;
             padding: 6px 7px;
@@ -527,7 +532,7 @@
                         </tr>
 
 
-                        <tr>
+                        <tr class="salary-total-row">
                             <td>
                                 <strong>Total Gaji + Tunjangan / Bulan</strong>
                             </td>
