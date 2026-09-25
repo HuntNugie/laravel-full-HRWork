@@ -34,22 +34,22 @@
 
 
 
-        @canany(['view-master-project', 'view-task'])
+        @can('view-master-project')
             <x-wirekit::sidebar.group collapsible label="Work Management">
-                @can('view-master-project')
+
                     <x-wirekit::sidebar.item href="{{ route('work-management.master-projects') }}" :active="request()->routeIs('work-management.master-projects*')"
                         icon="briefcase" wire:navigate>
                         Master Projects
                     </x-wirekit::sidebar.item>
                 @endcan
-                @can('view-task')
+                @role('task-worker')
                     <x-wirekit::sidebar.item href="{{ route('work-management.tasks') }}" :active="request()->routeIs('work-management.tasks*')"
                         icon="clipboard-document-list" wire:navigate>
-                        Tasks
+                        My Tasks
                     </x-wirekit::sidebar.item>
-                @endcan
+                @endrole
             </x-wirekit::sidebar.group>
-        @endcanany
+        @endcan
 
         @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my', 'view-warning-letter-my', 'view-resignation-my'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
