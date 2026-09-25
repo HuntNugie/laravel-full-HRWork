@@ -15,7 +15,7 @@ class SearchEmployees implements Tool
      */
     public function description(): Stringable|string
     {
-        return 'Search employee records in HRWork by name, email, employee code, position, team, division, or status. Use this tool whenever the user asks about employees or employee lists. Only read employee data; never modify records.';
+        return 'Search employee records in HRWork by name, email, employee code, position, team, division, or status. Use this tool whenever the user asks about employees or employee lists. Always return the employee ID and employee code so the result can be passed to GetEmployeeDetails or another employee-specific tool. Only read employee data; never modify records.';
     }
 
     /**
@@ -103,6 +103,7 @@ class SearchEmployees implements Tool
             'count' => $employees->count(),
             'employees' => $employees->map(function (Employees $employee) {
                 return [
+                    'employee_id' => $employee->id,
                     'employee_code' => $employee->employee_code,
                     'name' => $employee->user?->name,
                     'email' => $employee->user?->email,
