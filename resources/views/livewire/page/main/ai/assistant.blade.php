@@ -13,6 +13,12 @@
 
                 this.pendingMessage = value;
 
+                // Clear the previous streamed answer before revealing the
+                // streaming assistant turn for a new request.
+                if (this.$refs.streamAnswer) {
+                    this.$refs.streamAnswer.textContent = '';
+                }
+
                 // Clear only the visible composer. The submitted value is passed
                 // directly to Livewire so it remains intact on the server.
                 this.$refs.prompt.value = '';
@@ -133,13 +139,23 @@
                     @endforeach
 
                     <div
-                        id="hrwork-ai-stream"
                         x-show="submitting"
                         x-cloak
-                        class="max-w-3xl rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-700 whitespace-pre-wrap break-words"
-                        aria-live="polite"
-                        aria-label="Respons HRWork AI sedang diproses"
-                    ></div>
+                        x-transition.opacity.duration.100ms
+                    >
+                        <x-wirekit::assistant-message
+                            :name="'HRWork AI'"
+                            model="{{ config('ai.providers.9router.models.text.default') }}"
+                            streaming
+                            announce="all"
+                            x-on:stream-finished.window="flush()"
+                        >
+                            <span
+                                x-ref="streamAnswer"
+                                wire:stream="answer"
+                            >{{ $streamedAnswer }}</span>
+                        </x-wirekit::assistant-message>
+                    </div>
 
                     <template x-if="submitting && pendingMessage">
                         <div x-cloak>
@@ -149,15 +165,6 @@
                             >
                                 <span x-text="pendingMessage"></span>
                             </x-wirekit::message>
-                        </div>
-                    </template>
-
-                    <template x-if="submitting">
-                        <div x-cloak>
-                            <x-wirekit::message-typing
-                                author="HRWork AI"
-                                announce
-                            />
                         </div>
                     </template>
 
