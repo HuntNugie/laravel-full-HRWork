@@ -42,6 +42,8 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'hr' => [
+                'view-ai-assistant',
+                'view-cv-analyzer',
                 // Organization
                 'view-divisi',
                 'show-divisi',

@@ -20,6 +20,7 @@ class User extends Authenticatable implements HasMedia
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;
     use InteractsWithMedia;
+
     /**
      * Get the attributes that should be cast.
      *
@@ -41,6 +42,7 @@ class User extends Authenticatable implements HasMedia
     {
         return $this->hasMany(EmployeeAbsenceRequest::class, 'user_id');
     }
+
     protected function casts(): array
     {
         return [

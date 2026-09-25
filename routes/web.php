@@ -7,6 +7,8 @@ use App\Http\Controllers\PrintPayrollSummaryController;
 use App\Http\Controllers\PrintWarningLetterController;
 use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
+use App\Livewire\Page\Main\AI\Assistant;
+use App\Livewire\Page\Main\AI\CVAnalyzer;
 use App\Livewire\Page\Main\Absence\Absence;
 use App\Livewire\Page\Main\Attendances\ApprovedAbsence;
 use App\Livewire\Page\Main\Attendances\Attendances;
@@ -90,6 +92,14 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'isActive'])->group(function () {
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
+
+    Route::get('/ai-assistant', Assistant::class)
+        ->middleware('permission:view-ai-assistant')
+        ->name('ai.assistant');
+
+    Route::get('/ai/cv-analyzer', CVAnalyzer::class)
+        ->middleware('permission:view-cv-analyzer')
+        ->name('ai.cv-analyzer');
     Route::get('/my-profile', MyProfile::class)->middleware("gateMyProfile")->name('my-profile');
     Route::get('/my-data', MyData::class)->middleware("permission:view-data-my")->name('my-data');
     Route::get('/my-contract', MyContract::class)->middleware("permission:view-contract-my")->name('my-contract');
