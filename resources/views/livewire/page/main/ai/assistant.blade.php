@@ -82,13 +82,8 @@
             >
                 <x-wirekit::stack gap="md" class="min-h-[500px] p-4 sm:p-6">
 
-                    <div
-                        x-show="!submitting"
-                        x-cloak
-                        x-transition.opacity.duration.150ms
-                    >
-                        @if ($messages === [])
-                            <div class="flex min-h-[460px] items-center justify-center">
+                    @if ($messages === [])
+                        <div class="flex min-h-[460px] items-center justify-center">
                                 <div class="w-full max-w-2xl text-center">
                                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-[#30AFFF]/10 text-[#30AFFF] ring-1 ring-[#30AFFF]/10">
                                         <x-wirekit::icon name="sparkles" class="h-8 w-8" />
@@ -120,9 +115,8 @@
                                         @endforeach
                                     </div>
                                 </div>
-                            </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
 
                     @foreach ($messages as $index => $message)
                         @if ($message['role'] === 'user')
