@@ -150,26 +150,41 @@
         <x-wirekit::card.body>
             <div class="space-y-3">
                 @forelse ($divisionProject->teams as $team)
+                    @php
+                        $currentEmployee = auth()->user()?->employees;
+                        $canOpenTeamBoard = $currentEmployee?->user?->hasRole('general-manager')
+                            || $currentEmployee?->user?->hasRole('manager')
+                            || ($currentEmployee?->user?->hasRole('supervisor') && (int) $team->supervisor_id === (int) $currentEmployee?->id)
+                            || ($currentEmployee?->user?->hasRole('task-worker') && (int) $team->id === (int) $currentEmployee?->team_id);
+                    @endphp
+
                     <div class="rounded-xl border border-slate-100 p-4">
                         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                             <div>
-                                <a href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
-                                    wire:navigate class="text-sm font-semibold text-[#168ED1] hover:underline">
-                                    {{ $team->name }}
-                                </a>
+                                @if ($canOpenTeamBoard)
+                                    <a href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
+                                        wire:navigate class="text-sm font-semibold text-[#168ED1] hover:underline">
+                                        {{ $team->name }}
+                                    </a>
+                                @else
+                                    <p class="text-sm font-semibold text-slate-700">{{ $team->name }}</p>
+                                @endif
                                 <p class="mt-1 text-xs text-slate-400">
                                     Supervisor: {{ $team->supervisor?->user?->name ?? '-' }}
                                     · {{ $team->employees->count() }} anggota
                                 </p>
                             </div>
-                            <x-wirekit::button
-                                variant="outline"
-                                size="sm"
-                                href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
-                                wire:navigate
-                            >
-                                Lihat Board
-                            </x-wirekit::button>
+
+                            @if ($canOpenTeamBoard)
+                                <x-wirekit::button
+                                    variant="outline"
+                                    size="sm"
+                                    href="{{ route('work-management.division-projects.teams.show', ['divisionProject' => $divisionProject, 'team' => $team]) }}"
+                                    wire:navigate
+                                >
+                                    Lihat Board
+                                </x-wirekit::button>
+                            @endif
                         </div>
 
                         @if ($team->employees->isNotEmpty())
