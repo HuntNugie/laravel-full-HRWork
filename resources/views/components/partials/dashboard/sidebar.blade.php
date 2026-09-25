@@ -303,7 +303,7 @@
 
             </x-wirekit::sidebar.group>
         @endcanany
-        @canany(['view-late-discipline-rule', 'view-unpresent-discipline-rule'])
+        @canany(['view-late-discipline-rule', 'view-unpresent-discipline-rule', 'view-warning-letter'])
 
             <x-wirekit::sidebar.group collapsible label="Disiplin">
                 @can('view-late-discipline-rule')
