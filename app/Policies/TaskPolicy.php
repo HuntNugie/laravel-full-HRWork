@@ -10,7 +10,9 @@ class TaskPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('view-task') && $user->employees !== null;
+        return $user->can('view-task')
+            && $user->employees !== null
+            && ($user->employees?->user?->hasRole('task-worker') ?? false);
     }
 
     public function view(User $user, Task $task): bool
@@ -19,15 +21,9 @@ class TaskPolicy
             return false;
         }
 
-        if ($this->isGeneralManager($employee) || $this->isProjectManager($task, $employee)) {
-            return true;
-        }
-
-        if ((int) $task->team?->supervisor_id === (int) $employee->id) {
-            return true;
-        }
-
-        return (int) $task->assignee_id === (int) $employee->id;
+        // A task detail is private to the employee who received the task.
+        return $user->hasRole('task-worker')
+            && (int) $task->assignee_id === (int) $employee->id;
     }
 
     public function create(User $user): bool
