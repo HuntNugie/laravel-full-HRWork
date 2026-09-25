@@ -1,9 +1,16 @@
 <x-wirekit::stack gap="md">
+    @php
+        $todoTasks = $tasks->reject(fn ($task) => in_array($task->status, ['done', 'cancelled'], true));
+        $doneTasks = $tasks->where('status', 'done');
+        $activeTasks = $tasks->reject(fn ($task) => $task->status === 'cancelled');
+    @endphp
+
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <x-wirekit::stack gap="sm">
             <div class="flex items-center gap-2">
-                <a href="{{ route('work-management.division-projects.show', $divisionProject) }}" wire:navigate class="text-sm text-[#30AFFF] hover:underline">Division Project</a>
-                <span class="text-sm text-slate-400">/ Team</span>
+                <a href="{{ route('work-management.division-projects.show', $divisionProject) }}" wire:navigate
+                    class="text-sm text-[#30AFFF] hover:underline">Division Project</a>
+                <span class="text-sm text-slate-400">/ Team Board</span>
             </div>
 
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">{{ $team->name }}</h1>
@@ -31,176 +38,161 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        @php
-            $taskCounts = [
-                'done' => $tasks->where('status', 'done')->count(),
-                'in_progress' => $tasks->where('status', 'in_progress')->count(),
-                'in_review' => $tasks->where('status', 'in_review')->count(),
-                'blocked' => $tasks->where('status', 'blocked')->count(),
-            ];
-        @endphp
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <x-wirekit::card>
+            <x-wirekit::card.body>
+                <x-wirekit::stack gap="1">
+                    <span class="text-sm font-medium text-slate-500">Anggota Team</span>
+                    <span class="text-lg font-bold text-slate-900">{{ $members->count() }}</span>
+                </x-wirekit::stack>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
 
-        <x-wirekit::card><x-wirekit::card.body><x-wirekit::stack gap="1">
-            <span class="text-sm font-medium text-slate-500">Progress Team</span>
-            <span class="text-lg font-bold text-slate-900">{{ $this->automaticProgress }}%</span>
-        </x-wirekit::stack></x-wirekit::card.body></x-wirekit::card>
+        <x-wirekit::card>
+            <x-wirekit::card.body>
+                <x-wirekit::stack gap="1">
+                    <span class="text-sm font-medium text-slate-500">Total Task</span>
+                    <span class="text-lg font-bold text-slate-900">{{ $activeTasks->count() }}</span>
+                </x-wirekit::stack>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
 
-        <x-wirekit::card><x-wirekit::card.body><x-wirekit::stack gap="1">
-            <span class="text-sm font-medium text-slate-500">Total Task</span>
-            <span class="text-lg font-bold text-slate-900">{{ $tasks->count() }}</span>
-        </x-wirekit::stack></x-wirekit::card.body></x-wirekit::card>
+        <x-wirekit::card>
+            <x-wirekit::card.body>
+                <x-wirekit::stack gap="1">
+                    <span class="text-sm font-medium text-slate-500">Belum Selesai</span>
+                    <span class="text-lg font-bold text-slate-900">{{ $todoTasks->count() }}</span>
+                </x-wirekit::stack>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
 
-        @foreach ($taskCounts as $status => $count)
-            <x-wirekit::card><x-wirekit::card.body><x-wirekit::stack gap="1">
-                <span class="text-sm font-medium text-slate-500">{{ str_replace('_', ' ', ucfirst($status)) }}</span>
-                <span class="text-lg font-bold text-slate-900">{{ $count }}</span>
-            </x-wirekit::stack></x-wirekit::card.body></x-wirekit::card>
-        @endforeach
+        <x-wirekit::card>
+            <x-wirekit::card.body>
+                <x-wirekit::stack gap="1">
+                    <span class="text-sm font-medium text-slate-500">Selesai</span>
+                    <span class="text-lg font-bold text-emerald-700">{{ $doneTasks->count() }}</span>
+                </x-wirekit::stack>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
     </div>
-
-    @can('submitSupervisorReport', $divisionProject)
-        @if (
-            (int) $team->supervisor_id === (int) auth()->user()?->employees?->id
-            && in_array($divisionProject->status, ['in_progress', 'ready_for_review', 'revision_required'], true)
-            && $tasks->isNotEmpty()
-            && $tasks->where('status', '!=', 'cancelled')->every(fn ($task) => $task->status === 'done')
-            && (! $latestSupervisorReport || $latestSupervisorReport->status === 'rejected')
-        )
-            <x-wirekit::card>
-                <x-wirekit::card.header>
-                    <x-wirekit::stack gap="1">
-                        <h2 class="text-lg font-semibold text-slate-900">Laporan Supervisor</h2>
-                        <p class="text-sm text-slate-500">Kirim hasil pekerjaan {{ $team->name }} kepada Manager.</p>
-                    </x-wirekit::stack>
-                </x-wirekit::card.header>
-                <x-wirekit::card.body>
-                    <form wire:submit="submitSupervisorReport" class="space-y-4">
-                        <textarea
-                            wire:model="supervisorReport"
-                            rows="6"
-                            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20"
-                            placeholder="Ringkasan hasil pekerjaan Team, kendala, dan catatan penting."
-                        ></textarea>
-                        @error('supervisorReport') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                        <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">Kirim ke Manager</x-wirekit::button>
-                    </form>
-                </x-wirekit::card.body>
-            </x-wirekit::card>
-        @endif
-    @endcan
 
     <x-wirekit::card>
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
-                <h2 class="text-lg font-semibold text-slate-900">Perkembangan {{ $team->name }}</h2>
-                <p class="text-sm text-slate-500">Semua task pada Team ini untuk Division Project yang sedang dibuka.</p>
+                <h2 class="text-lg font-semibold text-slate-900">Anggota Team</h2>
+                <p class="text-sm text-slate-500">Anggota berasal dari Team yang terpilih pada organisasi.</p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
+
         <x-wirekit::card.body>
-            <div class="wk-scrollbar overflow-x-auto">
-                <x-wirekit::table hoverable>
-                    <x-wirekit::table.head>
-                        <x-wirekit::table.row>
-                            <x-wirekit::table.th>Task</x-wirekit::table.th>
-                            <x-wirekit::table.th>Employee</x-wirekit::table.th>
-                            <x-wirekit::table.th>Progress</x-wirekit::table.th>
-                            <x-wirekit::table.th>Status</x-wirekit::table.th>
-                            <x-wirekit::table.th>Deadline</x-wirekit::table.th>
-                        </x-wirekit::table.row>
-                    </x-wirekit::table.head>
-                    <x-wirekit::table.body>
-                        @forelse ($tasks as $task)
-                            @php
-                                $taskStatusClass = match ($task->status) {
-                                    'done' => 'bg-emerald-50 text-emerald-600',
-                                    'in_review' => 'bg-violet-50 text-violet-600',
-                                    'in_progress' => 'bg-sky-50 text-sky-600',
-                                    'blocked' => 'bg-amber-50 text-amber-600',
-                                    'cancelled' => 'bg-rose-50 text-rose-600',
-                                    default => 'bg-slate-100 text-slate-600',
-                                };
-                            @endphp
-                            <x-wirekit::table.row>
-                                <x-wirekit::table.td>
-                                    <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate class="text-sm font-semibold text-[#168ED1] hover:underline">{{ $task->title }}</a>
-                                </x-wirekit::table.td>
-                                <x-wirekit::table.td><span class="text-sm text-slate-700">{{ $task->assignee?->user?->name ?? '—' }}</span></x-wirekit::table.td>
-                                <x-wirekit::table.td><span class="text-sm font-medium text-slate-700">{{ $task->progress }}%</span></x-wirekit::table.td>
-                                <x-wirekit::table.td><span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {{ $taskStatusClass }}">{{ str_replace('_', ' ', $task->status) }}</span></x-wirekit::table.td>
-                                <x-wirekit::table.td><span class="text-sm text-slate-700">{{ $task->due_date?->format('d M Y') ?? '—' }}</span></x-wirekit::table.td>
-                            </x-wirekit::table.row>
-                        @empty
-                            <x-wirekit::table.row>
-                                <x-wirekit::table.td colspan="5"><div class="py-10 text-center text-sm text-slate-500">Belum ada task untuk Team ini.</div></x-wirekit::table.td>
-                            </x-wirekit::table.row>
-                        @endforelse
-                    </x-wirekit::table.body>
-                </x-wirekit::table>
+            <div class="flex flex-wrap gap-2">
+                @forelse ($members as $member)
+                    <div class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2">
+                        <p class="text-sm font-medium text-slate-700">{{ $member->user?->name ?? '-' }}</p>
+                        <p class="mt-0.5 text-xs text-slate-400">{{ $member->employee_code }}</p>
+                    </div>
+                @empty
+                    <span class="text-sm text-slate-500">Belum ada anggota aktif.</span>
+                @endforelse
             </div>
         </x-wirekit::card.body>
     </x-wirekit::card>
 
-    @can('reviewTeamReport', [$divisionProject, $team])
-        @if ($divisionProject->status === 'submitted_to_manager' && $latestSupervisorReport?->status === 'submitted')
-            <x-wirekit::card>
-                <x-wirekit::card.header>
-                    <x-wirekit::stack gap="1">
-                        <h2 class="text-lg font-semibold text-slate-900">Review Manager</h2>
-                        <p class="text-sm text-slate-500">Review laporan Supervisor {{ $team->name }}.</p>
-                    </x-wirekit::stack>
-                </x-wirekit::card.header>
-                <x-wirekit::card.body>
-                    <form wire:submit="reviewSupervisorReport" class="space-y-4">
-                        <div>
-                            <label class="mb-2 block text-sm font-medium text-slate-700">Keputusan</label>
-                            <select wire:model="reviewDecision" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
-                                <option value="">Pilih keputusan</option>
-                                <option value="approved">Approve</option>
-                                <option value="rejected">Return untuk Revisi</option>
-                            </select>
-                            @error('reviewDecision') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="mb-2 block text-sm font-medium text-slate-700">Feedback</label>
-                            <textarea wire:model="reviewFeedback" rows="4" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20" placeholder="Tuliskan feedback untuk Supervisor"></textarea>
-                            @error('reviewFeedback') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                        </div>
-                        <x-wirekit::button type="submit" class="bg-[#30AFFF] text-white hover:bg-[#1599E8]">
-                            Simpan Review Team
-                        </x-wirekit::button>
-                    </form>
-                </x-wirekit::card.body>
-            </x-wirekit::card>
-        @endif
-    @endcan
-
     <x-wirekit::card>
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
-                <h2 class="text-lg font-semibold text-slate-900">Laporan Supervisor</h2>
-                <p class="text-sm text-slate-500">Laporan terbaru dari Supervisor Team ini.</p>
+                <h2 class="text-lg font-semibold text-slate-900">Task Board</h2>
+                <p class="text-sm text-slate-500">Board sederhana untuk memantau task Team seperti kanban lite.</p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
+
         <x-wirekit::card.body>
-            @if ($latestSupervisorReport)
-                <div class="space-y-3">
-                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <span class="inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-medium
-                            {{ match ($latestSupervisorReport->status) {
-                                'approved' => 'bg-emerald-50 text-emerald-600',
-                                'rejected' => 'bg-rose-50 text-rose-600',
-                                default => 'bg-violet-50 text-violet-600',
-                            } }}">
-                            {{ str_replace('_', ' ', $latestSupervisorReport->status) }}
-                        </span>
-                        <span class="text-xs text-slate-400">{{ $latestSupervisorReport->created_at?->format('d M Y H:i') }}</span>
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div class="rounded-xl bg-slate-50 p-4">
+                    <div class="mb-3 flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-slate-800">Perlu Dikerjakan</h3>
+                        <span class="rounded-full bg-white px-2.5 py-1 text-xs text-slate-500">{{ $todoTasks->count() }}</span>
                     </div>
-                    <p class="whitespace-pre-line text-sm leading-6 text-slate-700">{{ $latestSupervisorReport->content }}</p>
+
+                    <div class="space-y-3">
+                        @forelse ($todoTasks as $task)
+                            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate
+                                            class="text-sm font-semibold text-[#168ED1] hover:underline">
+                                            {{ $task->title }}
+                                        </a>
+                                        <p class="mt-1 text-xs text-slate-400">
+                                            {{ $task->assignee?->user?->name ?? 'Belum ada assignee' }}
+                                            · Deadline {{ $task->due_date?->format('d M Y') ?? '—' }}
+                                        </p>
+                                    </div>
+
+                                    @can('updateOwn', $task)
+                                        <button
+                                            type="button"
+                                            wire:click="toggleTask({{ $task->id }}, true)"
+                                            class="flex size-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-400 hover:border-[#30AFFF] hover:text-[#30AFFF]"
+                                            title="Tandai selesai"
+                                        >
+                                            <x-wirekit::icon name="check" class="size-4" />
+                                        </button>
+                                    @endcan
+                                </div>
+
+                                <p class="mt-3 text-xs leading-5 text-slate-500">
+                                    {{ $task->description ?: 'Tidak ada deskripsi.' }}
+                                </p>
+                            </div>
+                        @empty
+                            <div class="py-8 text-center text-sm text-slate-500">Tidak ada task yang sedang dikerjakan.</div>
+                        @endforelse
+                    </div>
                 </div>
-            @else
-                <div class="py-8 text-center text-sm text-slate-500">Belum ada laporan Supervisor.</div>
-            @endif
+
+                <div class="rounded-xl bg-emerald-50/50 p-4">
+                    <div class="mb-3 flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-slate-800">Selesai</h3>
+                        <span class="rounded-full bg-white px-2.5 py-1 text-xs text-emerald-600">{{ $doneTasks->count() }}</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        @forelse ($doneTasks as $task)
+                            <div class="rounded-xl border border-emerald-100 bg-white p-4">
+                                <div class="flex items-start gap-3">
+                                    @can('updateOwn', $task)
+                                        <button
+                                            type="button"
+                                            wire:click="toggleTask({{ $task->id }}, false)"
+                                            class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white"
+                                            title="Buka kembali task"
+                                        >
+                                            <x-wirekit::icon name="check" class="size-3" />
+                                        </button>
+                                    @else
+                                        <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white">
+                                            <x-wirekit::icon name="check" class="size-3" />
+                                        </span>
+                                    @endcan
+
+                                    <div class="min-w-0">
+                                        <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate
+                                            class="text-sm font-semibold text-emerald-700 hover:underline">
+                                            {{ $task->title }}
+                                        </a>
+                                        <p class="mt-1 text-xs text-slate-400">
+                                            {{ $task->assignee?->user?->name ?? '-' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="py-8 text-center text-sm text-slate-500">Belum ada task selesai.</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
         </x-wirekit::card.body>
     </x-wirekit::card>
 </x-wirekit::stack>
