@@ -94,7 +94,17 @@ class DivisionProjectPolicy
             return true;
         }
 
-        return (int) $team->supervisor_id === (int) $employee->id;
+        if ($employee->user?->hasRole('supervisor')) {
+            return (int) $team->supervisor_id === (int) $employee->id;
+        }
+
+        if ($employee->user?->hasRole('task-worker')) {
+            return (int) $team->employees()
+                ->whereKey($employee->id)
+                ->exists();
+        }
+
+        return false;
     }
 
     private function isGeneralManager(?Employees $employee): bool
