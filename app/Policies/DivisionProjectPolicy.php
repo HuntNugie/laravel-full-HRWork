@@ -37,17 +37,14 @@ class DivisionProjectPolicy
 
     public function create(User $user): bool
     {
-        return $user->can('create-division-project') && $this->isGeneralManager($user->employees);
+        return $user->can('create-division-project')
+            && $this->isGeneralManager($user->employees);
     }
 
     public function update(User $user, DivisionProject $divisionProject): bool
     {
-        if (! $user->can('update-division-project') || ! ($employee = $user->employees)) {
-            return false;
-        }
-
-        return $this->isGeneralManager($employee)
-            || (int) $divisionProject->manager_id === (int) $employee->id;
+        return $user->can('update-division-project')
+            && $this->isGeneralManager($user->employees);
     }
 
     public function assignTeam(User $user, DivisionProject $divisionProject): bool
@@ -60,19 +57,23 @@ class DivisionProjectPolicy
             || (int) $divisionProject->manager_id === (int) $employee->id;
     }
 
-    public function reportProgress(User $user, DivisionProject $divisionProject): bool
+    public function submitForCompletion(User $user, DivisionProject $divisionProject): bool
     {
-        if (! $user->can('report-project-progress') || ! ($employee = $user->employees)) {
+        return $user->can('submit-division-project-to-gm')
+            && (int) $divisionProject->manager_id === (int) $user->employees?->id;
+    }
+
+    public function reviewCompletion(User $user, DivisionProject $divisionProject): bool
+    {
+        if (! $user->can('review-division-project') || ! ($employee = $user->employees)) {
             return false;
         }
 
-        return (int) $divisionProject->manager_id === (int) $employee->id;
-    }
+        $masterProject = $divisionProject->masterProject;
 
-    public function review(User $user, DivisionProject $divisionProject): bool
-    {
-        return $user->can('review-division-project')
-            && (int) $divisionProject->manager_id === (int) $user->employees?->id;
+        return $this->isGeneralManager($employee)
+            && $masterProject !== null
+            && (int) $masterProject->created_by === (int) $employee->id;
     }
 
     public function viewTeam(User $user, DivisionProject $divisionProject, Team $team): bool
@@ -94,46 +95,6 @@ class DivisionProjectPolicy
         }
 
         return (int) $team->supervisor_id === (int) $employee->id;
-    }
-
-    public function submitSupervisorReport(User $user, DivisionProject $divisionProject): bool
-    {
-        if (! $user->can('submit-division-project-report') || ! ($employee = $user->employees)) {
-            return false;
-        }
-
-        return $divisionProject->teams()
-            ->where('supervisor_id', $employee->id)
-            ->exists();
-    }
-
-    public function reviewTeamReport(User $user, DivisionProject $divisionProject, Team $team): bool
-    {
-        if (! $user->can('review-division-project') || ! ($employee = $user->employees)) {
-            return false;
-        }
-
-        return (int) $divisionProject->manager_id === (int) $employee->id
-            && $divisionProject->teams()->whereKey($team->id)->exists();
-    }
-
-    public function submitToGM(User $user, DivisionProject $divisionProject): bool
-    {
-        return $user->can('submit-division-project-to-gm')
-            && (int) $divisionProject->manager_id === (int) $user->employees?->id;
-    }
-
-    public function reviewManagerReport(User $user, DivisionProject $divisionProject): bool
-    {
-        if (! $user->can('approve-master-project') || ! ($employee = $user->employees)) {
-            return false;
-        }
-
-        $masterProject = $divisionProject->masterProject;
-
-        return $this->isGeneralManager($employee)
-            && $masterProject !== null
-            && (int) $masterProject->created_by === (int) $employee->id;
     }
 
     private function isGeneralManager(?Employees $employee): bool
