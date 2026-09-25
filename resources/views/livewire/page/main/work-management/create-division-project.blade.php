@@ -15,7 +15,7 @@
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
                 <h2 class="text-lg font-semibold text-slate-900">Informasi Division Project</h2>
-                <p class="text-sm text-slate-500">Tentukan divisi, timeline, dan sifat wajib project.</p>
+                <p class="text-sm text-slate-500">GM menentukan divisi dan, bila sudah siap, dapat langsung memilih Team awal.</p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
 
@@ -23,13 +23,27 @@
             <form wire:submit="save" class="space-y-5">
                 <div>
                     <label for="divisi_id" class="mb-2 block text-sm font-medium text-slate-700">Divisi</label>
-                    <select id="divisi_id" wire:model="divisi_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                    <select id="divisi_id" wire:model.live="divisi_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
                         <option value="">Pilih divisi</option>
                         @foreach ($divisions as $division)
                             <option value="{{ $division->id }}">{{ $division->name }} — Manager: {{ $division->manager?->user?->name ?? '-' }}</option>
                         @endforeach
                     </select>
                     @error('divisi_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                </div>
+
+                <div>
+                    <label for="team_id" class="mb-2 block text-sm font-medium text-slate-700">Team awal <span class="text-slate-400">(opsional)</span></label>
+                    <select id="team_id" wire:model="team_id" @disabled(!$divisi_id) class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                        <option value="">{{ $divisi_id ? 'Pilih Team' : 'Pilih Divisi terlebih dahulu' }}</option>
+                        @foreach ($teams as $team)
+                            <option value="{{ $team->id }}">
+                                {{ $team->name }} — Supervisor: {{ $team->supervisor?->user?->name ?? '-' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('team_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
+                    <p class="mt-1 text-xs text-slate-400">Manager tetap dapat menambahkan Team lain dari halaman Division Project.</p>
                 </div>
 
                 <div>
@@ -62,17 +76,12 @@
                     <input type="checkbox" wire:model="is_required" class="mt-0.5 rounded border-slate-300 text-[#30AFFF] focus:ring-[#30AFFF]/20" />
                     <span>
                         <span class="block text-sm font-medium text-slate-700">Project wajib</span>
-                        <span class="mt-1 block text-xs text-slate-500">Division project ini wajib selesai sebelum Master Project dapat disetujui.</span>
+                        <span class="mt-1 block text-xs text-slate-500">Tetap dipertahankan untuk kompatibilitas data lama. Workflow baru mengharuskan semua Division Project selesai sebelum Master Project selesai.</span>
                     </span>
                 </label>
 
                 <div class="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
-                    <x-wirekit::button
-                        type="button"
-                        variant="outline"
-                        href="{{ route('work-management.master-projects.show', $masterProject) }}"
-                        wire:navigate
-                    >
+                    <x-wirekit::button type="button" variant="outline" href="{{ route('work-management.master-projects.show', $masterProject) }}" wire:navigate>
                         Batal
                     </x-wirekit::button>
 
