@@ -23,7 +23,18 @@ class SearchPayroll extends HRTool implements Tool
         }
 
         $query = $this->value($request['query'] ?? '');
+        $employeeCode = $this->value($request['employee_code'] ?? '');
         $employeeId = $request['employee_id'] ?? null;
+        $resolved = $this->resolveEmployee($employeeId, $employeeCode, $employeeCode === '' ? $query : '');
+
+        if ($resolved['error']) {
+            return $this->json([
+                'success' => false,
+                'message' => $resolved['message'],
+            ]);
+        }
+
+        $employeeId = $resolved['employee_id'];
         $periodId = $request['period_id'] ?? null;
         $status = $this->value($request['status'] ?? '');
         $from = $this->optionalDate($request['from_date'] ?? null);
@@ -123,6 +134,7 @@ class SearchPayroll extends HRTool implements Tool
     {
         return [
             'employee_id' => $schema->integer(),
+            'employee_code' => $schema->string(),
             'period_id' => $schema->integer(),
             'query' => $schema->string(),
             'status' => $schema->string(),
