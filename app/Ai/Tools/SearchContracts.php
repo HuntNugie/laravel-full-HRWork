@@ -40,7 +40,7 @@ class SearchContracts extends HRTool implements Tool
             ->when($query !== '', function ($q) use ($query) {
                 $q->where(function ($builder) use ($query) {
                     $builder
-                        ->where('contract_numnber', 'like', "%{$query}%")
+                        ->where('contract_number', 'like', "%{$query}%")
                         ->orWhereHas('employees', function ($employeeQuery) use ($query) {
                             $employeeQuery->where('employee_code', 'like', "%{$query}%")
                                 ->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', "%{$query}%"));
@@ -65,7 +65,7 @@ class SearchContracts extends HRTool implements Tool
             'count' => $contracts->count(),
             'contracts' => $contracts->map(fn (EmployeeContract $contract) => [
                 'id' => $contract->id,
-                'contract_number' => $contract->contract_numnber,
+                'contract_number' => $contract->contract_number,
                 'employee_id' => $contract->employee_id,
                 'employee_code' => $contract->employees?->employee_code,
                 'employee_name' => $contract->employees?->user?->name,
