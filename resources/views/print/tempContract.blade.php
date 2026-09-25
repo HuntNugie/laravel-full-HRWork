@@ -173,7 +173,7 @@
         }
 
         .salary-table .salary-total-row td {
-            background: #e5e7eb;
+            background: yellow;
             font-weight: 700;
         }
 
