@@ -34,20 +34,7 @@ class GetEmployeeDetails extends HRTool implements Tool
                 'team.supervisor:id,user_id,employee_code',
                 'team.supervisor.user:id,name',
                 'managedDivisi:id,name',
-                'latestEmployeeContract' => function ($contractQuery) {
-                    $contractQuery->select([
-                        'employee_contracts.id',
-                        'employee_contracts.employee_id',
-                        'employee_contracts.contract_number',
-                        'employee_contracts.employement_type',
-                        'employee_contracts.start_date',
-                        'employee_contracts.end_date',
-                        'employee_contracts.salary_daily',
-                        'employee_contracts.status',
-                        'employee_contracts.position_name',
-                        'employee_contracts.notes',
-                    ]);
-                },
+                'latestEmployeeContract',
             ])
             ->withCount([
                 'employeeContract as contract_count',
