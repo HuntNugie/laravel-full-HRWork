@@ -131,16 +131,15 @@
                                     </div>
 
                                     @if ($canModifyTasks)
-                                        @if ($canModifyTasks)
                                         @can('updateOwn', $task)
-                                        <button
-                                            type="button"
-                                            wire:click="toggleTask({{ $task->id }}, true)"
-                                            class="flex size-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-400 hover:border-[#30AFFF] hover:text-[#30AFFF]"
-                                            title="Tandai selesai"
-                                        >
-                                            <x-wirekit::icon name="check" class="size-4" />
-                                        </button>
+                                            <button
+                                                type="button"
+                                                wire:click="toggleTask({{ $task->id }}, true)"
+                                                class="flex size-8 shrink-0 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-400 hover:border-[#30AFFF] hover:text-[#30AFFF]"
+                                                title="Tandai selesai"
+                                            >
+                                                <x-wirekit::icon name="check" class="size-4" />
+                                            </button>
                                         @endcan
                                     @endif
                                 </div>
@@ -165,21 +164,22 @@
                         @forelse ($doneTasks as $task)
                             <div class="rounded-xl border border-emerald-100 bg-white p-4">
                                 <div class="flex items-start gap-3">
-                                    @can('updateOwn', $task)
-                                        <button
-                                            type="button"
-                                            wire:click="toggleTask({{ $task->id }}, false)"
-                                            class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white"
-                                            title="Buka kembali task"
-                                        >
-                                            <x-wirekit::icon name="check" class="size-3" />
-                                        </button>
+                                    @if ($canModifyTasks)
+                                        @can('updateOwn', $task)
+                                            <button
+                                                type="button"
+                                                wire:click="toggleTask({{ $task->id }}, false)"
+                                                class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white"
+                                                title="Buka kembali task"
+                                            >
+                                                <x-wirekit::icon name="check" class="size-3" />
+                                            </button>
                                         @endcan
                                     @else
                                         <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white">
                                             <x-wirekit::icon name="check" class="size-3" />
                                         </span>
-                                    @endcan
+                                    @endif
 
                                     <div class="min-w-0">
                                         <a href="{{ route('work-management.tasks.show', $task) }}" wire:navigate
