@@ -33,7 +33,7 @@
                 </div>
 
                 <div>
-                    <label for="team_id" class="mb-2 block text-sm font-medium text-slate-700">Team awal <span class="text-slate-400">(opsional)</span></label>
+                    <label for="team_id" class="mb-2 block text-sm font-medium text-slate-700">Team</label>
                     <select id="team_id" wire:model="team_id" @disabled(!$divisi_id) class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
                         <option value="">{{ $divisi_id ? 'Pilih Team' : 'Pilih Divisi terlebih dahulu' }}</option>
                         @foreach ($teams as $team)
@@ -43,7 +43,7 @@
                         @endforeach
                     </select>
                     @error('team_id') <span class="mt-1 block text-xs text-rose-600">{{ $message }}</span> @enderror
-                    <p class="mt-1 text-xs text-slate-400">Manager tetap dapat menambahkan Team lain dari halaman Division Project.</p>
+                    <p class="mt-1 text-xs text-slate-400">Manager tetap dapat menambahkan Team lain dari halaman Division Project saat project berjalan.</p>
                 </div>
 
                 <div>
