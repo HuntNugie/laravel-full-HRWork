@@ -18,7 +18,6 @@ class RolePermissionSeeder extends Seeder
     {
         $rolePermissions = [
             'employee' => [
-                'view-ai-assistant',
                 'check-in-attendance',
                 'check-out-attendance',
                 'create-absence',
@@ -147,7 +146,6 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'administrator' => [
-                'view-ai-assistant',
                 // User management
                 'view-user',
                 'show-user',
@@ -167,7 +165,6 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'general-manager' => [
-                'view-ai-assistant',
                 // Master project
                 'view-master-project',
                 'create-master-project',
@@ -197,7 +194,6 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'manager' => [
-                'view-ai-assistant',
                 // Master project visibility
                 'view-master-project',
 
@@ -216,7 +212,6 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'supervisor' => [
-                'view-ai-assistant',
                 // Project visibility
                 'view-master-project',
                 'view-division-project',
@@ -232,7 +227,6 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'task-worker' => [
-                'view-ai-assistant',
                 'view-master-project',
                 'view-division-project',
                 'view-task',
