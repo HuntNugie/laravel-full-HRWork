@@ -19,10 +19,7 @@ class TaskDetail extends Component
         $this->loadTask($task);
     }
 
-    public function toggleCompletion(
-        bool $completed,
-        WorkManagementService $service,
-    ): void {
+    public function toggleCompletion(WorkManagementService $service): void {
         $this->authorize('updateOwn', $this->task);
 
         $employee = Auth::user()?->employees;
@@ -30,6 +27,8 @@ class TaskDetail extends Component
         if (! $employee) {
             abort(403);
         }
+
+        $completed = $this->task->status !== Task::STATUS_DONE;
 
         $service->toggleTaskCompletion(
             $this->task,
