@@ -1,5 +1,6 @@
 <x-wirekit::stack gap="md">
     @php
+        $canModifyTasks = in_array($divisionProject->status, ['draft', 'in_progress', 'revision_required'], true);
         $todoTasks = $tasks->reject(fn ($task) => in_array($task->status, ['done', 'cancelled'], true));
         $doneTasks = $tasks->where('status', 'done');
         $activeTasks = $tasks->reject(fn ($task) => $task->status === 'cancelled');
@@ -129,7 +130,9 @@
                                         </p>
                                     </div>
 
-                                    @can('updateOwn', $task)
+                                    @if ($canModifyTasks)
+                                        @if ($canModifyTasks)
+                                        @can('updateOwn', $task)
                                         <button
                                             type="button"
                                             wire:click="toggleTask({{ $task->id }}, true)"
@@ -138,7 +141,8 @@
                                         >
                                             <x-wirekit::icon name="check" class="size-4" />
                                         </button>
-                                    @endcan
+                                        @endcan
+                                    @endif
                                 </div>
 
                                 <p class="mt-3 text-xs leading-5 text-slate-500">
@@ -170,6 +174,7 @@
                                         >
                                             <x-wirekit::icon name="check" class="size-3" />
                                         </button>
+                                        @endcan
                                     @else
                                         <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-emerald-500 bg-emerald-500 text-white">
                                             <x-wirekit::icon name="check" class="size-3" />
