@@ -25,6 +25,22 @@ class GetEmployeeDetails extends HRTool implements Tool
         $employeeCode = $this->value($request['employee_code'] ?? '');
         $query = $this->value($request['query'] ?? '');
 
+        $resolved = $this->resolveEmployee(
+            $employeeId,
+            $employeeCode,
+            $query
+        );
+
+        if ($resolved['error']) {
+            return $this->json([
+                'success' => false,
+                'found' => false,
+                'message' => $resolved['message'],
+            ]);
+        }
+
+        $resolvedEmployeeId = $resolved['employee_id'];
+
         $employee = Employees::query()
             ->with([
                 'user:id,name,email,status',
@@ -43,21 +59,7 @@ class GetEmployeeDetails extends HRTool implements Tool
                 'resignations as resignation_count',
                 'terminations as termination_count',
             ])
-            ->when($employeeId, fn ($q) => $q->whereKey((int) $employeeId))
-            ->when(! $employeeId && $employeeCode !== '', function ($q) use ($employeeCode) {
-                $q->where('employee_code', $employeeCode);
-            })
-            ->when(! $employeeId && $employeeCode === '' && $query !== '', function ($q) use ($query) {
-                $q->where(function ($builder) use ($query) {
-                    $builder
-                        ->where('employee_code', 'like', "%{$query}%")
-                        ->orWhereHas('user', function ($userQuery) use ($query) {
-                            $userQuery
-                                ->where('name', 'like', "%{$query}%")
-                                ->orWhere('email', 'like', "%{$query}%");
-                        });
-                });
-            })
+            ->whereKey($resolvedEmployeeId)
             ->first();
 
         if (! $employee) {
