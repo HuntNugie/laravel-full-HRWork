@@ -40,6 +40,18 @@
                 {{ $divisionProject->manager?->user?->name ?? '-' }}
             </p>
         </x-wirekit::stack>
+
+        @if ($divisionProject->status === 'completed' && auth()->user()?->hasRole('general-manager'))
+            <x-wirekit::button
+                type="button"
+                href="{{ route('work-management.division-projects.completion-document', $divisionProject) }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <x-wirekit::icon name="printer" />
+                Cetak Berita Acara
+            </x-wirekit::button>
+        @endif
     </div>
 
     @if (session('success'))
