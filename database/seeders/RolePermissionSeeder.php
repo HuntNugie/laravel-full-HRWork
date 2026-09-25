@@ -205,5 +205,35 @@ class RolePermissionSeeder extends Seeder
                         ->get()
                 );
         }
+
+        $this->syncWorkManagementIdentityRoles();
+    /**
+     * Repair Work Management identity roles for existing employee records.
+     *
+     * Permission seeding alone cannot make an existing GM usable when the
+     * employee account was created before the Work Management roles existed.
+     */
+    private function syncWorkManagementIdentityRoles(): void
+    {
+        Employees::query()
+            ->with(['user', 'position'])
+            ->whereNotNull('user_id')
+            ->get()
+            ->each(function (Employees $employee): void {
+                $user = $employee->user;
+
+                if (! $user) {
+                    return;
+                }
+
+                $position = mb_strtolower(trim((string) $employee->position?->name));
+
+                if ($position === 'general manager') {
+                    $user->assignRole('employee');
+                    $user->assignRole('general-manager');
+                }
+            });
+    }
+
     }
 }
