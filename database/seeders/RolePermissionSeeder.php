@@ -147,8 +147,6 @@ class RolePermissionSeeder extends Seeder
                 'create-division-project',
                 'assign-project-team',
                 'review-division-project',
-                'view-termination',
-                'show-termination',
             ],
 
             'manager' => [
