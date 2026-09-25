@@ -5,6 +5,7 @@ namespace App\Livewire\Page\Main\WorkManagement;
 use App\Models\DivisionProject;
 use App\Models\Divisi;
 use App\Models\MasterProject;
+use App\Models\Team;
 use App\Service\WorkManagementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
@@ -16,8 +17,10 @@ class CreateDivisionProject extends Component
 {
     public MasterProject $masterProject;
     public Collection $divisions;
+    public Collection $teams;
 
     public ?int $divisi_id = null;
+    public ?int $team_id = null;
     public string $name = '';
     public string $description = '';
     public ?string $start_date = null;
@@ -35,12 +38,28 @@ class CreateDivisionProject extends Component
             ->whereNotNull('manager_id')
             ->orderBy('name')
             ->get();
+
+        $this->teams = collect();
+    }
+
+    public function updatedDivisiId(): void
+    {
+        $this->team_id = null;
+
+        $this->teams = Team::query()
+            ->where('divisi_id', $this->divisi_id)
+            ->where('is_active', 'active')
+            ->whereNotNull('supervisor_id')
+            ->with('supervisor.user')
+            ->orderBy('name')
+            ->get();
     }
 
     protected function rules(): array
     {
         return [
             'divisi_id' => ['required', 'integer', 'exists:divisis,id'],
+            'team_id' => ['nullable', 'integer', 'exists:teams,id'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'start_date' => ['nullable', 'date'],
@@ -55,9 +74,14 @@ class CreateDivisionProject extends Component
         $validated = $this->validate();
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
+
+        $initialTeam = filled($validated['team_id'] ?? null)
+            ? Team::findOrFail($validated['team_id'])
+            : null;
 
         $project = $service->createDivisionProject(
             masterProject: $this->masterProject,
@@ -68,10 +92,13 @@ class CreateDivisionProject extends Component
             startDate: $validated['start_date'] ?: null,
             dueDate: $validated['due_date'] ?: null,
             isRequired: (bool) $validated['is_required'],
+            initialTeam: $initialTeam,
         );
 
         session()->flash('success', 'Division project berhasil dibuat.');
-        $this->redirectRoute('work-management.division-projects.show', ['divisionProject' => $project], navigate: true);
+        $this->redirectRoute('work-management.division-projects.show', [
+            'divisionProject' => $project,
+        ], navigate: true);
     }
 
     public function render()
