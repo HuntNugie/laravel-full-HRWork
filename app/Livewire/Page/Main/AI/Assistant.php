@@ -3,6 +3,7 @@
 namespace App\Livewire\Page\Main\AI;
 
 use App\Ai\Agents\HRAssistant;
+use Laravel\Ai\Messages\Message;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Throwable;
@@ -38,6 +39,18 @@ class Assistant extends Component
         $this->errorMessage = null;
         $this->isLoading = true;
 
+        // Keep the current request out of the history we send to the model.
+        // The current prompt is passed separately to stream(), so it appears
+        // exactly once in the model context.
+        $history = collect($this->messages)
+            ->map(
+                fn (array $message) => new Message(
+                    $message['role'],
+                    $message['content'],
+                )
+            )
+            ->all();
+
         $this->messages[] = [
             'role' => 'user',
             'content' => $prompt,
@@ -45,16 +58,18 @@ class Assistant extends Component
         $this->prompt = '';
 
         try {
-            $response = HRAssistant::make()->stream(
-                $prompt,
-                provider: '9router',
-                model: config('ai.providers.9router.models.text.default')
-            );
+            $response = HRAssistant::make()
+                ->withMessages($history)
+                ->stream(
+                    $prompt,
+                    provider: '9router',
+                    model: config('ai.providers.9router.models.text.default')
+                );
 
             // Drain the SSE stream completely so Laravel AI can execute
             // tool calls and continue the agent loop until the final answer.
             foreach ($response as $event) {
-                // The UI currently renders the completed answer as one message.
+                // The UI renders the completed answer as one message.
             }
 
             $this->messages[] = [
