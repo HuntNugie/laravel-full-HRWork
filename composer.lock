@@ -3963,20 +3963,19 @@
         },
         {
             "name": "pushery/wirekit",
-            "version": "v2.55.0",
+            "version": "v2.28.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pushery/wirekit.git",
-                "reference": "a0aa7425e60548c8fede722ce01e6814158e4a06"
+                "reference": "332fe68d18184da5fec4494c81faa1df84429ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pushery/wirekit/zipball/a0aa7425e60548c8fede722ce01e6814158e4a06",
-                "reference": "a0aa7425e60548c8fede722ce01e6814158e4a06",
+                "url": "https://api.github.com/repos/pushery/wirekit/zipball/332fe68d18184da5fec4494c81faa1df84429ac",
+                "reference": "332fe68d18184da5fec4494c81faa1df84429ac",
                 "shasum": ""
             },
             "require": {
-                "illuminate/console": "^12.0 || ^13.0",
                 "illuminate/contracts": "^12.0 || ^13.0",
                 "illuminate/support": "^12.0 || ^13.0",
                 "illuminate/view": "^12.0 || ^13.0",
@@ -3987,26 +3986,21 @@
                 "bacon/bacon-qr-code": "^3.1",
                 "blade-ui-kit/blade-heroicons": "^2.7",
                 "codeat3/blade-phosphor-icons": "^2.4",
-                "larastan/larastan": "3.12.1",
-                "laravel/ai": "^0.11.2",
-                "laravel/boost": "^2.9",
-                "laravel/mcp": "^1.0",
+                "larastan/larastan": "^3.10",
                 "laravel/pint": "^1.0",
                 "mallardduck/blade-lucide-icons": "^2.0",
                 "orchestra/testbench": "^10.0 || ^11.1",
                 "pestphp/pest": "^5.0",
                 "pestphp/pest-plugin-laravel": "^5.0",
-                "phpstan/phpstan": "2.2.14",
-                "secondnetwork/blade-tabler-icons": "^3.46",
                 "symfony/yaml": "^7.4 || ^8.0"
             },
             "suggest": {
-                "bacon/bacon-qr-code": "Required for the qr-code component — server-side QR code SVG generation",
-                "blade-ui-kit/blade-heroicons": "Heroicons preset — one glyph catalog in mini, outline, solid and micro styles",
                 "blade-ui-kit/blade-icons": "Required for the icon system (~1.7). Install alongside your preferred icon set.",
-                "codeat3/blade-phosphor-icons": "Phosphor preset — one glyph catalog in six weight styles",
-                "mallardduck/blade-lucide-icons": "Lucide preset — outline glyphs, plus a separate lab catalog",
-                "secondnetwork/blade-tabler-icons": "Tabler preset — outline and filled glyphs in the one catalog"
+                "blade-ui-kit/blade-heroicons": "Heroicons preset — ~316 icons, Mini/Outline/Solid styles",
+                "mallardduck/blade-lucide-icons": "Lucide preset — ~1,500 icons",
+                "codeat3/blade-phosphor-icons": "Phosphor preset — ~1,500 icons in 6 weight styles",
+                "ryangjchandler/blade-tabler-icons": "Tabler preset — ~5,700 outline/filled icons",
+                "bacon/bacon-qr-code": "Required for the qr-code component — server-side QR code SVG generation"
             },
             "type": "library",
             "extra": {
@@ -4046,9 +4040,9 @@
             ],
             "support": {
                 "issues": "https://github.com/pushery/wirekit/issues",
-                "source": "https://github.com/pushery/wirekit/tree/v2.55.0"
+                "source": "https://github.com/pushery/wirekit/tree/v2.28.0"
             },
-            "time": "2026-09-22T05:54:30+00:00"
+            "time": "2026-08-08T12:00:52+00:00"
         },
         {
             "name": "ralouphie/getallheaders",
