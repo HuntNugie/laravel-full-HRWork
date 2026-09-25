@@ -3,6 +3,7 @@
 namespace App\Livewire\Page\Main\WorkManagement;
 
 use App\Models\DivisionProject;
+use App\Models\ProjectReview;
 use App\Models\Team;
 use App\Service\WorkManagementService;
 use Illuminate\Support\Facades\Auth;
@@ -15,14 +16,8 @@ class DivisionProjectDetail extends Component
 {
     public DivisionProject $divisionProject;
     public Collection $availableTeams;
-
     public ?int $team_id = null;
-    public int $manualProgress = 0;
-    public string $progressNote = '';
-    public ?string $reviewDecision = null;
-    public string $reviewFeedback = '';
-    public string $supervisorReport = '';
-    public string $managerReport = '';
+    public ?string $reviewFeedback = null;
 
     public function mount(DivisionProject $divisionProject): void
     {
@@ -33,9 +28,13 @@ class DivisionProjectDetail extends Component
     public function assignTeam(WorkManagementService $service): void
     {
         $this->authorize('assignTeam', $this->divisionProject);
-        $this->validate(['team_id' => ['required', 'integer', 'exists:teams,id']]);
+
+        $this->validate([
+            'team_id' => ['required', 'integer', 'exists:teams,id'],
+        ]);
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
@@ -48,80 +47,77 @@ class DivisionProjectDetail extends Component
 
         $this->team_id = null;
         $this->loadProject($this->divisionProject);
+
         session()->flash('success', 'Team berhasil ditugaskan.');
     }
 
-    public function reportProgress(WorkManagementService $service): void
+    public function submitForCompletion(WorkManagementService $service): void
     {
-        $this->authorize('reportProgress', $this->divisionProject);
-        $this->validate([
-            'manualProgress' => ['required', 'integer', 'min:0', 'max:100'],
-            'progressNote' => ['nullable', 'string'],
-        ]);
+        $this->authorize('submitForCompletion', $this->divisionProject);
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
 
-        $service->reportManualProgress(
+        $service->submitDivisionProjectForCompletion(
             $this->divisionProject,
             $employee,
-            $this->manualProgress,
-            $this->progressNote ?: null,
         );
 
-        $this->progressNote = '';
+        $this->reviewFeedback = null;
         $this->loadProject($this->divisionProject);
-        session()->flash('success', 'Progress manual berhasil dicatat.');
+
+        session()->flash('success', 'Division Project berhasil diajukan untuk approval GM.');
     }
 
-    public function submitSupervisorReport(WorkManagementService $service): void
+    public function approveCompletion(WorkManagementService $service): void
     {
-        $this->authorize('submitSupervisorReport', $this->divisionProject);
-
-        $this->validate([
-            'supervisorReport' => ['required', 'string'],
-        ]);
+        $this->authorize('reviewCompletion', $this->divisionProject);
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
 
-        $service->submitSupervisorReport(
+        $service->reviewDivisionProjectCompletion(
             $this->divisionProject,
             $employee,
-            $this->supervisorReport,
+            'approved',
         );
 
-        $this->supervisorReport = '';
         $this->loadProject($this->divisionProject);
-        session()->flash('success', 'Laporan Supervisor berhasil dikirim ke Manager.');
+
+        session()->flash('success', 'Division Project ditandai complete.');
     }
 
-    public function submitToGM(WorkManagementService $service): void
+    public function requestRevision(WorkManagementService $service): void
     {
-        $this->authorize('submitToGM', $this->divisionProject);
+        $this->authorize('reviewCompletion', $this->divisionProject);
 
         $this->validate([
-            'managerReport' => ['required', 'string'],
+            'reviewFeedback' => ['required', 'string', 'max:5000'],
         ]);
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
 
-        $service->submitDivisionProjectToGM(
+        $service->reviewDivisionProjectCompletion(
             $this->divisionProject,
             $employee,
-            $this->managerReport,
+            'rejected',
+            $this->reviewFeedback,
         );
 
-        $this->managerReport = '';
+        $this->reviewFeedback = null;
         $this->loadProject($this->divisionProject);
-        session()->flash('success', 'Laporan Manager berhasil diteruskan ke General Manager.');
+
+        session()->flash('success', 'Division Project dikembalikan untuk revisi.');
     }
 
     public function render()
@@ -131,46 +127,15 @@ class DivisionProjectDetail extends Component
 
     private function loadProject(DivisionProject $divisionProject): void
     {
-        $employee = Auth::user()?->employees;
-        $canSeeManagerData = $employee
-            && (
-                (int) $divisionProject->manager_id === (int) $employee->id
-                || $employee->user?->hasRole('general-manager')
-            );
-
-        $relations = [
-            'masterProject.reviews.reviewer.user',
+        $this->divisionProject = $divisionProject->refresh()->load([
+            'masterProject',
             'division',
             'manager.user',
             'teams.supervisor.user',
+            'teams.employees.user',
             'tasks.team',
             'tasks.assignee.user',
-            'tasks.reviews.reviewer.user',
-            'reviews.reviewer.user',
-        ];
-
-        if ($canSeeManagerData) {
-            $relations[] = 'progressUpdates.reporter.user';
-            $relations[] = 'reports.team';
-            $relations[] = 'reports.reporter.user';
-        }
-
-        $this->divisionProject = $divisionProject->refresh()->load($relations);
-
-        $this->manualProgress = $canSeeManagerData
-            ? (int) $this->divisionProject->manual_progress
-            : 0;
-
-        $latestManagerReport = $canSeeManagerData
-            ? $this->divisionProject->reports
-                ->where('report_level', \App\Models\ProjectReport::LEVEL_MANAGER)
-                ->sortByDesc('id')
-                ->first()
-            : null;
-
-        $this->managerReport = $latestManagerReport?->status === \App\Models\ProjectReport::STATUS_REJECTED
-            ? (string) $latestManagerReport->content
-            : '';
+        ]);
 
         $assignedIds = $this->divisionProject->teams->pluck('id');
 

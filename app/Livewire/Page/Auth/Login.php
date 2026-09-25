@@ -7,7 +7,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-#[Layout('layouts.auth',["title" => "Halaman Login"])]
+#[Layout('layouts.auth', ["title" => "Halaman Login"])]
 class Login extends Component
 {
     #[Validate([
@@ -25,23 +25,20 @@ class Login extends Component
         'password.required' => 'password wajib di isi',
     ])]
     public string $password = '';
-    
+
     public bool $remember = false;
 
-    public function canSubmit():bool
+    public function authenticate()
     {
-        return filled($this->email) && filled($this->password) && $this->getErrorBag()->isEmpty();
-    }
-    public function authenticate(){
-        ['message' => $message,'result' => $result] = AuthService::login($this->email,$this->password,$this->remember);
-        if( !$result){
-            $this->addError("login_error",$message);
+        ['message' => $message, 'result' => $result] = AuthService::login($this->email, $this->password, $this->remember);
+        if (!$result) {
+            $this->addError("login_error", $message);
             return;
         }
-        $this->redirectRoute("dashboard",navigate:true);
+        $this->redirectRoute("dashboard", navigate: true);
         return;
     }
-    
+
     public function render()
     {
         return view('livewire.page.auth.login');

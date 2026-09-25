@@ -10,7 +10,9 @@ class TaskPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->can('view-task') && $user->employees !== null;
+        return $user->can('view-task')
+            && $user->employees !== null
+            && ($user->employees?->user?->hasRole('task-worker') ?? false);
     }
 
     public function view(User $user, Task $task): bool
@@ -19,58 +21,40 @@ class TaskPolicy
             return false;
         }
 
-        if ($this->isGeneralManager($employee)) {
-            return true;
-        }
-
-        if ((int) $task->assignee_id === (int) $employee->id) {
-            return true;
-        }
-
-        if ((int) $task->divisionProject?->manager_id === (int) $employee->id) {
-            return true;
-        }
-
-        return (int) $task->team?->supervisor_id === (int) $employee->id;
+        // A task detail is private to the employee who received the task.
+        return $user->hasRole('task-worker')
+            && (int) $task->assignee_id === (int) $employee->id;
     }
 
     public function create(User $user): bool
     {
-        if (! $user->can('view-task') || ! ($employee = $user->employees)) {
+        if (! $user->can('create-task') || ! ($employee = $user->employees)) {
             return false;
         }
 
-        return $this->isGeneralManager($employee)
-            || $employee->user?->hasRole('supervisor');
-    }
-
-    public function update(User $user, Task $task): bool
-    {
-        if (! $user->can('update-task') || ! ($employee = $user->employees)) {
-            return false;
-        }
-
-        return $this->isGeneralManager($employee)
-            || (int) $task->divisionProject?->manager_id === (int) $employee->id
-            || (int) $task->team?->supervisor_id === (int) $employee->id;
+        return $employee->user?->hasRole('supervisor') ?? false;
     }
 
     public function updateOwn(User $user, Task $task): bool
     {
         return $user->can('update-own-task')
-            && (int) $task->assignee_id === (int) $user->employees?->id;
+            && (int) $task->assignee_id === (int) $user->employees?->id
+            && ($user->employees?->user?->hasRole('task-worker') ?? false);
     }
 
     public function submit(User $user, Task $task): bool
     {
-        return $user->can('submit-task')
-            && (int) $task->assignee_id === (int) $user->employees?->id;
+        return false;
     }
 
     public function review(User $user, Task $task): bool
     {
-        return $user->can('review-task')
-            && (int) $task->team?->supervisor_id === (int) $user->employees?->id;
+        return false;
+    }
+
+    public function update(User $user, Task $task): bool
+    {
+        return false;
     }
 
     public function cancel(User $user, Task $task): bool
@@ -80,8 +64,13 @@ class TaskPolicy
         }
 
         return $this->isGeneralManager($employee)
-            || (int) $task->divisionProject?->manager_id === (int) $employee->id
+            || $this->isProjectManager($task, $employee)
             || (int) $task->team?->supervisor_id === (int) $employee->id;
+    }
+
+    private function isProjectManager(Task $task, Employees $employee): bool
+    {
+        return (int) $task->divisionProject?->manager_id === (int) $employee->id;
     }
 
     private function isGeneralManager(?Employees $employee): bool

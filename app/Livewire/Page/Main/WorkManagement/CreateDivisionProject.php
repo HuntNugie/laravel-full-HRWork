@@ -16,13 +16,11 @@ class CreateDivisionProject extends Component
 {
     public MasterProject $masterProject;
     public Collection $divisions;
-
     public ?int $divisi_id = null;
     public string $name = '';
     public string $description = '';
     public ?string $start_date = null;
     public ?string $due_date = null;
-    public bool $is_required = true;
 
     public function mount(MasterProject $masterProject): void
     {
@@ -35,6 +33,7 @@ class CreateDivisionProject extends Component
             ->whereNotNull('manager_id')
             ->orderBy('name')
             ->get();
+
     }
 
     protected function rules(): array
@@ -45,7 +44,6 @@ class CreateDivisionProject extends Component
             'description' => ['nullable', 'string'],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'is_required' => ['boolean'],
         ];
     }
 
@@ -55,6 +53,7 @@ class CreateDivisionProject extends Component
         $validated = $this->validate();
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
@@ -67,11 +66,12 @@ class CreateDivisionProject extends Component
             description: $validated['description'] ?: null,
             startDate: $validated['start_date'] ?: null,
             dueDate: $validated['due_date'] ?: null,
-            isRequired: (bool) $validated['is_required'],
         );
 
         session()->flash('success', 'Division project berhasil dibuat.');
-        $this->redirectRoute('work-management.division-projects.show', ['divisionProject' => $project], navigate: true);
+        $this->redirectRoute('work-management.division-projects.show', [
+            'divisionProject' => $project,
+        ], navigate: true);
     }
 
     public function render()

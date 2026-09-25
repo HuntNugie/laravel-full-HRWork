@@ -2,7 +2,10 @@
 
 namespace App\Livewire\Page\Main\WorkManagement;
 
+use App\Models\Employees;
 use App\Models\MasterProject;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -10,33 +13,47 @@ use Livewire\Component;
 class MasterProjectDetail extends Component
 {
     public MasterProject $masterProject;
+    public Collection $divisionProjects;
 
     public function mount(MasterProject $masterProject): void
     {
         $this->authorize('view', $masterProject);
 
-        $employee = auth()->user()?->employees;
-        $canSeeManagerData = $employee
-            && (
-                $employee->user?->hasRole('general-manager')
-                || $masterProject->divisionProjects()->where('manager_id', $employee->id)->exists()
-            );
+        $employee = Auth::user()?->employees;
 
-        $relations = [
-            'creator.user',
-            'approver.user',
-            'reviews.reviewer.user',
-            'divisionProjects.division',
-            'divisionProjects.manager.user',
-            'divisionProjects.tasks',
-        ];
-
-        if ($canSeeManagerData) {
-            $relations[] = 'divisionProjects.progressUpdates.reporter.user';
-            $relations[] = 'divisionProjects.reports.reporter.user';
+        if (! $employee) {
+            abort(403);
         }
 
-        $this->masterProject = $masterProject->load($relations);
+        $query = $masterProject->divisionProjects()
+            ->with([
+                'division',
+                'manager.user',
+                'teams.supervisor.user',
+                'tasks.team',
+                'tasks.assignee.user',
+            ]);
+
+        if ($employee->user?->hasRole('manager')) {
+            $query->where('manager_id', $employee->id);
+        } elseif ($employee->user?->hasRole('supervisor')) {
+            $query->whereHas('teams', fn ($q) => $q->where('supervisor_id', $employee->id));
+        } elseif ($employee->user?->hasRole('task-worker')) {
+            $query->whereHas('tasks', fn ($q) => $q->where('assignee_id', $employee->id));
+        } elseif (! $employee->user?->hasRole('general-manager')) {
+            abort(403);
+        }
+
+        $this->divisionProjects = $query->get();
+
+        // A newly created Master Project can legitimately have no Division Project yet.
+        // GM needs to land on its detail page so they can create the first Division Project.
+        $this->masterProject = $masterProject->load([
+            'creator.user',
+            'approver.user',
+        ]);
+
+        $this->masterProject->setRelation('divisionProjects', $this->divisionProjects);
     }
 
     public function render()

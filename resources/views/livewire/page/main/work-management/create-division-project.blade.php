@@ -15,7 +15,7 @@
         <x-wirekit::card.header>
             <x-wirekit::stack gap="1">
                 <h2 class="text-lg font-semibold text-slate-900">Informasi Division Project</h2>
-                <p class="text-sm text-slate-500">Tentukan divisi, timeline, dan sifat wajib project.</p>
+                <p class="text-sm text-slate-500">GM menentukan divisi dan informasi dasar Division Project. Team ditentukan kemudian pada halaman project.</p>
             </x-wirekit::stack>
         </x-wirekit::card.header>
 
@@ -23,7 +23,7 @@
             <form wire:submit="save" class="space-y-5">
                 <div>
                     <label for="divisi_id" class="mb-2 block text-sm font-medium text-slate-700">Divisi</label>
-                    <select id="divisi_id" wire:model="divisi_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
+                    <select id="divisi_id" wire:model.live="divisi_id" class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
                         <option value="">Pilih divisi</option>
                         @foreach ($divisions as $division)
                             <option value="{{ $division->id }}">{{ $division->name }} — Manager: {{ $division->manager?->user?->name ?? '-' }}</option>
@@ -58,21 +58,8 @@
                     </div>
                 </div>
 
-                <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 bg-slate-50 p-4">
-                    <input type="checkbox" wire:model="is_required" class="mt-0.5 rounded border-slate-300 text-[#30AFFF] focus:ring-[#30AFFF]/20" />
-                    <span>
-                        <span class="block text-sm font-medium text-slate-700">Project wajib</span>
-                        <span class="mt-1 block text-xs text-slate-500">Division project ini wajib selesai sebelum Master Project dapat disetujui.</span>
-                    </span>
-                </label>
-
                 <div class="flex flex-col-reverse gap-2 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
-                    <x-wirekit::button
-                        type="button"
-                        variant="outline"
-                        href="{{ route('work-management.master-projects.show', $masterProject) }}"
-                        wire:navigate
-                    >
+                    <x-wirekit::button type="button" variant="outline" href="{{ route('work-management.master-projects.show', $masterProject) }}" wire:navigate>
                         Batal
                     </x-wirekit::button>
 

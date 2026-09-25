@@ -38,22 +38,21 @@ class MasterProjectPolicy
 
     public function create(User $user): bool
     {
-        return $user->can('create-master-project') && $this->isGeneralManager($user->employees);
+        // Master Project creation is explicitly a General Manager responsibility.
+        return $this->isGeneralManager($user->employees);
     }
 
     public function update(User $user, MasterProject $masterProject): bool
     {
-        return $user->can('update-master-project') && $this->isGeneralManager($user->employees);
+        return $user->can('update-master-project')
+            && $this->isGeneralManager($user->employees);
     }
 
     public function approve(User $user, MasterProject $masterProject): bool
     {
-        if (! $user->can('approve-master-project') || ! ($employee = $user->employees)) {
-            return false;
-        }
-
-        return $this->isGeneralManager($employee)
-            && (int) $masterProject->created_by === (int) $employee->id;
+        return $user->can('approve-master-project')
+            && $this->isGeneralManager($user->employees)
+            && (int) $masterProject->created_by === (int) $user->employees?->id;
     }
 
     private function isGeneralManager(?Employees $employee): bool

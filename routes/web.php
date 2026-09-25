@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\PrintContractEmployeeController;
+use App\Http\Controllers\PrintMasterProjectSummaryController;
+use App\Http\Controllers\PrintDivisionProjectCompletionController;
 use App\Http\Controllers\PrintPayrollPaymentController;
 use App\Http\Controllers\PrintPayrollSlipController;
 use App\Http\Controllers\PrintPayrollSummaryController;
@@ -277,15 +279,21 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
     Route::prefix('work-management')->group(function () {
         Route::get('/master-projects', MasterProjects::class)->middleware('permission:view-master-project')->name('work-management.master-projects');
-        Route::get('/master-projects/create', CreateMasterProject::class)->middleware('permission:create-master-project')->name('work-management.master-projects.create');
+        Route::get('/master-projects/create', CreateMasterProject::class)->middleware('role:general-manager')->name('work-management.master-projects.create');
         Route::get('/master-projects/{masterProject}', MasterProjectDetail::class)->middleware('permission:view-master-project')->name('work-management.master-projects.show');
+        Route::get('/master-projects/{masterProject}/summary-report', PrintMasterProjectSummaryController::class)
+            ->middleware('role:general-manager')
+            ->name('work-management.master-projects.summary-report');
         Route::get('/master-projects/{masterProject}/division-projects/create', CreateDivisionProject::class)->middleware('permission:create-division-project')->name('work-management.master-projects.division-projects.create');
         Route::get('/master-projects/{masterProject}/approve', MasterProjectApprove::class)->middleware('permission:approve-master-project')->name('work-management.master-projects.approve');
         Route::get('/division-projects/{divisionProject}', DivisionProjectDetail::class)->middleware('permission:view-division-project')->name('work-management.division-projects.show');
+        Route::get('/division-projects/{divisionProject}/completion-document', PrintDivisionProjectCompletionController::class)
+            ->middleware('role:general-manager')
+            ->name('work-management.division-projects.completion-document');
         Route::get('/division-projects/{divisionProject}/teams/{team}', DivisionProjectTeamDetail::class)->middleware('permission:view-division-project')->name('work-management.division-projects.teams.show');
-        Route::get('/division-projects/{divisionProject}/teams/{team}/tasks/create', CreateTask::class)->middleware('permission:view-task')->name('work-management.division-projects.tasks.create');
-        Route::get('/tasks', MyTasks::class)->middleware('permission:view-task')->name('work-management.tasks');
-        Route::get('/tasks/{task}', TaskDetail::class)->middleware('permission:view-task')->name('work-management.tasks.show');
+        Route::get('/division-projects/{divisionProject}/teams/{team}/tasks/create', CreateTask::class)->middleware('permission:create-task')->name('work-management.division-projects.tasks.create');
+        Route::get('/tasks', MyTasks::class)->middleware('role:task-worker')->name('work-management.tasks');
+        Route::get('/tasks/{task}', TaskDetail::class)->middleware('role:task-worker')->name('work-management.tasks.show');
     });
     Route::prefix('discipline')->group(function () {
         Route::get('/late', LateDiciplineRule::class)

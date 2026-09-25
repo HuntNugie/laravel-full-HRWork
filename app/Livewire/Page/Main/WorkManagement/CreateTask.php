@@ -19,49 +19,39 @@ class CreateTask extends Component
     public Team $team;
     public Collection $assignees;
 
-    public ?int $team_id = null;
     public ?int $assignee_id = null;
+    public string $employeeSearch = '';
     public string $title = '';
     public string $description = '';
     public ?string $due_date = null;
-    public bool $isSupervisor = false;
 
     public function mount(DivisionProject $divisionProject, Team $team): void
     {
         $this->authorize('create', Task::class);
 
         $this->divisionProject = $divisionProject->load('teams');
-        $this->assignees = collect();
 
         if (! $this->divisionProject->teams->contains('id', $team->id)) {
             abort(404);
         }
 
         $employee = Auth::user()?->employees;
+
         if (! $employee) {
             abort(403);
         }
 
-        $this->team = $team->load('supervisor.user');
-        $this->team_id = $team->id;
-
-        if ($employee->user?->hasRole('supervisor')) {
-            if ((int) $this->team->supervisor_id !== (int) $employee->id) {
-                abort(403);
-            }
-
-            $this->isSupervisor = true;
-        } elseif (! $employee->user?->hasRole('general-manager')) {
+        if ((int) $team->supervisor_id !== (int) $employee->id) {
             abort(403);
         }
 
+        $this->team = $team->load('supervisor.user');
         $this->loadAssignees();
     }
 
     protected function rules(): array
     {
         return [
-            'team_id' => ['required', 'integer', 'exists:teams,id'],
             'assignee_id' => ['required', 'integer', 'exists:employees,id'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -72,9 +62,10 @@ class CreateTask extends Component
     public function save(WorkManagementService $service): void
     {
         $this->authorize('create', Task::class);
-        $validated = $this->validate();
 
+        $validated = $this->validate();
         $creator = Auth::user()?->employees;
+
         if (! $creator) {
             abort(403);
         }
@@ -101,23 +92,41 @@ class CreateTask extends Component
         return view('livewire.page.main.work-management.create-task');
     }
 
-    private function loadAssignees(): void
+    public function getFilteredAssigneesProperty(): Collection
     {
-        if (! $this->team_id) {
-            $this->assignees = collect();
+        $search = mb_strtolower(trim($this->employeeSearch));
+
+        if ($search === '') {
+            return $this->assignees;
+        }
+
+        return $this->assignees->filter(function (Employees $employee) use ($search): bool {
+            $name = mb_strtolower((string) ($employee->user?->name ?? ''));
+            $code = mb_strtolower((string) $employee->employee_code);
+
+            return str_contains($name, $search) || str_contains($code, $search);
+        })->values();
+    }
+
+    public function selectAssignee(int $employeeId): void
+    {
+        $employee = $this->assignees->firstWhere('id', $employeeId);
+
+        if (! $employee) {
             return;
         }
 
-        $supervisorId = Team::whereKey($this->team_id)->value('supervisor_id');
+        $this->assignee_id = $employeeId;
+        $this->employeeSearch = '';
+    }
 
-        $managerId = $this->divisionProject->manager_id;
-
+    private function loadAssignees(): void
+    {
         $this->assignees = Employees::query()
-            ->where('team_id', $this->team_id)
+            ->where('team_id', $this->team->id)
+            ->where('id', '!=', $this->team->supervisor_id)
             ->where('status_employee', 'active')
             ->whereHas('user', fn ($query) => $query->where('status', 'active'))
-            ->when($supervisorId, fn ($query) => $query->where('id', '!=', $supervisorId))
-            ->when($managerId, fn ($query) => $query->where('id', '!=', $managerId))
             ->with('user')
             ->orderBy('id')
             ->get();

@@ -67,7 +67,9 @@ class DivisionProject extends Model
             return 0;
         }
 
-        return (int) round($activeTasks->avg(fn (Task $task) => (int) $task->progress));
+        return (int) round(
+            ($activeTasks->where('status', Task::STATUS_DONE)->count() / $activeTasks->count()) * 100
+        );
     }
 
     public function allRequiredWorkCompleted(): bool

@@ -2,44 +2,76 @@
 
 namespace Tests\Feature;
 
-use App\Models\DivisionProject;
 use App\Models\Divisi;
 use App\Models\Employees;
-use App\Models\MasterProject;
-use App\Models\ProjectReport;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Service\WorkManagementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class WorkManagementServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_full_work_management_flow_reaches_master_final_approval(): void
+    public function test_gm_can_create_master_and_division_project_with_initial_team(): void
     {
-        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+
         $service = app(WorkManagementService::class);
 
-        $master = $service->createMasterProject(
-            $generalManager,
-            'Website Redesign',
-            'Company-wide website project',
-        );
-
+        $master = $service->createMasterProject($gm, 'Website Company');
         $divisionProject = $service->createDivisionProject(
             $master,
             $division,
-            $generalManager,
-            'Engineering Delivery',
+            $gm,
+            'Backend Company Website',
+            'API dan database',
+            null,
+            null,
+            true,
+            $team,
         );
 
-        $service->assignTeam($divisionProject, $team, $manager);
+        $this->assertSame('in_progress', $master->refresh()->status);
+        $this->assertSame($division->id, $divisionProject->division->id);
+        $this->assertSame($manager->id, $divisionProject->manager_id);
+        $this->assertTrue(
+            $divisionProject->teams()->whereKey($team->id)->exists()
+        );
+    }
+
+    public function test_only_supervisor_of_selected_team_can_create_task(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        [$otherSupervisor, , $otherTeam] = $this->makeAdditionalTeam($division, 'Frontend');
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $gm, 'Division', initialTeam: $team);
+
+        $this->expectException(ValidationException::class);
+
+        $service->createTask(
+            $divisionProject,
+            $otherTeam,
+            $worker,
+            $otherSupervisor,
+            'Invalid task',
+        );
+    }
+
+    public function test_task_worker_completes_task_with_checkbox_and_can_reopen_it(): void
+    {
+        [$gm, , $supervisor, $worker, $team, $division] = $this->makeStructure();
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $gm, 'Division', initialTeam: $team);
 
         $task = $service->createTask(
             $divisionProject,
@@ -47,372 +79,196 @@ class WorkManagementServiceTest extends TestCase
             $worker,
             $supervisor,
             'Build API',
-            'Implement the backend API',
         );
 
-        $service->reportManualProgress($divisionProject, $manager, 75, 'Manual checkpoint from Manager.');
-
-        $service->updateTaskWork(
-            $task,
-            $worker,
-            100,
-            'API completed.',
-            null,
-            Task::STATUS_IN_PROGRESS,
-        );
-        $service->submitTask($task, $worker);
-        $service->reviewTask($task, $supervisor, 'approved', 'Good.');
-
-        $this->assertSame(Task::STATUS_DONE, $task->refresh()->status);
-        $this->assertSame(100, $divisionProject->refresh()->automaticProgress());
-        $this->assertSame(75, $divisionProject->manual_progress);
-        $this->assertSame('ready_for_review', $divisionProject->status);
-
-        $service->submitSupervisorReport(
-            $divisionProject,
-            $supervisor,
-            'Semua task Backend selesai dan hasil sudah diverifikasi.',
-        );
-
-        $this->assertSame('submitted_to_manager', $divisionProject->refresh()->status);
-        $this->assertDatabaseHas('project_reports', [
-            'division_project_id' => $divisionProject->id,
-            'team_id' => $team->id,
-            'reported_by' => $supervisor->id,
-            'report_level' => ProjectReport::LEVEL_SUPERVISOR,
-            'status' => ProjectReport::STATUS_SUBMITTED,
-        ]);
-
-        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved', 'Laporan Team sudah sesuai.');
-
-        $this->assertSame('manager_approved', $divisionProject->refresh()->status);
-
-        $service->submitDivisionProjectToGM(
-            $divisionProject,
-            $manager,
-            'Division Project telah direview. Seluruh pekerjaan Team telah selesai.',
-        );
-
-        $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
-        $this->assertSame('in_progress', $master->refresh()->status);
-
-        $this->assertDatabaseHas('project_reports', [
-            'division_project_id' => $divisionProject->id,
-            'team_id' => null,
-            'reported_by' => $manager->id,
-            'report_level' => ProjectReport::LEVEL_MANAGER,
-            'status' => ProjectReport::STATUS_SUBMITTED,
-            'progress' => 75,
-        ]);
-
-        $service->reviewManagerReport(
-            $divisionProject,
-            $generalManager,
-            'approved',
-            'Progress Manager sudah sesuai.',
-        );
-
-        $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
-        $this->assertSame('ready_for_review', $master->refresh()->status);
-
-        $service->reviewMasterProject($master, $generalManager, 'approved', 'Final approval.');
-
-        $master->refresh();
-
-        $this->assertSame('completed', $master->status);
-        $this->assertSame('completed', $divisionProject->refresh()->status);
-        $this->assertSame($generalManager->id, $master->approved_by);
-        $this->assertNotNull($master->approved_at);
-
-        $this->assertDatabaseHas('project_reviews', [
-            'master_project_id' => $master->id,
-            'reviewer_id' => $generalManager->id,
-            'reviewer_level' => 'general_manager',
-            'decision' => 'approved',
-        ]);
-
-        $this->assertDatabaseHas('project_reports', [
-            'division_project_id' => $divisionProject->id,
-            'reported_by' => $manager->id,
-            'report_level' => ProjectReport::LEVEL_MANAGER,
-            'status' => ProjectReport::STATUS_APPROVED,
-        ]);
-
-        $this->assertGreaterThanOrEqual(5, \App\Models\WorkManagementAudit::query()->count());
-    }
-
-    public function test_gm_can_return_master_project_and_manager_can_resubmit_to_gm(): void
-    {
-        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
-        $service = app(WorkManagementService::class);
-
-        $otherGeneralManager = $this->makeRoleUser('GM2', 'general-manager');
-
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-        $service->assignTeam($divisionProject, $team, $manager);
-
-        $task = $service->createTask($divisionProject, $team, $worker, $supervisor, 'Completed task');
-        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
-        $service->submitTask($task, $worker);
-        $service->reviewTask($task, $supervisor, 'approved');
-
-        $service->submitSupervisorReport($divisionProject, $supervisor, 'Team selesai.');
-        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved', 'OK.');
-        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan awal Manager.');
-
-        $this->assertSame('in_progress', $master->refresh()->status);
-
-        $this->expectException(ValidationException::class);
-        $service->reviewManagerReport($divisionProject, $otherGeneralManager, 'approved');
-    }
-
-    public function test_supervisor_cannot_report_division_manual_progress(): void
-    {
-        [$generalManager, $manager, $supervisor, , $team, $division] = $this->makeStructure();
-        $service = app(WorkManagementService::class);
-
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-        $service->assignTeam($divisionProject, $team, $manager);
-
-        $this->expectException(ValidationException::class);
-
-        $service->reportManualProgress($divisionProject, $supervisor, 50, 'Supervisor progress.');
-    }
-
-    public function test_manager_waits_for_all_supervisor_reports_before_review(): void
-    {
-        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
-
-        $secondSupervisor = $this->makeRoleUser('SUP2', 'supervisor');
-        $secondWorker = $this->makeRoleUser('WORK2', 'task-worker');
-
-        $secondTeam = Team::create([
-            'name' => 'Frontend',
-            'description' => 'Frontend',
-            'is_active' => 'active',
-            'divisi_id' => $division->id,
-            'supervisor_id' => $secondSupervisor->id,
-        ]);
-
-        $secondWorker->update(['team_id' => $secondTeam->id]);
-
-        $service = app(WorkManagementService::class);
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-
-        $service->assignTeam($divisionProject, $team, $manager);
-        $service->assignTeam($divisionProject, $secondTeam, $manager);
-
-        foreach ([
-            [$worker, $supervisor, $team, 'Backend task'],
-            [$secondWorker, $secondSupervisor, $secondTeam, 'Frontend task'],
-        ] as [$taskWorker, $taskSupervisor, $assignedTeam, $title]) {
-            $task = $service->createTask(
-                $divisionProject,
-                $assignedTeam,
-                $taskWorker,
-                $taskSupervisor,
-                $title,
-            );
-
-            $service->updateTaskWork($task, $taskWorker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
-            $service->submitTask($task, $taskWorker);
-            $service->reviewTask($task, $taskSupervisor, 'approved');
-        }
-
-        $service->submitSupervisorReport($divisionProject, $supervisor, 'Backend selesai.');
-
-        $this->assertSame('in_progress', $divisionProject->refresh()->status);
-
-        $this->expectException(ValidationException::class);
-        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved');
-    }
-
-    public function test_gm_rejection_returns_submitted_division_projects_for_manager_revision(): void
-    {
-        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
-        $service = app(WorkManagementService::class);
-
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-        $service->assignTeam($divisionProject, $team, $manager);
-
-        $task = $service->createTask($divisionProject, $team, $worker, $supervisor, 'Completed task');
-        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
-        $service->submitTask($task, $worker);
-        $service->reviewTask($task, $supervisor, 'approved');
-
-        $service->submitSupervisorReport($divisionProject, $supervisor, 'Team selesai.');
-        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved');
-        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan awal Manager.');
-
-        $service->reviewManagerReport(
-            $divisionProject,
-            $generalManager,
-            'rejected',
-            'Tambahkan detail progress dan hasil akhir.',
-        );
-
-        $this->assertSame('in_progress', $master->refresh()->status);
-        $this->assertSame('revision_required', $divisionProject->refresh()->status);
-        $this->assertDatabaseHas('project_reports', [
-            'division_project_id' => $divisionProject->id,
-            'report_level' => ProjectReport::LEVEL_MANAGER,
-            'status' => ProjectReport::STATUS_REJECTED,
-        ]);
-
-        $service->reportManualProgress($divisionProject, $manager, 100, 'Progress setelah revisi.');
-        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan Manager yang sudah diperbaiki.');
-
-        $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
-        $this->assertSame('in_progress', $master->refresh()->status);
-
-        $service->reviewManagerReport($divisionProject, $generalManager, 'approved', 'Sudah sesuai.');
-
-        $this->assertSame('ready_for_review', $master->refresh()->status);
-
-        $service->reviewMasterProject($master, $generalManager, 'approved', 'Sudah sesuai.');
-
-        $this->assertSame('completed', $master->refresh()->status);
-        $this->assertSame('completed', $divisionProject->refresh()->status);
-    }
-
-    public function test_manager_can_update_manual_progress_until_submitted_to_gm(): void
-    {
-        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
-        $service = app(WorkManagementService::class);
-
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-        $service->assignTeam($divisionProject, $team, $manager);
-
-        $task = $service->createTask($divisionProject, $team, $worker, $supervisor, 'Completed task');
-        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
-        $service->submitTask($task, $worker);
-        $service->reviewTask($task, $supervisor, 'approved');
-
-        $service->submitSupervisorReport($divisionProject, $supervisor, 'Team selesai.');
-
-        $this->assertSame('submitted_to_manager', $divisionProject->refresh()->status);
-
-        $service->reportManualProgress($divisionProject, $manager, 100, 'Progress final Manager.');
-
-        $this->assertSame(100, $divisionProject->refresh()->manual_progress);
-
-        $service->reviewTeamReport($divisionProject, $team, $manager, 'approved', 'OK.');
-        $this->assertSame('manager_approved', $divisionProject->refresh()->status);
-
-        $service->reportManualProgress($divisionProject, $manager, 90, 'Koreksi progress sebelum dikirim ke GM.');
-
-        $service->submitDivisionProjectToGM($divisionProject, $manager, 'Laporan Manager.');
-        $this->assertSame(90, $divisionProject->reports()->latest('id')->first()->progress);
-
-        $this->expectException(ValidationException::class);
-
-        $service->reportManualProgress(
-            $divisionProject,
-            $manager,
-            95,
-            'Tidak boleh diubah setelah submit.',
-        );
-
-        $this->assertSame(90, $divisionProject->refresh()->manual_progress);
-    }
-
-    public function test_manager_can_reject_supervisor_report_for_revision(): void
-    {
-        [$generalManager, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
-        $service = app(WorkManagementService::class);
-
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-        $service->assignTeam($divisionProject, $team, $manager);
-
-        $task = $service->createTask(
-            $divisionProject,
-            $team,
-            $worker,
-            $supervisor,
-            'Completed task',
-        );
-
-        $service->updateTaskWork($task, $worker, 100, 'Done', null, Task::STATUS_IN_PROGRESS);
-        $service->submitTask($task, $worker);
-        $service->reviewTask($task, $supervisor, 'approved');
-
-        $service->submitSupervisorReport($divisionProject, $supervisor, 'Draft report.');
-        $service->reviewTeamReport($divisionProject, $team, $manager, 'rejected', 'Tambahkan detail hasil dan kendala.');
-
-        $this->assertSame('revision_required', $divisionProject->refresh()->status);
-        $this->assertDatabaseHas('project_reviews', [
-            'division_project_id' => $divisionProject->id,
-            'reviewer_id' => $manager->id,
-            'reviewer_level' => 'manager',
-            'decision' => 'rejected',
-        ]);
-        $this->assertDatabaseHas('project_reports', [
-            'division_project_id' => $divisionProject->id,
-            'team_id' => $team->id,
-            'report_level' => ProjectReport::LEVEL_SUPERVISOR,
-            'status' => ProjectReport::STATUS_REJECTED,
-        ]);
-
-        $service->submitSupervisorReport($divisionProject, $supervisor, 'Revised report with complete results.');
-        $this->assertSame('submitted_to_manager', $divisionProject->refresh()->status);
-    }
-
-    public function test_task_can_be_blocked_and_rejected_for_revision(): void
-    {
-        [$generalManager, , $supervisor, $worker, $team, $division] = $this->makeStructure();
-        $service = app(WorkManagementService::class);
-
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-        $service->assignTeam($divisionProject, $team, $generalManager);
-
-        $task = $service->createTask(
-            $divisionProject,
-            $team,
-            $worker,
-            $supervisor,
-            'Blocked task',
-        );
-
-        $service->updateTaskWork($task, $worker, 40, null, 'Waiting for approval.', Task::STATUS_BLOCKED);
+        $service->toggleTaskCompletion($task, $worker, true);
 
         $task->refresh();
 
-        $this->assertSame(Task::STATUS_BLOCKED, $task->status);
-        $this->assertSame(40, $task->progress);
+        $this->assertSame(Task::STATUS_DONE, $task->status);
+        $this->assertSame(100, $task->progress);
+        $this->assertNotNull($task->completed_at);
+        $this->assertNull($task->submitted_at);
 
-        $service->updateTaskWork($task, $worker, 100, 'Finished', null, Task::STATUS_IN_PROGRESS);
-        $service->submitTask($task, $worker);
-        $service->reviewTask($task, $supervisor, 'rejected', 'Please fix edge cases.');
+        $service->toggleTaskCompletion($task, $worker, false);
 
         $task->refresh();
 
-        $this->assertSame(Task::STATUS_IN_PROGRESS, $task->status);
-        $this->assertSame(99, $task->progress);
+        $this->assertSame(Task::STATUS_TO_DO, $task->status);
+        $this->assertSame(0, $task->progress);
         $this->assertNull($task->completed_at);
     }
 
-    public function test_worker_cannot_update_another_workers_task(): void
+    public function test_task_worker_cannot_change_task_after_division_is_submitted_to_gm(): void
     {
-        [$generalManager, , $supervisor, $worker, $team, $division] = $this->makeStructure();
-        $otherUser = User::factory()->create();
-        $otherWorker = $this->makeEmployee('OTHER', $otherUser);
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
 
         $service = app(WorkManagementService::class);
-        $master = $service->createMasterProject($generalManager, 'Project');
-        $divisionProject = $service->createDivisionProject($master, $division, $generalManager, 'Division');
-        $service->assignTeam($divisionProject, $team, $generalManager);
-        $task = $service->createTask($divisionProject, $team, $worker, $supervisor, 'Owned task');
+        $master = $service->createMasterProject($gm, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $gm, 'Division', initialTeam: $team);
+
+        $task = $service->createTask(
+            $divisionProject,
+            $team,
+            $worker,
+            $supervisor,
+            'Build API',
+        );
+
+        $service->toggleTaskCompletion($task, $worker, true);
+        $service->submitDivisionProjectForCompletion($divisionProject, $manager);
 
         $this->expectException(ValidationException::class);
 
-        $service->updateTaskWork($task, $otherWorker, 50, 'No access', null, Task::STATUS_IN_PROGRESS);
+        $service->toggleTaskCompletion($task, $worker, false);
+    }
+
+    public function test_manager_can_submit_division_project_only_when_all_tasks_are_done(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $gm, 'Division', initialTeam: $team);
+
+        $task = $service->createTask(
+            $divisionProject,
+            $team,
+            $worker,
+            $supervisor,
+            'Build API',
+        );
+
+        try {
+            $service->submitDivisionProjectForCompletion($divisionProject, $manager);
+            $this->fail('Expected validation exception when task is still open.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('division_project', $exception->errors());
+        }
+
+        $service->toggleTaskCompletion($task, $worker, true);
+        $service->submitDivisionProjectForCompletion($divisionProject, $manager);
+
+        $this->assertSame('submitted_to_gm', $divisionProject->refresh()->status);
+    }
+
+    public function test_gm_can_complete_division_and_reopen_it_for_revision(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Project');
+        $divisionProject = $service->createDivisionProject($master, $division, $gm, 'Division', initialTeam: $team);
+
+        $task = $service->createTask(
+            $divisionProject,
+            $team,
+            $worker,
+            $supervisor,
+            'Build API',
+        );
+
+        $service->toggleTaskCompletion($task, $worker, true);
+        $service->submitDivisionProjectForCompletion($divisionProject, $manager);
+
+        $service->reviewDivisionProjectCompletion(
+            $divisionProject,
+            $gm,
+            'approved',
+        );
+
+        $this->assertSame('completed', $divisionProject->refresh()->status);
+
+        $service->reviewDivisionProjectCompletion(
+            $divisionProject,
+            $gm,
+            'rejected',
+            'Tambahkan validasi error handling.',
+        );
+
+        $this->assertSame('revision_required', $divisionProject->refresh()->status);
+        $this->assertSame('in_progress', $master->refresh()->status);
+    }
+
+    public function test_master_project_can_be_completed_only_after_all_divisions_are_complete(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        [$secondSupervisor, $secondWorker, $secondTeam, $secondDivision] = $this->makeAdditionalStructure('Frontend');
+
+        $service = app(WorkManagementService::class);
+
+        $master = $service->createMasterProject($gm, 'Company Portal');
+
+        $backend = $service->createDivisionProject(
+            $master,
+            $division,
+            $gm,
+            'Backend',
+            initialTeam: $team,
+        );
+
+        $frontend = $service->createDivisionProject(
+            $master,
+            $secondDivision,
+            $gm,
+            'Frontend',
+            initialTeam: $secondTeam,
+        );
+
+        $backendTask = $service->createTask($backend, $team, $worker, $supervisor, 'Backend task');
+        $frontendTask = $service->createTask($frontend, $secondTeam, $secondWorker, $secondSupervisor, 'Frontend task');
+
+        $service->toggleTaskCompletion($backendTask, $worker, true);
+        $service->submitDivisionProjectForCompletion($backend, $manager);
+        $service->reviewDivisionProjectCompletion($backend, $gm, 'approved');
+
+        try {
+            $service->completeMasterProject($master, $gm);
+            $this->fail('Expected validation exception while a division is incomplete.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('master_project', $exception->errors());
+        }
+
+        $secondManager = $secondDivision->manager;
+        $service->toggleTaskCompletion($frontendTask, $secondWorker, true);
+        $service->submitDivisionProjectForCompletion($frontend, $secondManager);
+        $service->reviewDivisionProjectCompletion($frontend, $gm, 'approved');
+
+        $service->completeMasterProject($master, $gm);
+
+        $this->assertSame('completed', $master->refresh()->status);
+    }
+
+    public function test_non_gm_cannot_create_master_project(): void
+    {
+        [$gm, $manager] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
+
+        $this->expectException(ValidationException::class);
+        $service->createMasterProject($manager, 'Not allowed');
+    }
+
+    public function test_non_supervisor_cannot_create_task(): void
+    {
+        [$gm, $manager, $supervisor, $worker, $team, $division] = $this->makeStructure();
+        $service = app(WorkManagementService::class);
+        $master = $service->createMasterProject($gm, 'Allowed');
+        $divisionProject = $service->createDivisionProject(
+            $master,
+            $division,
+            $gm,
+            'Division',
+            initialTeam: $team,
+        );
+
+        $this->expectException(ValidationException::class);
+        $service->createTask(
+            $divisionProject,
+            $team,
+            $worker,
+            $worker,
+            'Not allowed task',
+        );
     }
 
     private function makeStructure(): array
@@ -442,50 +298,114 @@ class WorkManagementServiceTest extends TestCase
         return [$gm, $manager, $supervisor, $worker, $team, $division];
     }
 
+    private function makeAdditionalTeam(Divisi $division, string $teamName): array
+    {
+        $supervisor = $this->makeRoleUser('SUP-' . $teamName, 'supervisor');
+        $worker = $this->makeRoleUser('WORK-' . $teamName, 'task-worker');
+
+        $team = Team::create([
+            'name' => $teamName,
+            'description' => $teamName,
+            'is_active' => 'active',
+            'divisi_id' => $division->id,
+            'supervisor_id' => $supervisor->id,
+        ]);
+
+        $worker->update(['team_id' => $team->id]);
+
+        return [$supervisor, $worker, $team];
+    }
+
+    private function makeAdditionalStructure(string $name): array
+    {
+        $manager = $this->makeRoleUser('MAN-' . $name, 'manager');
+        $supervisor = $this->makeRoleUser('SUP-' . $name, 'supervisor');
+        $worker = $this->makeRoleUser('WORK-' . $name, 'task-worker');
+
+        $division = Divisi::create([
+            'name' => $name,
+            'description' => $name,
+            'is_active' => 'active',
+            'manager_id' => $manager->id,
+        ]);
+
+        $team = Team::create([
+            'name' => $name . ' Team',
+            'description' => $name,
+            'is_active' => 'active',
+            'divisi_id' => $division->id,
+            'supervisor_id' => $supervisor->id,
+        ]);
+
+        $worker->update(['team_id' => $team->id]);
+
+        return [$supervisor, $worker, $team, $division, $manager];
+    }
+
     private function makeRoleUser(string $suffix, string $roleName): Employees
     {
-        $user = User::factory()->create(['name' => $roleName . ' ' . $suffix, 'status' => 'active']);
-        $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        $user = User::factory()->create([
+            'name' => $roleName . ' ' . $suffix,
+            'status' => 'active',
+        ]);
+
+        $role = Role::firstOrCreate([
+            'name' => $roleName,
+            'guard_name' => 'web',
+        ]);
 
         foreach ($this->permissionsForRole($roleName) as $permissionName) {
-            $permission = Permission::firstOrCreate(['name' => $permissionName, 'guard_name' => 'web']);
+            $permission = Permission::firstOrCreate([
+                'name' => $permissionName,
+                'guard_name' => 'web',
+            ]);
+
             $role->givePermissionTo($permission);
         }
 
         $user->assignRole($role);
 
-        return $this->makeEmployee($suffix, $user);
+        return Employees::create([
+            'employee_code' => 'EMP-' . preg_replace('/[^A-Z0-9-]/i', '', $suffix),
+            'user_id' => $user->id,
+            'team_id' => null,
+            'position_id' => null,
+            'status_employee' => 'active',
+        ]);
     }
 
     private function permissionsForRole(string $roleName): array
     {
         return match ($roleName) {
             'general-manager' => [
-                'view-master-project','create-master-project','update-master-project','approve-master-project',
-                'view-division-project','create-division-project','update-division-project','assign-project-team',
-                'report-project-progress','submit-division-project-report','review-division-project','submit-division-project-to-gm','view-task','create-task','assign-task',
-                'update-task','update-own-task','submit-task','review-task',
+                'view-master-project',
+                'create-master-project',
+                'approve-master-project',
+                'view-division-project',
+                'create-division-project',
+                'assign-project-team',
+                'review-division-project',
+                'view-task',
             ],
             'manager' => [
-                'view-master-project','view-division-project','update-division-project','assign-project-team',
-                'report-project-progress','review-division-project','submit-division-project-to-gm','view-task','assign-task','update-task',
+                'view-master-project',
+                'view-division-project',
+                'assign-project-team',
+                'view-task',
+                'submit-division-project-to-gm',
             ],
             'supervisor' => [
-                'view-master-project','view-division-project','report-project-progress','submit-division-project-report','view-task',
-                'create-task','assign-task','update-task','review-task',
+                'view-master-project',
+                'view-division-project',
+                'view-task',
+                'create-task',
             ],
-            default => ['view-master-project','view-division-project','view-task','update-own-task','submit-task'],
+            default => [
+                'view-master-project',
+                'view-division-project',
+                'view-task',
+                'update-own-task',
+            ],
         };
-    }
-
-    private function makeEmployee(string $suffix, User $user): Employees
-    {
-        return Employees::create([
-            'employee_code' => 'EMP-' . $suffix,
-            'user_id' => $user->id,
-            'team_id' => null,
-            'position_id' => null,
-            'status_employee' => 'active',
-        ]);
     }
 }

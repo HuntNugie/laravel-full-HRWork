@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Employees;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -44,7 +45,6 @@ class RolePermissionSeeder extends Seeder
             'hr' => [
                 'view-ai-assistant',
                 'view-cv-analyzer',
-                // Organization
                 'view-divisi',
                 'show-divisi',
                 'create-divisi',
@@ -60,8 +60,6 @@ class RolePermissionSeeder extends Seeder
                 'show-position',
                 'create-position',
                 'update-position',
-
-                // Employee & user
                 'view-employee',
                 'show-employee',
                 'create-employee',
@@ -69,22 +67,16 @@ class RolePermissionSeeder extends Seeder
                 'create-user',
                 'view-user',
                 'show-user',
-
-                // Contract
                 'view-contract',
                 'show-contract',
                 'create-contract',
                 'update-contract',
                 'download-employee-contract',
-
-                // Benefit
                 'view-benefit',
                 'show-benefit',
                 'create-benefit',
                 'update-benefit',
                 'delete-benefit',
-
-                // Payroll
                 'view-payroll',
                 'show-payroll',
                 'create-period-payroll',
@@ -92,8 +84,6 @@ class RolePermissionSeeder extends Seeder
                 'edit-period-payroll',
                 'process-payroll',
                 'mark-paid-payroll',
-
-                // Leave & absence
                 'view-management-leave',
                 'show-management-leave',
                 'process-leave',
@@ -101,23 +91,17 @@ class RolePermissionSeeder extends Seeder
                 'view-absence',
                 'view-type-leave',
                 'show-type-leave',
-
-                // Attendance management
                 'show-attendance',
                 'update-attendance',
                 'view-monitor-attendance',
                 'history-attendance',
                 'view-status-daily',
-
-                // Work time & holiday
                 'view-work-time',
                 'update-work-time',
                 'view-holiday',
                 'create-holiday',
                 'update-holiday',
                 'delete-holiday',
-
-                // Discipline
                 'view-late-discipline-rule',
                 'edit-late-discipline-rule',
                 'view-unpresent-discipline-rule',
@@ -128,7 +112,6 @@ class RolePermissionSeeder extends Seeder
                 'edit-warning-letter',
                 'issue-warning-letter',
                 'cancel-warning-letter',
-                // Resignation
                 'view-resignation',
                 'show-resignation',
                 'approve-resignation',
@@ -136,10 +119,6 @@ class RolePermissionSeeder extends Seeder
                 'cancel-resignation',
                 'manage-resignation-clearance',
                 'complete-resignation',
-
-                // Termination
-                'view-termination',
-                'show-termination',
                 'create-termination',
                 'cancel-termination',
                 'manage-termination-clearance',
@@ -147,84 +126,40 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'administrator' => [
-                // User management
                 'view-user',
                 'show-user',
                 'create-user',
                 'update-user',
-
-                // Role management
                 'view-role',
                 'show-role',
                 'create-role',
                 'update-role',
                 'delete-role',
                 'assign-role',
-
-                // System monitoring
                 'view-status-daily',
             ],
 
             'general-manager' => [
-                // Master project
                 'view-master-project',
                 'create-master-project',
-                'update-master-project',
                 'approve-master-project',
-
-                // Division project
                 'view-division-project',
                 'create-division-project',
-                'update-division-project',
                 'assign-project-team',
-                'report-project-progress',
                 'review-division-project',
-
-                // Task
-                'view-task',
-                'create-task',
-                'assign-task',
-                'update-task',
-                'update-own-task',
-                'submit-task',
-                'review-task',
-
-                // Termination visibility
-                'view-termination',
-                'show-termination',
             ],
 
             'manager' => [
-                // Master project visibility
                 'view-master-project',
-
-                // Division project
                 'view-division-project',
-                'update-division-project',
                 'assign-project-team',
-                'report-project-progress',
-                'review-division-project',
                 'submit-division-project-to-gm',
-
-                // Task management
-                'view-task',
-                'assign-task',
-                'update-task',
             ],
 
             'supervisor' => [
-                // Project visibility
                 'view-master-project',
                 'view-division-project',
-                'report-project-progress',
-                'submit-division-project-report',
-
-                // Team task management
-                'view-task',
                 'create-task',
-                'assign-task',
-                'update-task',
-                'review-task',
             ],
 
             'task-worker' => [
@@ -232,11 +167,9 @@ class RolePermissionSeeder extends Seeder
                 'view-division-project',
                 'view-task',
                 'update-own-task',
-                'submit-task',
             ],
         ];
 
-        // Ensure every operational role exists before syncing permissions.
         foreach (array_keys($rolePermissions) as $roleName) {
             Role::firstOrCreate([
                 'name' => $roleName,
@@ -244,8 +177,6 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-        // Two legacy permissions are intentionally not assigned to operational roles.
-        // They remain available to super-admin through the full-permission grant below.
         $superAdmin = Role::firstOrCreate([
             'name' => 'super-admin',
             'guard_name' => 'web',
@@ -268,5 +199,35 @@ class RolePermissionSeeder extends Seeder
                         ->get()
                 );
         }
+
+        $this->syncWorkManagementIdentityRoles();
+    }
+
+    /**
+     * Repair Work Management identity roles for existing employee records.
+     *
+     * Permission seeding alone cannot make an existing GM usable when the
+     * employee account was created before the Work Management roles existed.
+     */
+    private function syncWorkManagementIdentityRoles(): void
+    {
+        Employees::query()
+            ->with(['user', 'position'])
+            ->whereNotNull('user_id')
+            ->get()
+            ->each(function (Employees $employee): void {
+                $user = $employee->user;
+
+                if (! $user) {
+                    return;
+                }
+
+                $position = mb_strtolower(trim((string) $employee->position?->name));
+
+                if ($position === 'general manager') {
+                    $user->assignRole('employee');
+                    $user->assignRole('general-manager');
+                }
+            });
     }
 }

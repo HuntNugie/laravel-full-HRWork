@@ -19,58 +19,78 @@ class WorkManagementPermissionSeeder extends Seeder
             'create-division-project',
             'update-division-project',
             'assign-project-team',
-            'report-project-progress',
             'review-division-project',
             'view-task',
             'create-task',
-            'assign-task',
             'update-task',
             'update-own-task',
+
+            // Legacy permissions are kept so existing databases remain compatible.
+            'report-project-progress',
+            'assign-task',
             'submit-task',
             'review-task',
+            'submit-division-project-report',
+            'review-division-project-report',
+            'submit-division-project-to-gm',
         ];
 
         foreach ($permissions as $name) {
-            Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
+            Permission::firstOrCreate([
+                'name' => $name,
+                'guard_name' => 'web',
+            ]);
         }
 
         $rolePermissions = [
-            'general-manager' => $permissions,
+            'general-manager' => [
+                'view-master-project',
+                'create-master-project',
+                'approve-master-project',
+                'view-division-project',
+                'create-division-project',
+                'assign-project-team',
+                'review-division-project',
+            ],
+
             'manager' => [
                 'view-master-project',
                 'view-division-project',
-                'update-division-project',
                 'assign-project-team',
-                'report-project-progress',
-                'review-division-project',
-                'view-task',
-                'assign-task',
-                'update-task',
+                'submit-division-project-to-gm',
             ],
+
             'supervisor' => [
                 'view-master-project',
                 'view-division-project',
-                'report-project-progress',
-                'view-task',
                 'create-task',
-                'assign-task',
-                'update-task',
-                'review-task',
             ],
+
             'task-worker' => [
                 'view-master-project',
                 'view-division-project',
                 'view-task',
                 'update-own-task',
-                'submit-task',
             ],
         ];
 
-        $superAdmin = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
-        $superAdmin->syncPermissions(Permission::query()->where('guard_name', 'web')->get());
+        $superAdmin = Role::firstOrCreate([
+            'name' => 'super-admin',
+            'guard_name' => 'web',
+        ]);
+
+        $superAdmin->syncPermissions(
+            Permission::query()
+                ->where('guard_name', 'web')
+                ->get()
+        );
 
         foreach ($rolePermissions as $roleName => $permissionNames) {
-            $role = Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+            $role = Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'web',
+            ]);
+
             $role->syncPermissions($permissionNames);
         }
     }

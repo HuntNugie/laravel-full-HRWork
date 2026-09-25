@@ -133,8 +133,6 @@
                                 placeholder="Pilih jenis employment..." :options="[
                                     'pkwt' => 'PKWT',
                                     'pkwtt' => 'PKWTT',
-                                    'internship' => 'Internship',
-                                    'freelance' => 'Freelance',
                                 ]"
                                 wire:model.live="form.contractType" />
 
