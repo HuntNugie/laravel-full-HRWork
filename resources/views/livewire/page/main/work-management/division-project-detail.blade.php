@@ -334,10 +334,6 @@
                             </p>
                         </div>
 
-                        <x-wirekit::button type="button" variant="outline" intent="danger"
-                            wire:click="$set('reviewFeedback', '')">
-                            Buka Revisi
-                        </x-wirekit::button>
                     </div>
 
                     <div class="mt-4">
