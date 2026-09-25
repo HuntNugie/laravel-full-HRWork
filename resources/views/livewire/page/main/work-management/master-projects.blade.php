@@ -30,7 +30,7 @@
                 ['title' => 'Total Project', 'description' => 'Project dalam scope Anda', 'value' => $projects->count(), 'icon' => 'check', 'class' => 'text-sky-600 bg-sky-50'],
                 ['title' => 'Berjalan', 'description' => 'Project aktif', 'value' => $projects->where('status', 'in_progress')->count(), 'icon' => 'clock', 'class' => 'text-amber-600 bg-amber-50'],
                 ['title' => 'Menunggu Diselesaikan', 'description' => 'Semua division harus complete', 'value' => $projects->filter(fn ($project) => $project->status !== 'completed' && $project->divisionProjects->isNotEmpty() && $project->divisionProjects->every(fn ($division) => $division->status === 'completed'))->count(), 'icon' => 'warning', 'class' => 'text-violet-600 bg-violet-50'],
-                ['title' => 'Selesai', 'description' => 'Project approved', 'value' => $projects->where('status', 'completed')->count(), 'icon' => 'calendar', 'class' => 'text-emerald-600 bg-emerald-50'],
+                ['title' => 'Selesai', 'description' => 'Project complete', 'value' => $projects->where('status', 'completed')->count(), 'icon' => 'calendar', 'class' => 'text-emerald-600 bg-emerald-50'],
             ];
         @endphp
 
@@ -82,7 +82,6 @@
                                 $status = $project->status;
                                 $statusClass = match ($status) {
                                     'completed' => 'bg-emerald-50 text-emerald-600',
-                                    'ready_for_review' => 'bg-sky-50 text-sky-600',
                                     'in_progress', 'ready_for_review' => 'bg-sky-50 text-sky-600',
                                     'rejected' => 'bg-rose-50 text-rose-600',
                                     default => 'bg-slate-100 text-slate-600',
