@@ -25,7 +25,6 @@ class CreateDivisionProject extends Component
     public string $description = '';
     public ?string $start_date = null;
     public ?string $due_date = null;
-    public bool $is_required = true;
 
     public function mount(MasterProject $masterProject): void
     {
@@ -64,7 +63,6 @@ class CreateDivisionProject extends Component
             'description' => ['nullable', 'string'],
             'start_date' => ['nullable', 'date'],
             'due_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'is_required' => ['boolean'],
         ];
     }
 
@@ -91,7 +89,6 @@ class CreateDivisionProject extends Component
             description: $validated['description'] ?: null,
             startDate: $validated['start_date'] ?: null,
             dueDate: $validated['due_date'] ?: null,
-            isRequired: (bool) $validated['is_required'],
             initialTeam: $initialTeam,
         );
 
