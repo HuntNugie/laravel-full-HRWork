@@ -12,6 +12,12 @@
                 }
 
                 this.pendingMessage = value;
+
+                // Clear the composer immediately. The submitted text remains
+                // visible as the optimistic user message inside the chat thread.
+                this.$refs.prompt.value = '';
+                this.$refs.prompt.dispatchEvent(new Event('input', { bubbles: true }));
+
                 this.submitting = true;
 
                 try {
