@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab652d0faba4b79c8e5b8fd4bf096fbe",
+    "content-hash": "08db8a179426677db3ac0f9cc8e86018",
     "packages": [
         {
             "name": "aliziodev/laravel-wilayah",
@@ -3967,12 +3967,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pushery/wirekit.git",
-                "reference": "332fe68d18184da5fec4494c81faa1df84429ac"
+                "reference": "332fe68d181d84da5fec4494c81faa1df84429ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pushery/wirekit/zipball/332fe68d18184da5fec4494c81faa1df84429ac",
-                "reference": "332fe68d18184da5fec4494c81faa1df84429ac",
+                "url": "https://api.github.com/repos/pushery/wirekit/zipball/332fe68d181d84da5fec4494c81faa1df84429ac",
+                "reference": "332fe68d181d84da5fec4494c81faa1df84429ac",
                 "shasum": ""
             },
             "require": {
@@ -3995,12 +3995,12 @@
                 "symfony/yaml": "^7.4 || ^8.0"
             },
             "suggest": {
-                "blade-ui-kit/blade-icons": "Required for the icon system (~1.7). Install alongside your preferred icon set.",
+                "bacon/bacon-qr-code": "Required for the qr-code component — server-side QR code SVG generation",
                 "blade-ui-kit/blade-heroicons": "Heroicons preset — ~316 icons, Mini/Outline/Solid styles",
-                "mallardduck/blade-lucide-icons": "Lucide preset — ~1,500 icons",
+                "blade-ui-kit/blade-icons": "Required for the icon system (~1.7). Install alongside your preferred icon set.",
                 "codeat3/blade-phosphor-icons": "Phosphor preset — ~1,500 icons in 6 weight styles",
-                "ryangjchandler/blade-tabler-icons": "Tabler preset — ~5,700 outline/filled icons",
-                "bacon/bacon-qr-code": "Required for the qr-code component — server-side QR code SVG generation"
+                "mallardduck/blade-lucide-icons": "Lucide preset — ~1,500 outline icons",
+                "ryangjchandler/blade-tabler-icons": "Tabler preset — ~5,700 outline/filled icons"
             },
             "type": "library",
             "extra": {
