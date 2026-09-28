@@ -167,6 +167,62 @@
     <?php endif; ?>
 
     <?php if ($resignation->status === 'approved'): ?>
+        <?php
+            $hasCompletedClearance = $resignation->clearances->contains(
+                fn ($clearance) => $clearance->status === 'completed'
+            );
+            $accountIsActive = $resignation->employee?->user?->status === 'active';
+        ?>
+
+        <?php if (
+            auth()->user()->can('manage-resignation-clearance')
+            && ($hasCompletedClearance || $accountIsActive)
+        ): ?>
+            <x-wirekit::card>
+                <x-wirekit::card.body>
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">Akun & Pengajuan Resignation</p>
+                            <p class="mt-1 text-sm text-slate-500">
+                                Status akun:
+                                <span class="font-medium text-slate-700">
+                                    {{ $accountIsActive ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </p>
+                            <p class="mt-1 text-xs text-slate-400">
+                                Memulihkan akun akan mengembalikan clearance Access ke status pending.
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap justify-end gap-2">
+                            <?php if (!$accountIsActive && $hasCompletedClearance): ?>
+                                <x-wirekit::button
+                                    type="button"
+                                    surface="outline"
+                                    wire:click="restoreAccount"
+                                    wire:confirm="Pulihkan akun employee ini?"
+                                >
+                                    Pulihkan Akun
+                                </x-wirekit::button>
+                            <?php endif; ?>
+
+                            <?php if ($accountIsActive && auth()->user()->can('cancel-resignation')): ?>
+                                <x-wirekit::button
+                                    type="button"
+                                    surface="outline"
+                                    intent="danger"
+                                    wire:click="cancel"
+                                    wire:confirm="Batalkan pengajuan pengunduran diri ini? Proses exit yang sudah dijalankan akan dibatalkan dan dipulihkan bila memungkinkan."
+                                >
+                                    Batalkan Pengajuan
+                                </x-wirekit::button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </x-wirekit::card.body>
+            </x-wirekit::card>
+        <?php endif; ?>
+
         <div class="grid gap-4 lg:grid-cols-2">
             <x-wirekit::card>
                 <x-wirekit::card.header>
