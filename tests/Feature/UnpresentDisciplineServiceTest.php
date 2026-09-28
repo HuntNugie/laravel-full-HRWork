@@ -14,6 +14,7 @@ use App\Models\UnpresentDisciplineRule;
 use App\Service\UnpresentDisciplineService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -227,6 +228,45 @@ class UnpresentDisciplineServiceTest extends TestCase
             ['2026-09-01', '2026-09-07', '2026-09-08', '2026-09-14', '2026-09-15'],
             $candidate['dates']
         );
+    }
+
+    public function test_multiple_employees_use_shared_source_queries(): void
+    {
+        $firstEmployee = $this->createEmployee(
+            startDate: '2026-09-01',
+            endDate: null,
+            contractStatus: 'active',
+        );
+
+        $secondEmployee = $this->createEmployee(
+            startDate: '2026-09-01',
+            endDate: null,
+            contractStatus: 'active',
+        );
+
+        $this->createWorkingTime('senin');
+        $this->createWorkingTime('selasa');
+
+        DB::enableQueryLog();
+
+        $candidates = app(UnpresentDisciplineService::class)
+            ->getCandidates();
+
+        $queryCount = count(DB::getQueryLog());
+
+        DB::disableQueryLog();
+
+        $this->assertNotNull(
+            $candidates->firstWhere('employee.id', $firstEmployee->id)
+        );
+
+        $this->assertNotNull(
+            $candidates->firstWhere('employee.id', $secondEmployee->id)
+        );
+
+        // Candidate calculation should be bulk-loaded rather than issuing
+        // the Daily Status source queries once for every employee.
+        $this->assertLessThanOrEqual(10, $queryCount);
     }
 
     public function test_invalid_threshold_is_rejected(): void
