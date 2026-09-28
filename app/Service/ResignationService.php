@@ -269,6 +269,52 @@ class ResignationService
         });
     }
 
+    public function restoreAccount(
+        EmployeeResignation $resignation,
+        User $actor,
+    ): EmployeeResignation {
+        return DB::transaction(function () use ($resignation, $actor) {
+            $resignation = EmployeeResignation::query()
+                ->whereKey($resignation->id)
+                ->with([
+                    'employee.user',
+                    'clearances',
+                ])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($resignation->status !== EmployeeResignation::STATUS_APPROVED) {
+                throw new LogicException('Akun hanya dapat dipulihkan pada resignation yang sudah disetujui.');
+            }
+
+            $hasCompletedClearance = $resignation->clearances
+                ->contains(
+                    fn(EmployeeResignationClearance $clearance) =>
+                        $clearance->status === EmployeeResignationClearance::STATUS_COMPLETED
+                );
+
+            if (!$hasCompletedClearance) {
+                throw new LogicException('Akun belum dapat dipulihkan karena belum ada clearance yang diselesaikan.');
+            }
+
+            $user = $resignation->employee?->user;
+
+            if (!$user) {
+                throw new LogicException('Employee tidak memiliki user account.');
+            }
+
+            if ($user->status === 'active') {
+                throw new LogicException('Akun employee sudah aktif.');
+            }
+
+            $user->update([
+                'status' => 'active',
+            ]);
+
+            return $resignation->refresh();
+        });
+    }
+
     public function updateClearance(
         EmployeeResignationClearance $clearance,
         User $verifier,
