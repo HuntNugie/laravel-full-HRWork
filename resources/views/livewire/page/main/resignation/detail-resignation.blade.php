@@ -167,6 +167,42 @@
     <?php endif; ?>
 
     <?php if ($resignation->status === 'approved'): ?>
+        <?php
+            $hasCompletedClearance = $resignation->clearances->contains(
+                fn ($clearance) => $clearance->status === 'completed'
+            );
+        ?>
+
+        <?php if ($hasCompletedClearance && auth()->user()->can('manage-resignation-clearance')): ?>
+            <x-wirekit::card>
+                <x-wirekit::card.body>
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">Akun Employee</p>
+                            <p class="mt-1 text-sm text-slate-500">
+                                Status akun:
+                                <span class="font-medium text-slate-700">
+                                    {{ $resignation->employee?->user?->status === 'active' ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </p>
+                            <p class="mt-1 text-xs text-slate-400">
+                                Tombol ini tersedia setelah minimal satu clearance diselesaikan.
+                            </p>
+                        </div>
+
+                        <x-wirekit::button
+                            type="button"
+                            surface="outline"
+                            wire:click="restoreAccount"
+                            wire:confirm="Pulihkan akun employee ini?"
+                        >
+                            Pulihkan Akun
+                        </x-wirekit::button>
+                    </div>
+                </x-wirekit::card.body>
+            </x-wirekit::card>
+        <?php endif; ?>
+
         <div class="grid gap-4 lg:grid-cols-2">
             <x-wirekit::card>
                 <x-wirekit::card.header>
