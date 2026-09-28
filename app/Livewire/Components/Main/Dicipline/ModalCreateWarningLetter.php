@@ -12,6 +12,12 @@ class ModalCreateWarningLetter extends Component
 {
     public string $employeeId = '';
 
+    public string $employeeSearch = '';
+
+    public bool $employeeDropdownOpen = false;
+
+    public string $selectedEmployeeName = '';
+
     public string $warningLevel = 'SP1';
 
     public string $letterNumber = '';
@@ -57,7 +63,17 @@ class ModalCreateWarningLetter extends Component
 
         $this->resetForm();
 
-        $this->employeeId = (string) $employeeId;
+        $employee = Employees::query()
+            ->whereKey($employeeId)
+            ->with('user')
+            ->firstOrFail();
+
+        $this->employeeId = (string) $employee->id;
+        $this->selectedEmployeeName = ($employee->user?->name ?? '—')
+            . ' · '
+            . ($employee->employee_code ?? '—');
+        $this->employeeSearch = $this->selectedEmployeeName;
+
         $this->reason = $reason;
         $this->description = $description;
 
@@ -67,6 +83,51 @@ class ModalCreateWarningLetter extends Component
             'wirekit-modal-show',
             name: 'create-warning-letter'
         );
+    }
+
+    public function updatedEmployeeSearch(): void
+    {
+        $this->employeeDropdownOpen = true;
+
+        if ($this->employeeSearch !== $this->selectedEmployeeName) {
+            $this->employeeId = '';
+            $this->selectedEmployeeName = '';
+        }
+    }
+
+    public function openEmployeeDropdown(): void
+    {
+        $this->employeeDropdownOpen = true;
+    }
+
+    public function closeEmployeeDropdown(): void
+    {
+        $this->employeeDropdownOpen = false;
+    }
+
+    public function selectEmployee(int $employeeId): void
+    {
+        $employee = Employees::query()
+            ->whereKey($employeeId)
+            ->with('user')
+            ->firstOrFail();
+
+        $this->employeeId = (string) $employee->id;
+        $this->selectedEmployeeName = ($employee->user?->name ?? '—')
+            . ' · '
+            . ($employee->employee_code ?? '—');
+        $this->employeeSearch = $this->selectedEmployeeName;
+        $this->employeeDropdownOpen = false;
+
+        $this->resetErrorBag('employeeId');
+    }
+
+    public function clearSelectedEmployee(): void
+    {
+        $this->employeeId = '';
+        $this->employeeSearch = '';
+        $this->selectedEmployeeName = '';
+        $this->employeeDropdownOpen = true;
     }
 
     private function loadPreviewNumber(): void
@@ -80,8 +141,11 @@ class ModalCreateWarningLetter extends Component
     {
         $this->reset([
             'employeeId',
+            'employeeSearch',
+            'selectedEmployeeName',
             'reason',
             'description',
+            'employeeDropdownOpen',
         ]);
 
         $this->warningLevel = 'SP1';
@@ -100,6 +164,30 @@ class ModalCreateWarningLetter extends Component
                     ' (' . $employee->employee_code . ')',
             ])
             ->toArray();
+    }
+
+    public function employees(): \Illuminate\Support\Collection
+    {
+        $search = trim($this->employeeSearch);
+
+        if (mb_strlen($search) < 2 || $this->employeeId) {
+            return collect();
+        }
+
+        return Employees::query()
+            ->where(function ($query) use ($search) {
+                $query
+                    ->where('employee_code', 'like', '%' . $search . '%')
+                    ->orWhereHas('user', function ($query) use ($search) {
+                        $query
+                            ->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('email', 'like', '%' . $search . '%');
+                    });
+            })
+            ->with('user')
+            ->orderBy('employee_code')
+            ->limit(10)
+            ->get();
     }
 
     public function save(): void
@@ -164,7 +252,10 @@ class ModalCreateWarningLetter extends Component
     public function render()
     {
         return view(
-            'livewire.components.main.dicipline.modal-create-warning-letter'
+            'livewire.components.main.dicipline.modal-create-warning-letter',
+            [
+                'employees' => $this->employees(),
+            ]
         );
     }
 }
