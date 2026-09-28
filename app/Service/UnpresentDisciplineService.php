@@ -262,15 +262,21 @@ class UnpresentDisciplineService
                         collect()
                     ) as $leaveRequest
                 ) {
-                    $leaveStart = max(
-                        Carbon::parse($leaveRequest->start_date)->startOfDay(),
-                        $monthStart
-                    );
+                    $requestedStart = Carbon::parse(
+                        $leaveRequest->start_date
+                    )->startOfDay();
 
-                    $leaveEnd = min(
-                        Carbon::parse($leaveRequest->end_date)->startOfDay(),
-                        $today
-                    );
+                    $requestedEnd = Carbon::parse(
+                        $leaveRequest->end_date
+                    )->startOfDay();
+
+                    $leaveStart = $requestedStart->lt($monthStart)
+                        ? $monthStart->copy()
+                        : $requestedStart;
+
+                    $leaveEnd = $requestedEnd->gt($today)
+                        ? $today->copy()
+                        : $requestedEnd;
 
                     if ($leaveStart->gt($leaveEnd)) {
                         continue;
