@@ -120,15 +120,11 @@ class ResignationService
     public function approve(
         EmployeeResignation $resignation,
         User $reviewer,
-        string $approvedLastWorkingDate,
         ?string $note = null,
     ): EmployeeResignation {
-        $date = Carbon::parse($approvedLastWorkingDate)->startOfDay();
-
         return DB::transaction(function () use (
             $resignation,
             $reviewer,
-            $date,
             $note,
         ) {
             $resignation = EmployeeResignation::query()
@@ -143,6 +139,16 @@ class ResignationService
 
             if (!$resignation->employee || $resignation->employee->status_employee !== 'active') {
                 throw new LogicException('Karyawan sudah tidak berstatus aktif.');
+            }
+
+            if (!$resignation->proposed_last_working_date) {
+                throw new LogicException('Tanggal terakhir bekerja dari pengajuan belum tersedia.');
+            }
+
+            $date = Carbon::parse($resignation->proposed_last_working_date)->startOfDay();
+
+            if ($date->lt(today())) {
+                throw new LogicException('Tanggal terakhir bekerja tidak boleh sebelum hari ini.');
             }
 
             $submittedDate = $resignation->submitted_at

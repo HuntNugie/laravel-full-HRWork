@@ -16,7 +16,6 @@ class DetailResignation extends Component
 {
     public EmployeeResignation $resignation;
 
-    public string $approvedLastWorkingDate = '';
     public string $actionNote = '';
     public string $exitInterviewNotes = '';
     public array $handoverRecipients = [];
@@ -36,9 +35,6 @@ class DetailResignation extends Component
             'exitInterviewer',
         ]);
 
-        $this->approvedLastWorkingDate = $this->resignation->approved_last_working_date?->toDateString()
-            ?? $this->resignation->proposed_last_working_date?->toDateString()
-            ?? today()->toDateString();
         $this->exitInterviewNotes = $this->resignation->exit_interview_notes ?? '';
         $this->syncHandoverRecipients();
     }
@@ -57,7 +53,6 @@ class DetailResignation extends Component
         abort_unless(Auth::user()->can('approve-resignation'), 403);
 
         $this->validate([
-            'approvedLastWorkingDate' => ['required', 'date', 'after_or_equal:today'],
             'actionNote' => ['nullable', 'string', 'max:5000'],
         ]);
 
@@ -65,7 +60,6 @@ class DetailResignation extends Component
             app(ResignationService::class)->approve(
                 resignation: $this->resignation,
                 reviewer: Auth::user(),
-                approvedLastWorkingDate: $this->approvedLastWorkingDate,
                 note: $this->actionNote ?: null,
             );
 

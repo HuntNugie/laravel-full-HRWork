@@ -115,12 +115,22 @@
             </x-wirekit::card.header>
             <x-wirekit::card.body>
                 <div class="grid gap-5 md:grid-cols-2">
-                    <x-wirekit::input
-                        type="date"
-                        label="Tanggal Terakhir Bekerja"
-                        name="approvedLastWorkingDate"
-                        wire:model="approvedLastWorkingDate"
-                    />
+                    <div>
+                        <label for="resignationLastWorkingDate"
+                            class="mb-2 block text-sm font-medium text-slate-700">
+                            Tanggal Terakhir Bekerja
+                        </label>
+                        <input
+                            id="resignationLastWorkingDate"
+                            type="date"
+                            value="{{ $resignation->proposed_last_working_date?->toDateString() }}"
+                            readonly
+                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none"
+                        />
+                        <p class="mt-1.5 text-xs text-slate-400">
+                            Mengikuti tanggal terakhir bekerja yang diajukan employee.
+                        </p>
+                    </div>
 
                     <x-wirekit::textarea
                         label="Catatan Review"
