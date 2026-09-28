@@ -11,6 +11,7 @@ use App\Models\Employees;
 use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
+use App\Service\EmployeeExitActionService;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -264,6 +265,53 @@ class ResignationService
                 toStatus: EmployeeResignation::STATUS_CANCELLED,
                 note: 'Pengajuan resign dibatalkan.',
             );
+
+            return $resignation->refresh();
+        });
+    }
+
+    public function restoreAccount(
+        EmployeeResignation $resignation,
+        User $actor,
+    ): EmployeeResignation {
+        return DB::transaction(function () use ($resignation, $actor) {
+            $resignation = EmployeeResignation::query()
+                ->whereKey($resignation->id)
+                ->with([
+                    'employee.user',
+                    'clearances',
+                ])
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($resignation->status !== EmployeeResignation::STATUS_APPROVED) {
+                throw new LogicException('Akun hanya dapat dipulihkan pada resignation yang sudah disetujui.');
+            }
+
+            $user = $resignation->employee?->user;
+
+            if (!$user) {
+                throw new LogicException('Employee tidak memiliki user account.');
+            }
+
+            $accessClearance = $resignation->clearances
+                ->firstWhere('category', 'access');
+
+            if ($accessClearance?->status === EmployeeResignationClearance::STATUS_COMPLETED) {
+                app(EmployeeExitActionService::class)->rollbackClearance($accessClearance->refresh());
+
+                $accessClearance->update([
+                    'status' => EmployeeResignationClearance::STATUS_PENDING,
+                    'verified_by' => null,
+                    'verified_at' => null,
+                ]);
+            }
+
+            if ($user->status !== 'active') {
+                $user->update([
+                    'status' => 'active',
+                ]);
+            }
 
             return $resignation->refresh();
         });
