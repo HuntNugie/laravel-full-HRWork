@@ -137,7 +137,9 @@ class HistoryAttendanceManage extends Component
                     default => '—',
                 };
 
-                $avatar = $employee->user?->getFirstMediaUrl('avatar');
+                $avatar = $employee->user?->media
+                    ?->firstWhere('collection_name', 'avatar')
+                    ?->getUrl();
 
                 $attendanceHistory->push([
                     'attendance_id' => $state['attendance_id'],
