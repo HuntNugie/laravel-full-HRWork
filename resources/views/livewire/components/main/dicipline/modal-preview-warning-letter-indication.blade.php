@@ -19,7 +19,7 @@
 
     {{-- BODY --}}
     <x-wirekit::modal.body>
-        @if ($this->indication)
+        @if ($this->unpresentCount > 0)
 
             <x-wirekit::stack gap="md">
 
@@ -35,11 +35,11 @@
                                     </p>
 
                                     <h3 class="text-base font-semibold text-slate-900">
-                                        {{ $this->indication['employee']->user?->name ?? '-' }}
+                                        {{ $this->employeeName }}
                                     </h3>
 
                                     <p class="text-sm text-slate-500">
-                                        {{ $this->indication['employee']->employee_code ?? '-' }}
+                                        {{ $this->employeeCode }}
                                     </p>
                                 </div>
 
@@ -62,7 +62,7 @@
                             </p>
 
                             <p class="text-2xl font-semibold text-slate-900">
-                                {{ $this->indication['unpresent_count'] }}
+                                {{ $this->unpresentCount }}
                             </p>
                         </x-wirekit::card.body>
                     </x-wirekit::card>
@@ -74,7 +74,7 @@
                             </p>
 
                             <p class="text-2xl font-semibold text-slate-900">
-                                {{ $this->indication['threshold'] }}
+                                {{ $this->threshold }}
                             </p>
                         </x-wirekit::card.body>
                     </x-wirekit::card>
@@ -86,9 +86,9 @@
                             </p>
 
                             <p class="text-sm font-medium text-slate-900">
-                                {{ \Carbon\Carbon::parse($this->indication['period_start'])->translatedFormat('d F Y') }}
+                                {{ \Carbon\Carbon::parse($this->periodStart)->translatedFormat('d F Y') }}
                                 -
-                                {{ \Carbon\Carbon::parse($this->indication['period_end'])->translatedFormat('d F Y') }}
+                                {{ \Carbon\Carbon::parse($this->periodEnd)->translatedFormat('d F Y') }}
                             </p>
                         </x-wirekit::card.body>
                     </x-wirekit::card>
@@ -132,7 +132,7 @@
                                 </x-wirekit::table.th>
                             </x-wirekit::table.row>
 
-                            @foreach ($this->indication['dates'] as $index => $date)
+                            @foreach ($this->dates as $index => $date)
                                 <x-wirekit::table.row>
 
                                     <x-wirekit::table.td>
@@ -195,7 +195,7 @@
             </x-wirekit::modal.close>
 
             @can('show-warning-letter')
-                @if ($this->indication)
+                @if ($this->unpresentCount > 0)
                     <x-wirekit::button type="button" wire:click="setAsWarningLetter">
                         Tetapkan sebagai SP
                     </x-wirekit::button>

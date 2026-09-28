@@ -2,49 +2,63 @@
 
 namespace App\Livewire\Components\Main\Dicipline;
 
-use App\Service\UnpresentDisciplineService;
 use Illuminate\Contracts\View\View;
-use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class ModalPreviewWarningLetterIndication extends Component
 {
     public int $employeeId;
 
-    public function mount(int $employeeId): void
-    {
-        $this->employeeId = $employeeId;
-    }
+    public string $employeeName;
 
-    #[Computed]
-    public function indication(): ?array
-    {
-        return app(UnpresentDisciplineService::class)
-            ->getCandidates()
-            ->firstWhere('employee.id', $this->employeeId);
+    public string $employeeCode;
+
+    public int $unpresentCount;
+
+    public int $threshold;
+
+    public string $periodStart;
+
+    public string $periodEnd;
+
+    /** @var array<int, string> */
+    public array $dates = [];
+
+    public function mount(
+        int $employeeId,
+        string $employeeName,
+        string $employeeCode,
+        int $unpresentCount,
+        int $threshold,
+        string $periodStart,
+        string $periodEnd,
+        array $dates,
+    ): void {
+        $this->employeeId = $employeeId;
+        $this->employeeName = $employeeName;
+        $this->employeeCode = $employeeCode;
+        $this->unpresentCount = $unpresentCount;
+        $this->threshold = $threshold;
+        $this->periodStart = $periodStart;
+        $this->periodEnd = $periodEnd;
+        $this->dates = $dates;
     }
 
     public function setAsWarningLetter(): void
     {
-        $indication = $this->indication;
-
-        if (!$indication) {
-            return;
-        }
-
         $this->dispatch(
             'prepare-warning-letter-from-indication',
-            employeeId: $indication['employee']->id,
+            employeeId: $this->employeeId,
             reason: sprintf(
                 'Ketidakhadiran tanpa keterangan sebanyak %d kali pada periode %s sampai %s.',
-                $indication['unpresent_count'],
-                \Carbon\Carbon::parse($indication['period_start'])->translatedFormat('d F Y'),
-                \Carbon\Carbon::parse($indication['period_end'])->translatedFormat('d F Y'),
+                $this->unpresentCount,
+                \Carbon\Carbon::parse($this->periodStart)->translatedFormat('d F Y'),
+                \Carbon\Carbon::parse($this->periodEnd)->translatedFormat('d F Y'),
             ),
             description: sprintf(
                 'Terdapat %d hari unpresent yang memenuhi batas indikasi sebanyak %d kali.',
-                $indication['unpresent_count'],
-                $indication['threshold'],
+                $this->unpresentCount,
+                $this->threshold,
             ),
         );
     }
