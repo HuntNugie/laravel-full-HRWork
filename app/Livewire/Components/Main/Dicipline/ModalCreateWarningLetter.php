@@ -153,19 +153,6 @@ class ModalCreateWarningLetter extends Component
         $this->letterNumber = '';
     }
 
-    public function employeeOptions(): array
-    {
-        return Employees::query()
-            ->with('user')
-            ->orderBy('id')
-            ->get()
-            ->mapWithKeys(fn(Employees $employee) => [
-                $employee->id => $employee->user->name .
-                    ' (' . $employee->employee_code . ')',
-            ])
-            ->toArray();
-    }
-
     public function employees(): \Illuminate\Support\Collection
     {
         $search = trim($this->employeeSearch);
