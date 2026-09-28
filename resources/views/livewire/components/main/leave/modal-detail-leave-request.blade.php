@@ -1,4 +1,4 @@
-<x-wirekit::modal name="detail-leave">
+<x-wirekit::modal name="detail-leave-{{ $request->id }}">
 
     <x-slot:trigger>
         {{ $slot }}
