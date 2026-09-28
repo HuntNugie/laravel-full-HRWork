@@ -73,7 +73,13 @@
                     <div>
                         <p class="text-xs font-medium text-slate-400">Tanggal terakhir bekerja</p>
                         <p class="mt-1 text-sm font-semibold text-slate-800">
-                            {{ $resignation->approved_last_working_date?->translatedFormat('d M Y') ?? 'Menunggu review' }}
+                            @if ($resignation->approved_last_working_date)
+                                {{ $resignation->approved_last_working_date->translatedFormat('d M Y') }}
+                            @elseif ($resignation->status === 'rejected')
+                                Pengajuan ditolak
+                            @else
+                                Menunggu review
+                            @endif
                         </p>
                     </div>
 
