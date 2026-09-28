@@ -102,6 +102,7 @@ class ManagementLeave extends Component
     public function refreshData(): void
     {
         $this->resetPage();
+        $this->leaveRequestVersion++;
     }
 
 
