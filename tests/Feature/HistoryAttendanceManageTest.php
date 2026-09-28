@@ -64,10 +64,10 @@ class HistoryAttendanceManageTest extends TestCase
 
         $attendanceQueries = collect(DB::getQueryLog())
             ->filter(function (array $query) {
-                return str_contains(
-                    strtolower($query['query']),
-                    "from \`attendances\`"
-                );
+                return preg_match(
+                    '/from[[:space:]]+[\`"]?attendances[\`"]?/i',
+                    $query['query']
+                ) === 1;
             });
 
         DB::disableQueryLog();
