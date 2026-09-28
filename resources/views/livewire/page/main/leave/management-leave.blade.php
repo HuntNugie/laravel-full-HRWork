@@ -303,7 +303,7 @@
 
                                     @can('show-management-leave')
                                         <livewire:components.main.leave.modal-detail-management-leave :request="$request"
-                                            :key="'management-leave-detail-' . $request->id">
+                                            :key="'management-leave-detail-' . $request->id . '-' . $leaveRequestVersion">
                                             <x-wirekit::button type="button" variant="outline" class="px-3 py-1.5 text-xs">
                                                 Detail
                                             </x-wirekit::button>
