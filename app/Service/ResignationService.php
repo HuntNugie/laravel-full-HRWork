@@ -307,6 +307,19 @@ class ResignationService
                 throw new LogicException('Akun employee sudah aktif.');
             }
 
+            $accessClearance = $resignation->clearances
+                ->firstWhere('category', 'access');
+
+            if ($accessClearance?->status === EmployeeResignationClearance::STATUS_COMPLETED) {
+                app(EmployeeExitActionService::class)->rollbackClearance($accessClearance->refresh());
+
+                $accessClearance->update([
+                    'status' => EmployeeResignationClearance::STATUS_PENDING,
+                    'verified_by' => null,
+                    'verified_at' => null,
+                ]);
+            }
+
             $user->update([
                 'status' => 'active',
             ]);
