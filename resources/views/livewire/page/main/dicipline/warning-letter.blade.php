@@ -51,7 +51,7 @@
 
                     <div
                         class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
-                        <x-wirekit::icon name="file" class="size-5" />
+                        <x-wirekit::icon name="book" class="size-5" />
                     </div>
 
                 </div>

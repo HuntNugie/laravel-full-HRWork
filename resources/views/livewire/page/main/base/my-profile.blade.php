@@ -30,8 +30,13 @@
                     <div
                         class="flex size-16 shrink-0 items-center justify-center
                                rounded-full bg-sky-100">
-                        <img src="{{ asset($user->getFirstMediaUrl('avatar')) }}" alt="Foto profil {{ $user->name }}"
-                            class="size-full object-cover rounded-full">
+                        @if ($user->getFirstMediaUrl('avatar'))
+                            <img src="{{ asset($user->getFirstMediaUrl('avatar')) }}"
+                                alt="Foto profil {{ $user->name }}" class="size-full object-cover rounded-full">
+                        @else
+                            <img src="{{ asset('assets/nonProfile.jpg') }}" alt="Foto profil {{ $user->name }}"
+                                class="size-full object-cover rounded-full">
+                        @endif
                     </div>
 
                     <div class="min-w-0">

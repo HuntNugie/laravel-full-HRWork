@@ -459,7 +459,7 @@
 
                                         @can('show-leave')
                                             <livewire:components.main.leave.modal-detail-leave-request :request="$request"
-                                                :key="'detail-leave-' . $request->id">
+                                                :key="'detail-leave-' . $request->id . '-' . $leaveRequestVersion">
                                                 <x-wirekit::button type="button" variant="outline"
                                                     class="px-3 py-1.5 text-xs">
                                                     Detail

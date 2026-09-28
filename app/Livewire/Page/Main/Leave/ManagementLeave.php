@@ -37,6 +37,8 @@ class ManagementLeave extends Component
 
     public int $perPage = 5;
 
+    public int $leaveRequestVersion = 1;
+
 
     /*
     |--------------------------------------------------------------------------
@@ -100,6 +102,7 @@ class ManagementLeave extends Component
     public function refreshData(): void
     {
         $this->resetPage();
+        $this->leaveRequestVersion++;
     }
 
 
