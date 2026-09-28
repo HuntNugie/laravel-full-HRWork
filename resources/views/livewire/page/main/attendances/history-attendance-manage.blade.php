@@ -383,13 +383,13 @@
 
                                     @can('show-attendance')
                                         @if ($attendance['attendance_id'])
-                                            <livewire:components.main.attendances.modal-detail-attendance :attendance-id="$attendance['attendance_id']"
-                                                :key="'attendance-detail-' . $attendance['attendance_id']">
-                                                <x-wirekit::button type="button" variant="outline"
-                                                    class="px-3 py-1.5 text-xs">
-                                                    Detail
-                                                </x-wirekit::button>
-                                            </livewire:components.main.attendances.modal-detail-attendance>
+                                            <x-wirekit::button
+                                                type="button"
+                                                variant="outline"
+                                                class="px-3 py-1.5 text-xs"
+                                                wire:click="$dispatch('attendance-detail-show', { attendanceId: {{ $attendance['attendance_id'] }} })">
+                                                Detail
+                                            </x-wirekit::button>
                                         @else
                                             <span class="text-xs text-slate-400">
                                                 —
@@ -437,4 +437,8 @@
 
         </x-wirekit::card>
 
-    </x-wirekit::stack>
+    
+    {{-- Satu modal untuk seluruh tabel. Data dimuat hanya saat Detail diklik. --}}
+    <livewire:components.main.attendances.modal-detail-attendance wire:key="attendance-detail-modal" />
+
+</x-wirekit::stack>

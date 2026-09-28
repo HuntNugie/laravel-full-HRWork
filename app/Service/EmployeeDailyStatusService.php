@@ -2,7 +2,11 @@
 
 namespace App\Service;
 
+use App\Models\Attendances;
+use App\Models\EmployeeAbsenceRequest;
+use App\Models\EmployeeContract;
 use App\Models\Employees;
+use App\Models\LeaveRequest;
 use App\Models\Holidays;
 use App\Models\WorkTime;
 use Carbon\Carbon;
@@ -374,6 +378,329 @@ class EmployeeDailyStatusService
                 );
             })
             ->values();
+    }
+
+    /**
+     * Calculate daily states for multiple employees using shared source queries.
+     *
+     * The result is keyed by employee ID and also contains attendance models
+     * for consumers that need check-in/check-out details.
+     *
+     * @return Collection<int, array{statuses: Collection, attendances: Collection}>
+     */
+    public function getStatusesForEmployees(
+        Collection $employees,
+        CarbonInterface|string $startDate,
+        CarbonInterface|string $endDate
+    ): Collection {
+        $start = $this->normalizeDate($startDate);
+        $end = $this->normalizeDate($endDate);
+
+        if ($start->gt($end)) {
+            throw new InvalidArgumentException(
+                'Start date tidak boleh lebih besar dari end date.'
+            );
+        }
+
+        if ($employees->isEmpty()) {
+            return collect();
+        }
+
+        $employeeIds = $employees
+            ->pluck('id')
+            ->map(fn($id) => (int) $id)
+            ->values();
+
+        $contractsByEmployee = EmployeeContract::query()
+            ->whereIn('employee_id', $employeeIds)
+            ->whereIn('status', ['active', 'expired', 'terminated'])
+            ->whereDate('start_date', '<=', $end->toDateString())
+            ->where(function ($query) use ($start) {
+                $query
+                    ->whereNull('end_date')
+                    ->orWhereDate('end_date', '>=', $start->toDateString());
+            })
+            ->orderByDesc('start_date')
+            ->get()
+            ->groupBy('employee_id');
+
+        $workTimes = WorkTime::query()
+            ->get()
+            ->keyBy(
+                fn($workTime) => strtolower(trim($workTime->day_of_week))
+            );
+
+        $holidays = Holidays::query()
+            ->whereBetween('date', [
+                $start->toDateString(),
+                $end->toDateString(),
+            ])
+            ->get()
+            ->keyBy(
+                fn($holiday) => Carbon::parse($holiday->date)->toDateString()
+            );
+
+        $attendanceByEmployee = Attendances::query()
+            ->whereIn('employee_id', $employeeIds)
+            ->whereBetween('date', [
+                $start->toDateString(),
+                $end->toDateString(),
+            ])
+            ->get()
+            ->groupBy('employee_id');
+
+        $leaveRequestsByEmployee = LeaveRequest::query()
+            ->whereIn('employee_id', $employeeIds)
+            ->where('status', 'approved')
+            ->whereDate('start_date', '<=', $end->toDateString())
+            ->whereDate('end_date', '>=', $start->toDateString())
+            ->get()
+            ->groupBy('employee_id');
+
+        $absenceRequestsByEmployee = EmployeeAbsenceRequest::query()
+            ->whereIn('employee_id', $employeeIds)
+            ->where('status', 'approved')
+            ->whereBetween('date', [
+                $start->toDateString(),
+                $end->toDateString(),
+            ])
+            ->get()
+            ->groupBy('employee_id');
+
+        $dayNames = [
+            1 => 'senin',
+            2 => 'selasa',
+            3 => 'rabu',
+            4 => 'kamis',
+            5 => 'jumat',
+            6 => 'sabtu',
+            7 => 'minggu',
+        ];
+
+        $today = now()->startOfDay();
+
+        return $employees
+            ->mapWithKeys(function (Employees $employee) use (
+                $contractsByEmployee,
+                $workTimes,
+                $holidays,
+                $attendanceByEmployee,
+                $leaveRequestsByEmployee,
+                $absenceRequestsByEmployee,
+                $dayNames,
+                $today,
+                $start,
+                $end
+            ) {
+                $contracts = $contractsByEmployee->get(
+                    $employee->id,
+                    collect()
+                );
+
+                $attendances = $attendanceByEmployee->get(
+                    $employee->id,
+                    collect()
+                );
+
+                $attendancesByDate = $attendances->keyBy(
+                    fn($attendance) => Carbon::parse($attendance->date)->toDateString()
+                );
+
+                $leaveRequests = $leaveRequestsByEmployee->get(
+                    $employee->id,
+                    collect()
+                );
+
+                $absenceRequests = $absenceRequestsByEmployee
+                    ->get($employee->id, collect())
+                    ->keyBy(
+                        fn($absence) => Carbon::parse($absence->date)->toDateString()
+                    );
+
+                $statuses = collect(CarbonPeriod::create($start, $end))
+                    ->map(function (CarbonInterface $date) use (
+                        $employee,
+                        $contracts,
+                        $workTimes,
+                        $holidays,
+                        $attendancesByDate,
+                        $leaveRequests,
+                        $absenceRequests,
+                        $dayNames,
+                        $today
+                    ) {
+                        $date = Carbon::instance($date)->startOfDay();
+                        $dateKey = $date->toDateString();
+
+                        $contract = $contracts
+                            ->first(function ($contract) use ($date) {
+                                return $contract->start_date->lte($date)
+                                    && (
+                                        !$contract->end_date
+                                        || $contract->end_date->gte($date)
+                                    );
+                            });
+
+                        if (!$contract) {
+                            return $this->makeState(
+                                employee: $employee,
+                                date: $date,
+                                status: self::STATUS_OUTSIDE_CONTRACT,
+                                isWorkingDay: false,
+                                isPaid: false,
+                                isLate: false,
+                                isUnpresent: false,
+                                source: 'contract'
+                            );
+                        }
+
+                        $workTime = $workTimes->get(
+                            $dayNames[$date->dayOfWeekIso]
+                        );
+
+                        if (!$workTime || !$workTime->is_working_day) {
+                            return $this->makeState(
+                                employee: $employee,
+                                date: $date,
+                                status: self::STATUS_NON_WORKING,
+                                isWorkingDay: false,
+                                isPaid: false,
+                                isLate: false,
+                                isUnpresent: false,
+                                source: 'work_time',
+                                sourceId: $workTime?->id,
+                                contractId: $contract->id,
+                                workTimeId: $workTime?->id
+                            );
+                        }
+
+                        $holiday = $holidays->get($dateKey);
+
+                        if ($holiday) {
+                            return $this->makeState(
+                                employee: $employee,
+                                date: $date,
+                                status: self::STATUS_HOLIDAY,
+                                isWorkingDay: false,
+                                isPaid: false,
+                                isLate: false,
+                                isUnpresent: false,
+                                source: 'holiday',
+                                sourceId: $holiday->id,
+                                contractId: $contract->id,
+                                workTimeId: $workTime->id,
+                                holidayId: $holiday->id
+                            );
+                        }
+
+                        $attendance = $attendancesByDate->get($dateKey);
+
+                        if ($attendance && $attendance->check_in_at) {
+                            $status = strtolower(trim((string) $attendance->status)) === 'late'
+                                ? self::STATUS_LATE
+                                : self::STATUS_PRESENT;
+
+                            return $this->makeState(
+                                employee: $employee,
+                                date: $date,
+                                status: $status,
+                                isWorkingDay: true,
+                                isPaid: true,
+                                isLate: $status === self::STATUS_LATE,
+                                isUnpresent: false,
+                                source: 'attendance',
+                                sourceId: $attendance->id,
+                                contractId: $contract->id,
+                                workTimeId: $workTime->id,
+                                attendanceId: $attendance->id,
+                                lateMinutes: (int) $attendance->late_minutes
+                            );
+                        }
+
+                        $leave = $leaveRequests->first(function ($request) use ($date) {
+                            $leaveStart = Carbon::parse($request->start_date)->startOfDay();
+                            $leaveEnd = Carbon::parse($request->end_date)->startOfDay();
+
+                            return $date->betweenIncluded($leaveStart, $leaveEnd);
+                        });
+
+                        if ($leave) {
+                            return $this->makeState(
+                                employee: $employee,
+                                date: $date,
+                                status: self::STATUS_PAID_LEAVE,
+                                isWorkingDay: true,
+                                isPaid: true,
+                                isLate: false,
+                                isUnpresent: false,
+                                source: 'leave',
+                                sourceId: $leave->id,
+                                contractId: $contract->id,
+                                workTimeId: $workTime->id,
+                                leaveRequestId: $leave->id
+                            );
+                        }
+
+                        $absence = $absenceRequests->get($dateKey);
+
+                        if ($absence) {
+                            $status = $absence->type === 'sakit'
+                                ? self::STATUS_ABSENCE_SICK
+                                : self::STATUS_ABSENCE_PERMIT;
+
+                            return $this->makeState(
+                                employee: $employee,
+                                date: $date,
+                                status: $status,
+                                isWorkingDay: true,
+                                isPaid: false,
+                                isLate: false,
+                                isUnpresent: false,
+                                source: 'absence',
+                                sourceId: $absence->id,
+                                contractId: $contract->id,
+                                workTimeId: $workTime->id,
+                                absenceRequestId: $absence->id
+                            );
+                        }
+
+                        if ($date->gte($today)) {
+                            return $this->makeState(
+                                employee: $employee,
+                                date: $date,
+                                status: self::STATUS_PENDING,
+                                isWorkingDay: true,
+                                isPaid: false,
+                                isLate: false,
+                                isUnpresent: false,
+                                source: 'calculation',
+                                contractId: $contract->id,
+                                workTimeId: $workTime->id
+                            );
+                        }
+
+                        return $this->makeState(
+                            employee: $employee,
+                            date: $date,
+                            status: self::STATUS_UNPRESENT,
+                            isWorkingDay: true,
+                            isPaid: false,
+                            isLate: false,
+                            isUnpresent: true,
+                            source: 'calculation',
+                            contractId: $contract->id,
+                            workTimeId: $workTime->id
+                        );
+                    })
+                    ->values();
+
+                return [
+                    $employee->id => [
+                        'statuses' => $statuses,
+                        'attendances' => $attendances->keyBy('id'),
+                    ],
+                ];
+            });
     }
 
     private function makeState(

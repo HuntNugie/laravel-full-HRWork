@@ -40,17 +40,12 @@ class HistoryAttendanceManage extends Component
             : today()->startOfMonth()->startOfDay();
 
         $endDate = $this->endDate
-            ? Carbon::parse($this->endDate)->endOfDay()
+            ? Carbon::parse($this->endDate)->startOfDay()
             : today()->endOfDay();
 
         $employees = Employees::query()
             ->with([
-                'user',
-                'attendances' => function ($query) use ($startDate, $endDate) {
-                    $query
-                        ->whereDate('date', '>=', $startDate->toDateString())
-                        ->whereDate('date', '<=', $endDate->toDateString());
-                },
+                'user.media',
             ])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -69,21 +64,40 @@ class HistoryAttendanceManage extends Component
                     );
                 });
             })
+            ->orderBy('employee_code')
             ->get();
 
         $dailyStatusService = app(EmployeeDailyStatusService::class);
+
+        /*
+        |--------------------------------------------------------------------------
+        | BULK DAILY STATUS
+        |--------------------------------------------------------------------------
+        |
+        | Semua source data untuk seluruh employee diambil sekali. Ini
+        | menggantikan pemanggilan getStatuses() satu per satu per employee.
+        |
+        */
+        $dailyStatusByEmployee = $dailyStatusService->getStatusesForEmployees(
+            employees: $employees,
+            startDate: $startDate,
+            endDate: $endDate,
+        );
+
         $attendanceHistory = collect();
 
         foreach ($employees as $employee) {
-            $attendanceById = $employee->attendances->keyBy('id');
-
-            $statuses = $dailyStatusService->getStatuses(
-                employee: $employee,
-                startDate: $startDate,
-                endDate: $endDate,
+            $employeeDailyData = $dailyStatusByEmployee->get(
+                $employee->id,
+                [
+                    'statuses' => collect(),
+                    'attendances' => collect(),
+                ]
             );
 
-            foreach ($statuses as $state) {
+            $attendanceById = $employeeDailyData['attendances'];
+
+            foreach ($employeeDailyData['statuses'] as $state) {
                 $date = Carbon::parse($state['date']);
                 $attendance = $state['attendance_id']
                     ? $attendanceById->get($state['attendance_id'])
@@ -123,7 +137,9 @@ class HistoryAttendanceManage extends Component
                     default => '—',
                 };
 
-                $avatar = $employee->user?->getFirstMediaUrl('avatar');
+                $avatar = $employee->user?->media
+                    ?->firstWhere('collection_name', 'avatar')
+                    ?->getUrl();
 
                 $attendanceHistory->push([
                     'attendance_id' => $state['attendance_id'],

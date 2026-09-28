@@ -30,7 +30,8 @@
     ====================================================== --}}
     <x-wirekit::modal.body>
 
-        <div class="space-y-5">
+        @if ($this->attendance)
+            <div class="space-y-5">
 
             {{-- INFORMASI KARYAWAN --}}
             <div class="flex items-center justify-between gap-4">
@@ -204,7 +205,12 @@
 
             </div>
 
-        </div>
+            </div>
+        @else
+            <div class="py-10 text-center text-sm text-slate-500">
+                Pilih detail presensi untuk melihat informasinya.
+            </div>
+        @endif
 
     </x-wirekit::modal.body>
 

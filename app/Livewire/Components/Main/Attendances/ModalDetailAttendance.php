@@ -4,15 +4,20 @@ namespace App\Livewire\Components\Main\Attendances;
 
 use App\Models\Attendances;
 use Carbon\Carbon;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class ModalDetailAttendance extends Component
 {
-    public int $attendanceId;
+    public ?int $attendanceId = null;
 
-    public Attendances $attendance;
+    public ?Attendances $attendance = null;
 
-    public function mount(int $attendanceId): void
+    /**
+     * Load one attendance only when the user explicitly opens its detail.
+     */
+    #[On('attendance-detail-show')]
+    public function show(int $attendanceId): void
     {
         $this->attendanceId = $attendanceId;
 
@@ -21,18 +26,23 @@ class ModalDetailAttendance extends Component
                 'employees.user',
             ])
             ->findOrFail($attendanceId);
+
+        $this->dispatch(
+            'wirekit-modal-show',
+            name: 'detail-attendance'
+        );
     }
 
     public function getCheckInProperty(): ?Carbon
     {
-        return $this->attendance->check_in_at
+        return $this->attendance?->check_in_at
             ? Carbon::parse($this->attendance->check_in_at)
             : null;
     }
 
     public function getCheckOutProperty(): ?Carbon
     {
-        return $this->attendance->check_out_at
+        return $this->attendance?->check_out_at
             ? Carbon::parse($this->attendance->check_out_at)
             : null;
     }
@@ -54,6 +64,10 @@ class ModalDetailAttendance extends Component
 
     public function getStatusProperty(): string
     {
+        if (!$this->attendance) {
+            return 'absent';
+        }
+
         if (!$this->checkIn) {
             return 'absent';
         }
@@ -77,6 +91,10 @@ class ModalDetailAttendance extends Component
 
     public function getMarkersProperty(): array
     {
+        if (!$this->attendance) {
+            return [];
+        }
+
         $markers = [];
 
         if (
@@ -112,6 +130,13 @@ class ModalDetailAttendance extends Component
 
     public function getCenterProperty(): array
     {
+        if (!$this->attendance) {
+            return [
+                -6.914864,
+                107.608238,
+            ];
+        }
+
         if (
             $this->attendance->check_in_latitude !== null &&
             $this->attendance->check_in_longitude !== null
