@@ -37,6 +37,8 @@ class ManagementLeave extends Component
 
     public int $perPage = 5;
 
+    public int $leaveRequestVersion = 1;
+
 
     /*
     |--------------------------------------------------------------------------
