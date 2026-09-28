@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Models\Attendances;
 use App\Models\EmployeeAbsenceRequest;
+use App\Models\EmployeeContract;
 use App\Models\Employees;
 use App\Models\LeaveRequest;
 use App\Models\Holidays;
