@@ -271,8 +271,15 @@
 
                                     @can('show-warning-letter')
                                         <livewire:components.main.dicipline.modal-preview-warning-letter-indication
-                                            :employee-id="$indication['employee']->id" :key="'preview-warning-letter-indication-' .
-                                                $indication['employee']->id">
+                                            :employee-id="$indication['employee']->id"
+                                            :employee-name="$indication['employee']->user?->name ?? '—'"
+                                            :employee-code="$indication['employee']->employee_code ?? '—'"
+                                            :unpresent-count="$indication['unpresent_count']"
+                                            :threshold="$indication['threshold']"
+                                            :period-start="$indication['period_start']"
+                                            :period-end="$indication['period_end']"
+                                            :dates="$indication['dates']"
+                                            :key="'preview-warning-letter-indication-' . $indication['employee']->id">
                                             <x-wirekit::button type="button" variant="outline">
                                                 Preview
                                             </x-wirekit::button>
