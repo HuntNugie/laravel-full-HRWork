@@ -111,6 +111,23 @@ class DetailResignation extends Component
         }
     }
 
+    public function restoreAccount(): void
+    {
+        abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
+
+        try {
+            app(ResignationService::class)->restoreAccount(
+                resignation: $this->resignation,
+                actor: Auth::user(),
+            );
+
+            $this->reload();
+            session()->flash('success', 'Akun employee berhasil dipulihkan.');
+        } catch (\LogicException $exception) {
+            $this->addError('action', $exception->getMessage());
+        }
+    }
+
     public function updateClearance(int $clearanceId, string $status): void
     {
         abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
