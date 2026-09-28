@@ -13,6 +13,7 @@ use App\Models\WorkTime;
 use App\Service\EmployeeDailyStatusService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class EmployeeDailyStatusServiceTest extends TestCase
@@ -31,6 +32,61 @@ class EmployeeDailyStatusServiceTest extends TestCase
         Carbon::setTestNow();
 
         parent::tearDown();
+    }
+
+    public function test_bulk_daily_status_uses_shared_queries_for_multiple_employees(): void
+    {
+        $firstEmployee = $this->createEmployeeContract('2026-09-01', null);
+        $secondEmployee = $this->createEmployeeContract('2026-09-01', null);
+
+        $this->createWorkingTime('senin');
+        $this->createWorkingTime('selasa');
+
+        Attendances::create([
+            'employee_id' => $firstEmployee->id,
+            'date' => '2026-09-21',
+            'check_in_at' => '2026-09-21 09:00:00',
+            'status' => 'present',
+            'late_minutes' => 0,
+        ]);
+
+        DB::enableQueryLog();
+
+        $result = app(EmployeeDailyStatusService::class)
+            ->getStatusesForEmployees(
+                collect([$firstEmployee, $secondEmployee]),
+                '2026-09-21',
+                '2026-09-23',
+            );
+
+        $queryCount = count(DB::getQueryLog());
+
+        DB::disableQueryLog();
+
+        $this->assertArrayHasKey('statuses', $result[$firstEmployee->id]);
+        $this->assertArrayHasKey('statuses', $result[$secondEmployee->id]);
+
+        $firstStates = $result[$firstEmployee->id]['statuses'];
+        $secondStates = $result[$secondEmployee->id]['statuses'];
+
+        $this->assertSame(
+            EmployeeDailyStatusService::STATUS_PRESENT,
+            $firstStates->firstWhere('date', '2026-09-21')['status']
+        );
+
+        $this->assertSame(
+            EmployeeDailyStatusService::STATUS_UNPRESENT,
+            $secondStates->firstWhere('date', '2026-09-21')['status']
+        );
+
+        $this->assertSame(
+            EmployeeDailyStatusService::STATUS_PENDING,
+            $firstStates->firstWhere('date', '2026-09-23')['status']
+        );
+
+        // Six shared source queries: contracts, work time, holidays,
+        // attendance, leave requests, and absence requests.
+        $this->assertLessThanOrEqual(6, $queryCount);
     }
 
     public function test_attendance_is_present_or_late_and_is_paid(): void
