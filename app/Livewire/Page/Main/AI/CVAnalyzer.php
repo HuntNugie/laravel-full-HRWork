@@ -119,6 +119,7 @@ class CVAnalyzer extends Component
 
         if (! $run) {
             $this->isAnalyzing = false;
+            $this->analysisRunId = null;
             $this->errorMessage = 'Data proses analisis tidak ditemukan. Silakan mulai kembali.';
 
             return;
