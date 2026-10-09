@@ -30,7 +30,18 @@ Start a worker for a smoke test:
 php artisan queue:work database --queue=cv-analysis --timeout=240 --tries=1
 ```
 
-For production, run that command under a dedicated systemd service and set its `WorkingDirectory` to the deployed HRWork project directory. After code deployment, restart the worker with `php artisan queue:restart`; a long-running worker must be restarted to load new code.
+A systemd unit example is included at `deploy/systemd/hrwork-cv-analysis-worker.service`. Review its `WorkingDirectory` and `User`/group before installing: the worker needs read access to application code and write access to `storage` and `bootstrap/cache`. If the project is owned by `huntnugie` and access is managed with ACLs, you can run the worker as `huntnugie`; alternatively, keep it as `www-data` only if the required ACLs are present.
+
+Install and start the service after deploying the code and migration:
+
+```bash
+sudo cp deploy/systemd/hrwork-cv-analysis-worker.service /etc/systemd/system/hrwork-cv-analysis-worker.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now hrwork-cv-analysis-worker
+sudo systemctl status hrwork-cv-analysis-worker --no-pager
+```
+
+Check worker output with `sudo journalctl -u hrwork-cv-analysis-worker -f`. After future code deployments, restart the worker with `php artisan queue:restart`; a long-running worker must restart to load new code.
 
 ## Flow
 
