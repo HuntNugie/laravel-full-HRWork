@@ -1,11 +1,11 @@
 [Unit]
 Description=HRWork CV Analysis Queue Worker
-After=network.target mysql.service mariadb.service
+After=network.target
 
 [Service]
 Type=simple
-User=huntnugie
-Group=huntnugie
+User=www-data
+Group=www-data
 WorkingDirectory=/var/www/hrwork
 ExecStart=/usr/bin/php /var/www/hrwork/artisan queue:work database --queue=cv-analysis --sleep=3 --tries=1 --timeout=240
 Restart=always
