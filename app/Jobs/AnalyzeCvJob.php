@@ -148,13 +148,7 @@ class AnalyzeCvJob implements ShouldQueue
             $run->refresh();
 
             if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
-                try {
-                    Storage::disk($run->file_disk)->delete(
-                        'cv-analysis/'.basename($run->file_path)
-                    );
-                } catch (Throwable $cleanupException) {
-                    report($cleanupException);
-                }
+                $this->deleteSourceCv($run);
             }
         }
     }
@@ -176,6 +170,19 @@ class AnalyzeCvJob implements ShouldQueue
             'error_message' => 'Analisis CV gagal dijalankan oleh worker. Silakan coba kembali.',
             'finished_at' => now(),
         ])->save();
+
+        $this->deleteSourceCv($run);
+    }
+
+    protected function deleteSourceCv(CvAnalysisRun $run): void
+    {
+        try {
+            Storage::disk($run->file_disk)->delete(
+                'cv-analysis/'.basename($run->file_path)
+            );
+        } catch (Throwable $cleanupException) {
+            report($cleanupException);
+        }
     }
 
     protected function safeErrorMessage(Throwable $exception): string
