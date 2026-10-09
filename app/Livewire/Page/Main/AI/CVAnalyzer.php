@@ -63,23 +63,19 @@ class CVAnalyzer extends Component
                     ->getKey();
             }
 
-            // Store CV files privately. The queue worker reads this local path.
-            $extension = strtolower($this->cvFile->getClientOriginalExtension());
-            $filename = Str::uuid().'.'.$extension;
+            $filename = Str::uuid().'.'.strtolower($this->cvFile->getClientOriginalExtension());
             $storedPath = $this->cvFile->storeAs('cv-analysis', $filename, 'local');
 
             if (! $storedPath) {
                 throw new \RuntimeException('File CV gagal disimpan untuk diproses.');
             }
 
-            $absolutePath = storage_path('app/private/'.$storedPath);
-
             $run = CvAnalysisRun::query()->create([
                 'id' => (string) Str::uuid(),
                 'user_id' => auth()->id(),
                 'status' => 'queued',
                 'original_filename' => $this->cvFile->getClientOriginalName(),
-                'file_path' => $absolutePath,
+                'file_path' => storage_path('app/private/'.$storedPath),
                 'file_disk' => 'local',
                 'position_id' => $positionId,
                 'company_criteria' => trim($this->companyCriteria),
@@ -88,7 +84,6 @@ class CVAnalyzer extends Component
             $this->analysisRunId = $run->id;
             $this->isAnalyzing = true;
 
-            // Return quickly from Livewire; a separate queue worker calls the AI.
             AnalyzeCvJob::dispatch($run->id)->onConnection('database');
 
             $this->reset('cvFile');
