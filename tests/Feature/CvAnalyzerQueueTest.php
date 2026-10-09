@@ -23,8 +23,9 @@ class CvAnalyzerQueueTest extends TestCase
         parent::setUp();
 
         Permission::findOrCreate('view-cv-analyzer', 'web');
-        $this->actingAs(User::factory()->create());
-        auth()->user()->givePermissionTo('view-cv-analyzer');
+        $user = User::factory()->create();
+        $this->actingAs($user);
+        $user->givePermissionTo('view-cv-analyzer');
 
         config(['queue.default' => 'database']);
     }
