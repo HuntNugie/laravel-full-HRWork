@@ -40,7 +40,9 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+            // CV analysis can make a long-running provider request. This must
+            // remain longer than the job timeout so the same job is not reserved twice.
+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 300),
             'after_commit' => false,
         ],
 
