@@ -18,7 +18,7 @@ npm run build
 
 The migration is additive; it creates `cv_analysis_runs` and does not drop existing tables or data. Do not run `migrate:fresh`.
 
-Ensure the existing `jobs` and `failed_jobs` tables are present because the application uses `QUEUE_CONNECTION=database`. Run `php artisan queue:failed-table` only if the failed jobs migration is absent, then run `php artisan migrate --force`.
+Ensure the existing `jobs` and `failed_jobs` tables are present because the application uses `QUEUE_CONNECTION=database`. The stock repository has a migration for both tables. If your deployed database was migrated from an older history and one is missing, add the appropriate missing-table migration before running `php artisan migrate --force`; do not rerun an already-applied migration.
 
 ## Worker
 
