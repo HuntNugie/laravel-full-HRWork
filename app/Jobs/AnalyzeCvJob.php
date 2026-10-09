@@ -70,6 +70,10 @@ class AnalyzeCvJob implements ShouldQueue
                     ->with('jobdesk')
                     ->where('is_active', 'active')
                     ->find($run->position_id);
+
+                if (! $position) {
+                    throw new \RuntimeException('Posisi target tidak ditemukan atau sudah tidak aktif.');
+                }
             }
 
             $positionContext = $position ? [
