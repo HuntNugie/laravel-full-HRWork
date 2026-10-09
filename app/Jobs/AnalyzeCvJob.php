@@ -163,7 +163,7 @@ class AnalyzeCvJob implements ShouldQueue
     {
         $run = CvAnalysisRun::query()->find($this->analysisRunId);
 
-        if (! $run || in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
+        if (! $run || in_array($run->status, ['completed', 'cancelled'], true)) {
             return;
         }
 
