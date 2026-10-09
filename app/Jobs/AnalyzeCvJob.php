@@ -36,6 +36,16 @@ class AnalyzeCvJob implements ShouldQueue
             return;
         }
 
+        if (! file_exists($run->file_path)) {
+            $run->forceFill([
+                'status' => 'failed',
+                'error_message' => 'File CV tidak ditemukan saat job dijalankan.',
+                'finished_at' => now(),
+            ])->save();
+
+            return;
+        }
+
         $run->forceFill([
             'status' => 'processing',
             'started_at' => now(),
@@ -131,9 +141,8 @@ class AnalyzeCvJob implements ShouldQueue
                 'finished_at' => now(),
             ])->save();
         } finally {
-            // Keep the private CV available if an unexpected exception occurred,
-            // because the failed job may need investigation or a controlled retry.
-            // Completed and handled failures are cleaned up after status is saved.
+            // Do not leave the private source CV on disk after a completed or
+            // handled failure. Unexpected process termination leaves it for diagnosis.
             $run->refresh();
 
             if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)
