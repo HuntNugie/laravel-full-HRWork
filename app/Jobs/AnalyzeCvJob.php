@@ -23,6 +23,8 @@ class AnalyzeCvJob implements ShouldQueue
 
     public int $tries = 1;
 
+    public int $maxExceptions = 1;
+
     public function __construct(public string $analysisRunId)
     {
         $this->onQueue('cv-analysis');
