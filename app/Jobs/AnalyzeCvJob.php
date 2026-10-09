@@ -141,9 +141,14 @@ class AnalyzeCvJob implements ShouldQueue
             // handled failure. Unexpected process termination leaves it for diagnosis.
             $run->refresh();
 
-            if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)
-                && file_exists($run->file_path)) {
-                @unlink($run->file_path);
+            if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
+                try {
+                    \Illuminate\Support\Facades\Storage::disk($run->file_disk)->delete(
+                        'cv-analysis/'.basename($run->file_path)
+                    );
+                } catch (Throwable $cleanupException) {
+                    report($cleanupException);
+                }
             }
         }
     }
