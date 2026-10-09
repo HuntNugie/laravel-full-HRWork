@@ -5,6 +5,7 @@ namespace App\Livewire\Page\Main\AI;
 use App\Jobs\AnalyzeCvJob;
 use App\Models\CvAnalysisRun;
 use App\Models\Position;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -87,7 +88,7 @@ class CVAnalyzer extends Component
 
                 AnalyzeCvJob::dispatch($run->id)->onConnection('database');
             } catch (Throwable $exception) {
-                @unlink(storage_path('app/private/'.$storedPath));
+                Storage::disk('local')->delete($storedPath);
 
                 throw $exception;
             }
