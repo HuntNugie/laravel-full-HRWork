@@ -30,7 +30,7 @@ Start a worker for a smoke test:
 php artisan queue:work database --queue=cv-analysis --timeout=240 --tries=1
 ```
 
-A systemd unit example is included at `deploy/systemd/hrwork-cv-analysis-worker.service`. Review its `WorkingDirectory` and `User`/group before installing: the worker needs read access to application code and write access to `storage` and `bootstrap/cache`. If the project is owned by `huntnugie` and access is managed with ACLs, you can run the worker as `huntnugie`; alternatively, keep it as `www-data` only if the required ACLs are present.
+A systemd unit example is included at `deploy/systemd/hrwork-cv-analysis-worker.service`. It runs as `huntnugie`, matching the project owner, so the worker can read the deployed `.env` and code. Review `WorkingDirectory` and the PHP binary before installing. The worker also needs write access to Laravel's `storage` and `bootstrap/cache`.
 
 Install and start the service after deploying the code and migration:
 
