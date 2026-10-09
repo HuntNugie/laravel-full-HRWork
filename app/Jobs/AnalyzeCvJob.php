@@ -32,7 +32,7 @@ class AnalyzeCvJob implements ShouldQueue
     {
         $run = CvAnalysisRun::query()->findOrFail($this->analysisRunId);
 
-        if (in_array($run->status, ['completed', 'failed'], true)) {
+        if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
             return;
         }
 
@@ -131,8 +131,13 @@ class AnalyzeCvJob implements ShouldQueue
                 'finished_at' => now(),
             ])->save();
         } finally {
-            // The source CV is no longer needed once the result has been stored.
-            if (file_exists($run->file_path)) {
+            // Keep the private CV available if an unexpected exception occurred,
+            // because the failed job may need investigation or a controlled retry.
+            // Completed and handled failures are cleaned up after status is saved.
+            $run->refresh();
+
+            if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)
+                && file_exists($run->file_path)) {
                 @unlink($run->file_path);
             }
         }
@@ -142,7 +147,7 @@ class AnalyzeCvJob implements ShouldQueue
     {
         $run = CvAnalysisRun::query()->find($this->analysisRunId);
 
-        if (! $run || in_array($run->status, ['completed', 'failed'], true)) {
+        if (! $run || in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
             return;
         }
 
