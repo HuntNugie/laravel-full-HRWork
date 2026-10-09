@@ -41,7 +41,7 @@ sudo systemctl enable --now hrwork-cv-analysis-worker
 sudo systemctl status hrwork-cv-analysis-worker --no-pager
 ```
 
-Check worker output with `sudo journalctl -u hrwork-cv-analysis-worker -f`. After future code deployments, restart the worker with `php artisan queue:restart`; a long-running worker must restart to load new code.
+Check worker output with `sudo journalctl -u hrwork-cv-analysis-worker -f`. Before enabling the unit, review its `User`, `Group`, `WorkingDirectory`, and PHP binary. The chosen user must be able to read the project and write to `storage` and `bootstrap/cache`. After future code deployments, restart the worker with `php artisan queue:restart`; a long-running worker must restart to load new code.
 
 ## Flow
 
