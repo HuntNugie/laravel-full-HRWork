@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
@@ -31,6 +32,7 @@ class CvAnalyzerQueueTest extends TestCase
     public function test_valid_cv_upload_is_queued_without_running_the_analysis_in_the_http_request(): void
     {
         Bus::fake();
+        Storage::fake('local');
 
         $txt = str_repeat(
             "Nama: Kandidat Tes\nPengalaman software engineer, Laravel, database, API, pendidikan dan proyek.\n",
