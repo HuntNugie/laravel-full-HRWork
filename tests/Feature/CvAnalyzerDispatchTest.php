@@ -53,7 +53,7 @@ class CvAnalyzerDispatchTest extends TestCase
 
         $this->assertSame('queued', $run->status);
         $this->assertSame('Menguasai REST API', $run->company_criteria);
-        $this->assertSame($this->app['auth']->id(), $run->user_id);
+        $this->assertSame(auth()->id(), $run->user_id);
 
         Storage::disk('local')->assertExists('cv-analysis/'.basename($run->file_path));
         Bus::assertDispatched(AnalyzeCvJob::class, fn (AnalyzeCvJob $job) => true);
