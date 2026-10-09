@@ -148,10 +148,6 @@
             </div>
         @endif
 
-        @if ($analysisRunId)
-            <div wire:poll.3s="refreshAnalysisStatus" class="sr-only" aria-hidden="true"></div>
-        @endif
-
         {{-- =====================================================
         ANALYSIS PROGRESS
         ====================================================== --}}
