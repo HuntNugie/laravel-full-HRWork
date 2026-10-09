@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
 use Throwable;
 use ZipArchive;
@@ -143,7 +143,7 @@ class AnalyzeCvJob implements ShouldQueue
 
             if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
                 try {
-                    \Illuminate\Support\Facades\Storage::disk($run->file_disk)->delete(
+                    Storage::disk($run->file_disk)->delete(
                         'cv-analysis/'.basename($run->file_path)
                     );
                 } catch (Throwable $cleanupException) {
