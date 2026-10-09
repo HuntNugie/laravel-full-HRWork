@@ -55,10 +55,6 @@ class AnalyzeCvJob implements ShouldQueue
         try {
             $path = $run->file_path;
 
-            if (! file_exists($path)) {
-                throw new \RuntimeException('File CV tidak ditemukan saat job dijalankan.');
-            }
-
             $cvText = $this->extractCvText($path, pathinfo($run->original_filename, PATHINFO_EXTENSION));
 
             if (mb_strlen(trim($cvText)) < 80) {
