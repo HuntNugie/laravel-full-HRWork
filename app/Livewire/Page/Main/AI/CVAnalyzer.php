@@ -70,21 +70,27 @@ class CVAnalyzer extends Component
                 throw new \RuntimeException('File CV gagal disimpan untuk diproses.');
             }
 
-            $run = CvAnalysisRun::query()->create([
-                'id' => (string) Str::uuid(),
-                'user_id' => auth()->id(),
-                'status' => 'queued',
-                'original_filename' => $this->cvFile->getClientOriginalName(),
-                'file_path' => storage_path('app/private/'.$storedPath),
-                'file_disk' => 'local',
-                'position_id' => $positionId,
-                'company_criteria' => trim($this->companyCriteria),
-            ]);
+            try {
+                $run = CvAnalysisRun::query()->create([
+                    'id' => (string) Str::uuid(),
+                    'user_id' => auth()->id(),
+                    'status' => 'queued',
+                    'original_filename' => $this->cvFile->getClientOriginalName(),
+                    'file_path' => storage_path('app/private/'.$storedPath),
+                    'file_disk' => 'local',
+                    'position_id' => $positionId,
+                    'company_criteria' => trim($this->companyCriteria),
+                ]);
 
-            $this->analysisRunId = $run->id;
-            $this->isAnalyzing = true;
+                $this->analysisRunId = $run->id;
+                $this->isAnalyzing = true;
 
-            AnalyzeCvJob::dispatch($run->id)->onConnection('database');
+                AnalyzeCvJob::dispatch($run->id)->onConnection('database');
+            } catch (Throwable $exception) {
+                @unlink(storage_path('app/private/'.$storedPath));
+
+                throw $exception;
+            }
 
             $this->reset('cvFile');
         } catch (Throwable $exception) {
