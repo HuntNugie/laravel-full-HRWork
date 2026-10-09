@@ -4,6 +4,7 @@
         analyzing: false,
         progress: 0,
         timer: null,
+        poller: null,
         stageIndex: -1,
         steps: [
             {
@@ -35,6 +36,10 @@
         init() {
             this.resetSteps();
         },
+        destroy() {
+            clearInterval(this.timer);
+            clearInterval(this.poller);
+        },
         resetSteps() {
             this.states = this.steps.map(() => 'pending');
             this.stageIndex = -1;
@@ -62,18 +67,38 @@
                 if (this.progress < 88) {
                     this.advance();
                 }
-            }, 1600);
+            }, 4500);
         },
         finishProgress() {
             clearInterval(this.timer);
+            clearInterval(this.poller);
             this.states = this.steps.map(() => 'done');
             this.stageIndex = this.steps.length - 1;
             this.progress = 100;
+            this.timer = null;
+            this.poller = null;
         },
         stopProgress() {
             clearInterval(this.timer);
+            clearInterval(this.poller);
             this.timer = null;
+            this.poller = null;
             this.analyzing = false;
+        },
+        async pollStatus() {
+            try {
+                await this.$wire.refreshAnalysisStatus();
+
+                if (!this.$wire.isAnalyzing) {
+                    this.finishProgress();
+
+                    setTimeout(() => {
+                        this.analyzing = false;
+                    }, 450);
+                }
+            } catch (error) {
+                // Keep polling transient network errors; the worker keeps running.
+            }
         },
         async startAnalysis() {
             if (this.analyzing) {
@@ -83,17 +108,19 @@
             this.startProgress();
 
             try {
+                // This request only validates, stores the CV, and dispatches a job.
                 await this.$wire.analyze();
-                this.finishProgress();
 
-                setTimeout(() => {
-                    this.analyzing = false;
-                    this.timer = null;
-                }, 450);
+                if (!this.$wire.analysisRunId) {
+                    this.stopProgress();
+                    return;
+                }
+
+                // Polling uses short Livewire requests; the AI work itself is outside HTTP.
+                this.poller = setInterval(() => this.pollStatus(), 3000);
+                await this.pollStatus();
             } catch (error) {
-                clearInterval(this.timer);
-                this.timer = null;
-                this.analyzing = false;
+                this.stopProgress();
             }
         },
     }"
@@ -119,6 +146,10 @@
             <div class="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {{ $errorMessage }}
             </div>
+        @endif
+
+        @if ($analysisRunId)
+            <div wire:poll.3s="refreshAnalysisStatus" class="sr-only" aria-hidden="true"></div>
         @endif
 
         {{-- =====================================================
