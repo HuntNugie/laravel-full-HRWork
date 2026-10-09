@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CvAnalysisRun extends Model
 {
+    protected $guarded = [];
+
     protected $primaryKey = 'id';
 
     public $incrementing = false;
