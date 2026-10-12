@@ -28,6 +28,8 @@ class CVAnalyzer extends Component
 
     public ?string $analysisRunId = null;
 
+    public ?string $selectedPositionName = null;
+
     public ?string $errorMessage = null;
 
     public ?array $analysisResult = null;
@@ -186,6 +188,14 @@ class CVAnalyzer extends Component
             }
 
             $this->analysisResult = $run->result;
+            $this->selectedPositionName = $run->position_context['name'] ?? null;
+
+            if (! $this->selectedPositionName && $run->position_id) {
+                $this->selectedPositionName = Position::query()
+                    ->whereKey($run->position_id)
+                    ->value('name');
+            }
+
             $this->errorMessage = null;
             $this->isAnalyzing = false;
 
@@ -232,6 +242,7 @@ class CVAnalyzer extends Component
             'positionId',
             'companyCriteria',
             'analysisRunId',
+            'selectedPositionName',
             'isAnalyzing',
             'analysisResult',
             'errorMessage',
