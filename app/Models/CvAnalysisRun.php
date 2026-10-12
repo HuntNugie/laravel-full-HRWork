@@ -21,6 +21,7 @@ class CvAnalysisRun extends Model
         'file_path',
         'file_disk',
         'position_id',
+        'position_context',
         'company_criteria',
         'result',
         'error_message',
@@ -32,6 +33,7 @@ class CvAnalysisRun extends Model
     {
         return [
             'result' => 'array',
+            'position_context' => 'array',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
         ];
