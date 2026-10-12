@@ -42,6 +42,10 @@ class AnalyzeCvJob implements ShouldQueue
         if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
             $this->deleteSourceCv($run);
 
+            if ($run->status === 'cancelled') {
+                $run->delete();
+            }
+
             return;
         }
 
@@ -156,27 +160,30 @@ class AnalyzeCvJob implements ShouldQueue
             $run->refresh();
 
             // The user may cancel while the provider is processing the request.
-            // Do not write a result after cancellation.
+            // Clean up the uploaded CV before making a terminal state visible to polling.
             if ($run->status !== 'cancelled') {
+                $this->deleteSourceCv($run);
+
                 $run->forceFill([
                     'status' => 'completed',
                     'result' => $result,
                     'error_message' => null,
                     'finished_at' => now(),
                 ])->save();
+            } else {
+                $this->deleteSourceCv($run);
+                $run->delete();
             }
         } catch (Throwable $exception) {
             report($exception);
             $run->refresh();
 
+            $this->deleteSourceCv($run);
+
             if ($run->status !== 'cancelled') {
                 $this->markFailed($run, $this->safeErrorMessage($exception));
-            }
-        } finally {
-            $run->refresh();
-
-            if (in_array($run->status, ['completed', 'failed', 'cancelled'], true)) {
-                $this->deleteSourceCv($run);
+            } else {
+                $run->delete();
             }
         }
     }
