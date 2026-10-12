@@ -6,6 +6,7 @@ use App\Jobs\AnalyzeCvJob;
 use App\Models\CvAnalysisRun;
 use App\Models\Position;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -63,6 +64,33 @@ class CVAnalyzer extends Component
             'cvFile.max' => 'Ukuran CV maksimal 10 MB.',
         ]);
 
+        // Capture the selected position and its jobdesk before dispatching the
+        // background job. The analysis should use the exact selection made by HR.
+        $positionContext = null;
+
+        if ($this->positionId !== '') {
+            $position = Position::query()
+                ->with('jobdesk')
+                ->where('is_active', 'active')
+                ->find((int) $this->positionId);
+
+            if (! $position) {
+                throw ValidationException::withMessages([
+                    'positionId' => 'Posisi yang dipilih tidak tersedia atau sudah tidak aktif. Silakan pilih ulang.',
+                ]);
+            }
+
+            $positionContext = [
+                'name' => $position->name,
+                'description' => $position->description,
+                'jobdesk' => $position->jobdesk
+                    ->pluck('jobdesk')
+                    ->filter()
+                    ->values()
+                    ->all(),
+            ];
+        }
+
         $run = null;
         $storedPath = null;
 
@@ -86,6 +114,7 @@ class CVAnalyzer extends Component
                 'file_path' => $storedPath,
                 'file_disk' => 'local',
                 'position_id' => $this->positionId !== '' ? (int) $this->positionId : null,
+                'position_context' => $positionContext,
                 'company_criteria' => trim($this->companyCriteria) !== ''
                     ? trim($this->companyCriteria)
                     : null,
