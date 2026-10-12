@@ -35,7 +35,10 @@ Core rules:
 - Do not infer or use sensitive personal characteristics as recruitment criteria, including gender, race/ethnicity, religion, political views, marital/family status, health/disability, or similar protected characteristics.
 - Do not judge personality, culture fit, loyalty, attitude, or character from a CV.
 - Company alignment may only be assessed against explicit company criteria supplied by HR. When no company criteria are supplied, use "not_assessed".
-- Position alignment may only be assessed when a target position is supplied. When no position is supplied, use "not_assessed".
+- Position alignment must be assessed against the exact target position supplied by HR in the prompt. Do not replace it with the job title written in the CV.
+- When a target position is supplied, do not mark overall position alignment as "not_assessed". If position details are limited, explain that limitation in the summary and assess only available evidence.
+- Include every supplied jobdesk item in jobdesk_alignment, with evidence from the CV or a clear statement that evidence was not found.
+- Only use "not_assessed" for position alignment when no target position was supplied.
 - Compare requirements one by one and provide evidence from the CV whenever possible.
 - Prefer transparent status labels over unsupported numerical scores.
 - Requirement statuses: met, partial, not_found, conflicting, not_assessed.
