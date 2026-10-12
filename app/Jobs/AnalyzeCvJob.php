@@ -20,7 +20,7 @@ class AnalyzeCvJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $timeout = 240;
+    public int $timeout = 600;
 
     public int $tries = 1;
 
@@ -109,7 +109,7 @@ class AnalyzeCvJob implements ShouldQueue
                 $prompt,
                 provider: '9router',
                 model: config('ai.providers.9router.models.text.default'),
-                timeout: 180,
+                timeout: 540,
             );
 
             // Drain the stream in the queue worker and then parse the complete JSON.
