@@ -199,6 +199,11 @@ class CVAnalyzer extends Component
             $this->errorMessage = null;
             $this->isAnalyzing = false;
 
+            // This is a one-time analysis, not a history feature. Keep the response
+            // in this component's state and remove its database row after delivery.
+            $run->delete();
+            $this->analysisRunId = null;
+
             return false;
         }
 
@@ -209,6 +214,10 @@ class CVAnalyzer extends Component
                     ? 'Analisis CV dibatalkan.'
                     : 'Analisis CV gagal diproses. Silakan coba lagi.');
             $this->isAnalyzing = false;
+
+            // Do not retain a failed/cancelled analysis as history either.
+            $run->delete();
+            $this->analysisRunId = null;
 
             return false;
         }
