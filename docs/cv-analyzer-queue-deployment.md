@@ -6,6 +6,7 @@ This change moves the long-running CV analysis request into a database-backed La
 
 - The upload/validation rules and existing analysis result schema are retained.
 - Source files are saved to the private local disk under cv-analysis/.
+- The selected position name, description, and jobdesk are snapshotted when HR submits the form, and the result page displays the selected target separately from the title extracted from the CV.
 - The queue worker extracts CV text and requests the AI provider.
 - Analysis runs are scoped to their owner when status is polled.
 - Source files are deleted after completion, handled failure, or cancellation.
