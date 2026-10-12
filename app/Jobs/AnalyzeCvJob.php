@@ -73,9 +73,13 @@ class AnalyzeCvJob implements ShouldQueue
                 );
             }
 
-            $positionContext = null;
+            // Prefer the position snapshot captured when HR submitted the form.
+            // This keeps queued analysis tied to the selected position even if the
+            // position record changes before the worker starts processing.
+            $positionContext = $run->position_context;
 
-            if ($run->position_id) {
+            // Backward compatibility for jobs queued before position_context existed.
+            if (! $positionContext && $run->position_id) {
                 $position = Position::query()
                     ->with('jobdesk')
                     ->where('is_active', 'active')
@@ -310,7 +314,7 @@ class AnalyzeCvJob implements ShouldQueue
         return <<<PROMPT
 Analisis CV kandidat berikut untuk kebutuhan screening HR.
 
-TARGET POSITION:
+TARGET POSITION SELECTED BY HR (AUTHORITATIVE):
 {$positionText}
 
 COMPANY / ADDITIONAL REQUIREMENTS:
@@ -321,15 +325,17 @@ SUBMITTED CV:
 
 Tugas:
 1. Ekstrak profil kandidat hanya dari informasi yang tertulis di CV.
-2. Bila target position tersedia, bandingkan CV dengan requirement dan jobdesk posisi satu per satu.
-3. Bila target position tidak tersedia, jangan membuat kesimpulan posisi yang cocok; buat candidate profile dan tandai position alignment sebagai not_assessed.
-4. Bila company requirements tersedia, bandingkan satu per satu. Bila tidak tersedia, tandai company alignment sebagai not_assessed.
-5. Berikan bukti atau kutipan singkat dari CV untuk setiap requirement yang dinilai.
-6. Tandai informasi yang tidak ada sebagai not_found, bukan asumsi bahwa kandidat tidak memilikinya.
-7. Tandai klaim yang saling bertentangan atau tidak jelas sebagai conflicting dan masukkan ke verification_items.
-8. Susun strengths, gaps, hal yang perlu diverifikasi, serta pertanyaan interview yang relevan.
-9. Jangan menggunakan usia, gender, agama, ras/etnis, status keluarga, kesehatan/disabilitas, foto, atau karakteristik sensitif lainnya sebagai kriteria.
-10. Jangan memberikan keputusan akhir penerimaan/rejection kandidat.
+2. Jika TARGET POSITION berisi data posisi, posisi tersebut adalah target yang WAJIB digunakan dalam analisis. Jangan menggantinya dengan jabatan saat ini atau jabatan yang tertulis di CV kandidat.
+3. Untuk posisi yang dipilih, evaluasi nama posisi, deskripsi posisi, dan setiap item jobdesk yang diberikan. Petakan jobdesk satu per satu ke dalam jobdesk_alignment; jangan menghilangkan item hanya karena CV tidak menyebutkannya.
+4. Jika posisi target diberikan, position_alignment.status tidak boleh not_assessed. Nilai dukungan bukti CV dengan strong, moderate, atau limited. Jika definisi posisi tidak memiliki deskripsi/jobdesk yang cukup, jelaskan keterbatasan itu di summary dan jangan mengarang requirement.
+5. Jika posisi target benar-benar tidak diberikan, jangan membuat kesimpulan posisi yang cocok dan tandai position alignment sebagai not_assessed.
+6. Bila company requirements tersedia, bandingkan satu per satu. Bila tidak tersedia, tandai company alignment sebagai not_assessed.
+7. Berikan bukti atau kutipan singkat dari CV untuk setiap requirement yang dinilai.
+8. Tandai informasi yang tidak ada sebagai not_found, bukan asumsi bahwa kandidat tidak memilikinya.
+9. Tandai klaim yang saling bertentangan atau tidak jelas sebagai conflicting dan masukkan ke verification_items.
+10. Susun strengths, gaps, hal yang perlu diverifikasi, serta pertanyaan interview yang relevan.
+11. Jangan menggunakan usia, gender, agama, ras/etnis, status keluarga, kesehatan/disabilitas, foto, atau karakteristik sensitif lainnya sebagai kriteria.
+12. Jangan memberikan keputusan akhir penerimaan/rejection kandidat.
 PROMPT;
     }
 
