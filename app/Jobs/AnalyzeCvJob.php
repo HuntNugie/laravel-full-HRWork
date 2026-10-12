@@ -98,6 +98,10 @@ class AnalyzeCvJob implements ShouldQueue
                         ->values()
                         ->all(),
                 ];
+
+                // Persist the fallback snapshot too, so the selected target can be
+                // shown consistently for jobs queued before this migration.
+                $run->forceFill(['position_context' => $positionContext])->save();
             }
 
             $prompt = $this->buildPrompt(
