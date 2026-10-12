@@ -102,14 +102,22 @@ class AnalyzeCvJob implements ShouldQueue
                 companyCriteria: trim((string) $run->company_criteria),
             );
 
-            $response = CVAnalyzerAgent::make()->prompt(
+            // Use the same streaming response path as AI Assistant. The provider accepts
+            // streaming requests, while its non-streaming response can be incompatible
+            // with Laravel AI's strict OpenAI-compatible response parser.
+            $response = CVAnalyzerAgent::make()->stream(
                 $prompt,
                 provider: '9router',
                 model: config('ai.providers.9router.models.text.default'),
                 timeout: 180,
             );
 
-            $structured = $this->decodeAnalysisResponse($response->text);
+            // Drain the stream in the queue worker and then parse the complete JSON.
+            foreach ($response as $event) {
+                // The CV Analyzer UI polls the stored job result; it does not stream to the browser.
+            }
+
+            $structured = $this->decodeAnalysisResponse($response->text ?? '');
 
             $requiredKeys = [
                 'candidate',
