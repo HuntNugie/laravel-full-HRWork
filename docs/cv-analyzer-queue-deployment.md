@@ -9,6 +9,7 @@ This change moves the long-running CV analysis request into a database-backed La
 - The selected position name, description, and jobdesk are snapshotted when HR submits the form, and the result page displays the selected target separately from the title extracted from the CV.
 - The queue worker extracts CV text and requests the AI provider.
 - Analysis runs are scoped to their owner when status is polled.
+- Analysis status/result is temporary queue state only. Once the result or failure is delivered to the requesting page, its `cv_analysis_runs` row is deleted; no analysis history is retained.
 - Source files are deleted after completion, handled failure, or cancellation.
 - The AI provider request timeout is 540 seconds. The queue worker timeout is 600 seconds and the database queue's retry_after default is 660 seconds. Keep retry_after longer than the worker timeout to avoid the same job being reserved again while it is still running.
 - bootstrap/app.php trusts proxy headers only from loopback addresses for deployments where Cloudflare Tunnel/Nginx connects to PHP through the local origin. The deployment's .env must also use the public HTTPS APP_URL.
