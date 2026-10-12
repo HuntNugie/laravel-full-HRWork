@@ -9,7 +9,7 @@ This change moves the long-running CV analysis request into a database-backed La
 - The queue worker extracts CV text and requests the AI provider.
 - Analysis runs are scoped to their owner when status is polled.
 - Source files are deleted after completion, handled failure, or cancellation.
-- The AI provider request timeout is 180 seconds. The queue worker timeout is 240 seconds and the database queue's retry_after default is 300 seconds.
+- The AI provider request timeout is 540 seconds. The queue worker timeout is 600 seconds and the database queue's retry_after default is 660 seconds. Keep retry_after longer than the worker timeout to avoid the same job being reserved again while it is still running.
 - bootstrap/app.php trusts proxy headers only from loopback addresses for deployments where Cloudflare Tunnel/Nginx connects to PHP through the local origin. The deployment's .env must also use the public HTTPS APP_URL.
 
 ## Required environment
@@ -18,7 +18,7 @@ Set the values appropriate for your deployment in .env:
 
     APP_URL=https://hris.huntnugie.my.id
     QUEUE_CONNECTION=database
-    DB_QUEUE_RETRY_AFTER=300
+    DB_QUEUE_RETRY_AFTER=660
 
 Keep the OpenKey/provider URL and API key configured in the environment as usual. Do not commit production credentials.
 
@@ -37,7 +37,7 @@ Pull this branch and install/update dependencies if needed:
 
 In a separate terminal, start the worker:
 
-    php artisan queue:work database --queue=cv-analysis --sleep=3 --tries=1 --timeout=240
+    php artisan queue:work database --queue=cv-analysis --sleep=3 --tries=1 --timeout=600
 
 Keep the app and queue worker running in separate terminals. If the worker is not running, the web request should still enqueue the analysis, but it will remain queued until a worker processes it.
 
