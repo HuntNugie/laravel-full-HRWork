@@ -4,6 +4,8 @@
         analyzing: false,
         progress: 0,
         timer: null,
+        pollTimer: null,
+        pollInFlight: false,
         stageIndex: -1,
         steps: [
             {
@@ -58,6 +60,7 @@
             this.analyzing = true;
             this.advance();
 
+            clearInterval(this.timer);
             this.timer = setInterval(() => {
                 if (this.progress < 88) {
                     this.advance();
@@ -66,14 +69,54 @@
         },
         finishProgress() {
             clearInterval(this.timer);
+            this.timer = null;
             this.states = this.steps.map(() => 'done');
             this.stageIndex = this.steps.length - 1;
             this.progress = 100;
         },
         stopProgress() {
             clearInterval(this.timer);
+            clearInterval(this.pollTimer);
             this.timer = null;
+            this.pollTimer = null;
             this.analyzing = false;
+        },
+        async pollAnalysis() {
+            if (this.pollInFlight) {
+                return;
+            }
+
+            this.pollInFlight = true;
+
+            try {
+                const stillAnalyzing = await this.$wire.refreshAnalysisStatus();
+
+                if (stillAnalyzing) {
+                    return;
+                }
+
+                clearInterval(this.pollTimer);
+                this.pollTimer = null;
+
+                if (this.$wire.errorMessage) {
+                    clearInterval(this.timer);
+                    this.timer = null;
+                    this.analyzing = false;
+                    return;
+                }
+
+                this.finishProgress();
+
+                setTimeout(() => {
+                    this.analyzing = false;
+                }, 450);
+            } catch (error) {
+                // Keep polling after transient network errors. The queue job
+                // continues independently of this status request.
+                console.error('Failed to refresh CV analysis status.', error);
+            } finally {
+                this.pollInFlight = false;
+            }
         },
         async startAnalysis() {
             if (this.analyzing) {
@@ -84,16 +127,25 @@
 
             try {
                 await this.$wire.analyze();
+
+                if (this.$wire.isAnalyzing) {
+                    this.pollTimer = setInterval(() => this.pollAnalysis(), 2500);
+                    await this.pollAnalysis();
+                    return;
+                }
+
+                if (this.$wire.errorMessage) {
+                    this.stopProgress();
+                    return;
+                }
+
                 this.finishProgress();
 
                 setTimeout(() => {
                     this.analyzing = false;
-                    this.timer = null;
                 }, 450);
             } catch (error) {
-                clearInterval(this.timer);
-                this.timer = null;
-                this.analyzing = false;
+                this.stopProgress();
             }
         },
     }"
