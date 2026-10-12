@@ -455,6 +455,10 @@
                                 •
                                 {{ $candidate['current_or_targeted_title'] ?? 'Profil kandidat' }}
                             </p>
+                            <p class="text-sm text-slate-600">
+                                Target posisi HR:
+                                <span class="font-semibold text-slate-800">{{ $selectedPositionName ?? 'Tidak ditentukan' }}</span>
+                            </p>
                         </x-wirekit::stack>
 
                         <x-wirekit::button
