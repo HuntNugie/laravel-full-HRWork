@@ -19,10 +19,10 @@ class HRISDevelopmentSeederTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $this->assertSame(50, Employees::query()->where('employee_code', 'like', 'DEV-%')->count());
-        $this->assertSame(50, Employees::query()->whereDate('JoinDate', '2026-01-01')->count());
         $this->assertSame(50, DB::table('employee_profiles')->count());
         $this->assertSame(50, DB::table('employee_bank_accounts')->count());
         $this->assertSame(50, DB::table('employee_contracts')->count());
+        $this->assertSame(50, DB::table('employee_contracts')->whereDate('start_date', '2026-01-01')->count());
         $this->assertSame(50, DB::table('position_jobdesks')->count());
         $this->assertGreaterThan(0, DB::table('contract_leave_entitlements')->count());
 

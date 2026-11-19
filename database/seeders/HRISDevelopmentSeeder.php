@@ -332,7 +332,6 @@ class HRISDevelopmentSeeder extends Seeder
                 ['employee_code' => $account['code']],
                 [
                     'user_id' => $users[$key]->id,
-                    'JoinDate' => '2026-01-01',
                     'status_employee' => 'active',
                     'position_id' => $positions[$account['position']]->id,
                 ],
