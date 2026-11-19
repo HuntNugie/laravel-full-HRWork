@@ -28,10 +28,13 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 class HRISDevelopmentSeeder extends Seeder
 {
+    private const DEMO_ACCOUNT_PASSWORD = 'nugitea123';
+
     /**
      * Seed a populated HRIS demo environment, including production when requested.
      *
@@ -44,13 +47,10 @@ class HRISDevelopmentSeeder extends Seeder
      */
     public function run(): void
     {
-        // Validate credentials before creating any demo records.
-        $demoPassword = $this->resolveDemoAccountPassword();
-
         $this->seedWilayah();
         $this->seedPositions();
 
-        $users = $this->seedUsers($demoPassword);
+        $users = $this->seedUsers();
         $employees = $this->seedEmployees($users);
         $this->seedProfilesAndBankAccounts($employees);
         $this->seedStatusHistory($employees);
@@ -76,37 +76,13 @@ class HRISDevelopmentSeeder extends Seeder
         }
 
         $this->command?->info("HRIS demo data seeded: {$count} employees.");
-        $this->command?->line($demoPassword === 'nugitea123'
-            ? 'Local/testing demo accounts use password: nugitea123'
-            : 'Demo employee/HR/admin password: configured via HRIS_DEMO_PASSWORD');
+        $this->command?->line(app()->environment(['local', 'testing'])
+            ? 'Local/testing demo employee/HR/admin password: ' . self::DEMO_ACCOUNT_PASSWORD
+            : 'Production demo users have private generated passwords. Set them using Superadmin password management.');
         $this->command?->line('GM: gm.hrwork@gmail.com');
         $this->command?->line('HR: nugiekurniawan03@gmail.com');
         $this->command?->line('Administrator: nugiekurniawan02@gmail.com');
         $this->command?->line('Super Admin (uses SUPERADMIN_PASSWORD): ' . env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'));
-    }
-
-    private function resolveDemoAccountPassword(): string
-    {
-        $configuredPassword = (string) config('hrwork.demo_user_password', '');
-
-        if (app()->environment(['local', 'testing']) && trim($configuredPassword) === '') {
-            return 'nugitea123';
-        }
-
-        if (trim($configuredPassword) === '') {
-            throw new \RuntimeException(
-                'HRIS_DEMO_PASSWORD wajib diisi di production/staging sebelum menjalankan seeder data demo.',
-            );
-        }
-
-        if (! app()->environment(['local', 'testing'])
-            && ($configuredPassword === 'nugitea123' || strlen($configuredPassword) < 12)) {
-            throw new \RuntimeException(
-                'HRIS_DEMO_PASSWORD untuk production/staging harus minimal 12 karakter dan bukan password demo default.',
-            );
-        }
-
-        return $configuredPassword;
     }
 
     private function seedPositions(): void
@@ -154,25 +130,44 @@ class HRISDevelopmentSeeder extends Seeder
     /**
      * @return array<string, User>
      */
-    private function seedUsers(string $demoPassword): array
+    private function seedUsers(): array
     {
         $accounts = $this->accountDefinitions();
         $users = [];
+        $development = app()->environment(['local', 'testing']);
 
         foreach ($accounts as $key => $account) {
             // UserSeeder already created the privileged account using the
             // password supplied by the developer. Never overwrite it with a
             // publicly documented demo password.
-            $user = $key === 'superadmin'
-                ? User::query()->where('email', $account['email'])->firstOrFail()
-                : User::updateOrCreate(
+            if ($key === 'superadmin') {
+                $user = User::query()->where('email', $account['email'])->firstOrFail();
+            } elseif ($development) {
+                $user = User::updateOrCreate(
                     ['email' => $account['email']],
                     [
                         'name' => $account['name'],
-                        'password' => Hash::make($demoPassword),
+                        'password' => Hash::make(self::DEMO_ACCOUNT_PASSWORD),
                         'status' => 'active',
                     ],
                 );
+            } else {
+                // Public deployments must not expose known demo credentials.
+                // Preserve administrator-reset passwords on subsequent seeds.
+                $user = User::firstOrCreate(
+                    ['email' => $account['email']],
+                    [
+                        'name' => $account['name'],
+                        'password' => Hash::make(Str::random(40)),
+                        'status' => 'active',
+                    ],
+                );
+
+                // Rotate accounts left with the old, publicly known demo password.
+                if (Hash::check(self::DEMO_ACCOUNT_PASSWORD, $user->password)) {
+                    $user->update(['password' => Hash::make(Str::random(40))]);
+                }
+            }
 
             foreach ($account['roles'] as $roleName) {
                 Role::firstOrCreate([

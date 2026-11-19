@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Employees;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
-use Database\Seeders\HRISDevelopmentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -17,8 +16,12 @@ class HRISDevelopmentSeederTest extends TestCase
 
     public function test_fresh_database_seeder_creates_connected_demo_hris_data_in_production(): void
     {
-        $demoPassword = 'DedicatedDemoPassword123!';
-        config()->set('hrwork.demo_user_password', $demoPassword);
+        $existingAdminPassword = 'ExistingAdminPassword123!';
+        User::factory()->create([
+            'email' => 'nugiekurniawan02@gmail.com',
+            'status' => 'active',
+            'password' => Hash::make($existingAdminPassword),
+        ]);
 
         $previousEnvironment = app()->environment();
         app()->detectEnvironment(fn () => 'production');
@@ -64,8 +67,11 @@ class HRISDevelopmentSeederTest extends TestCase
         $this->assertDatabaseHas('employee_terminations', ['status' => 'in_progress']);
 
         $hr = User::query()->where('email', 'nugiekurniawan03@gmail.com')->firstOrFail();
-        $this->assertTrue(Hash::check($demoPassword, $hr->password));
         $this->assertFalse(Hash::check('nugitea123', $hr->password));
+        $this->assertFalse(Hash::check((string) env('SUPERADMIN_PASSWORD'), $hr->password));
+
+        $administrator = User::query()->where('email', 'nugiekurniawan02@gmail.com')->firstOrFail();
+        $this->assertTrue(Hash::check($existingAdminPassword, $administrator->password));
 
         $this->assertSame(0, DB::table('attendances')
             ->join('leave_requests', 'leave_requests.employee_id', '=', 'attendances.employee_id')
@@ -82,20 +88,5 @@ class HRISDevelopmentSeederTest extends TestCase
         $superadmin = User::query()->where('email', env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'))->firstOrFail();
         $this->assertTrue(Hash::check((string) env('SUPERADMIN_PASSWORD'), $superadmin->password));
         $this->assertFalse(Hash::check('nugitea123', $superadmin->password));
-    }
-
-    public function test_production_seeder_rejects_an_unconfigured_demo_password(): void
-    {
-        config()->set('hrwork.demo_user_password', null);
-        $previousEnvironment = app()->environment();
-        app()->detectEnvironment(fn () => 'production');
-
-        try {
-            $this->expectException(\RuntimeException::class);
-            $this->expectExceptionMessage('HRIS_DEMO_PASSWORD');
-            (new HRISDevelopmentSeeder())->run();
-        } finally {
-            app()->detectEnvironment(fn () => $previousEnvironment);
-        }
     }
 }
