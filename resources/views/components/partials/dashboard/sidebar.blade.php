@@ -1,6 +1,7 @@
 <x-slot:sidebar>
 
-    <x-wirekit::sidebar>
+    {{-- Batasi tinggi drawer mobile agar seluruh menu tetap bisa dijangkau dengan scroll. --}}
+    <x-wirekit::sidebar class="max-lg:max-h-[calc(100dvh-4rem)] max-lg:overflow-y-auto max-lg:overscroll-contain">
 
         <x-wirekit::sidebar.group label="Overview">
 
