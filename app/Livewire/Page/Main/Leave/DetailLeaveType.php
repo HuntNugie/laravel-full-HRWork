@@ -4,6 +4,7 @@ namespace App\Livewire\Page\Main\Leave;
 
 use App\Models\LeaveType;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -14,6 +15,8 @@ class DetailLeaveType extends Component
     public LeaveType $leaveType;
 
     public Collection $contractEntitlements;
+
+    public string $search = '';
 
 
     public function mount(LeaveType $leavetype): void
@@ -45,8 +48,24 @@ class DetailLeaveType extends Component
 
     public function render()
     {
+        $search = trim($this->search);
+
+        $filteredContractEntitlements = $this->contractEntitlements->filter(function ($entitlement) use ($search) {
+            if ($search === '') {
+                return true;
+            }
+
+            $contract = $entitlement->employeeContract;
+            $employee = $contract?->employees;
+
+            return Str::contains((string) $employee?->user?->name, $search, true)
+                || Str::contains((string) $employee?->employee_code, $search, true)
+                || Str::contains((string) $contract?->contract_number, $search, true);
+        });
+
         return view(
-            'livewire.page.main.leave.detail-leave-type'
+            'livewire.page.main.leave.detail-leave-type',
+            compact('filteredContractEntitlements')
         );
     }
 }
