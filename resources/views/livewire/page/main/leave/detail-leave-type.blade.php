@@ -250,7 +250,8 @@
 
                 <div class="w-full sm:w-72">
 
-                    <x-wirekit::input type="text" name="search" placeholder="Cari karyawan atau kontrak" />
+                    <x-wirekit::input type="text" name="search" wire:model.live.debounce.300ms="search"
+                        aria-label="Cari karyawan atau nomor kontrak" placeholder="Cari karyawan atau kontrak" />
 
                 </div>
 
@@ -302,7 +303,7 @@
                 ================================================== --}}
                     <x-wirekit::table.body>
 
-                        @forelse ($contractEntitlements as $entitlement)
+                        @forelse ($filteredContractEntitlements as $entitlement)
                             @php
                                 $contract = $entitlement->employeeContract;
                                 $employee = $contract?->employees;
@@ -404,14 +405,17 @@
 
                                     <div class="py-8 text-center">
 
-                                        <p class="text-sm font-medium text-slate-700">
-                                            Belum ada contract
-                                        </p>
-
-                                        <p class="mt-1 text-sm text-slate-400">
-                                            Belum ada karyawan yang memiliki jatah
-                                            untuk jenis cuti ini.
-                                        </p>
+                                        @if (filled(trim($search)))
+                                            <p class="text-sm font-medium text-slate-700">Tidak ada hasil pencarian</p>
+                                            <p class="mt-1 text-sm text-slate-400">
+                                                Coba nama karyawan, kode karyawan, atau nomor kontrak lainnya.
+                                            </p>
+                                        @else
+                                            <p class="text-sm font-medium text-slate-700">Belum ada contract</p>
+                                            <p class="mt-1 text-sm text-slate-400">
+                                                Belum ada karyawan yang memiliki jatah untuk jenis cuti ini.
+                                            </p>
+                                        @endif
 
                                     </div>
 
