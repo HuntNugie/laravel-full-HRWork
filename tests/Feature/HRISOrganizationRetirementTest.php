@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Livewire\Components\Main\User\ModalChangePassword;
 use App\Livewire\Components\Main\User\ModalEditRole;
 use App\Livewire\Page\Main\User\DetailUser;
+use Aliziodev\Wilayah\Database\Seeders\ProvinceSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\RoleSeeder;
@@ -38,6 +39,21 @@ class HRISOrganizationRetirementTest extends TestCase
 
         Position::create(['name' => 'HR Officer', 'min_salary_daily' => 200000, 'is_active' => 'active']);
         $this->assertDatabaseHas('positions', ['name' => 'HR Officer']);
+    }
+
+    public function test_wilayah_reference_tables_exist_and_package_province_data_can_be_seeded(): void
+    {
+        foreach (['provinces', 'regencies', 'districts', 'villages'] as $table) {
+            $this->assertTrue(Schema::hasTable($table), "Required Wilayah table {$table} must exist.");
+        }
+
+        foreach (['islands', 'region_areas', 'region_populations'] as $table) {
+            $this->assertFalse(Schema::hasTable($table), "Optional Wilayah table {$table} should remain disabled.");
+        }
+
+        $this->seed(ProvinceSeeder::class);
+
+        $this->assertDatabaseHas('provinces', ['code' => '32', 'name' => 'Jawa Barat']);
     }
 
     public function test_roles_permissions_and_superadmin_bypass_follow_hris_scope(): void

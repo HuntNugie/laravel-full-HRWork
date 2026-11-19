@@ -9,24 +9,32 @@ HRWork (*HRIS for Work*) adalah aplikasi Human Resource Information System berba
 - **Administrator (`administrator`):** pengelolaan akun, status aktif akun, penggantian password, role dan permission; tidak otomatis mendapat akses operasional HRD.
 - **Superadmin (`super-admin`):** akses keseluruhan fitur melalui `Gate::before`, termasuk fungsi semua peran.
 - Jabatan **Manager**, **Supervisor**, dan **General Manager** tetap boleh ada sebagai nama Position dalam data/kontrak, **bukan** role atau penugasan organisasi.
-- Handover resignation/termination tetap berupa item manual HRD. Clearance organisasi lama hanya arsip dan tidak lagi memblokir penyelesaian.
+- Handover resignation/termination tetap berupa item manual HRD. Kompatibilitas untuk clearance historis berkategori organisasi tidak lagi memblokir penyelesaian; instalasi baru tidak membuat struktur Divisi/Team.
 
-## Migrasi dari Struktur Lama (Database Eksisting)
+## Instalasi Database Bersih (Development / Data Dummy)
 
-1. Pastikan database yang akan diperbarui memang hanya berisi **data dummy yang boleh dihapus permanen**. Untuk database dengan data nyata, lakukan backup terverifikasi dan peninjauan retensi sebelum melanjutkan. Jangan jalankan `migrate:fresh` di database nyata.
-2. Checkout branch `refactor/remove-work-management-hris`, install dependensi dengan `composer install`, lalu jalankan `php artisan migrate`.
-3. Migrasi `2026_11_19_000000_archive_work_management_tables` terlebih dahulu melepaskan referensi `task_id` dari handover dan mengarsipkan sembilan tabel Work Management.
-4. Migrasi `2026_11_19_000100_archive_organization_structure` melepaskan relasi `employees.team_id` dan mengarsipkan tabel `teams` serta `divisis`.
-5. Migrasi `2026_11_19_000200_drop_archived_work_management_tables` dan `2026_11_19_000300_drop_archived_organization_structure_tables` **menghapus permanen 11 tabel arsip**, dalam urutan yang menjaga dependensi foreign key. Migrasi `2026_11_19_000400_drop_retired_organization_and_task_reference_columns` lalu menghapus `employees.legacy_team_id` serta kedua kolom handover `legacy_task_id`. Data yang dihapus tidak dapat dipulihkan dengan `migrate:rollback`.
-6. Jalankan `php artisan db:seed --class=PermissionSeeder`, `php artisan db:seed --class=RoleSeeder`, lalu `php artisan db:seed --class=RolePermissionSeeder`. Tahap ini mencabut permission divisi/team, mempensiunkan role manager/supervisor lama, dan mengalihkan akun karyawan terdampak ke role employee.
-7. Pastikan pengguna Administrator mempunyai permission pengelolaan akun dan HRD mempunyai permission terkait Karyawan dan Termination. Jalankan `php artisan permission:cache-reset`.
-8. Jalankan `php artisan test` dan lakukan uji manual login, role, pembuatan karyawan/kontrak, detail karyawan, presensi, cuti, penggajian dan exit. Deploy hanya setelah hasilnya sesuai.
+Branch `refactor/remove-work-management-hris` sekarang menggunakan **migration HRIS bersih**. Migration untuk membuat, mengarsipkan, lalu menghapus Work Management, Divisi, dan Team sudah dipensiunkan. Hubungan karyawan dengan Position tetap ada; handover resignation/termination tidak lagi membutuhkan tabel tasks.
+
+**Perhatian:** Ini perubahan riwayat migration (*clean-slate*), bukan jalur upgrade non-destruktif untuk database lama. Perintah `migrate:fresh` **menghapus semua tabel pada koneksi database yang dipilih**, termasuk data selain HRWork jika berbagi database. Hanya jalankan pada database lokal/testing yang datanya memang boleh dihapus. Untuk database dengan data nyata, siapkan rencana migrasi dan backup terpisah.
+
+1. Checkout branch `refactor/remove-work-management-hris` dan jalankan `composer install`. Paket `aliziodev/laravel-wilayah` harus terpasang karena digunakan pada model, form alamat, serta seeder.
+2. Atur koneksi `DB_*` di `.env` dan isi `SUPERADMIN_PASSWORD` dengan password yang aman (serta `SUPERADMIN_EMAIL` jika berbeda). Seeder sengaja menolak membuat akun Superadmin dengan password kosong.
+3. Untuk membuat ulang **skema sekaligus data master**: `php artisan migrate:fresh --seed`.
+4. Untuk membuat ulang **skema saja**, jalankan `php artisan migrate:fresh`, kemudian `php artisan db:seed` jika perlu mengisi data referensi.
+5. Jalankan `php artisan permission:cache-reset` dan `php artisan test`. Lakukan uji manual login/role, data karyawan/Position, kontrak, profil dan alamat, presensi, cuti, payroll, resignation, serta termination.
+
+### Dependency Data Wilayah
+
+- Empat tabel `provinces`, `regencies`, `districts`, `villages` tetap diciptakan dari migration paket `aliziodev/laravel-wilayah` yang **sudah dipublikasikan di repository**, berurutan dari induk ke anak. Jangan jalankan `wilayah:install`/publish migration ulang pada proyek ini.
+- `DatabaseSeeder` kini memanggil seeder resmi paket `Aliziodev\Wilayah\Database\Seeders\WilayahSeeder`, sehingga `php artisan migrate:fresh --seed` juga mengisi keempat level alamat dari data lokal yang disertakan paket, kemudian membersihkan cache wilayah.
+- `php artisan migrate:fresh` **tanpa `--seed` tidak mengisi data wilayah**, sehingga dropdown alamat bisa kosong sampai `php artisan db:seed` atau `php artisan wilayah:seed` dijalankan.
+- Tabel opsional `islands`, `region_areas`, `region_populations` tetap dinonaktifkan melalui `config/wilayah.php` karena belum digunakan oleh HRIS.
 
 ### Seeder
 
-- `php artisan db:seed` menjalankan katalog hak akses, pembuatan **Superadmin** berdasarkan `SUPERADMIN_EMAIL` dan **`SUPERADMIN_PASSWORD` wajib di `.env`**, master bank dan konfigurasi HR. Password tersebut tidak dibuat otomatis; hindari hard-coded credential produksi.
+- `php artisan db:seed` mengisi data wilayah Indonesia, katalog hak akses, pembuatan **Superadmin** berdasarkan `SUPERADMIN_EMAIL` dan **`SUPERADMIN_PASSWORD` wajib di `.env`**, master bank dan konfigurasi HR. Password tersebut tidak dibuat otomatis; hindari hard-coded credential produksi.
 - Seeder `HRISDevelopmentSeeder` kini **hanya untuk development** dan tidak dipanggil oleh `DatabaseSeeder`: jalankan secara sengaja dengan `php artisan db:seed --class=HRISDevelopmentSeeder` di lingkungan pengujian. Seeder ini membuat 50 akun contoh dengan Position tanpa divisi/team. **Jangan jalankan di produksi.**
-- Seeder ini tidak menghapus data karyawan aktif. Dump `hris.sql` lama merupakan rekaman historis, **bukan** skema target setelah migrasi penghapusan.
+- Seeder ini tidak menghapus data karyawan aktif. Dump `hris.sql` lama merupakan rekaman historis, **bukan** skema target baru.
 
 ## Laravel
 

@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use Aliziodev\Wilayah\Database\Seeders\WilayahSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,6 +22,10 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
 
+            // Master alamat dari paket aliziodev/laravel-wilayah (4 level).
+            // Data wilayah tidak otomatis terisi saat migration saja.
+            WilayahSeeder::class,
+
             // HR master data.
             BankSeeder::class,
 
@@ -33,5 +39,8 @@ class DatabaseSeeder extends Seeder
             UnpresentDisciplineRuleSeeder::class,
 
         ]);
+
+        // Migrasi ulang tidak mengosongkan cache eksternal; hindari alamat usang.
+        Artisan::call('wilayah:cache-clear');
     }
 }
