@@ -33,7 +33,7 @@ use Spatie\Permission\Models\Role;
 class HRISDevelopmentSeeder extends Seeder
 {
     /**
-     * Seed a complete development HRIS environment.
+     * Seed a populated HRIS demo environment, including production when requested.
      *
      * Dataset:
      * - 50 karyawan dengan jabatan, tanpa divisi atau team
@@ -44,14 +44,13 @@ class HRISDevelopmentSeeder extends Seeder
      */
     public function run(): void
     {
-        if (! app()->environment(['local', 'testing'])) {
-            throw new \RuntimeException('HRISDevelopmentSeeder hanya boleh berjalan pada environment local/testing.');
-        }
+        // Validate credentials before creating any demo records.
+        $demoPassword = $this->resolveDemoAccountPassword();
 
         $this->seedWilayah();
         $this->seedPositions();
 
-        $users = $this->seedUsers();
+        $users = $this->seedUsers($demoPassword);
         $employees = $this->seedEmployees($users);
         $this->seedProfilesAndBankAccounts($employees);
         $this->seedStatusHistory($employees);
@@ -76,12 +75,38 @@ class HRISDevelopmentSeeder extends Seeder
             );
         }
 
-        $this->command?->info("Development HRIS data seeded: {$count} employees.");
-        $this->command?->line('Development employee/HR/admin accounts use password: nugitea123');
+        $this->command?->info("HRIS demo data seeded: {$count} employees.");
+        $this->command?->line($demoPassword === 'nugitea123'
+            ? 'Local/testing demo accounts use password: nugitea123'
+            : 'Demo employee/HR/admin password: configured via HRIS_DEMO_PASSWORD');
         $this->command?->line('GM: gm.hrwork@gmail.com');
         $this->command?->line('HR: nugiekurniawan03@gmail.com');
         $this->command?->line('Administrator: nugiekurniawan02@gmail.com');
         $this->command?->line('Super Admin (uses SUPERADMIN_PASSWORD): ' . env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'));
+    }
+
+    private function resolveDemoAccountPassword(): string
+    {
+        $configuredPassword = (string) config('hrwork.demo_user_password', '');
+
+        if (app()->environment(['local', 'testing']) && trim($configuredPassword) === '') {
+            return 'nugitea123';
+        }
+
+        if (trim($configuredPassword) === '') {
+            throw new \RuntimeException(
+                'HRIS_DEMO_PASSWORD wajib diisi di production/staging sebelum menjalankan seeder data demo.',
+            );
+        }
+
+        if (! app()->environment(['local', 'testing'])
+            && ($configuredPassword === 'nugitea123' || strlen($configuredPassword) < 12)) {
+            throw new \RuntimeException(
+                'HRIS_DEMO_PASSWORD untuk production/staging harus minimal 12 karakter dan bukan password demo default.',
+            );
+        }
+
+        return $configuredPassword;
     }
 
     private function seedPositions(): void
@@ -129,7 +154,7 @@ class HRISDevelopmentSeeder extends Seeder
     /**
      * @return array<string, User>
      */
-    private function seedUsers(): array
+    private function seedUsers(string $demoPassword): array
     {
         $accounts = $this->accountDefinitions();
         $users = [];
@@ -144,7 +169,7 @@ class HRISDevelopmentSeeder extends Seeder
                     ['email' => $account['email']],
                     [
                         'name' => $account['name'],
-                        'password' => Hash::make('nugitea123'),
+                        'password' => Hash::make($demoPassword),
                         'status' => 'active',
                     ],
                 );

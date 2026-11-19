@@ -43,10 +43,8 @@ class DatabaseSeeder extends Seeder
         // Migrasi ulang tidak mengosongkan cache eksternal; hindari alamat usang.
         Artisan::call('wilayah:cache-clear');
 
-        // Data transaksi dan akun contoh hanya aman untuk development/testing.
-        // Jadi migrate:fresh --seed langsung menghasilkan HRIS yang sudah terisi.
-        if (app()->environment(['local', 'testing'])) {
-            $this->call(HRISDevelopmentSeeder::class);
-        }
+        // Data contoh tersedia di semua environment, termasuk production.
+        // Password akun demo di luar local/testing wajib dikonfigurasi terpisah.
+        $this->call(HRISDevelopmentSeeder::class);
     }
 }
