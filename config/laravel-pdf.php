@@ -157,7 +157,14 @@ return [
 
         'custom_flags' => [],
 
-        'env_variables' => [],
+        // When configured, give headless Chrome a writable home/config/cache
+        // instead of inheriting PHP-FPM's potentially unwritable /var/www home.
+        // Unset values are omitted so local development keeps its defaults.
+        'env_variables' => array_filter([
+            'HOME' => env('LARAVEL_PDF_CHROME_HOME'),
+            'XDG_CONFIG_HOME' => env('LARAVEL_PDF_CHROME_CONFIG_HOME'),
+            'XDG_CACHE_HOME' => env('LARAVEL_PDF_CHROME_CACHE_HOME'),
+        ]),
     ],
 
     /*

@@ -38,6 +38,35 @@ Branch `refactor/remove-work-management-hris` sekarang menggunakan **migration H
 - **Superadmin tetap memakai `SUPERADMIN_PASSWORD` yang sudah ada di `.env`**, dan akun demo production dapat diatur passwordnya melalui fitur penggantian/reset password Superadmin. Tidak ada variabel password khusus demo. Jangan mengumumkan password akun berhak akses HRD/Administrator pada deployment publik.
 - `php artisan db:seed --class=HRISDevelopmentSeeder` tetap bisa dipakai untuk membuat ulang data demo secara manual setelah master data tersedia. Jangan digunakan di database berisi data nyata. Dump `hris.sql` lama hanya rekaman historis, bukan skema target baru.
 
+## PDF Chrome Headless di Production
+
+Fitur cetak kontrak, surat peringatan, slip gaji, rekap payroll, dan daftar pembayaran secara eksplisit menggunakan driver `chrome` dari `spatie/laravel-pdf`. Server harus memiliki Google Chrome/Chromium yang dapat dijalankan oleh user PHP-FPM. `LARAVEL_PDF_DRIVER` tidak mengganti driver yang sudah ditetapkan oleh controller.
+
+Untuk Ubuntu dengan worker PHP-FPM `www-data`, siapkan direktori Chrome yang terpisah dari root website (sesuaikan owner bila user pool berbeda):
+
+```bash
+sudo install -d -o www-data -g www-data -m 700 \
+  /var/lib/hrwork-chrome \
+  /var/lib/hrwork-chrome/.config \
+  /var/lib/hrwork-chrome/.cache \
+  /var/lib/hrwork-chrome/.local \
+  /var/lib/hrwork-chrome/.local/share \
+  /var/lib/hrwork-chrome/.local/share/applications \
+  /var/lib/hrwork-chrome/.local/share/pki \
+  /var/lib/hrwork-chrome/.local/share/pki/nssdb
+```
+
+Setelah memastikan hasil `command -v google-chrome-stable`, tambahkan pada `.env` production:
+
+```dotenv
+LARAVEL_PDF_CHROME_BINARY=/usr/bin/google-chrome-stable
+LARAVEL_PDF_CHROME_HOME=/var/lib/hrwork-chrome
+LARAVEL_PDF_CHROME_CONFIG_HOME=/var/lib/hrwork-chrome/.config
+LARAVEL_PDF_CHROME_CACHE_HOME=/var/lib/hrwork-chrome/.cache
+```
+
+Jalankan `php artisan config:clear && php artisan config:cache`, lalu uji kembali cetak PDF. Ketiga variabel HOME/XDG diteruskan **hanya** ke proses Chrome oleh `config/laravel-pdf.php`; ketika tidak diisi, konfigurasi Chrome lokal tetap seperti semula. Tidak perlu memberi izin `777` pada `/var/www` maupun menonaktifkan Chrome sandbox.
+
 ## Laravel
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
