@@ -19,7 +19,7 @@ Branch `refactor/remove-work-management-hris` sekarang menggunakan **migration H
 
 1. Checkout branch `refactor/remove-work-management-hris` dan jalankan `composer install`. Paket `aliziodev/laravel-wilayah` harus terpasang karena digunakan pada model, form alamat, serta seeder.
 2. Atur koneksi `DB_*` di `.env` dan isi `SUPERADMIN_PASSWORD` dengan password yang aman (serta `SUPERADMIN_EMAIL` jika berbeda). Seeder sengaja menolak membuat akun Superadmin dengan password kosong.
-3. Untuk membuat ulang **skema sekaligus data master**: `php artisan migrate:fresh --seed`.
+3. Untuk membuat ulang **skema, data master, dan data demo HRIS**: `php artisan migrate:fresh --seed` (pada `APP_ENV=local`/`testing`).
 4. Untuk membuat ulang **skema saja**, jalankan `php artisan migrate:fresh`, kemudian `php artisan db:seed` jika perlu mengisi data referensi.
 5. Jalankan `php artisan permission:cache-reset` dan `php artisan test`. Lakukan uji manual login/role, data karyawan/Position, kontrak, profil dan alamat, presensi, cuti, payroll, resignation, serta termination.
 
@@ -33,8 +33,10 @@ Branch `refactor/remove-work-management-hris` sekarang menggunakan **migration H
 ### Seeder
 
 - `php artisan db:seed` mengisi data wilayah Indonesia, katalog hak akses, pembuatan **Superadmin** berdasarkan `SUPERADMIN_EMAIL` dan **`SUPERADMIN_PASSWORD` wajib di `.env`**, master bank dan konfigurasi HR. Password tersebut tidak dibuat otomatis; hindari hard-coded credential produksi.
-- Seeder `HRISDevelopmentSeeder` kini **hanya untuk development** dan tidak dipanggil oleh `DatabaseSeeder`: jalankan secara sengaja dengan `php artisan db:seed --class=HRISDevelopmentSeeder` di lingkungan pengujian. Seeder ini membuat 50 akun contoh dengan Position tanpa divisi/team. **Jangan jalankan di produksi.**
-- Seeder ini tidak menghapus data karyawan aktif. Dump `hris.sql` lama merupakan rekaman historis, **bukan** skema target baru.
+- Di `APP_ENV=local`/`testing`, `DatabaseSeeder` **otomatis** memanggil `HRISDevelopmentSeeder`. Hasilnya berupa 50 karyawan contoh lengkap dengan Position dan jobdesk, profil/alamat/rekening, kontrak/benefit/kuota cuti, beberapa status cuti dan sakit/izin, hari libur, riwayat absensi (termasuk keterlambatan), tiga periode payroll lunas, surat peringatan, serta kasus resignation/termination yang diajukan, diproses, ditolak/dibatalkan dan selesai. Tidak ada data Divisi/Team maupun Work Management.
+- Akun demo **selain Superadmin** memakai password `nugitea123`, misalnya HR `nugiekurniawan03@gmail.com`, Administrator `nugiekurniawan02@gmail.com`, dan karyawan `andi.pratama.hrwork@gmail.com`. **Superadmin tetap memakai `SUPERADMIN_PASSWORD` di `.env`**; seeder demo tidak menimpanya.
+- Pada `APP_ENV=production`, data karyawan/aktivitas dummy **tidak** dibuat otomatis. Seeder demo sengaja menolak dijalankan langsung di luar `local`/`testing`.
+- `php artisan db:seed --class=HRISDevelopmentSeeder` tetap bisa dipakai untuk membuat ulang data demo secara manual setelah master data tersedia. Jangan digunakan di database berisi data nyata. Dump `hris.sql` lama hanya rekaman historis, bukan skema target baru.
 
 ## Laravel
 

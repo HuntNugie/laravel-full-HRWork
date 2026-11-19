@@ -8,9 +8,12 @@ use App\Models\Attendances;
 use App\Models\ContractLeaveEntitlements;
 use App\Models\EmployeeBankAccount;
 use App\Models\EmployeeContract;
+use App\Models\EmployeeAbsenceRequest;
 use App\Models\EmployeeProfileAddress;
 use App\Models\Employee_profile;
 use App\Models\Employees;
+use App\Models\Holidays;
+use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\Payroll;
 use App\Models\PayrollItem;
@@ -36,8 +39,8 @@ class HRISDevelopmentSeeder extends Seeder
      * - 50 karyawan dengan jabatan, tanpa divisi atau team
      * - HR, administrator, and super-admin accounts
      * - profiles, addresses, bank accounts, status history, contracts,
-     *   benefits, annual leave entitlements, historical attendance,
-     *   and three previous paid payroll periods
+     *   benefits, leave entitlements and activity, attendance, warnings,
+     *   exit cases, and three previous paid payroll periods
      */
     public function run(): void
     {
@@ -55,8 +58,13 @@ class HRISDevelopmentSeeder extends Seeder
         $this->seedContracts($employees);
         $this->seedBenefits($employees);
         $this->seedLeaveEntitlement($employees);
+
+        $activity = app(HRISDemoActivityData::class);
+        $activity->beforeAttendance($employees, $users);
         $this->seedAttendances($employees);
+        $this->seedTodayAttendances($employees);
         $this->seedPayrollHistory($employees);
+        $activity->afterPayroll($employees, $users);
 
         $count = Employees::query()
             ->where('employee_code', 'like', 'DEV-%')
@@ -69,11 +77,11 @@ class HRISDevelopmentSeeder extends Seeder
         }
 
         $this->command?->info("Development HRIS data seeded: {$count} employees.");
-        $this->command?->line('Development accounts use password: nugitea123');
+        $this->command?->line('Development employee/HR/admin accounts use password: nugitea123');
         $this->command?->line('GM: gm.hrwork@gmail.com');
         $this->command?->line('HR: nugiekurniawan03@gmail.com');
         $this->command?->line('Administrator: nugiekurniawan02@gmail.com');
-        $this->command?->line('Super Admin: ' . env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'));
+        $this->command?->line('Super Admin (uses SUPERADMIN_PASSWORD): ' . env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'));
     }
 
     private function seedPositions(): void
@@ -127,14 +135,19 @@ class HRISDevelopmentSeeder extends Seeder
         $users = [];
 
         foreach ($accounts as $key => $account) {
-            $user = User::updateOrCreate(
-                ['email' => $account['email']],
-                [
-                    'name' => $account['name'],
-                    'password' => Hash::make('nugitea123'),
-                    'status' => 'active',
-                ],
-            );
+            // UserSeeder already created the privileged account using the
+            // password supplied by the developer. Never overwrite it with a
+            // publicly documented demo password.
+            $user = $key === 'superadmin'
+                ? User::query()->where('email', $account['email'])->firstOrFail()
+                : User::updateOrCreate(
+                    ['email' => $account['email']],
+                    [
+                        'name' => $account['name'],
+                        'password' => Hash::make('nugitea123'),
+                        'status' => 'active',
+                    ],
+                );
 
             foreach ($account['roles'] as $roleName) {
                 Role::firstOrCreate([
@@ -319,6 +332,7 @@ class HRISDevelopmentSeeder extends Seeder
                 ['employee_code' => $account['code']],
                 [
                     'user_id' => $users[$key]->id,
+                    'JoinDate' => '2026-01-01',
                     'status_employee' => 'active',
                     'position_id' => $positions[$account['position']]->id,
                 ],
@@ -542,11 +556,27 @@ class HRISDevelopmentSeeder extends Seeder
         $startDate = today()->subMonths(3)->startOfMonth();
         $seeded = 0;
 
+        $holidays = Holidays::query()
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            ->flip();
+
+        $timeOffDates = [];
+        foreach (LeaveRequest::query()->where('status', 'approved')->get() as $leave) {
+            foreach (CarbonPeriod::create($leave->start_date, $leave->end_date) as $leaveDate) {
+                $timeOffDates[$leave->employee_id][Carbon::parse($leaveDate)->toDateString()] = true;
+            }
+        }
+
+        foreach (EmployeeAbsenceRequest::query()->where('status', 'approved')->get() as $absence) {
+            $timeOffDates[$absence->employee_id][Carbon::parse($absence->date)->toDateString()] = true;
+        }
+
         foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
             $date = Carbon::instance($date)->startOfDay();
             $workTime = $workTimes->get($dayNames[$date->dayOfWeekIso]);
 
-            if (! $workTime || ! $workTime->is_working_day) {
+            if (! $workTime || ! $workTime->is_working_day || $holidays->has($date->toDateString())) {
                 continue;
             }
 
@@ -555,6 +585,10 @@ class HRISDevelopmentSeeder extends Seeder
             $workDayNumber = $date->dayOfYear;
 
             foreach (array_values($employees) as $employeeIndex => $employee) {
+                if (isset($timeOffDates[$employee->id][$date->toDateString()])) {
+                    continue;
+                }
+
                 // Roughly 1 in 9 records is late, with deterministic minutes.
                 $isLate = (($employeeIndex + $workDayNumber) % 9) === 0;
                 $checkInOffset = $isLate
@@ -597,6 +631,63 @@ class HRISDevelopmentSeeder extends Seeder
         }
 
         $this->command?->info("Historical attendance seeded: {$seeded} records ({$startDate->toDateString()} s/d {$endDate->toDateString()}).");
+    }
+
+    /**
+     * Populate today's dashboard only after the real shift has started.
+     * Today's records are excluded from the completed historical payrolls.
+     *
+     * @param array<string, Employees> $employees
+     */
+    private function seedTodayAttendances(array $employees): void
+    {
+        $dayName = [
+            1 => 'senin', 2 => 'selasa', 3 => 'rabu', 4 => 'kamis',
+            5 => 'jumat', 6 => 'sabtu', 7 => 'minggu',
+        ][today()->dayOfWeekIso];
+
+        $workTime = WorkTime::query()->where('day_of_week', $dayName)->first();
+        if (! $workTime?->is_working_day || Holidays::query()->whereDate('date', today())->exists()) {
+            return;
+        }
+
+        $start = today()->setTimeFromTimeString($workTime->start_time);
+        $end = today()->setTimeFromTimeString($workTime->end_time);
+        if (now()->lt($start)) {
+            return;
+        }
+
+        foreach (array_slice(array_values($employees), 0, 36) as $index => $employee) {
+            if ($index % 11 === 0) {
+                continue; // Some employees have not checked in yet.
+            }
+
+            $late = $index % 8 === 0;
+            $checkIn = $start->copy()->addMinutes($late ? 13 : ($index % 5));
+            if ($checkIn->isFuture()) {
+                continue;
+            }
+
+            $checkOut = now()->gte($end->copy()->addMinutes(15))
+                ? $end->copy()->addMinutes($index % 15)
+                : null;
+
+            Attendances::query()->updateOrCreate(
+                ['employee_id' => $employee->id, 'date' => today()->toDateString()],
+                [
+                    'check_in_at' => $checkIn,
+                    'check_in_latitude' => -6.914744,
+                    'check_in_longitude' => 107.609810,
+                    'check_out_at' => $checkOut,
+                    'check_out_latitude' => $checkOut ? -6.914744 : null,
+                    'check_out_longitude' => $checkOut ? 107.609810 : null,
+                    'status' => $late ? 'late' : 'present',
+                    'late_minutes' => $late ? 13 : 0,
+                    'work_duration' => $checkOut ? (int) $checkIn->diffInMinutes($checkOut) : null,
+                    'notes' => 'Simulasi presensi hari ini.',
+                ],
+            );
+        }
     }
 
     /**
