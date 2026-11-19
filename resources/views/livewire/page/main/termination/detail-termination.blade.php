@@ -239,12 +239,19 @@
                 <x-wirekit::card.header>
                     <div>
                         <h2 class="text-lg font-semibold text-slate-900">Handover Pekerjaan</h2>
-                        <p class="text-sm text-slate-500">Pekerjaan aktif employee diambil dari Work Management.</p>
-                        <p class="mt-1 text-xs text-slate-400">Saat handover diselesaikan, task dipindahkan ke employee penerima. Jika proses exit dibatalkan, assignment task dipulihkan.</p>
+                        <p class="text-sm text-slate-500">Catat dan verifikasi serah terima tanggung jawab karyawan secara manual.</p>
                     </div>
                 </x-wirekit::card.header>
 
                 <x-wirekit::card.body>
+                    <?php if (auth()->user()->can('manage-termination-clearance') && $termination->status === 'in_progress'): ?>
+                        <form wire:submit="addHandoverItem" class="mb-4 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <x-wirekit::input label="Judul Handover" name="handoverTitle" wire:model="handoverTitle" placeholder="Contoh: Serah terima dokumen operasional" />
+                            <x-wirekit::textarea label="Deskripsi (opsional)" name="handoverDescription" wire:model="handoverDescription" rows="2" />
+                            @error('handover') <p class="text-sm text-rose-600">{{ $message }}</p> @enderror
+                            <div class="flex justify-end"><x-wirekit::button type="submit">Tambahkan Handover</x-wirekit::button></div>
+                        </form>
+                    <?php endif; ?>
                     <?php if ($termination->handoverItems->isNotEmpty()): ?>
                         <div class="space-y-3">
                             <?php foreach ($termination->handoverItems as $item): ?>
@@ -252,11 +259,7 @@
                                     <div class="flex items-start justify-between gap-4">
                                         <div>
                                             <p class="text-sm font-semibold text-slate-800">{{ $item->title }}</p>
-                                            <?php if ($item->task): ?>
-                                                <p class="mt-1 text-xs text-slate-400">
-                                                    Status task: {{ str_replace('_', ' ', $item->task->status) }}
-                                                </p>
-                                            <?php endif; ?>
+                                            <?php if ($item->description): ?><p class="mt-1 text-xs text-slate-500">{{ $item->description }}</p><?php endif; ?>
                                         </div>
 
                                         <x-wirekit::badge :intent="$item->status === 'completed' ? 'success' : ($item->status === 'not_applicable' ? 'neutral' : 'warning')">
@@ -273,6 +276,8 @@
                                                 :options="$handoverEmployees"
                                                 wire:model="handoverRecipients.{{ $item->id }}"
                                             />
+
+                                            <x-wirekit::textarea label="Catatan Verifikasi" name="handoverNotes-{{ $item->id }}" wire:model="handoverNotes.{{ $item->id }}" rows="2" />
 
                                             <?php if (auth()->user()->can('manage-termination-clearance')): ?>
                                                 <div class="flex flex-wrap items-end gap-2">
@@ -322,7 +327,7 @@
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="text-sm text-slate-500">Tidak ada pekerjaan aktif yang perlu dihandover.</p>
+                        <p class="text-sm text-slate-500">Belum ada item handover. Tambahkan item jika diperlukan, atau verifikasi clearance pekerjaan sebagai N/A.</p>
                     <?php endif; ?>
                 </x-wirekit::card.body>
             </x-wirekit::card>

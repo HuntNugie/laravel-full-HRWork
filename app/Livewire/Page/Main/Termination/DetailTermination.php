@@ -17,7 +17,10 @@ class DetailTermination extends Component
     public EmployeeTermination $termination;
 
     public string $cancellationReason = '';
+    public string $handoverTitle = '';
+    public string $handoverDescription = '';
     public array $handoverRecipients = [];
+    public array $handoverNotes = [];
 
     public function mount(EmployeeTermination $termination): void
     {
@@ -31,7 +34,6 @@ class DetailTermination extends Component
             'completer',
             'histories.actor',
             'clearances.verifier',
-            'handoverItems.task',
             'handoverItems.handoverTo.user',
         ]);
 
@@ -45,6 +47,31 @@ class DetailTermination extends Component
             $this->handoverRecipients[$item->id] = $item->handover_to_employee_id
                 ? (string) $item->handover_to_employee_id
                 : '';
+            $this->handoverNotes[$item->id] = $item->notes ?? '';
+        }
+    }
+
+    public function addHandoverItem(): void
+    {
+        abort_unless(Auth::user()->can('manage-termination-clearance'), 403);
+
+        $this->validate([
+            'handoverTitle' => ['required', 'string', 'max:255'],
+            'handoverDescription' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        try {
+            app(TerminationService::class)->createHandoverItem(
+                termination: $this->termination,
+                title: $this->handoverTitle,
+                description: $this->handoverDescription,
+            );
+
+            $this->reset('handoverTitle', 'handoverDescription');
+            $this->reload();
+            session()->flash('success', 'Item handover berhasil ditambahkan.');
+        } catch (\LogicException $exception) {
+            $this->addError('handover', $exception->getMessage());
         }
     }
 
@@ -105,7 +132,9 @@ class DetailTermination extends Component
                 item: $item,
                 verifier: Auth::user(),
                 status: $status,
-                handoverToEmployeeId: $this->handoverRecipients[$itemId] ?? null,
+                handoverToEmployeeId: is_numeric($this->handoverRecipients[$itemId] ?? null)
+                    ? (int) $this->handoverRecipients[$itemId] : null,
+                notes: $this->handoverNotes[$itemId] ?? null,
             );
 
             $this->reload();
@@ -144,7 +173,6 @@ class DetailTermination extends Component
                 'completer',
                 'histories.actor',
                 'clearances.verifier',
-                'handoverItems.task',
                 'handoverItems.handoverTo.user',
             ])
             ->findOrFail($this->termination->id);

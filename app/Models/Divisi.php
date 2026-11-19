@@ -15,12 +15,6 @@ class Divisi extends Model
     }
 
     // relasi ke team
-    public function divisionProjects()
-    {
-        return $this->hasMany(DivisionProject::class, 'divisi_id');
-    }
-
-    // relasi ke team
     public function team()
     {
         return $this->hasMany(Team::class, 'divisi_id');

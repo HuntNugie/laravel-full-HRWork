@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Employees;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -139,35 +139,9 @@ class RolePermissionSeeder extends Seeder
                 'view-status-daily',
             ],
 
-            'general-manager' => [
-                'view-master-project',
-                'create-master-project',
-                'approve-master-project',
-                'view-division-project',
-                'create-division-project',
-                'assign-project-team',
-                'review-division-project',
-            ],
-
-            'manager' => [
-                'view-master-project',
-                'view-division-project',
-                'assign-project-team',
-                'submit-division-project-to-gm',
-            ],
-
-            'supervisor' => [
-                'view-master-project',
-                'view-division-project',
-                'create-task',
-            ],
-
-            'task-worker' => [
-                'view-master-project',
-                'view-division-project',
-                'view-task',
-                'update-own-task',
-            ],
+            // Organization role indicators used for scoped attendance dashboards.
+            'manager' => [],
+            'supervisor' => [],
         ];
 
         foreach (array_keys($rolePermissions) as $roleName) {
@@ -200,34 +174,22 @@ class RolePermissionSeeder extends Seeder
                 );
         }
 
-        $this->syncWorkManagementIdentityRoles();
-    }
+        // These roles existed only to authorize Work Management activities.
+        // Keep affected accounts usable via the base employee role.
+        foreach (['general-manager', 'task-worker'] as $retiredRole) {
+            $role = Role::query()->where('name', $retiredRole)->where('guard_name', 'web')->first();
 
-    /**
-     * Repair Work Management identity roles for existing employee records.
-     *
-     * Permission seeding alone cannot make an existing GM usable when the
-     * employee account was created before the Work Management roles existed.
-     */
-    private function syncWorkManagementIdentityRoles(): void
-    {
-        Employees::query()
-            ->with(['user', 'position'])
-            ->whereNotNull('user_id')
-            ->get()
-            ->each(function (Employees $employee): void {
-                $user = $employee->user;
+            if (! $role) {
+                continue;
+            }
 
-                if (! $user) {
-                    return;
-                }
-
-                $position = mb_strtolower(trim((string) $employee->position?->name));
-
-                if ($position === 'general manager') {
+            User::role($retiredRole)->each(function (User $user): void {
+                if ($user->employees()->exists()) {
                     $user->assignRole('employee');
-                    $user->assignRole('general-manager');
                 }
             });
+
+            $role->delete();
+        }
     }
 }

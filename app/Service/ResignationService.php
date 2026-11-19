@@ -8,7 +8,6 @@ use App\Models\EmployeeResignationHandoverItem;
 use App\Models\EmployeeResignationHistory;
 use App\Models\EmployeeTermination;
 use App\Models\Employees;
-use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -170,8 +169,7 @@ class ResignationService
                 ]))),
             ]);
 
-            $this->prepareHandover($resignation);
-            $this->prepareClearances($resignation, $reviewer);
+            $this->prepareClearances($resignation);
             $this->recordHistory(
                 resignation: $resignation,
                 actor: $reviewer,
@@ -242,10 +240,6 @@ class ResignationService
             }
 
             $exitActions = app(EmployeeExitActionService::class);
-
-            foreach ($resignation->handoverItems as $item) {
-                $exitActions->rollbackHandover($item);
-            }
 
             foreach ($resignation->clearances as $clearance) {
                 $exitActions->rollbackClearance($clearance);
@@ -383,6 +377,32 @@ class ResignationService
         });
     }
 
+    public function createHandoverItem(
+        EmployeeResignation $resignation,
+        string $title,
+        ?string $description = null,
+    ): EmployeeResignationHandoverItem {
+        $title = trim($title);
+
+        if ($title === '' || mb_strlen($title) > 255) {
+            throw new LogicException('Judul handover wajib diisi (maksimal 255 karakter).');
+        }
+
+        return DB::transaction(function () use ($resignation, $title, $description) {
+            $resignation = EmployeeResignation::query()->lockForUpdate()->findOrFail($resignation->id);
+
+            if ($resignation->status !== EmployeeResignation::STATUS_APPROVED) {
+                throw new LogicException('Handover hanya dapat ditambahkan pada resign yang sudah disetujui.');
+            }
+
+            return $resignation->handoverItems()->create([
+                'title' => $title,
+                'description' => $description ? trim($description) : null,
+                'status' => EmployeeResignationHandoverItem::STATUS_PENDING,
+            ]);
+        });
+    }
+
     public function updateHandover(
         EmployeeResignationHandoverItem $item,
         User $verifier,
@@ -416,8 +436,6 @@ class ResignationService
                 throw new LogicException('Handover hanya dapat diproses pada resign yang sudah disetujui.');
             }
 
-            $previousStatus = $item->status;
-
             if ($handoverToEmployeeId !== null) {
                 $employee = Employees::query()->find($handoverToEmployeeId);
 
@@ -428,17 +446,9 @@ class ResignationService
 
             if (
                 $status === EmployeeResignationHandoverItem::STATUS_COMPLETED
-                && $item->task_id !== null
                 && $handoverToEmployeeId === null
             ) {
                 throw new LogicException('Penerima handover wajib ditentukan sebelum pekerjaan diselesaikan.');
-            }
-
-            if (
-                $previousStatus === EmployeeResignationHandoverItem::STATUS_COMPLETED
-                && $status !== EmployeeResignationHandoverItem::STATUS_COMPLETED
-            ) {
-                app(EmployeeExitActionService::class)->rollbackHandover($item);
             }
 
             $item->update([
@@ -448,13 +458,6 @@ class ResignationService
                 'verified_by' => $verifier->id,
                 'verified_at' => now(),
             ]);
-
-            if ($status === EmployeeResignationHandoverItem::STATUS_COMPLETED) {
-                app(EmployeeExitActionService::class)->applyHandover(
-                    item: $item->refresh(),
-                    actor: $verifier,
-                );
-            }
 
             return $item->refresh();
         });
@@ -648,10 +651,8 @@ class ResignationService
         ];
     }
 
-    private function prepareClearances(
-        EmployeeResignation $resignation,
-        User $reviewer,
-    ): void {
+    private function prepareClearances(EmployeeResignation $resignation): void
+    {
         foreach (self::CLEARANCE_CATEGORIES as $category) {
             EmployeeResignationClearance::query()->firstOrCreate([
                 'resignation_id' => $resignation->id,
@@ -659,45 +660,7 @@ class ResignationService
             ]);
         }
 
-        $work = $resignation->clearances()
-            ->where('category', 'work')
-            ->firstOrFail();
-
-        if ($resignation->handoverItems()->doesntExist()) {
-            $work->update([
-                'status' => EmployeeResignationClearance::STATUS_COMPLETED,
-                'verified_by' => $reviewer->id,
-                'verified_at' => now(),
-                'notes' => 'Tidak ada pekerjaan aktif yang perlu dihandover.',
-            ]);
-        }
-
         $resignation->employee()->lockForUpdate()->firstOrFail();
-    }
-
-    private function prepareHandover(EmployeeResignation $resignation): void
-    {
-        $employeeId = $resignation->employee_id;
-
-        $tasks = Task::query()
-            ->where('assignee_id', $employeeId)
-            ->whereNotIn('status', [
-                Task::STATUS_DONE,
-                Task::STATUS_CANCELLED,
-            ])
-            ->orderBy('due_date')
-            ->orderBy('id')
-            ->get();
-
-        foreach ($tasks as $task) {
-            EmployeeResignationHandoverItem::query()->firstOrCreate([
-                'resignation_id' => $resignation->id,
-                'task_id' => $task->id,
-            ], [
-                'title' => $task->title,
-                'description' => $task->description,
-            ]);
-        }
     }
 
     private function ensureClearanceCompleted(EmployeeResignation $resignation): void

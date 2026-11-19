@@ -10,9 +10,7 @@ use App\Ai\Tools\SearchEmployees;
 use App\Ai\Tools\SearchLeave;
 use App\Ai\Tools\SearchOrganization;
 use App\Ai\Tools\SearchPayroll;
-use App\Ai\Tools\SearchProjects;
 use App\Ai\Tools\SearchResignations;
-use App\Ai\Tools\SearchTasks;
 use App\Ai\Tools\SearchTerminations;
 use App\Ai\Tools\SearchWarningLetters;
 use Laravel\Ai\Contracts\Agent;
@@ -63,8 +61,6 @@ Employee data rules:
 - Use SearchResignations for resignation process questions.
 - Use SearchTerminations for termination process questions.
 - Use SearchOrganization for division, team, position, manager, supervisor, and organization-structure questions.
-- Use SearchProjects for work-management project questions only when the tool confirms the current user has the relevant project permission.
-- Use SearchTasks for work-management task questions only when the tool confirms the current user has the task permission.
 - Use GetHRMetrics for aggregated HR summaries and dashboard-style questions instead of guessing totals.
 - All HRWork data tools are read-only. Do not invent missing records or infer information that the tool did not return.
 - Never expose employee information outside the data returned by an available and authorized HRWork tool.
@@ -91,8 +87,6 @@ INSTRUCTIONS;
             new SearchResignations,
             new SearchTerminations,
             new SearchOrganization,
-            new SearchProjects,
-            new SearchTasks,
             new GetHRMetrics,
         ];
     }

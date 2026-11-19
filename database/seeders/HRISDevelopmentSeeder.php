@@ -29,10 +29,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
-class WorkManagementDevelopmentSeeder extends Seeder
+class HRISDevelopmentSeeder extends Seeder
 {
     /**
-     * Seed a complete development HRWork environment.
+     * Seed a complete development HRIS environment.
      *
      * Dataset:
      * - 50 employees
@@ -41,7 +41,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
      * - 1 general manager
      * - 5 managers
      * - 10 supervisors
-     * - 31 task workers
+     * - 31 employees without project-specific roles
      * - HR, administrator, and super-admin accounts
      * - profiles, addresses, bank accounts, status history, contracts,
      *   benefits, annual leave entitlements, historical attendance,
@@ -75,7 +75,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             );
         }
 
-        $this->command?->info("Development HR/Work Management data seeded: {$count} employees.");
+        $this->command?->info("Development HRIS data seeded: {$count} employees.");
         $this->command?->line('Development accounts use password: nugitea123');
         $this->command?->line('GM: gm.hrwork@gmail.com');
         $this->command?->line('HR: nugiekurniawan03@gmail.com');
@@ -86,7 +86,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
     private function seedPositions(): void
     {
         $positions = [
-            ['name' => 'General Manager', 'description' => 'Penanggung jawab final perusahaan dan Work Management.', 'min_salary_daily' => 500000],
+            ['name' => 'General Manager', 'description' => 'Penanggung jawab operasional perusahaan.', 'min_salary_daily' => 500000],
             ['name' => 'Manager', 'description' => 'Penanggung jawab division dan distribusi pekerjaan.', 'min_salary_daily' => 350000],
             ['name' => 'Supervisor', 'description' => 'Penanggung jawab team dan review pekerjaan.', 'min_salary_daily' => 275000],
             ['name' => 'Software Engineer', 'description' => 'Pengembangan perangkat lunak umum.', 'min_salary_daily' => 225000],
@@ -210,7 +210,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             'gm' => [
                 'name' => 'GM HRWork',
                 'email' => 'gm.hrwork@gmail.com',
-                'roles' => ['employee', 'general-manager'],
+                'roles' => ['employee'],
                 'position' => 'General Manager',
                 'code' => 'DEV-GM-001',
             ],
@@ -231,7 +231,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             'worker-backend-1' => [
                 'name' => 'Worker Backend Development',
                 'email' => 'worker.backend.001.hrwork@gmail.com',
-                'roles' => ['employee', 'task-worker'],
+                'roles' => ['employee'],
                 'position' => 'Backend Developer',
                 'code' => 'DEV-WKR-001',
             ],
@@ -341,7 +341,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             $accounts[$worker['key']] = [
                 'name' => $worker['name'],
                 'email' => $worker['email'],
-                'roles' => ['employee', 'task-worker'],
+                'roles' => ['employee'],
                 'position' => $worker['position'],
                 'code' => 'DEV-WKR-' . str_pad((string) ($index + 2), 3, '0', STR_PAD_LEFT),
             ];

@@ -4,17 +4,13 @@ namespace App\Livewire\Page\Main\Dashboard;
 
 use App\Models\Attendances;
 use App\Models\Divisi;
-use App\Models\DivisionProject;
 use App\Models\EmployeeAbsenceRequest;
 use App\Models\EmployeeWarningLetter;
 use App\Models\Employees;
 use App\Models\LeaveRequest;
-use App\Models\MasterProject;
 use App\Models\Payroll;
 use App\Models\PayrollPeriod;
 use App\Models\Position;
-use App\Models\ProjectReport;
-use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
 use App\Service\DashboardService;
@@ -379,61 +375,8 @@ class Dashboard extends Component
             ->where('status', 'pending')
             ->count();
 
-        $pendingProjectReports = ProjectReport::query()
-            ->where('status', ProjectReport::STATUS_SUBMITTED)
-            ->count();
+        $pendingActions = $pendingUsers + $pendingLeave + $pendingAbsence;
 
-        $masterReadyForReview = MasterProject::query()
-            ->where('status', 'ready_for_review')
-            ->count();
-
-        $pendingActions = $pendingUsers
-            + $pendingLeave
-            + $pendingAbsence
-            + $pendingProjectReports
-            + $masterReadyForReview;
-
-        $masterProjects = [
-            'total' => MasterProject::query()->count(),
-            'active' => MasterProject::query()->where('status', '!=', 'completed')->count(),
-            'ready_for_review' => $masterReadyForReview,
-            'completed' => MasterProject::query()->where('status', 'completed')->count(),
-        ];
-
-        $divisionProjects = [
-            'total' => DivisionProject::query()->count(),
-            'active' => DivisionProject::query()->where('status', '!=', 'completed')->count(),
-            'submitted_to_gm' => DivisionProject::query()->where('status', 'submitted_to_gm')->count(),
-            'revision_required' => DivisionProject::query()->where('status', 'revision_required')->count(),
-            'completed' => DivisionProject::query()->where('status', 'completed')->count(),
-        ];
-
-        $tasks = [
-            'total' => Task::query()->count(),
-            'open' => Task::query()
-                ->whereNotIn('status', [Task::STATUS_DONE, Task::STATUS_CANCELLED])
-                ->count(),
-            'in_review' => Task::query()->where('status', Task::STATUS_IN_REVIEW)->count(),
-            'done' => Task::query()->where('status', Task::STATUS_DONE)->count(),
-            'blocked' => Task::query()->where('status', Task::STATUS_BLOCKED)->count(),
-        ];
-
-        $reportQueue = [
-            'supervisor' => ProjectReport::query()
-                ->where('report_level', ProjectReport::LEVEL_SUPERVISOR)
-                ->where('status', ProjectReport::STATUS_SUBMITTED)
-                ->count(),
-            'manager' => ProjectReport::query()
-                ->where('report_level', ProjectReport::LEVEL_MANAGER)
-                ->where('status', ProjectReport::STATUS_SUBMITTED)
-                ->count(),
-            'approved' => ProjectReport::query()
-                ->where('status', ProjectReport::STATUS_APPROVED)
-                ->count(),
-            'rejected' => ProjectReport::query()
-                ->where('status', ProjectReport::STATUS_REJECTED)
-                ->count(),
-        ];
 
         $organization = [
             'divisions' => Divisi::query()->count(),
@@ -448,11 +391,6 @@ class Dashboard extends Component
             ->limit(6)
             ->get();
 
-        $recentProjectReports = ProjectReport::query()
-            ->with(['reporter', 'divisionProject'])
-            ->latest()
-            ->limit(5)
-            ->get();
 
         $latestPayrollPeriod = PayrollPeriod::query()
             ->latest('end_date')
@@ -490,16 +428,9 @@ class Dashboard extends Component
             'unrecordedToday' => $unrecordedToday,
             'pendingLeave' => $pendingLeave,
             'pendingAbsence' => $pendingAbsence,
-            'pendingProjectReports' => $pendingProjectReports,
-            'masterReadyForReview' => $masterReadyForReview,
             'pendingActions' => $pendingActions,
-            'masterProjects' => $masterProjects,
-            'divisionProjects' => $divisionProjects,
-            'tasks' => $tasks,
-            'reportQueue' => $reportQueue,
             'organization' => $organization,
             'latestEmployees' => $latestEmployees,
-            'recentProjectReports' => $recentProjectReports,
             'latestPayrollSummary' => $latestPayrollSummary,
         ]);
     }

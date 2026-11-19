@@ -1,3 +1,18 @@
+# HRWork — HRIS for Work
+
+HRWork adalah aplikasi Human Resource Information System (HRIS) berbasis Laravel dan Livewire untuk pengelolaan karyawan, organisasi, kontrak, presensi, cuti/izin, payroll, surat peringatan, resignation, dan termination. Fitur Work Management (master project, division project, dan task) telah dipisahkan dari aplikasi.
+
+## Transisi dari Work Management
+
+- Struktur **Divisi, Team, Manager, dan Supervisor** tetap dipertahankan untuk kebutuhan organisasi dan monitoring presensi.
+- Handover pada resignation dan termination sekarang **dicatat manual oleh HR**, dengan penerima, status, catatan, dan verifikasi; tidak lagi memindahkan assignment Task.
+- Sebelum menjalankan migration pada database yang pernah digunakan, **buat backup database**. Migration `2026_11_19_000000_archive_work_management_tables` memindahkan sembilan tabel Work Management lama ke nama `archive_*`, **tidak menghapus data historisnya**.
+- Referensi `task_id` pada item handover lama dipertahankan sebagai `legacy_task_id` tanpa foreign key agar data exit historis tetap dapat ditelusuri.
+- Setelah menarik branch ini pada laptop, jalankan `composer install`, `php artisan migrate`, dan `php artisan test` menggunakan konfigurasi database yang sesuai. Jangan menjalankan `migrate:fresh` pada database yang berisi data nyata karena perintah tersebut menghapus seluruh tabel.
+- Seeder `HRISDevelopmentSeeder` ditujukan untuk lingkungan pengembangan. Gunakan `php artisan db:seed` hanya ketika memang ingin menambahkan/memperbarui data seeder.
+
+## Laravel
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

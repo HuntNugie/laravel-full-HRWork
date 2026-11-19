@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
             UnpresentDisciplineRuleSeeder::class,
 
             // Coherent development data for local testing.
-            WorkManagementDevelopmentSeeder::class,
+            HRISDevelopmentSeeder::class,
         ]);
     }
 }

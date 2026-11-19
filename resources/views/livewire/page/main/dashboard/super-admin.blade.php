@@ -5,8 +5,6 @@
             ['label' => 'User menunggu aktivasi', 'value' => $pendingUsers, 'route' => 'user.view', 'tone' => 'warning'],
             ['label' => 'Pengajuan cuti', 'value' => $pendingLeave, 'route' => 'leave.manage.view', 'tone' => 'info'],
             ['label' => 'Pengajuan sakit / izin', 'value' => $pendingAbsence, 'route' => 'absence.view', 'tone' => 'info'],
-            ['label' => 'Report Work Management', 'value' => $pendingProjectReports, 'route' => 'work-management.master-projects', 'tone' => 'primary'],
-            ['label' => 'Master Project siap review', 'value' => $masterReadyForReview, 'route' => 'work-management.master-projects', 'tone' => 'success'],
         ];
 
         $userTotal = max(1, $totalUsers);
@@ -40,7 +38,7 @@
                         {{ $greeting }}, Super Admin.
                     </h1>
                     <p class="max-w-2xl text-sm leading-6 text-slate-300">
-                        Pantau pengguna, organisasi, HR operations, payroll, dan Work Management dalam satu dashboard.
+                        Pantau pengguna, organisasi, operasional SDM, presensi, dan payroll dalam satu dashboard.
                     </p>
                 </div>
             </x-wirekit::stack>
@@ -314,80 +312,21 @@
 
     <x-wirekit::card>
         <x-wirekit::card.header>
-            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <x-wirekit::stack gap="1">
-                    <h2 class="text-lg font-semibold text-slate-900">Work Management Overview</h2>
-                    <p class="text-sm text-slate-500">Ringkasan project, task, dan approval yang sedang berjalan.</p>
-                </x-wirekit::stack>
-                @can('view-master-project')
-                    <a href="{{ route('work-management.master-projects') }}" wire:navigate class="text-xs font-semibold text-[#168ED1] hover:underline">
-                        Buka Work Management
-                    </a>
-                @endcan
-            </div>
+            <h2 class="text-lg font-semibold text-slate-900">Ringkasan HRIS</h2>
         </x-wirekit::card.header>
-
         <x-wirekit::card.body>
             <div class="grid gap-4 md:grid-cols-3">
                 <div class="rounded-xl border border-slate-200 p-4">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Master Project</p>
-                    <div class="mt-3 flex items-end justify-between gap-3">
-                        <p class="text-2xl font-bold text-slate-900">{{ $masterProjects['total'] }}</p>
-                        <span class="text-xs font-semibold text-emerald-600">{{ $masterProjects['completed'] }} selesai</span>
-                    </div>
-                    <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
-                        <span class="rounded-lg bg-sky-50 px-2.5 py-2 text-sky-700">{{ $masterProjects['active'] }} aktif</span>
-                        <span class="rounded-lg bg-violet-50 px-2.5 py-2 text-violet-700">{{ $masterProjects['ready_for_review'] }} review</span>
-                    </div>
+                    <p class="text-xs text-slate-400">Karyawan Aktif</p>
+                    <p class="mt-2 text-2xl font-bold text-slate-900">{{ $activeEmployees }}</p>
                 </div>
-
                 <div class="rounded-xl border border-slate-200 p-4">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Division Project</p>
-                    <div class="mt-3 flex items-end justify-between gap-3">
-                        <p class="text-2xl font-bold text-slate-900">{{ $divisionProjects['total'] }}</p>
-                        <span class="text-xs font-semibold text-emerald-600">{{ $divisionProjects['completed'] }} selesai</span>
-                    </div>
-                    <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
-                        <span class="rounded-lg bg-sky-50 px-2.5 py-2 text-sky-700">{{ $divisionProjects['active'] }} aktif</span>
-                        <span class="rounded-lg bg-amber-50 px-2.5 py-2 text-amber-700">{{ $divisionProjects['submitted_to_gm'] }} ke GM</span>
-                        <span class="rounded-lg bg-rose-50 px-2.5 py-2 text-rose-700">{{ $divisionProjects['revision_required'] }} revisi</span>
-                    </div>
+                    <p class="text-xs text-slate-400">Cuti Pending</p>
+                    <p class="mt-2 text-2xl font-bold text-slate-900">{{ $pendingLeave }}</p>
                 </div>
-
                 <div class="rounded-xl border border-slate-200 p-4">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">Task</p>
-                    <div class="mt-3 flex items-end justify-between gap-3">
-                        <p class="text-2xl font-bold text-slate-900">{{ $tasks['total'] }}</p>
-                        <span class="text-xs font-semibold text-emerald-600">{{ $tasks['done'] }} selesai</span>
-                    </div>
-                    <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
-                        <span class="rounded-lg bg-sky-50 px-2.5 py-2 text-sky-700">{{ $tasks['open'] }} terbuka</span>
-                        <span class="rounded-lg bg-violet-50 px-2.5 py-2 text-violet-700">{{ $tasks['in_review'] }} review</span>
-                        <span class="rounded-lg bg-rose-50 px-2.5 py-2 text-rose-700">{{ $tasks['blocked'] }} blocked</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-5 grid gap-3 sm:grid-cols-4">
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <p class="text-xs text-slate-400">Supervisor Reports</p>
-                    <p class="mt-1 text-xl font-bold text-slate-900">{{ $reportQueue['supervisor'] }}</p>
-                    <p class="text-[11px] text-slate-400">Menunggu review Manager</p>
-                </div>
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                    <p class="text-xs text-slate-400">Manager Reports</p>
-                    <p class="mt-1 text-xl font-bold text-slate-900">{{ $reportQueue['manager'] }}</p>
-                    <p class="text-[11px] text-slate-400">Menunggu review GM</p>
-                </div>
-                <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-3">
-                    <p class="text-xs text-emerald-700">Approved Reports</p>
-                    <p class="mt-1 text-xl font-bold text-emerald-800">{{ $reportQueue['approved'] }}</p>
-                    <p class="text-[11px] text-emerald-600">Total report approved</p>
-                </div>
-                <div class="rounded-xl border border-rose-100 bg-rose-50 p-3">
-                    <p class="text-xs text-rose-700">Rejected Reports</p>
-                    <p class="mt-1 text-xl font-bold text-rose-800">{{ $reportQueue['rejected'] }}</p>
-                    <p class="text-[11px] text-rose-600">Total report rejected</p>
+                    <p class="text-xs text-slate-400">Izin Pending</p>
+                    <p class="mt-2 text-2xl font-bold text-slate-900">{{ $pendingAbsence }}</p>
                 </div>
             </div>
         </x-wirekit::card.body>
@@ -445,40 +384,19 @@
 
         <x-wirekit::card>
             <x-wirekit::card.header>
-                <x-wirekit::stack gap="1">
-                    <h2 class="text-lg font-semibold text-slate-900">Recent Work Reports</h2>
-                    <p class="text-sm text-slate-500">Laporan terbaru dari Supervisor dan Manager.</p>
-                </x-wirekit::stack>
+                <h2 class="text-lg font-semibold text-slate-900">Status Operasional HRIS</h2>
             </x-wirekit::card.header>
-
             <x-wirekit::card.body>
-                <x-wirekit::stack gap="sm">
-                    @forelse ($recentProjectReports as $report)
-                        @php
-                            $reportStatusClass = match ($report->status) {
-                                'approved' => 'bg-emerald-50 text-emerald-700',
-                                'rejected' => 'bg-rose-50 text-rose-700',
-                                default => 'bg-amber-50 text-amber-700',
-                            };
-                            $reportLevelLabel = $report->report_level === 'manager' ? 'Manager' : 'Supervisor';
-                        @endphp
-
-                        <div class="rounded-xl border border-slate-200 px-4 py-3">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <p class="truncate text-sm font-semibold text-slate-800">{{ $report->divisionProject?->name ?? 'Division Project' }}</p>
-                                    <p class="mt-1 text-xs text-slate-400">{{ $reportLevelLabel }} · {{ $report->reporter?->user?->name ?? 'Tidak diketahui' }}</p>
-                                </div>
-                                <span class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $reportStatusClass }}">{{ ucfirst($report->status) }}</span>
-                            </div>
-                            <p class="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{{ $report->content }}</p>
-                        </div>
-                    @empty
-                        <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
-                            <p class="text-sm font-medium text-slate-700">Belum ada report Work Management.</p>
-                        </div>
-                    @endforelse
-                </x-wirekit::stack>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between rounded-xl border border-slate-200 p-4">
+                        <span class="text-sm text-slate-600">Akun menunggu aktivasi</span>
+                        <span class="text-lg font-bold text-slate-900">{{ $pendingUsers }}</span>
+                    </div>
+                    <div class="flex items-center justify-between rounded-xl border border-slate-200 p-4">
+                        <span class="text-sm text-slate-600">Belum check-in hari ini</span>
+                        <span class="text-lg font-bold text-slate-900">{{ $unrecordedToday }}</span>
+                    </div>
+                </div>
             </x-wirekit::card.body>
         </x-wirekit::card>
     </div>
@@ -511,11 +429,6 @@
                     </a>
                 @endcan
 
-                @can('view-master-project')
-                    <a href="{{ route('work-management.master-projects') }}" wire:navigate>
-                        <x-wirekit::button type="button" class="w-full bg-[#30AFFF] text-white hover:bg-[#1599E8]">Work Management</x-wirekit::button>
-                    </a>
-                @endcan
             </div>
         </x-wirekit::card.body>
     </x-wirekit::card>

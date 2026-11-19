@@ -26,18 +26,6 @@ class Team extends Model
             ->where('id', '!=', $this->supervisor_id);
     }
 
-    public function divisionProjects()
-    {
-        return $this->belongsToMany(DivisionProject::class, 'project_teams')
-            ->withPivot('assigned_by')
-            ->withTimestamps();
-    }
-
-    public function tasks()
-    {
-        return $this->hasMany(Task::class, 'team_id');
-    }
-
     public function supervisor()
     {
         return $this->belongsTo(Employees::class, 'supervisor_id');
