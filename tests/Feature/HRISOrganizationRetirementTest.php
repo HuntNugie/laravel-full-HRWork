@@ -23,15 +23,16 @@ class HRISOrganizationRetirementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_structure_is_archived_and_position_contract_data_remains_active(): void
+    public function test_retired_structure_is_removed_and_position_contract_data_remains_active(): void
     {
         $this->assertFalse(Schema::hasTable('teams'));
         $this->assertFalse(Schema::hasTable('divisis'));
-        $this->assertTrue(Schema::hasTable('archive_teams'));
-        $this->assertTrue(Schema::hasTable('archive_divisis'));
+        $this->assertFalse(Schema::hasTable('archive_teams'));
+        $this->assertFalse(Schema::hasTable('archive_divisis'));
         $this->assertFalse(Schema::hasColumn('employees', 'team_id'));
-        $this->assertTrue(Schema::hasColumn('employees', 'legacy_team_id'));
+        $this->assertFalse(Schema::hasColumn('employees', 'legacy_team_id'));
         $this->assertTrue(Schema::hasTable('positions'));
+        $this->assertTrue(Schema::hasTable('position_jobdesks'));
         $this->assertTrue(Schema::hasColumn('employees', 'position_id'));
         $this->assertTrue(Schema::hasColumn('employee_contracts', 'position_name'));
 

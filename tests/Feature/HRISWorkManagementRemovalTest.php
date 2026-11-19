@@ -14,7 +14,7 @@ class HRISWorkManagementRemovalTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_retired_project_tables_are_archived_without_losing_their_schema(): void
+    public function test_retired_work_management_tables_and_legacy_task_columns_are_removed(): void
     {
         foreach ([
             'master_projects', 'division_projects', 'project_teams', 'tasks',
@@ -22,13 +22,17 @@ class HRISWorkManagementRemovalTest extends TestCase
             'project_reports', 'work_management_audits',
         ] as $table) {
             $this->assertFalse(Schema::hasTable($table), "Table {$table} should be retired.");
-            $this->assertTrue(Schema::hasTable('archive_' . $table), "Table {$table} should be archived.");
+            $this->assertFalse(Schema::hasTable('archive_' . $table), "Archive for {$table} should be removed.");
         }
 
         foreach (['employee_resignation_handover_items', 'employee_termination_handover_items'] as $table) {
             $this->assertFalse(Schema::hasColumn($table, 'task_id'));
-            $this->assertTrue(Schema::hasColumn($table, 'legacy_task_id'));
+            $this->assertFalse(Schema::hasColumn($table, 'legacy_task_id'));
         }
+
+        $this->assertTrue(Schema::hasTable('employee_resignation_handover_items'));
+        $this->assertTrue(Schema::hasTable('employee_termination_handover_items'));
+        $this->assertTrue(Schema::hasTable('work_times'));
     }
 
     public function test_hris_permissions_and_super_admin_access_remain_available(): void

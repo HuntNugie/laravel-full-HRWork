@@ -240,7 +240,6 @@ class ResignationServiceTest extends TestCase
         $this->assertDatabaseHas('employee_resignation_handover_items', [
             'id' => $item->id,
             'title' => 'Serah terima dokumen operasional',
-            'legacy_task_id' => null,
             'status' => 'pending',
         ]);
 

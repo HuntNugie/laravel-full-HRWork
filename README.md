@@ -13,19 +13,20 @@ HRWork (*HRIS for Work*) adalah aplikasi Human Resource Information System berba
 
 ## Migrasi dari Struktur Lama (Database Eksisting)
 
-1. **Backup database**, verifikasi pemulihan backup, dan jadwalkan waktu pemeliharaan. Jangan jalankan `migrate:fresh` di database nyata.
+1. Pastikan database yang akan diperbarui memang hanya berisi **data dummy yang boleh dihapus permanen**. Untuk database dengan data nyata, lakukan backup terverifikasi dan peninjauan retensi sebelum melanjutkan. Jangan jalankan `migrate:fresh` di database nyata.
 2. Checkout branch `refactor/remove-work-management-hris`, install dependensi dengan `composer install`, lalu jalankan `php artisan migrate`.
-3. Migrasi `2026_11_19_000000_archive_work_management_tables` mempertahankan sembilan tabel proyek pada nama `archive_*` dan memindahkan referensi handover `task_id` ke `legacy_task_id`.
-4. Migrasi `2026_11_19_000100_archive_organization_structure` mempertahankan tabel `divisis` dan `teams` sebagai `archive_divisis` dan `archive_teams`; `employees.team_id` historis disalin ke `employees.legacy_team_id` sebelum FK dan kolom aktif dilepas. **Tidak ada data historis yang dihapus.**
-5. Jalankan `php artisan db:seed --class=PermissionSeeder`, `php artisan db:seed --class=RoleSeeder`, lalu `php artisan db:seed --class=RolePermissionSeeder`. Tahap ini mencabut permission divisi/team, mempensiunkan role manager/supervisor lama, dan mengalihkan akun karyawan terdampak ke role employee.
-6. Pastikan pengguna Administrator mempunyai permission pengelolaan akun dan HRD mempunyai permission terkait Karyawan dan Termination. Jalankan `php artisan permission:cache-reset`.
-7. Jalankan `php artisan test` dan lakukan uji manual login, role, pembuatan karyawan/kontrak, detail karyawan, presensi, cuti, penggajian dan exit. Deploy hanya setelah hasilnya sesuai.
+3. Migrasi `2026_11_19_000000_archive_work_management_tables` terlebih dahulu melepaskan referensi `task_id` dari handover dan mengarsipkan sembilan tabel Work Management.
+4. Migrasi `2026_11_19_000100_archive_organization_structure` melepaskan relasi `employees.team_id` dan mengarsipkan tabel `teams` serta `divisis`.
+5. Migrasi `2026_11_19_000200_drop_archived_work_management_tables` dan `2026_11_19_000300_drop_archived_organization_structure_tables` **menghapus permanen 11 tabel arsip**, dalam urutan yang menjaga dependensi foreign key. Migrasi `2026_11_19_000400_drop_retired_organization_and_task_reference_columns` lalu menghapus `employees.legacy_team_id` serta kedua kolom handover `legacy_task_id`. Data yang dihapus tidak dapat dipulihkan dengan `migrate:rollback`.
+6. Jalankan `php artisan db:seed --class=PermissionSeeder`, `php artisan db:seed --class=RoleSeeder`, lalu `php artisan db:seed --class=RolePermissionSeeder`. Tahap ini mencabut permission divisi/team, mempensiunkan role manager/supervisor lama, dan mengalihkan akun karyawan terdampak ke role employee.
+7. Pastikan pengguna Administrator mempunyai permission pengelolaan akun dan HRD mempunyai permission terkait Karyawan dan Termination. Jalankan `php artisan permission:cache-reset`.
+8. Jalankan `php artisan test` dan lakukan uji manual login, role, pembuatan karyawan/kontrak, detail karyawan, presensi, cuti, penggajian dan exit. Deploy hanya setelah hasilnya sesuai.
 
 ### Seeder
 
 - `php artisan db:seed` menjalankan katalog hak akses, pembuatan **Superadmin** berdasarkan `SUPERADMIN_EMAIL` dan **`SUPERADMIN_PASSWORD` wajib di `.env`**, master bank dan konfigurasi HR. Password tersebut tidak dibuat otomatis; hindari hard-coded credential produksi.
 - Seeder `HRISDevelopmentSeeder` kini **hanya untuk development** dan tidak dipanggil oleh `DatabaseSeeder`: jalankan secara sengaja dengan `php artisan db:seed --class=HRISDevelopmentSeeder` di lingkungan pengujian. Seeder ini membuat 50 akun contoh dengan Position tanpa divisi/team. **Jangan jalankan di produksi.**
-- Seeder ini tidak menghapus data karyawan aktif maupun arsip lama. Simpan dump `hris.sql` hanya sebagai rekaman historis, bukan skema target.
+- Seeder ini tidak menghapus data karyawan aktif. Dump `hris.sql` lama merupakan rekaman historis, **bukan** skema target setelah migrasi penghapusan.
 
 ## Laravel
 

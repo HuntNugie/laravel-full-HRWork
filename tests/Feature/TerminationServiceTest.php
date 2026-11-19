@@ -202,7 +202,6 @@ class TerminationServiceTest extends TestCase
 
         $this->assertDatabaseHas('employee_termination_handover_items', [
             'id' => $item->id,
-            'legacy_task_id' => null,
             'status' => 'pending',
         ]);
 
