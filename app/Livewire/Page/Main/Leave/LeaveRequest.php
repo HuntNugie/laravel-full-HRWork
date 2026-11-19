@@ -20,7 +20,7 @@ class LeaveRequest extends Component
     |--------------------------------------------------------------------------
     */
 
-    public Employees $employee;
+    public ?Employees $employee = null;
 
     public Collection $entitlements;
 
@@ -50,26 +50,9 @@ class LeaveRequest extends Component
 
     public function mount(): void
     {
-        $this->employee = $this->authenticatedEmployee();
+        $this->employee = Auth::user()?->employees;
 
         $this->loadData();
-    }
-
-    /**
-     * The personal leave page requires an employee identity even when the
-     * authenticated user can access all routes (e.g. a super-admin).
-     */
-    private function authenticatedEmployee(): Employees
-    {
-        $employee = Auth::user()?->employees;
-
-        abort_unless(
-            $employee instanceof Employees,
-            403,
-            'Akun Anda belum terhubung dengan data karyawan.',
-        );
-
-        return $employee;
     }
 
 
@@ -81,6 +64,15 @@ class LeaveRequest extends Component
 
     private function loadData(): void
     {
+        // Admin accounts may exist before their employee record is created.
+        // Keep the page usable with empty data instead of failing on null.
+        if (! $this->employee) {
+            $this->entitlements = new Collection();
+            $this->leaveRequests = new Collection();
+
+            return;
+        }
+
         $contract = app(LeaveRequestService::class)
             ->currentActiveContract($this->employee);
 
@@ -337,7 +329,7 @@ class LeaveRequest extends Component
     #[On('leave-request')]
     public function refresh(): void
     {
-        $this->employee = $this->authenticatedEmployee();
+        $this->employee = Auth::user()?->employees;
 
         $this->loadData();
 

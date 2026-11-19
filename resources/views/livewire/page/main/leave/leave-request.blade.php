@@ -23,16 +23,32 @@
 
 
         {{-- AJUKAN CUTI --}}
-        @can('create-leave')
-            <livewire:components.main.leave.modal-leave-request :key="'leave-request-modal-' . $leaveRequestVersion">
-                <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
-                    <x-wirekit::icon name="plus" />
-                    Ajukan Cuti
-                </x-wirekit::button>
-            </livewire:components.main.leave.modal-leave-request>
-        @endcan
+        @if ($employee)
+            @can('create-leave')
+                <livewire:components.main.leave.modal-leave-request :key="'leave-request-modal-' . $leaveRequestVersion">
+                    <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
+                        <x-wirekit::icon name="plus" />
+                        Ajukan Cuti
+                    </x-wirekit::button>
+                </livewire:components.main.leave.modal-leave-request>
+            @endcan
+        @endif
 
     </div>
+
+    @if (! $employee)
+        <x-wirekit::card>
+            <x-wirekit::card.body>
+                <div class="rounded-xl border border-sky-200 bg-sky-50 p-5">
+                    <p class="text-sm font-semibold text-slate-800">Data karyawan belum tersedia</p>
+                    <p class="mt-1 text-sm text-slate-600">
+                        Akun Anda belum terhubung dengan data karyawan. Halaman ini tetap bisa dibuka,
+                        tetapi pengajuan cuti baru dapat dibuat setelah data karyawan tersedia.
+                    </p>
+                </div>
+            </x-wirekit::card.body>
+        </x-wirekit::card>
+    @endif
 
 
     {{-- =====================================================
@@ -120,12 +136,13 @@
                         <div>
 
                             <p class="text-sm font-semibold text-slate-800">
-                                Belum ada hak cuti pada kontrak aktif
+                                {{ $employee ? 'Belum ada hak cuti pada kontrak aktif' : 'Hak cuti belum tersedia' }}
                             </p>
 
                             <p class="mt-1 text-sm text-slate-500">
-                                Kontrak aktif Anda belum memiliki jatah cuti
-                                yang terdaftar saat ini.
+                                {{ $employee
+                                    ? 'Kontrak aktif Anda belum memiliki jatah cuti yang terdaftar saat ini.'
+                                    : 'Hak cuti akan ditampilkan setelah akun terhubung dengan data karyawan.' }}
                             </p>
 
                         </div>
@@ -164,16 +181,17 @@
 
         <x-wirekit::card.body>
 
-            @if (!$employee->latestEmployeeContract)
+            @if (!$employee?->latestEmployeeContract)
                 <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
 
                     <p class="text-base font-semibold text-slate-800">
-                        Belum ada contract aktif
+                        {{ $employee ? 'Belum ada contract aktif' : 'Data kontrak belum tersedia' }}
                     </p>
 
                     <p class="mt-2 text-sm text-slate-500">
-                        Saat ini Anda belum memiliki contract aktif
-                        yang menjadi dasar hak cuti.
+                        {{ $employee
+                            ? 'Saat ini Anda belum memiliki contract aktif yang menjadi dasar hak cuti.'
+                            : 'Kontrak akan ditampilkan setelah akun terhubung dengan data karyawan.' }}
                     </p>
 
                 </div>
@@ -336,7 +354,7 @@
 
         <x-wirekit::card.body>
 
-            <div class="wk-scrollbar max-h-[420px] overflow-auto"">
+            <div class="wk-scrollbar max-h-[420px] overflow-auto">
 
                 <x-wirekit::table hoverable table-label="Riwayat pengajuan cuti">
 

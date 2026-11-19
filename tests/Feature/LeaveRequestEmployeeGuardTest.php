@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Employees;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -13,14 +14,22 @@ class LeaveRequestEmployeeGuardTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_superadmin_without_an_employee_record_receives_forbidden_instead_of_a_type_error(): void
+    public function test_superadmin_without_an_employee_record_sees_an_empty_state(): void
     {
         $user = User::factory()->create(['status' => 'active']);
         $user->assignRole(Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']));
 
         $this->actingAs($user)
             ->get(route('leave.view'))
-            ->assertForbidden();
+            ->assertOk()
+            ->assertSee('Data karyawan belum tersedia')
+            ->assertDontSee('Ajukan Cuti');
+
+        Livewire::actingAs($user)
+            ->test(\App\Livewire\Page\Main\Leave\LeaveRequest::class)
+            ->set('segment', 'pending')
+            ->call('refresh')
+            ->assertSee('Data karyawan belum tersedia');
     }
 
     public function test_employee_with_an_employee_record_can_open_personal_leave_page(): void
