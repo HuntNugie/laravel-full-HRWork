@@ -34,7 +34,8 @@ class ModalChangePassword extends Component
 
     public function changePassword()
     {
-        $this->authorize('update', $this->user);
+        abort_unless(auth()->user()->can('reset-user-password'), 403);
+        abort_if($this->user->hasRole('super-admin') && ! auth()->user()->hasRole('super-admin'), 403);
 
         $this->validate();
 

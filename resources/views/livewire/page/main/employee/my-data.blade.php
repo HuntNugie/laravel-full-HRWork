@@ -77,11 +77,6 @@
                             {{ $employee->position?->name ?? 'Belum diketahui' }}
                         </span>
 
-                        <span
-                            class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-                            {{ $employee->team?->divisi?->name ?? 'Belum diketahui' }}
-                        </span>
-
                     </div>
 
                 </div>
@@ -361,30 +356,6 @@
                 </div>
 
 
-                {{-- Team --}}
-                <div>
-                    <span class="text-xs font-medium text-slate-400">
-                        Team
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->team?->name ?? 'Belum diketahui' }}
-                    </p>
-                </div>
-
-
-                {{-- Division --}}
-                <div>
-                    <span class="text-xs font-medium text-slate-400">
-                        Divisi
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->team?->divisi?->name ?? 'Belum diketahui' }}
-                    </p>
-                </div>
-
-
                 {{-- Employee Status --}}
                 <div>
                     <span class="text-xs font-medium text-slate-400">
@@ -396,17 +367,6 @@
                     </p>
                 </div>
 
-
-                {{-- Supervisor --}}
-                <div>
-                    <span class="text-xs font-medium text-slate-400">
-                        Supervisor
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->supervisorTeam?->user?->name ?? 'Belum diketahui' }}
-                    </p>
-                </div>
 
             </div>
 

@@ -64,13 +64,4 @@ class EmployeesPolicy
         return false;
     }
 
-    public function assignTeam(User $user): bool
-    {
-        return $user->can('assign-team-employee');
-    }
-
-    public function removeTeam(User $user): bool
-    {
-        return $user->can('remove-team-employee');
-    }
 }

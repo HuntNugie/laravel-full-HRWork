@@ -229,14 +229,14 @@
                                                     class="text-xs font-semibold
                                                            text-slate-900"
                                                 >
-                                                    Work Overview
+                                                    HRIS Overview
                                                 </p>
 
                                                 <p
                                                     class="mt-0.5 text-[10px]
                                                            text-slate-400"
                                                 >
-                                                    Team performance
+                                                    Informasi karyawan
                                                 </p>
 
                                             </div>
@@ -547,7 +547,7 @@
                                             </div>
 
 
-                                            {{-- Team --}}
+                                            {{-- Karyawan --}}
                                             <div
                                                 class="rounded-xl border
                                                        border-slate-100 p-4"
@@ -565,14 +565,14 @@
                                                                    font-semibold
                                                                    text-slate-900"
                                                         >
-                                                            Team
+                                                            Karyawan
                                                         </p>
 
                                                         <p
                                                             class="mt-0.5 text-[9px]
                                                                    text-slate-400"
                                                         >
-                                                            Active members
+                                                            Akun aktif
                                                         </p>
 
                                                     </div>
@@ -739,7 +739,7 @@
                                                             class="mt-0.5 text-[9px]
                                                                    text-slate-400"
                                                         >
-                                                            Completed by Backend Team
+                                                            Terkelola melalui HRD
                                                         </p>
 
                                                     </div>
@@ -902,7 +902,7 @@
                                     <p
                                         class="text-[9px] text-slate-400"
                                     >
-                                        Team Performance
+                                        Kehadiran Karyawan
                                     </p>
 
                                     <p

@@ -45,7 +45,6 @@ class SearchContracts extends HRTool implements Tool
             ->with([
                 'employees.user:id,name,email',
                 'employees.position:id,name',
-                'employees.team.divisi:id,name',
             ])
             ->when($employeeId, fn ($q) => $q->where('employee_id', (int) $employeeId))
             ->when($query !== '', function ($q) use ($query) {
@@ -81,7 +80,6 @@ class SearchContracts extends HRTool implements Tool
                 'employee_code' => $contract->employees?->employee_code,
                 'employee_name' => $contract->employees?->user?->name,
                 'position' => $contract->employees?->position?->name,
-                'division' => $contract->employees?->team?->divisi?->name,
                 'employment_type' => $contract->employement_type,
                 'start_date' => $contract->start_date?->toDateString(),
                 'end_date' => $contract->end_date?->toDateString(),

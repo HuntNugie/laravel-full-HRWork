@@ -154,20 +154,12 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <p class="text-xs text-slate-400">Divisions</p>
-                            <p class="mt-2 text-2xl font-bold text-slate-900">{{ $organization['divisions'] }}</p>
-                        </div>
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <p class="text-xs text-slate-400">Teams</p>
-                            <p class="mt-2 text-2xl font-bold text-slate-900">{{ $organization['teams'] }}</p>
-                        </div>
-                        <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-xs text-slate-400">Positions</p>
-                            <p class="mt-2 text-2xl font-bold text-slate-900">{{ $organization['positions'] }}</p>
+                            <p class="mt-2 text-2xl font-bold text-slate-900">{{ $masterData['positions'] }}</p>
                         </div>
                         <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-xs text-slate-400">Roles</p>
-                            <p class="mt-2 text-2xl font-bold text-slate-900">{{ $organization['roles'] }}</p>
+                            <p class="mt-2 text-2xl font-bold text-slate-900">{{ $masterData['roles'] }}</p>
                         </div>
                     </div>
                 </div>
@@ -423,9 +415,9 @@
                     </a>
                 @endcan
 
-                @can('view-divisi')
-                    <a href="{{ route('divisi.view') }}" wire:navigate>
-                        <x-wirekit::button type="button" variant="outline" class="w-full">Organization</x-wirekit::button>
+                @can('view-position')
+                    <a href="{{ route('position.view') }}" wire:navigate>
+                        <x-wirekit::button type="button" variant="outline" class="w-full">Jabatan</x-wirekit::button>
                     </a>
                 @endcan
 

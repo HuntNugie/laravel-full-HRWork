@@ -4,8 +4,6 @@ namespace App\Livewire\Components\Main\Employee;
 
 use App\Models\Bank;
 use App\Models\Employees;
-use App\Models\Position;
-use App\Models\Team;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -38,7 +36,8 @@ class CreateEmployee extends Component
 
     protected function createUser()
     {
-        $this->authorize('create', User::class);
+        // HRD boleh membuat akun yang terikat karyawan, bukan user administratif bebas.
+        $this->authorize('create', Employees::class);
 
         $user = [
             'name' => $this->form->fullname,

@@ -5,7 +5,7 @@
         <x-wirekit::stack gap="sm">
 
             <span class="text-sm font-medium text-[#30AFFF]">
-                Organization
+                SDM
             </span>
 
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">

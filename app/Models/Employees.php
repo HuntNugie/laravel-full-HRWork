@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Guarded;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 #[Guarded('id')]
@@ -19,12 +18,6 @@ class Employees extends Model
     public function profile()
     {
         return $this->hasOne(Employee_profile::class, 'employee_id');
-    }
-
-    // relasi ke team
-    public function team()
-    {
-        return $this->belongsTo(Team::class, 'team_id');
     }
 
     // relasi ke position
@@ -49,36 +42,6 @@ class Employees extends Model
     public function statusHistory()
     {
         return $this->hasMany(EmployeeStatusHistory::class, 'employee_id');
-    }
-
-    // relasi ke divisi yang dipimpin
-    public function managedDivisi()
-    {
-        return $this->hasOne(Divisi::class, 'manager_id');
-    }
-
-    // scope untuk kandidat manager divisi yang masih available
-    public function scopeAvailableDivisionManagers(Builder $query, ?int $exceptDivisionId = null): Builder
-    {
-        return $query
-            ->where('status_employee', 'active')
-            ->whereNull('team_id')
-            ->whereDoesntHave('supervisorTeam')
-            ->where(function (Builder $query) use ($exceptDivisionId) {
-                $query->whereDoesntHave('managedDivisi');
-
-                if ($exceptDivisionId) {
-                    $query->orWhereHas('managedDivisi', function (Builder $query) use ($exceptDivisionId) {
-                        $query->whereKey($exceptDivisionId);
-                    });
-                }
-            });
-    }
-
-    // relasi supervisor team
-    public function supervisorTeam()
-    {
-        return $this->hasOne(Team::class, 'supervisor_id');
     }
 
     // relasi ke attendances

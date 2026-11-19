@@ -19,7 +19,11 @@ class ModalEditRole extends Component
     public function changeRole()
     {
         $this->authorize('assignUser', Role::class);
-        $this->validate(['roleName' => ['required', 'exists:roles,name']]);
+        $this->validate(['roleName' => ['required', 'array', 'min:1'], 'roleName.*' => ['string', 'exists:roles,name']]);
+
+        if (! auth()->user()->hasRole('super-admin')) {
+            abort_if($this->user->hasRole('super-admin') || in_array('super-admin', $this->roleName, true), 403);
+        }
 
         $this->user->syncRoles($this->roleName);
 
@@ -36,7 +40,9 @@ class ModalEditRole extends Component
 
     public function render()
     {
-        $roles = Role::all();
+        $roles = Role::query()
+            ->when(! auth()->user()->hasRole('super-admin'), fn ($query) => $query->where('name', '!=', 'super-admin'))
+            ->get();
 
         return view('livewire.components.main.user.modal-edit-role', compact('roles'));
     }

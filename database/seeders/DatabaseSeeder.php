@@ -20,8 +20,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
 
-            // Organization and master data.
-            DivisiSeeder::class,
+            // HR master data.
             BankSeeder::class,
 
             // Final role -> permission mapping, including employee warning letter access.
@@ -33,8 +32,6 @@ class DatabaseSeeder extends Seeder
             LateDisciplineRuleSeeder::class,
             UnpresentDisciplineRuleSeeder::class,
 
-            // Coherent development data for local testing.
-            HRISDevelopmentSeeder::class,
         ]);
     }
 }

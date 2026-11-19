@@ -17,5 +17,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Role::class, RolePolicy::class);
+
+        // Superadmin memiliki seluruh kemampuan termasuk yang diperiksa lewat policy.
+        Gate::before(fn ($user) => $user->hasRole('super-admin') ? true : null);
     }
 }

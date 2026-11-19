@@ -61,7 +61,7 @@
                     </x-wirekit::label>
 
                     <x-wirekit::textarea id="benefit-description" wire:model.live.debounce.500ms="desc" name="desc"
-                        class="text-black" rows="4" placeholder="Deskripsi mengenai team..." />
+                        class="text-black" rows="4" placeholder="Deskripsi tunjangan..." />
 
 
 

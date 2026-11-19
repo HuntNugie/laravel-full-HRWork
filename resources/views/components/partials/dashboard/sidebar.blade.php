@@ -126,40 +126,14 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-divisi', 'view-team', 'view-position'])
-
-            <x-wirekit::sidebar.group collapsible label="Organisasi">
-
-                @can('view-divisi')
-                    <x-wirekit::sidebar.item href="{{ route('divisi.view') }}" icon="building" :active="request()->routeIs('divisi.view')"
-                        wire:navigate>
-                        Manajemen Divisi
-                    </x-wirekit::sidebar.item>
-                @endcan
-
-
-                @can('view-team')
-                    <x-wirekit::sidebar.item href="{{ route('team.view') }}" icon="user-group" :active="request()->routeIs('team.view')"
-                        wire:navigate>
-                        Manajemen Team
-                    </x-wirekit::sidebar.item>
-                @endcan
-
+        @canany(['view-employee', 'view-contract', 'view-resignation', 'view-termination'])
+            <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-position')
-                    <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge"
-                        wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge" wire:navigate>
                         Manajemen Jabatan
                     </x-wirekit::sidebar.item>
                 @endcan
-
-
-
-            </x-wirekit::sidebar.group>
-        @endcanany
-
-        @canany(['view-employee', 'view-contract', 'view-resignation', 'view-termination'])
-            <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-employee')
                     <x-wirekit::sidebar.item href="{{ route('employee.view') }}" :active="request()->routeIs('employee.view')" icon="users"

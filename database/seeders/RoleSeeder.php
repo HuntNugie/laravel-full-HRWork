@@ -17,9 +17,6 @@ class RoleSeeder extends Seeder
             'administrator',
             'employee',
             'super-admin',
-            // HRIS organization roles.
-            'manager',
-            'supervisor',
         ] as $role) {
             Role::firstOrCreate([
                 'name' => $role,

@@ -242,7 +242,7 @@
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <?php $actionHint = match ($clearance->category) {
                                         'access' => 'Saat selesai, akun user dinonaktifkan. Jika proses exit dibatalkan, status akun dikembalikan.',
-                                        'organization' => 'Saat selesai, assignment team, supervisor, dan manager dilepas. Jika dibatalkan, assignment sebelumnya dipulihkan.',
+                                        'organization' => 'Arsip clearance organisasi lama. Tidak lagi menjadi syarat proses resign.',
                                         default => 'Verifikasi dilakukan manual karena belum ada subsystem otomatis untuk kategori ini.',
                                     }; ?>
 
@@ -393,11 +393,10 @@
             </x-wirekit::card.header>
 
             <x-wirekit::card.body>
-                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <?php foreach ([
                         'clearance' => 'Clearance',
                         'handover' => 'Handover',
-                        'organization' => 'Organization',
                         'leave' => 'Leave',
                         'last_working_date' => 'Last Working Day',
                     ] as $key => $label): ?>

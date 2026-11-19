@@ -21,7 +21,6 @@ class TerminationService
         'finance',
         'document',
         'access',
-        'organization',
     ];
 
     private const REASON_TYPES = [
@@ -376,18 +375,9 @@ class TerminationService
                 throw new LogicException('Employee sudah tidak aktif sehingga PHK tidak dapat diselesaikan.');
             }
 
-            $employee->supervisorTeam()->update([
-                'supervisor_id' => null,
-            ]);
-
-            $employee->managedDivisi()->update([
-                'manager_id' => null,
-            ]);
-
             $employee->update([
                 'status_employee' => 'terminated',
                 'TerminationDate' => Carbon::parse($effectiveDate)->toDateString(),
-                'team_id' => null,
             ]);
 
             if ($employee->user) {
@@ -440,22 +430,14 @@ class TerminationService
             'employee',
         ]);
 
-        $clearanceReady = $termination->clearances->every(
+        // Kategori organisasi lama tetap tercatat, tetapi tidak lagi menghambat PHK.
+        $clearanceReady = $termination->clearances->where('category', '!=', 'organization')->every(
             fn (EmployeeTerminationClearance $clearance) =>
                 in_array($clearance->status, [
                     EmployeeTerminationClearance::STATUS_COMPLETED,
                     EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,
                 ], true)
         );
-
-        $organizationClearance = $termination->clearances
-            ->firstWhere('category', 'organization');
-
-        $organizationReady = !$organizationClearance
-            || in_array($organizationClearance->status, [
-                EmployeeTerminationClearance::STATUS_COMPLETED,
-                EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,
-            ], true);
 
         $handoverReady = $termination->handoverItems->every(
             fn (EmployeeTerminationHandoverItem $item) =>
@@ -475,13 +457,11 @@ class TerminationService
         return [
             'clearance' => $clearanceReady,
             'handover' => $handoverReady,
-            'organization' => $organizationReady,
             'leave' => $leaveReady,
             'effective_date' => $effectiveDateReached,
             'ready' => $effectiveDateReached
                 && $clearanceReady
                 && $handoverReady
-                && $organizationReady
                 && $leaveReady,
         ];
     }
@@ -500,6 +480,10 @@ class TerminationService
     private function ensureClearanceCompleted(EmployeeTermination $termination): void
     {
         foreach ($termination->clearances as $clearance) {
+            if ($clearance->category === 'organization') {
+                continue;
+            }
+
             if (!in_array($clearance->status, [
                 EmployeeTerminationClearance::STATUS_COMPLETED,
                 EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,

@@ -35,11 +35,14 @@ class HRISWorkManagementRemovalTest extends TestCase
     {
         $this->seed([PermissionSeeder::class, RoleSeeder::class, RolePermissionSeeder::class]);
 
-        $this->assertSame(0, Role::query()->whereIn('name', ['general-manager', 'task-worker'])->count());
+        $this->assertSame(0, Role::query()->whereIn('name', [
+            'general-manager', 'task-worker', 'manager', 'supervisor',
+        ])->count());
 
         $superAdmin = Role::findByName('super-admin', 'web');
         $this->assertTrue($superAdmin->hasPermissionTo('view-employee'));
         $this->assertTrue($superAdmin->hasPermissionTo('complete-termination'));
         $this->assertTrue($superAdmin->hasPermissionTo('view-ai-assistant'));
+        $this->assertTrue($superAdmin->hasPermissionTo('reset-user-password'));
     }
 }

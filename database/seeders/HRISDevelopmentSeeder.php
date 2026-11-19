@@ -6,7 +6,6 @@ use App\Models\Bank;
 use App\Models\Benefit;
 use App\Models\Attendances;
 use App\Models\ContractLeaveEntitlements;
-use App\Models\Divisi;
 use App\Models\EmployeeBankAccount;
 use App\Models\EmployeeContract;
 use App\Models\EmployeeProfileAddress;
@@ -17,7 +16,6 @@ use App\Models\Payroll;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
 use App\Models\Position;
-use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkTime;
 use App\Service\PayrollCalculationService;
@@ -35,13 +33,7 @@ class HRISDevelopmentSeeder extends Seeder
      * Seed a complete development HRIS environment.
      *
      * Dataset:
-     * - 50 employees
-     * - 5 divisions
-     * - 10 teams
-     * - 1 general manager
-     * - 5 managers
-     * - 10 supervisors
-     * - 31 employees without project-specific roles
+     * - 50 karyawan dengan jabatan, tanpa divisi atau team
      * - HR, administrator, and super-admin accounts
      * - profiles, addresses, bank accounts, status history, contracts,
      *   benefits, annual leave entitlements, historical attendance,
@@ -49,14 +41,15 @@ class HRISDevelopmentSeeder extends Seeder
      */
     public function run(): void
     {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new \RuntimeException('HRISDevelopmentSeeder hanya boleh berjalan pada environment local/testing.');
+        }
+
         $this->seedWilayah();
         $this->seedPositions();
 
-        $divisions = $this->seedDivisions();
         $users = $this->seedUsers();
         $employees = $this->seedEmployees($users);
-
-        $this->seedDivisionAndTeams($divisions, $employees);
         $this->seedProfilesAndBankAccounts($employees);
         $this->seedStatusHistory($employees);
         $this->seedContracts($employees);
@@ -87,8 +80,8 @@ class HRISDevelopmentSeeder extends Seeder
     {
         $positions = [
             ['name' => 'General Manager', 'description' => 'Penanggung jawab operasional perusahaan.', 'min_salary_daily' => 500000],
-            ['name' => 'Manager', 'description' => 'Penanggung jawab division dan distribusi pekerjaan.', 'min_salary_daily' => 350000],
-            ['name' => 'Supervisor', 'description' => 'Penanggung jawab team dan review pekerjaan.', 'min_salary_daily' => 275000],
+            ['name' => 'Manager', 'description' => 'Jabatan manajerial yang tercantum pada kontrak kerja.', 'min_salary_daily' => 350000],
+            ['name' => 'Supervisor', 'description' => 'Jabatan supervisi yang tercantum pada kontrak kerja.', 'min_salary_daily' => 275000],
             ['name' => 'Software Engineer', 'description' => 'Pengembangan perangkat lunak umum.', 'min_salary_daily' => 225000],
             ['name' => 'Backend Developer', 'description' => 'Pengembangan layanan backend dan API.', 'min_salary_daily' => 240000],
             ['name' => 'Frontend Developer', 'description' => 'Pengembangan antarmuka aplikasi web.', 'min_salary_daily' => 235000],
@@ -123,50 +116,6 @@ class HRISDevelopmentSeeder extends Seeder
                 ],
             );
         }
-    }
-
-    /**
-     * @return array<string, Divisi>
-     */
-    private function seedDivisions(): array
-    {
-        $definitions = [
-            'development' => [
-                'name' => 'Development',
-                'description' => 'Divisi pengembangan aplikasi dan software engineering.',
-            ],
-            'product' => [
-                'name' => 'Product',
-                'description' => 'Divisi product, design, dan quality assurance.',
-            ],
-            'infrastructure' => [
-                'name' => 'Infrastructure',
-                'description' => 'Divisi infrastruktur, DevOps, jaringan, dan IT support.',
-            ],
-            'finance' => [
-                'name' => 'Finance & Administration',
-                'description' => 'Divisi keuangan dan administrasi perusahaan.',
-            ],
-            'people' => [
-                'name' => 'Human Resources & Operations',
-                'description' => 'Divisi HR, people operations, dan operasional karyawan.',
-            ],
-        ];
-
-        $divisions = [];
-
-        foreach ($definitions as $key => $definition) {
-            $divisions[$key] = Divisi::updateOrCreate(
-                ['name' => $definition['name']],
-                [
-                    'description' => $definition['description'],
-                    'is_active' => 'active',
-                    'manager_id' => null,
-                ],
-            );
-        }
-
-        return $divisions;
     }
 
     /**
@@ -217,14 +166,14 @@ class HRISDevelopmentSeeder extends Seeder
             'manager-development' => [
                 'name' => 'Manager Development',
                 'email' => 'manager.development.hrwork@gmail.com',
-                'roles' => ['employee', 'manager'],
+                'roles' => ['employee'],
                 'position' => 'Manager',
                 'code' => 'DEV-MGR-001',
             ],
             'supervisor-backend' => [
                 'name' => 'Supervisor Backend Development',
                 'email' => 'supervisor.backend.hrwork@gmail.com',
-                'roles' => ['employee', 'supervisor'],
+                'roles' => ['employee'],
                 'position' => 'Supervisor',
                 'code' => 'DEV-SPV-001',
             ],
@@ -272,7 +221,7 @@ class HRISDevelopmentSeeder extends Seeder
             $accounts[$manager['key']] = [
                 'name' => $manager['name'],
                 'email' => $manager['email'],
-                'roles' => ['employee', 'manager'],
+                'roles' => ['employee'],
                 'position' => 'Manager',
                 'code' => $manager['code'],
             ];
@@ -294,7 +243,7 @@ class HRISDevelopmentSeeder extends Seeder
             $accounts[$supervisor['key']] = [
                 'name' => $supervisor['name'],
                 'email' => $supervisor['email'],
-                'roles' => ['employee', 'supervisor'],
+                'roles' => ['employee'],
                 'position' => 'Supervisor',
                 'code' => $supervisor['code'],
             ];
@@ -371,183 +320,12 @@ class HRISDevelopmentSeeder extends Seeder
                 [
                     'user_id' => $users[$key]->id,
                     'status_employee' => 'active',
-                    'team_id' => null,
                     'position_id' => $positions[$account['position']]->id,
                 ],
             );
         }
 
         return $employees;
-    }
-
-    /**
-     * @param array<string, Divisi> $divisions
-     * @param array<string, Employees> $employees
-     */
-    private function seedDivisionAndTeams(array $divisions, array $employees): void
-    {
-        $divisionManagers = [
-            'development' => 'manager-development',
-            'product' => 'manager-product',
-            'infrastructure' => 'manager-infrastructure',
-            'finance' => 'manager-finance',
-            'people' => 'manager-people',
-        ];
-
-        foreach ($divisionManagers as $divisionKey => $managerKey) {
-            $divisions[$divisionKey]->update([
-                'manager_id' => $employees[$managerKey]->id,
-                'is_active' => 'active',
-            ]);
-        }
-
-        $teamDefinitions = [
-            [
-                'key' => 'backend',
-                'name' => 'Backend Engineering',
-                'description' => 'Backend API dan service development.',
-                'division' => 'development',
-                'supervisor' => 'supervisor-backend',
-                'members' => [
-                    'worker-backend-1',
-                    'worker-backend-2',
-                    'worker-backend-3',
-                    'worker-backend-4',
-                ],
-            ],
-            [
-                'key' => 'frontend',
-                'name' => 'Frontend Engineering',
-                'description' => 'Frontend web dan mobile interface delivery.',
-                'division' => 'development',
-                'supervisor' => 'supervisor-frontend',
-                'members' => [
-                    'worker-frontend-1',
-                    'worker-frontend-2',
-                    'worker-frontend-3',
-                ],
-            ],
-            [
-                'key' => 'uiux',
-                'name' => 'UI/UX Design',
-                'description' => 'UX research, wireframe, dan interface design.',
-                'division' => 'product',
-                'supervisor' => 'supervisor-uiux',
-                'members' => [
-                    'worker-uiux-1',
-                    'worker-uiux-2',
-                    'worker-uiux-3',
-                ],
-            ],
-            [
-                'key' => 'product-delivery',
-                'name' => 'Product Delivery',
-                'description' => 'Product analysis, coordination, dan quality delivery.',
-                'division' => 'product',
-                'supervisor' => 'supervisor-product',
-                'members' => [
-                    'worker-product-1',
-                    'worker-product-2',
-                    'worker-product-3',
-                ],
-            ],
-            [
-                'key' => 'devops',
-                'name' => 'DevOps & Cloud',
-                'description' => 'Deployment, cloud infrastructure, dan reliability.',
-                'division' => 'infrastructure',
-                'supervisor' => 'supervisor-devops',
-                'members' => [
-                    'worker-devops-1',
-                    'worker-devops-2',
-                    'worker-devops-3',
-                ],
-            ],
-            [
-                'key' => 'it-support',
-                'name' => 'IT Support',
-                'description' => 'Support perangkat, jaringan, dan user internal.',
-                'division' => 'infrastructure',
-                'supervisor' => 'supervisor-it-support',
-                'members' => [
-                    'worker-it-1',
-                    'worker-it-2',
-                    'worker-it-3',
-                ],
-            ],
-            [
-                'key' => 'finance',
-                'name' => 'Finance',
-                'description' => 'Finance, accounting, dan reporting.',
-                'division' => 'finance',
-                'supervisor' => 'supervisor-finance',
-                'members' => [
-                    'worker-finance-1',
-                    'worker-finance-2',
-                    'worker-finance-3',
-                ],
-            ],
-            [
-                'key' => 'administration',
-                'name' => 'General Administration',
-                'description' => 'Administrasi dan dokumentasi internal.',
-                'division' => 'finance',
-                'supervisor' => 'supervisor-admin',
-                'members' => [
-                    'worker-admin-1',
-                    'worker-admin-2',
-                    'worker-admin-3',
-                ],
-            ],
-            [
-                'key' => 'hr-operations',
-                'name' => 'HR Operations',
-                'description' => 'Rekrutmen dan operasional HR.',
-                'division' => 'people',
-                'supervisor' => 'supervisor-hr',
-                'members' => [
-                    'worker-hr-1',
-                    'worker-hr-2',
-                    'worker-hr-3',
-                ],
-            ],
-            [
-                'key' => 'people-operations',
-                'name' => 'People Operations',
-                'description' => 'Employee experience dan people operations.',
-                'division' => 'people',
-                'supervisor' => 'supervisor-people',
-                'members' => [
-                    'worker-people-1',
-                    'worker-people-2',
-                    'worker-people-3',
-                ],
-            ],
-        ];
-
-        foreach ($teamDefinitions as $definition) {
-            $team = Team::updateOrCreate(
-                [
-                    'name' => $definition['name'],
-                    'divisi_id' => $divisions[$definition['division']]->id,
-                ],
-                [
-                    'description' => $definition['description'],
-                    'is_active' => 'active',
-                    'supervisor_id' => $employees[$definition['supervisor']]->id,
-                ],
-            );
-
-            $employees[$definition['supervisor']]->update([
-                'team_id' => $team->id,
-            ]);
-
-            foreach ($definition['members'] as $memberKey) {
-                $employees[$memberKey]->update([
-                    'team_id' => $team->id,
-                ]);
-            }
-        }
     }
 
     private function seedWilayah(): void

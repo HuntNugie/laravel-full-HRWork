@@ -45,17 +45,6 @@ class RolePermissionSeeder extends Seeder
             'hr' => [
                 'view-ai-assistant',
                 'view-cv-analyzer',
-                'view-divisi',
-                'show-divisi',
-                'create-divisi',
-                'update-divisi',
-                'delete-divisi',
-                'view-team',
-                'show-team',
-                'create-team',
-                'update-team',
-                'assign-team-employee',
-                'remove-team-employee',
                 'view-position',
                 'show-position',
                 'create-position',
@@ -64,9 +53,6 @@ class RolePermissionSeeder extends Seeder
                 'show-employee',
                 'create-employee',
                 'update-employee',
-                'create-user',
-                'view-user',
-                'show-user',
                 'view-contract',
                 'show-contract',
                 'create-contract',
@@ -119,6 +105,8 @@ class RolePermissionSeeder extends Seeder
                 'cancel-resignation',
                 'manage-resignation-clearance',
                 'complete-resignation',
+                'view-termination',
+                'show-termination',
                 'create-termination',
                 'cancel-termination',
                 'manage-termination-clearance',
@@ -136,12 +124,10 @@ class RolePermissionSeeder extends Seeder
                 'update-role',
                 'delete-role',
                 'assign-role',
-                'view-status-daily',
+                'reset-user-password',
+                'change-user-status',
             ],
 
-            // Organization role indicators used for scoped attendance dashboards.
-            'manager' => [],
-            'supervisor' => [],
         ];
 
         foreach (array_keys($rolePermissions) as $roleName) {
@@ -174,9 +160,8 @@ class RolePermissionSeeder extends Seeder
                 );
         }
 
-        // These roles existed only to authorize Work Management activities.
-        // Keep affected accounts usable via the base employee role.
-        foreach (['general-manager', 'task-worker'] as $retiredRole) {
+        // Retire Work Management and organizational roles; keep employee accounts usable.
+        foreach (['general-manager', 'task-worker', 'manager', 'supervisor'] as $retiredRole) {
             $role = Role::query()->where('name', $retiredRole)->where('guard_name', 'web')->first();
 
             if (! $role) {

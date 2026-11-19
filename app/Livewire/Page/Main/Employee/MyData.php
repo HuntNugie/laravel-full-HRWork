@@ -19,7 +19,6 @@ class MyData extends Component
             ->with([
                 'user',
                 'position',
-                'team.divisi',
                 'profile',
                 'profile.addressProfile.village.district.regency.province',
                 'profile.bankAccount.bank',

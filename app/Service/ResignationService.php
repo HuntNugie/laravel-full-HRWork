@@ -21,7 +21,6 @@ class ResignationService
         'finance',
         'document',
         'access',
-        'organization',
     ];
 
     public function create(
@@ -531,19 +530,9 @@ class ResignationService
                 throw new LogicException('Employee sudah tidak aktif sehingga resignation tidak dapat diselesaikan.');
             }
 
-            // Lepaskan seluruh assignment organisasi secara otomatis saat exit difinalisasi.
-            $employee->supervisorTeam()->update([
-                'supervisor_id' => null,
-            ]);
-
-            $employee->managedDivisi()->update([
-                'manager_id' => null,
-            ]);
-
             $employee->update([
                 'status_employee' => 'resign',
                 'ResignDate' => Carbon::parse($lastWorkingDate)->toDateString(),
-                'team_id' => null,
             ]);
 
             if ($employee->user) {
@@ -604,22 +593,14 @@ class ResignationService
             'employee',
         ]);
 
-        $clearanceReady = $resignation->clearances->every(
+        // Kategori organisasi lama disimpan sebagai arsip, bukan syarat exit baru.
+        $clearanceReady = $resignation->clearances->where('category', '!=', 'organization')->every(
             fn(EmployeeResignationClearance $clearance) =>
                 in_array($clearance->status, [
                     EmployeeResignationClearance::STATUS_COMPLETED,
                     EmployeeResignationClearance::STATUS_NOT_APPLICABLE,
                 ], true)
         );
-
-        $organizationClearance = $resignation->clearances
-            ->firstWhere('category', 'organization');
-
-        $organizationReady = !$organizationClearance
-            || in_array($organizationClearance->status, [
-                EmployeeResignationClearance::STATUS_COMPLETED,
-                EmployeeResignationClearance::STATUS_NOT_APPLICABLE,
-            ], true);
 
         $handoverReady = $resignation->handoverItems->every(
             fn(EmployeeResignationHandoverItem $item) =>
@@ -628,8 +609,6 @@ class ResignationService
                     EmployeeResignationHandoverItem::STATUS_NOT_APPLICABLE,
                 ], true)
         );
-
-        // Assignment organisasi akan dilepas otomatis saat completion.
 
         $leaveReady = !$this->hasUnresolvedLeave($resignation);
 
@@ -640,13 +619,11 @@ class ResignationService
         return [
             'clearance' => $clearanceReady,
             'handover' => $handoverReady,
-            'organization' => $organizationReady,
             'leave' => $leaveReady,
             'last_working_date' => $lastWorkingDateReached,
             'ready' => $lastWorkingDateReached
                 && $clearanceReady
                 && $handoverReady
-                && $organizationReady
                 && $leaveReady,
         ];
     }
@@ -666,6 +643,10 @@ class ResignationService
     private function ensureClearanceCompleted(EmployeeResignation $resignation): void
     {
         foreach ($resignation->clearances as $clearance) {
+            if ($clearance->category === 'organization') {
+                continue;
+            }
+
             if (!in_array($clearance->status, [
                 EmployeeResignationClearance::STATUS_COMPLETED,
                 EmployeeResignationClearance::STATUS_NOT_APPLICABLE,

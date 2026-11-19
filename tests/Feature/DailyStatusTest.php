@@ -41,7 +41,6 @@ class DailyStatusTest extends TestCase
         $employee = Employees::create([
             'employee_code' => 'EMP-001',
             'user_id' => null,
-            'team_id' => null,
             'position_id' => null,
         ]);
 

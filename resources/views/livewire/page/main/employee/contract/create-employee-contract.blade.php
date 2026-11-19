@@ -41,7 +41,7 @@
 
 
                 {{-- =============================================
-                POSITION & TEAM
+                POSITION
             ============================================== --}}
                 <x-wirekit::card>
 
@@ -54,7 +54,7 @@
                             </h2>
 
                             <p class="text-sm text-slate-500">
-                                Tentukan Jabatan karyawan dalam organisasi.
+                                Tentukan jabatan karyawan sesuai kontrak kerja.
                             </p>
 
                         </x-wirekit::stack>

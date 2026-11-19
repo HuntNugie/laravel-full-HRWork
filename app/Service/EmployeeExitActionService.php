@@ -2,11 +2,9 @@
 
 namespace App\Service;
 
-use App\Models\Divisi;
 use App\Models\EmployeeResignationClearance;
 use App\Models\EmployeeTerminationClearance;
 use App\Models\Employees;
-use App\Models\Team;
 use App\Models\User;
 
 class EmployeeExitActionService
@@ -64,49 +62,7 @@ class EmployeeExitActionService
         }
 
         if ($category === 'organization') {
-            $employee = $this->employeeForClearance($clearance);
-
-            $team = Team::query()
-                ->where('supervisor_id', $employee->id)
-                ->lockForUpdate()
-                ->first();
-
-            $division = Divisi::query()
-                ->where('manager_id', $employee->id)
-                ->lockForUpdate()
-                ->first();
-
-            $state = [
-                'action' => 'release_organization',
-                'applied' => true,
-                'before' => [
-                    'employee_team_id' => $employee->team_id,
-                    'supervisor_team_id' => $team?->id,
-                    'managed_division_id' => $division?->id,
-                ],
-                'after' => [
-                    'employee_team_id' => null,
-                    'supervisor_team_id' => $team?->id,
-                    'managed_division_id' => $division?->id,
-                ],
-                'actor_id' => $actor->id,
-                'applied_at' => now()->toISOString(),
-            ];
-
-            if ($team) {
-                $team->update(['supervisor_id' => null]);
-            }
-
-            if ($division) {
-                $division->update(['manager_id' => null]);
-            }
-
-            $employee->update([
-                'team_id' => null,
-            ]);
-
-            $this->storeState($clearance, $state);
-
+            // Clearance historis tetap bisa dibaca, tanpa mutasi struktur yang dipensiunkan.
             return;
         }
 
@@ -138,37 +94,6 @@ class EmployeeExitActionService
                 $user->update([
                     'status' => $before['status'] ?? 'active',
                 ]);
-            }
-        }
-
-        if (($state['action'] ?? null) === 'release_organization') {
-            if (
-                $employee->team_id === ($after['employee_team_id'] ?? null)
-                && (!empty($before['employee_team_id'])
-                    ? Team::query()->whereKey($before['employee_team_id'])->exists()
-                    : true)
-            ) {
-                $employee->update([
-                    'team_id' => $before['employee_team_id'] ?? null,
-                ]);
-            }
-
-            if (!empty($before['supervisor_team_id'])) {
-                Team::query()
-                    ->whereKey($before['supervisor_team_id'])
-                    ->whereNull('supervisor_id')
-                    ->update([
-                        'supervisor_id' => $employee->id,
-                    ]);
-            }
-
-            if (!empty($before['managed_division_id'])) {
-                Divisi::query()
-                    ->whereKey($before['managed_division_id'])
-                    ->whereNull('manager_id')
-                    ->update([
-                        'manager_id' => $employee->id,
-                    ]);
             }
         }
 

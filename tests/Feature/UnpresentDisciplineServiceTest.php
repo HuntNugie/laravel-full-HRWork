@@ -308,7 +308,6 @@ class UnpresentDisciplineServiceTest extends TestCase
         $employee = Employees::create([
             'employee_code' => 'EMP-' . uniqid(),
             'user_id' => $user->id,
-            'team_id' => null,
             'position_id' => null,
         ]);
 

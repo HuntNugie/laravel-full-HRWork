@@ -153,34 +153,6 @@
                 </div>
 
 
-                {{-- TEAM --}}
-                <div>
-
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                        Team
-                    </p>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $user?->employees?->team?->name ?? 'Belum mempunyai team' }}
-                    </p>
-
-                </div>
-
-
-                {{-- DIVISI --}}
-                <div>
-
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                        Divisi
-                    </p>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $user?->employees?->team?->divisi?->name ?? 'Tidak ada divisi' }}
-                    </p>
-
-                </div>
-
-
                 {{-- STATUS --}}
                 <div>
 

@@ -28,7 +28,6 @@ class DetailResignation extends Component
         $this->resignation = $resignation->load([
             'employee.user',
             'employee.position',
-            'employee.team.divisi',
             'employeeContract',
             'reviewer',
             'histories.actor',
@@ -246,7 +245,6 @@ class DetailResignation extends Component
             ->with([
                 'employee.user',
                 'employee.position',
-                'employee.team.divisi',
                 'employeeContract',
                 'reviewer',
                 'histories.actor',

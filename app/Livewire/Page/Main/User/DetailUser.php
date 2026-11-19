@@ -18,11 +18,15 @@ class DetailUser extends Component
 
     public function actionStatusAccount()
     {
-        if (!$this->user?->employees?->latestEmployeeContract && $this->user?->employees?->latestEmployeeContract?->status !== 'active') {
+        abort_unless(auth()->user()->can('change-user-status'), 403);
+        abort_if($this->user->hasRole('super-admin') && ! auth()->user()->hasRole('super-admin'), 403);
+        abort_if($this->user->is(auth()->user()), 403, 'Tidak dapat mengubah status akun sendiri.');
+
+        if ($this->user->status !== 'active' && $this->user->employees && $this->user->employees->latestEmployeeContract?->status !== 'active') {
             $this->dispatch('wirekit-toast', variant: 'danger', title: 'Gagal aktifasi', message: "Akun contract nya tidak aktif");
             return;
         }
-        $user = $this->user->update([
+        $this->user->update([
             'status' => $this->user->status === 'active'
                 ? 'inactive'
                 : 'active',

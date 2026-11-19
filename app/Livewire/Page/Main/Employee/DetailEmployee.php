@@ -22,23 +22,6 @@ class DetailEmployee extends Component
         $this->employee = $employee->load([
             'user',
             'position',
-            'team',
-            'employeeContract',
-            'employeeContract.contractLeave.leaveType',
-            'profile',
-        ]);
-
-        $this->loadLeaveEntitlements();
-    }
-
-
-    #[On('change-team')]
-    public function updateOnChangeTeam(): void
-    {
-        $this->employee->load([
-            'user',
-            'position',
-            'team',
             'employeeContract',
             'employeeContract.contractLeave.leaveType',
             'profile',
@@ -49,12 +32,12 @@ class DetailEmployee extends Component
 
 
     #[On('change-photo')]
+    #[On('change-employee')]
     public function updateOnChangeProfile(): void
     {
         $this->employee->load([
             'user',
             'position',
-            'team',
             'employeeContract',
             'employeeContract.contractLeave.leaveType',
             'profile',

@@ -17,9 +17,10 @@ class AssignUser extends Component
     public function submitAssign()
     {
         $this->authorize('assignUser', $this->role);
+        abort_if($this->role->name === 'super-admin' && ! auth()->user()->hasRole('super-admin'), 403);
         foreach ($this->userSelect as $userId) {
             $user = User::find($userId);
-            if ($user) {
+            if ($user && (auth()->user()->hasRole('super-admin') || ! $user->hasRole('super-admin'))) {
                 $user->assignRole($this->role);
             }
         }

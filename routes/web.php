@@ -27,8 +27,6 @@ use App\Livewire\Page\Main\Dicipline\LateDiciplineRule;
 use App\Livewire\Page\Main\Dicipline\UnpresentDisciplineRule;
 use App\Livewire\Page\Main\Dicipline\WarningLetter;
 use App\Livewire\Page\Main\Discipline\LateDiciplineRule as DisciplineLateDiciplineRule;
-use App\Livewire\Page\Main\Divisi\DetailDivisi;
-use App\Livewire\Page\Main\Divisi\Divisi;
 use App\Livewire\Page\Main\Employee\Contract\CreateEmployeeContract;
 use App\Livewire\Page\Main\Employee\Contract\DetailEmployeeContract;
 use App\Livewire\Page\Main\Employee\Contract\EditEmployeeContract;
@@ -64,8 +62,6 @@ use App\Livewire\Page\Main\Roles\CreateRole;
 use App\Livewire\Page\Main\Roles\DetailRole;
 use App\Livewire\Page\Main\Roles\EditRole;
 use App\Livewire\Page\Main\Roles\Roles;
-use App\Livewire\Page\Main\Team\DetailTeam;
-use App\Livewire\Page\Main\Team\Team;
 use App\Livewire\Page\Main\Time\Time;
 use App\Livewire\Page\Main\User\DetailRolePermission;
 use App\Livewire\Page\Main\User\DetailUser;
@@ -122,17 +118,6 @@ Route::middleware(['auth', 'isActive'])->group(function () {
 
         Route::get('/payroll/{period}/print/payments', PrintPayrollPaymentController::class)
             ->name('payroll.print.payments');
-    });
-
-    Route::prefix('divisi')->group(function () {
-        Route::get('/', Divisi::class)->middleware('permission:view-divisi')->name('divisi.view');
-        Route::get('/{divisi}/detail', DetailDivisi::class)->middleware('permission:show-divisi')->name('divisi.show');
-    });
-
-    Route::prefix('teams')->group(function () {
-        Route::get('/', Team::class)->middleware('permission:view-team')->name('team.view');
-        // 'permission:show-team'
-        Route::get('/{team}/detail', DetailTeam::class)->middleware('permission:show-team')->name('team.show');
     });
 
     Route::prefix('employees')->group(function () {

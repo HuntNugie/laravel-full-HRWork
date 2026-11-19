@@ -27,7 +27,6 @@ class DetailTermination extends Component
         $this->termination = $termination->load([
             'employee.user',
             'employee.position',
-            'employee.team.divisi',
             'employeeContract',
             'initiator',
             'canceller',
@@ -166,7 +165,6 @@ class DetailTermination extends Component
             ->with([
                 'employee.user',
                 'employee.position',
-                'employee.team.divisi',
                 'employeeContract',
                 'initiator',
                     'canceller',

@@ -360,7 +360,6 @@ class EmployeeDailyStatusServiceTest extends TestCase
         $employee = Employees::create([
             'employee_code' => 'EMP-' . uniqid(),
             'user_id' => null,
-            'team_id' => null,
             'position_id' => null,
         ]);
 

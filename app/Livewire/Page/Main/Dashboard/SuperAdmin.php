@@ -3,13 +3,11 @@
 namespace App\Livewire\Page\Main\Dashboard;
 
 use App\Models\Attendances;
-use App\Models\Divisi;
 use App\Models\EmployeeAbsenceRequest;
 use App\Models\Employees;
 use App\Models\LeaveRequest;
 use App\Models\PayrollPeriod;
 use App\Models\Position;
-use App\Models\Team;
 use App\Models\User;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
@@ -23,7 +21,7 @@ class SuperAdmin extends Component
         $totalUsers = User::query()->count();
         $activeUsers = User::query()->where('status', 'active')->count();
         $pendingUsers = User::query()->where('status', 'pending')->count();
-        $inactiveUsers = User::query()->where('status', 'non-active')->count();
+        $inactiveUsers = User::query()->where('status', 'inactive')->count();
 
         $activeEmployees = Employees::query()
             ->where('status_employee', 'active')
@@ -60,9 +58,7 @@ class SuperAdmin extends Component
         $pendingActions = $pendingUsers + $pendingLeave + $pendingAbsence;
 
 
-        $organization = [
-            'divisions' => Divisi::query()->count(),
-            'teams' => Team::query()->count(),
+        $masterData = [
             'positions' => Position::query()->count(),
             'roles' => Role::query()->count(),
         ];
@@ -111,7 +107,7 @@ class SuperAdmin extends Component
             'pendingLeave' => $pendingLeave,
             'pendingAbsence' => $pendingAbsence,
             'pendingActions' => $pendingActions,
-            'organization' => $organization,
+            'masterData' => $masterData,
             'latestEmployees' => $latestEmployees,
             'latestPayrollSummary' => $latestPayrollSummary,
         ]);

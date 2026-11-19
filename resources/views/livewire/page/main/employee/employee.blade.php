@@ -5,7 +5,7 @@
         <x-wirekit::stack gap="sm">
 
             <span class="text-sm font-medium text-[#30AFFF]">
-                Organization
+                SDM
             </span>
 
             <h1 class="text-2xl font-bold tracking-tight text-slate-900">
@@ -13,7 +13,7 @@
             </h1>
 
             <p class="text-sm text-slate-500">
-                Kelola data karyawan yang terdapat dalam organisasi.
+                Kelola data karyawan dan jabatan perusahaan.
             </p>
 
         </x-wirekit::stack>
@@ -44,38 +44,20 @@
                     </h2>
 
                     <p class="text-sm text-slate-500">
-                        Daftar karyawan yang terdaftar dalam organisasi.
+                        Daftar karyawan yang terdaftar.
                     </p>
 
                 </x-wirekit::stack>
 
 
                 {{-- Search & Filters --}}
-                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div class="grid gap-3 sm:grid-cols-2">
 
                     <x-wirekit::input
                         placeholder="Cari nama, email, atau employee code"
                         wire:model.live.debounce.500ms="search"
                         name="search"
                         class="text-black"
-                    />
-
-                    <x-wirekit::select
-                        name="filterDivision"
-                        label="Divisi"
-                        hideLabel
-                        placeholder="Semua divisi"
-                        :options="$divisions"
-                        wire:model.live="filterDivision"
-                    />
-
-                    <x-wirekit::select
-                        name="filterTeam"
-                        label="Team"
-                        hideLabel
-                        placeholder="Semua team"
-                        :options="$teams"
-                        wire:model.live="filterTeam"
                     />
 
                     <x-wirekit::select
@@ -124,14 +106,6 @@
 
                             <x-wirekit::table.th sortable column="position">
                                 Position
-                            </x-wirekit::table.th>
-
-                            <x-wirekit::table.th sortable column="division">
-                                Division
-                            </x-wirekit::table.th>
-
-                            <x-wirekit::table.th sortable column="team">
-                                Team
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th sortable column="email">
@@ -200,26 +174,6 @@
                                 </x-wirekit::table.td>
 
 
-                                {{-- Division --}}
-                                <x-wirekit::table.td>
-
-                                    <span class="text-sm text-slate-700">
-                                        {{ $employee->team?->divisi?->name ?? $employee->managedDivisi?->name ?? 'Belum di ketahui' }}
-                                    </span>
-
-                                </x-wirekit::table.td>
-
-
-                                {{-- Team --}}
-                                <x-wirekit::table.td>
-
-                                    <span class="text-sm text-slate-700">
-                                        {{ $employee->team?->name ?? 'Belum di ketahui' }}
-                                    </span>
-
-                                </x-wirekit::table.td>
-
-
                                 {{-- Email --}}
                                 <x-wirekit::table.td>
 
@@ -260,7 +214,7 @@
                         @empty
                             <x-wirekit::table.row>
 
-                                <x-wirekit::table.td colspan="7">
+                                <x-wirekit::table.td colspan="5">
 
                                     <div class="flex flex-col items-center justify-center gap-2 py-10 text-center">
 

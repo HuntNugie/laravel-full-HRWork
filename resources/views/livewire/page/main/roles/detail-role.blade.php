@@ -226,7 +226,7 @@
 
             <x-wirekit::stack gap="xl">
 
-                {{-- ORGANIZATION --}}
+                {{-- PERMISSION GROUPS --}}
                 @forelse($this->getPermissions as $group => $permissions)
                     <x-wirekit::stack gap="md">
 

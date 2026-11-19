@@ -1,15 +1,31 @@
 # HRWork — HRIS for Work
 
-HRWork adalah aplikasi Human Resource Information System (HRIS) berbasis Laravel dan Livewire untuk pengelolaan karyawan, organisasi, kontrak, presensi, cuti/izin, payroll, surat peringatan, resignation, dan termination. Fitur Work Management (master project, division project, dan task) telah dipisahkan dari aplikasi.
+HRWork (*HRIS for Work*) adalah aplikasi Human Resource Information System berbasis Laravel dan Livewire yang berfokus pada **Karyawan**, **HRD**, dan **Administrator**. Layanan inti: data karyawan, jabatan (Position), kontrak kerja, presensi, cuti/izin, payroll, surat peringatan, resignation, dan termination. Work Management dan struktur organisasi (Divisi/Team) sudah dipensiunkan dari alur HRIS aktif.
 
-## Transisi dari Work Management
+## Ruang Lingkup dan Hak Akses
 
-- Struktur **Divisi, Team, Manager, dan Supervisor** tetap dipertahankan untuk kebutuhan organisasi dan monitoring presensi.
-- Handover pada resignation dan termination sekarang **dicatat manual oleh HR**, dengan penerima, status, catatan, dan verifikasi; tidak lagi memindahkan assignment Task.
-- Sebelum menjalankan migration pada database yang pernah digunakan, **buat backup database**. Migration `2026_11_19_000000_archive_work_management_tables` memindahkan sembilan tabel Work Management lama ke nama `archive_*`, **tidak menghapus data historisnya**.
-- Referensi `task_id` pada item handover lama dipertahankan sebagai `legacy_task_id` tanpa foreign key agar data exit historis tetap dapat ditelusuri.
-- Setelah menarik branch ini pada laptop, jalankan `composer install`, `php artisan migrate`, dan `php artisan test` menggunakan konfigurasi database yang sesuai. Jangan menjalankan `migrate:fresh` pada database yang berisi data nyata karena perintah tersebut menghapus seluruh tabel.
-- Seeder `HRISDevelopmentSeeder` ditujukan untuk lingkungan pengembangan. Gunakan `php artisan db:seed` hanya ketika memang ingin menambahkan/memperbarui data seeder.
+- **Karyawan:** layanan mandiri (presensi, data diri, kontrak, payroll, cuti/izin, riwayat SP, resignation).
+- **HRD (`hr`):** data dan jabatan karyawan, kontrak, payroll, cuti/izin, presensi, SP, resignation, termination, serta AI Assistant dan CV Analyzer.
+- **Administrator (`administrator`):** pengelolaan akun, status aktif akun, penggantian password, role dan permission; tidak otomatis mendapat akses operasional HRD.
+- **Superadmin (`super-admin`):** akses keseluruhan fitur melalui `Gate::before`, termasuk fungsi semua peran.
+- Jabatan **Manager**, **Supervisor**, dan **General Manager** tetap boleh ada sebagai nama Position dalam data/kontrak, **bukan** role atau penugasan organisasi.
+- Handover resignation/termination tetap berupa item manual HRD. Clearance organisasi lama hanya arsip dan tidak lagi memblokir penyelesaian.
+
+## Migrasi dari Struktur Lama (Database Eksisting)
+
+1. **Backup database**, verifikasi pemulihan backup, dan jadwalkan waktu pemeliharaan. Jangan jalankan `migrate:fresh` di database nyata.
+2. Checkout branch `refactor/remove-work-management-hris`, install dependensi dengan `composer install`, lalu jalankan `php artisan migrate`.
+3. Migrasi `2026_11_19_000000_archive_work_management_tables` mempertahankan sembilan tabel proyek pada nama `archive_*` dan memindahkan referensi handover `task_id` ke `legacy_task_id`.
+4. Migrasi `2026_11_19_000100_archive_organization_structure` mempertahankan tabel `divisis` dan `teams` sebagai `archive_divisis` dan `archive_teams`; `employees.team_id` historis disalin ke `employees.legacy_team_id` sebelum FK dan kolom aktif dilepas. **Tidak ada data historis yang dihapus.**
+5. Jalankan `php artisan db:seed --class=PermissionSeeder`, `php artisan db:seed --class=RoleSeeder`, lalu `php artisan db:seed --class=RolePermissionSeeder`. Tahap ini mencabut permission divisi/team, mempensiunkan role manager/supervisor lama, dan mengalihkan akun karyawan terdampak ke role employee.
+6. Pastikan pengguna Administrator mempunyai permission pengelolaan akun dan HRD mempunyai permission terkait Karyawan dan Termination. Jalankan `php artisan permission:cache-reset`.
+7. Jalankan `php artisan test` dan lakukan uji manual login, role, pembuatan karyawan/kontrak, detail karyawan, presensi, cuti, penggajian dan exit. Deploy hanya setelah hasilnya sesuai.
+
+### Seeder
+
+- `php artisan db:seed` menjalankan katalog hak akses, pembuatan **Superadmin** berdasarkan `SUPERADMIN_EMAIL` dan **`SUPERADMIN_PASSWORD` wajib di `.env`**, master bank dan konfigurasi HR. Password tersebut tidak dibuat otomatis; hindari hard-coded credential produksi.
+- Seeder `HRISDevelopmentSeeder` kini **hanya untuk development** dan tidak dipanggil oleh `DatabaseSeeder`: jalankan secara sengaja dengan `php artisan db:seed --class=HRISDevelopmentSeeder` di lingkungan pengujian. Seeder ini membuat 50 akun contoh dengan Position tanpa divisi/team. **Jangan jalankan di produksi.**
+- Seeder ini tidak menghapus data karyawan aktif maupun arsip lama. Simpan dump `hris.sql` hanya sebagai rekaman historis, bukan skema target.
 
 ## Laravel
 
