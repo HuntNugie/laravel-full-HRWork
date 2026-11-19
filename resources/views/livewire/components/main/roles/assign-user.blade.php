@@ -22,7 +22,7 @@
             <p class="text-sm text-slate-500">
                 Pilih user yang ingin diberikan role
                 <span class="font-medium text-slate-700">
-                    HR Manager
+                    {{ $role->name }}
                 </span>.
             </p>
 

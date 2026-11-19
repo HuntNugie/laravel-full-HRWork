@@ -46,7 +46,10 @@ class DetailRole extends Component
 
     public function removeUser($userId)
     {
+        $this->authorize('assignUser', $this->role);
+        abort_if($this->role->name === 'super-admin' && ! auth()->user()->hasRole('super-admin'), 403);
         $user = $this->role->users()->find($userId);
+        abort_if($user?->hasRole('super-admin') && ! auth()->user()->hasRole('super-admin'), 403);
         if ($user) {
             $user->removeRole($this->role);
             $this->dispatch(

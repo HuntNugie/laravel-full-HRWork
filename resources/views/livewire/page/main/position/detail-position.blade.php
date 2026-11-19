@@ -292,10 +292,6 @@
                                 Employee
                             </x-wirekit::table.th>
 
-                            <x-wirekit::table.th sortable column="team">
-                                Team
-                            </x-wirekit::table.th>
-
                             <x-wirekit::table.th sortable column="salary">
                                 Salary / Day
                             </x-wirekit::table.th>
@@ -352,14 +348,6 @@
                                 </x-wirekit::table.td>
 
 
-                                <x-wirekit::table.td>
-
-                                    <span class="text-sm text-slate-700">
-                                        {{ $employee->team->name ?? 'Belum ada team' }}
-                                    </span>
-
-                                </x-wirekit::table.td>
-
 
                                 <x-wirekit::table.td>
 
@@ -394,7 +382,7 @@
                             </x-wirekit::table.row>
                         @empty
                             <x-wirekit::table.row>
-                                <x-wirekit::table.td colspan="5">
+                                <x-wirekit::table.td colspan="4">
                                     <div class="py-6 text-center text-sm text-slate-500">
                                         Belum ada employee pada posisi ini.
                                     </div>

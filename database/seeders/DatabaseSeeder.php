@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use Aliziodev\Wilayah\Database\Seeders\WilayahSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,8 +22,11 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
 
-            // Organization and master data.
-            DivisiSeeder::class,
+            // Master alamat dari paket aliziodev/laravel-wilayah (4 level).
+            // Data wilayah tidak otomatis terisi saat migration saja.
+            WilayahSeeder::class,
+
+            // HR master data.
             BankSeeder::class,
 
             // Final role -> permission mapping, including employee warning letter access.
@@ -33,8 +38,13 @@ class DatabaseSeeder extends Seeder
             LateDisciplineRuleSeeder::class,
             UnpresentDisciplineRuleSeeder::class,
 
-            // Coherent development data for local testing.
-            WorkManagementDevelopmentSeeder::class,
         ]);
+
+        // Migrasi ulang tidak mengosongkan cache eksternal; hindari alamat usang.
+        Artisan::call('wilayah:cache-clear');
+
+        // Data contoh tersedia di semua environment, termasuk production.
+        // Password akun demo di luar local/testing wajib dikonfigurasi terpisah.
+        $this->call(HRISDevelopmentSeeder::class);
     }
 }

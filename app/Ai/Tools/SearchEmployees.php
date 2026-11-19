@@ -15,7 +15,7 @@ class SearchEmployees implements Tool
      */
     public function description(): Stringable|string
     {
-        return 'Search employee records in HRWork by name, email, employee code, position, team, division, or status. Use this tool whenever the user asks about employees or employee lists. Always return the employee ID and employee code so the result can be passed to GetEmployeeDetails or another employee-specific tool. Only read employee data; never modify records.';
+        return 'Search employee records in HRWork by name, email, employee code, position, or status. Return employee ID and code to use in GetEmployeeDetails. Read-only.';
     }
 
     /**
@@ -34,8 +34,6 @@ class SearchEmployees implements Tool
 
         $query = trim((string) ($request['query'] ?? ''));
         $position = trim((string) ($request['position'] ?? ''));
-        $team = trim((string) ($request['team'] ?? ''));
-        $division = trim((string) ($request['division'] ?? ''));
         $status = trim((string) ($request['status'] ?? ''));
         $limit = min(max((int) ($request['limit'] ?? 10), 1), 20);
 
@@ -43,9 +41,6 @@ class SearchEmployees implements Tool
             ->with([
                 'user:id,name,email',
                 'position:id,name',
-                'team:id,name,divisi_id',
-                'team.divisi:id,name',
-                'managedDivisi:id,name',
             ])
             ->when($query !== '', function ($q) use ($query) {
                 $q->where(function ($queryBuilder) use ($query) {
@@ -58,37 +53,12 @@ class SearchEmployees implements Tool
                         })
                         ->orWhereHas('position', function ($positionQuery) use ($query) {
                             $positionQuery->where('name', 'like', "%{$query}%");
-                        })
-                        ->orWhereHas('team', function ($teamQuery) use ($query) {
-                            $teamQuery->where('name', 'like', "%{$query}%");
-                        })
-                        ->orWhereHas('team.divisi', function ($divisionQuery) use ($query) {
-                            $divisionQuery->where('name', 'like', "%{$query}%");
-                        })
-                        ->orWhereHas('managedDivisi', function ($divisionQuery) use ($query) {
-                            $divisionQuery->where('name', 'like', "%{$query}%");
                         });
                 });
             })
             ->when($position !== '', function ($q) use ($position) {
                 $q->whereHas('position', function ($positionQuery) use ($position) {
                     $positionQuery->where('name', 'like', "%{$position}%");
-                });
-            })
-            ->when($team !== '', function ($q) use ($team) {
-                $q->whereHas('team', function ($teamQuery) use ($team) {
-                    $teamQuery->where('name', 'like', "%{$team}%");
-                });
-            })
-            ->when($division !== '', function ($q) use ($division) {
-                $q->where(function ($query) use ($division) {
-                    $query
-                        ->whereHas('team.divisi', function ($divisionQuery) use ($division) {
-                            $divisionQuery->where('name', 'like', "%{$division}%");
-                        })
-                        ->orWhereHas('managedDivisi', function ($divisionQuery) use ($division) {
-                            $divisionQuery->where('name', 'like', "%{$division}%");
-                        });
                 });
             })
             ->when($status !== '', function ($q) use ($status) {
@@ -108,9 +78,6 @@ class SearchEmployees implements Tool
                     'name' => $employee->user?->name,
                     'email' => $employee->user?->email,
                     'position' => $employee->position?->name,
-                    'division' => $employee->team?->divisi?->name
-                        ?? $employee->managedDivisi?->name,
-                    'team' => $employee->team?->name,
                     'status' => $employee->status_employee,
                 ];
             })->values()->all(),
@@ -125,8 +92,6 @@ class SearchEmployees implements Tool
         return [
             'query' => $schema->string(),
             'position' => $schema->string(),
-            'team' => $schema->string(),
-            'division' => $schema->string(),
             'status' => $schema->string(),
             'limit' => $schema->integer()->min(1)->max(20),
         ];

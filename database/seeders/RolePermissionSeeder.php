@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Employees;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -45,17 +45,6 @@ class RolePermissionSeeder extends Seeder
             'hr' => [
                 'view-ai-assistant',
                 'view-cv-analyzer',
-                'view-divisi',
-                'show-divisi',
-                'create-divisi',
-                'update-divisi',
-                'delete-divisi',
-                'view-team',
-                'show-team',
-                'create-team',
-                'update-team',
-                'assign-team-employee',
-                'remove-team-employee',
                 'view-position',
                 'show-position',
                 'create-position',
@@ -64,9 +53,6 @@ class RolePermissionSeeder extends Seeder
                 'show-employee',
                 'create-employee',
                 'update-employee',
-                'create-user',
-                'view-user',
-                'show-user',
                 'view-contract',
                 'show-contract',
                 'create-contract',
@@ -119,6 +105,8 @@ class RolePermissionSeeder extends Seeder
                 'cancel-resignation',
                 'manage-resignation-clearance',
                 'complete-resignation',
+                'view-termination',
+                'show-termination',
                 'create-termination',
                 'cancel-termination',
                 'manage-termination-clearance',
@@ -136,38 +124,10 @@ class RolePermissionSeeder extends Seeder
                 'update-role',
                 'delete-role',
                 'assign-role',
-                'view-status-daily',
+                'reset-user-password',
+                'change-user-status',
             ],
 
-            'general-manager' => [
-                'view-master-project',
-                'create-master-project',
-                'approve-master-project',
-                'view-division-project',
-                'create-division-project',
-                'assign-project-team',
-                'review-division-project',
-            ],
-
-            'manager' => [
-                'view-master-project',
-                'view-division-project',
-                'assign-project-team',
-                'submit-division-project-to-gm',
-            ],
-
-            'supervisor' => [
-                'view-master-project',
-                'view-division-project',
-                'create-task',
-            ],
-
-            'task-worker' => [
-                'view-master-project',
-                'view-division-project',
-                'view-task',
-                'update-own-task',
-            ],
         ];
 
         foreach (array_keys($rolePermissions) as $roleName) {
@@ -200,34 +160,21 @@ class RolePermissionSeeder extends Seeder
                 );
         }
 
-        $this->syncWorkManagementIdentityRoles();
-    }
+        // Retire Work Management and organizational roles; keep employee accounts usable.
+        foreach (['general-manager', 'task-worker', 'manager', 'supervisor'] as $retiredRole) {
+            $role = Role::query()->where('name', $retiredRole)->where('guard_name', 'web')->first();
 
-    /**
-     * Repair Work Management identity roles for existing employee records.
-     *
-     * Permission seeding alone cannot make an existing GM usable when the
-     * employee account was created before the Work Management roles existed.
-     */
-    private function syncWorkManagementIdentityRoles(): void
-    {
-        Employees::query()
-            ->with(['user', 'position'])
-            ->whereNotNull('user_id')
-            ->get()
-            ->each(function (Employees $employee): void {
-                $user = $employee->user;
+            if (! $role) {
+                continue;
+            }
 
-                if (! $user) {
-                    return;
-                }
-
-                $position = mb_strtolower(trim((string) $employee->position?->name));
-
-                if ($position === 'general manager') {
+            User::role($retiredRole)->each(function (User $user): void {
+                if ($user->employees()->exists()) {
                     $user->assignRole('employee');
-                    $user->assignRole('general-manager');
                 }
             });
+
+            $role->delete();
+        }
     }
 }

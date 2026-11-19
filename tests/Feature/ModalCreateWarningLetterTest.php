@@ -53,14 +53,12 @@ class ModalCreateWarningLetterTest extends TestCase
         $alice = Employees::create([
             'employee_code' => 'EMP-ALICE',
             'user_id' => $aliceUser->id,
-            'team_id' => null,
             'position_id' => null,
         ]);
 
         Employees::create([
             'employee_code' => 'EMP-BOB',
             'user_id' => $bobUser->id,
-            'team_id' => null,
             'position_id' => null,
         ]);
 
@@ -93,7 +91,6 @@ class ModalCreateWarningLetterTest extends TestCase
         $employee = Employees::create([
             'employee_code' => 'EMP-ALICE',
             'user_id' => $employeeUser->id,
-            'team_id' => null,
             'position_id' => null,
         ]);
 

@@ -18,19 +18,20 @@ class DetailResignation extends Component
 
     public string $actionNote = '';
     public string $exitInterviewNotes = '';
+    public string $handoverTitle = '';
+    public string $handoverDescription = '';
     public array $handoverRecipients = [];
+    public array $handoverNotes = [];
 
     public function mount(EmployeeResignation $resignation): void
     {
         $this->resignation = $resignation->load([
             'employee.user',
             'employee.position',
-            'employee.team.divisi',
             'employeeContract',
             'reviewer',
             'histories.actor',
             'clearances.verifier',
-            'handoverItems.task',
             'handoverItems.handoverTo.user',
             'exitInterviewer',
         ]);
@@ -45,6 +46,31 @@ class DetailResignation extends Component
             $this->handoverRecipients[$item->id] = $item->handover_to_employee_id
                 ? (string) $item->handover_to_employee_id
                 : '';
+            $this->handoverNotes[$item->id] = $item->notes ?? '';
+        }
+    }
+
+    public function addHandoverItem(): void
+    {
+        abort_unless(Auth::user()->can('manage-resignation-clearance'), 403);
+
+        $this->validate([
+            'handoverTitle' => ['required', 'string', 'max:255'],
+            'handoverDescription' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        try {
+            app(ResignationService::class)->createHandoverItem(
+                resignation: $this->resignation,
+                title: $this->handoverTitle,
+                description: $this->handoverDescription,
+            );
+
+            $this->reset('handoverTitle', 'handoverDescription');
+            $this->reload();
+            session()->flash('success', 'Item handover berhasil ditambahkan.');
+        } catch (\LogicException $exception) {
+            $this->addError('handover', $exception->getMessage());
         }
     }
 
@@ -163,8 +189,9 @@ class DetailResignation extends Component
                 item: $item,
                 verifier: Auth::user(),
                 status: $status,
-                handoverToEmployeeId: $this->handoverRecipients[$itemId] ?? null,
-                notes: null,
+                handoverToEmployeeId: is_numeric($this->handoverRecipients[$itemId] ?? null)
+                    ? (int) $this->handoverRecipients[$itemId] : null,
+                notes: $this->handoverNotes[$itemId] ?? null,
             );
 
             $this->reload();
@@ -218,12 +245,10 @@ class DetailResignation extends Component
             ->with([
                 'employee.user',
                 'employee.position',
-                'employee.team.divisi',
                 'employeeContract',
                 'reviewer',
                 'histories.actor',
                 'clearances.verifier',
-                'handoverItems.task',
                 'handoverItems.handoverTo.user',
                     'exitInterviewer',
             ])

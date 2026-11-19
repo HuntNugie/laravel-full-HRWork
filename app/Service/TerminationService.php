@@ -8,7 +8,6 @@ use App\Models\EmployeeTerminationClearance;
 use App\Models\EmployeeTerminationHandoverItem;
 use App\Models\EmployeeTerminationHistory;
 use App\Models\Employees;
-use App\Models\Task;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,6 @@ class TerminationService
         'finance',
         'document',
         'access',
-        'organization',
     ];
 
     private const REASON_TYPES = [
@@ -133,8 +131,7 @@ class TerminationService
                 'status' => EmployeeTermination::STATUS_IN_PROGRESS,
             ]);
 
-            $this->prepareHandover($termination);
-            $this->prepareClearances($termination, $initiatedBy);
+            $this->prepareClearances($termination);
 
             $this->recordHistory(
                 termination: $termination,
@@ -170,10 +167,6 @@ class TerminationService
             }
 
             $exitActions = app(EmployeeExitActionService::class);
-
-            foreach ($termination->handoverItems as $item) {
-                $exitActions->rollbackHandover($item);
-            }
 
             foreach ($termination->clearances as $clearance) {
                 $exitActions->rollbackClearance($clearance);
@@ -255,6 +248,32 @@ class TerminationService
         });
     }
 
+    public function createHandoverItem(
+        EmployeeTermination $termination,
+        string $title,
+        ?string $description = null,
+    ): EmployeeTerminationHandoverItem {
+        $title = trim($title);
+
+        if ($title === '' || mb_strlen($title) > 255) {
+            throw new LogicException('Judul handover wajib diisi (maksimal 255 karakter).');
+        }
+
+        return DB::transaction(function () use ($termination, $title, $description) {
+            $termination = EmployeeTermination::query()->lockForUpdate()->findOrFail($termination->id);
+
+            if ($termination->status !== EmployeeTermination::STATUS_IN_PROGRESS) {
+                throw new LogicException('Handover hanya dapat ditambahkan pada PHK yang sedang berjalan.');
+            }
+
+            return $termination->handoverItems()->create([
+                'title' => $title,
+                'description' => $description ? trim($description) : null,
+                'status' => EmployeeTerminationHandoverItem::STATUS_PENDING,
+            ]);
+        });
+    }
+
     public function updateHandover(
         EmployeeTerminationHandoverItem $item,
         User $verifier,
@@ -288,8 +307,6 @@ class TerminationService
                 throw new LogicException('Handover hanya dapat diproses pada PHK yang sedang berjalan.');
             }
 
-            $previousStatus = $item->status;
-
             if ($handoverToEmployeeId !== null) {
                 $employee = Employees::query()->find($handoverToEmployeeId);
 
@@ -300,17 +317,9 @@ class TerminationService
 
             if (
                 $status === EmployeeTerminationHandoverItem::STATUS_COMPLETED
-                && $item->task_id !== null
                 && $handoverToEmployeeId === null
             ) {
                 throw new LogicException('Penerima handover wajib ditentukan sebelum pekerjaan diselesaikan.');
-            }
-
-            if (
-                $previousStatus === EmployeeTerminationHandoverItem::STATUS_COMPLETED
-                && $status !== EmployeeTerminationHandoverItem::STATUS_COMPLETED
-            ) {
-                app(EmployeeExitActionService::class)->rollbackHandover($item);
             }
 
             $item->update([
@@ -320,13 +329,6 @@ class TerminationService
                 'verified_by' => $verifier->id,
                 'verified_at' => now(),
             ]);
-
-            if ($status === EmployeeTerminationHandoverItem::STATUS_COMPLETED) {
-                app(EmployeeExitActionService::class)->applyHandover(
-                    item: $item->refresh(),
-                    actor: $verifier,
-                );
-            }
 
             return $item->refresh();
         });
@@ -373,18 +375,9 @@ class TerminationService
                 throw new LogicException('Employee sudah tidak aktif sehingga PHK tidak dapat diselesaikan.');
             }
 
-            $employee->supervisorTeam()->update([
-                'supervisor_id' => null,
-            ]);
-
-            $employee->managedDivisi()->update([
-                'manager_id' => null,
-            ]);
-
             $employee->update([
                 'status_employee' => 'terminated',
                 'TerminationDate' => Carbon::parse($effectiveDate)->toDateString(),
-                'team_id' => null,
             ]);
 
             if ($employee->user) {
@@ -437,22 +430,14 @@ class TerminationService
             'employee',
         ]);
 
-        $clearanceReady = $termination->clearances->every(
+        // Kategori organisasi lama tetap tercatat, tetapi tidak lagi menghambat PHK.
+        $clearanceReady = $termination->clearances->where('category', '!=', 'organization')->every(
             fn (EmployeeTerminationClearance $clearance) =>
                 in_array($clearance->status, [
                     EmployeeTerminationClearance::STATUS_COMPLETED,
                     EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,
                 ], true)
         );
-
-        $organizationClearance = $termination->clearances
-            ->firstWhere('category', 'organization');
-
-        $organizationReady = !$organizationClearance
-            || in_array($organizationClearance->status, [
-                EmployeeTerminationClearance::STATUS_COMPLETED,
-                EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,
-            ], true);
 
         $handoverReady = $termination->handoverItems->every(
             fn (EmployeeTerminationHandoverItem $item) =>
@@ -472,21 +457,17 @@ class TerminationService
         return [
             'clearance' => $clearanceReady,
             'handover' => $handoverReady,
-            'organization' => $organizationReady,
             'leave' => $leaveReady,
             'effective_date' => $effectiveDateReached,
             'ready' => $effectiveDateReached
                 && $clearanceReady
                 && $handoverReady
-                && $organizationReady
                 && $leaveReady,
         ];
     }
 
-    private function prepareClearances(
-        EmployeeTermination $termination,
-        User $verifier,
-    ): void {
+    private function prepareClearances(EmployeeTermination $termination): void
+    {
         foreach (self::CLEARANCE_CATEGORIES as $category) {
             EmployeeTerminationClearance::query()->firstOrCreate([
                 'termination_id' => $termination->id,
@@ -494,47 +475,15 @@ class TerminationService
             ]);
         }
 
-        $work = $termination->clearances()
-            ->where('category', 'work')
-            ->firstOrFail();
-
-        if ($termination->handoverItems()->doesntExist()) {
-            $work->update([
-                'status' => EmployeeTerminationClearance::STATUS_COMPLETED,
-                'verified_by' => $verifier->id,
-                'verified_at' => now(),
-                'notes' => 'Tidak ada pekerjaan aktif yang perlu dihandover.',
-            ]);
-        }
-
-    }
-
-    private function prepareHandover(EmployeeTermination $termination): void
-    {
-        $tasks = Task::query()
-            ->where('assignee_id', $termination->employee_id)
-            ->whereNotIn('status', [
-                Task::STATUS_DONE,
-                Task::STATUS_CANCELLED,
-            ])
-            ->orderBy('due_date')
-            ->orderBy('id')
-            ->get();
-
-        foreach ($tasks as $task) {
-            EmployeeTerminationHandoverItem::query()->firstOrCreate([
-                'termination_id' => $termination->id,
-                'task_id' => $task->id,
-            ], [
-                'title' => $task->title,
-                'description' => $task->description,
-            ]);
-        }
     }
 
     private function ensureClearanceCompleted(EmployeeTermination $termination): void
     {
         foreach ($termination->clearances as $clearance) {
+            if ($clearance->category === 'organization') {
+                continue;
+            }
+
             if (!in_array($clearance->status, [
                 EmployeeTerminationClearance::STATUS_COMPLETED,
                 EmployeeTerminationClearance::STATUS_NOT_APPLICABLE,

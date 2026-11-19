@@ -2,14 +2,9 @@
 
 namespace App\Service;
 
-use App\Models\Divisi;
 use App\Models\EmployeeResignationClearance;
-use App\Models\EmployeeResignationHandoverItem;
 use App\Models\EmployeeTerminationClearance;
-use App\Models\EmployeeTerminationHandoverItem;
 use App\Models\Employees;
-use App\Models\Task;
-use App\Models\Team;
 use App\Models\User;
 
 class EmployeeExitActionService
@@ -67,49 +62,7 @@ class EmployeeExitActionService
         }
 
         if ($category === 'organization') {
-            $employee = $this->employeeForClearance($clearance);
-
-            $team = Team::query()
-                ->where('supervisor_id', $employee->id)
-                ->lockForUpdate()
-                ->first();
-
-            $division = Divisi::query()
-                ->where('manager_id', $employee->id)
-                ->lockForUpdate()
-                ->first();
-
-            $state = [
-                'action' => 'release_organization',
-                'applied' => true,
-                'before' => [
-                    'employee_team_id' => $employee->team_id,
-                    'supervisor_team_id' => $team?->id,
-                    'managed_division_id' => $division?->id,
-                ],
-                'after' => [
-                    'employee_team_id' => null,
-                    'supervisor_team_id' => $team?->id,
-                    'managed_division_id' => $division?->id,
-                ],
-                'actor_id' => $actor->id,
-                'applied_at' => now()->toISOString(),
-            ];
-
-            if ($team) {
-                $team->update(['supervisor_id' => null]);
-            }
-
-            if ($division) {
-                $division->update(['manager_id' => null]);
-            }
-
-            $employee->update([
-                'team_id' => null,
-            ]);
-
-            $this->storeState($clearance, $state);
-
+            // Clearance historis tetap bisa dibaca, tanpa mutasi struktur yang dipensiunkan.
             return;
         }
 
@@ -144,114 +97,7 @@ class EmployeeExitActionService
             }
         }
 
-        if (($state['action'] ?? null) === 'release_organization') {
-            if (
-                $employee->team_id === ($after['employee_team_id'] ?? null)
-                && (!empty($before['employee_team_id'])
-                    ? Team::query()->whereKey($before['employee_team_id'])->exists()
-                    : true)
-            ) {
-                $employee->update([
-                    'team_id' => $before['employee_team_id'] ?? null,
-                ]);
-            }
-
-            if (!empty($before['supervisor_team_id'])) {
-                Team::query()
-                    ->whereKey($before['supervisor_team_id'])
-                    ->whereNull('supervisor_id')
-                    ->update([
-                        'supervisor_id' => $employee->id,
-                    ]);
-            }
-
-            if (!empty($before['managed_division_id'])) {
-                Divisi::query()
-                    ->whereKey($before['managed_division_id'])
-                    ->whereNull('manager_id')
-                    ->update([
-                        'manager_id' => $employee->id,
-                    ]);
-            }
-        }
-
         $this->storeState($clearance, array_merge($state, [
-            'applied' => false,
-            'rolled_back_at' => now()->toISOString(),
-        ]));
-    }
-
-    public function applyHandover(
-        EmployeeResignationHandoverItem|EmployeeTerminationHandoverItem $item,
-        User $actor,
-    ): void {
-        if ($item->task_id === null || $item->handover_to_employee_id === null) {
-            return;
-        }
-
-        $state = $item->action_state;
-
-        if (($state['applied'] ?? false) === true) {
-            return;
-        }
-
-        $task = Task::query()
-            ->lockForUpdate()
-            ->find($item->task_id);
-
-        if (!$task) {
-            return;
-        }
-
-        $previousAssigneeId = $task->assignee_id;
-
-        $task->update([
-            'assignee_id' => $item->handover_to_employee_id,
-        ]);
-
-        $this->storeState($item, [
-            'action' => 'reassign_task',
-            'applied' => true,
-            'before' => [
-                'task_id' => $task->id,
-                'assignee_id' => $previousAssigneeId,
-            ],
-            'after' => [
-                'task_id' => $task->id,
-                'assignee_id' => $item->handover_to_employee_id,
-            ],
-            'actor_id' => $actor->id,
-            'applied_at' => now()->toISOString(),
-        ]);
-    }
-
-    public function rollbackHandover(
-        EmployeeResignationHandoverItem|EmployeeTerminationHandoverItem $item,
-    ): void {
-        $state = $item->action_state;
-
-        if (!($state['applied'] ?? false) || ($state['action'] ?? null) !== 'reassign_task') {
-            return;
-        }
-
-        $before = $state['before'] ?? [];
-        $after = $state['after'] ?? [];
-
-        if (empty($before['task_id'])) {
-            return;
-        }
-
-        $task = Task::query()
-            ->lockForUpdate()
-            ->find($before['task_id']);
-
-        if ($task && $task->assignee_id === ($after['assignee_id'] ?? null)) {
-            $task->update([
-                'assignee_id' => $before['assignee_id'] ?? null,
-            ]);
-        }
-
-        $this->storeState($item, array_merge($state, [
             'applied' => false,
             'rolled_back_at' => now()->toISOString(),
         ]));
@@ -263,15 +109,6 @@ class EmployeeExitActionService
     ): void {
         if ($clearance->status === 'completed') {
             $this->applyClearance($clearance, $actor);
-        }
-    }
-
-    public function applyCompletedHandoverAction(
-        EmployeeResignationHandoverItem|EmployeeTerminationHandoverItem $item,
-        User $actor,
-    ): void {
-        if ($item->status === 'completed') {
-            $this->applyHandover($item, $actor);
         }
     }
 

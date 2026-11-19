@@ -95,6 +95,9 @@
 
 
 
+                    @can('change-user-status')
+                    @if (! $user->hasRole('super-admin') || auth()->user()->hasRole('super-admin'))
+                    @if (! $user->is(auth()->user()))
                     <x-wirekit::button type="button" wire:click="actionStatusAccount" @class([
                         'text-white ',
                         'bg-green-500 hover:bg-green-600' =>
@@ -103,6 +106,9 @@
                     ])>
                         {{ $user->status === 'active' ? 'Deactivate' : 'Activate' }} Account
                     </x-wirekit::button>
+                    @endif
+                    @endif
+                    @endcan
                 </div>
 
             </div>
@@ -231,12 +237,14 @@
 
 
                     @can('assign-role')
+                    @if (! $user->hasRole('super-admin') || auth()->user()->hasRole('super-admin'))
                         <livewire:components.main.user.modal-edit-role :user="$user">
                             <x-wirekit::button variant="outline" size="sm">
                                 <x-wirekit::icon name="shield-check" />
                                 Ubah Role
                             </x-wirekit::button>
                         </livewire:components.main.user.modal-edit-role>
+                    @endif
                     @endcan
 
 
@@ -373,32 +381,6 @@
                     <div>
 
                         <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Division
-                        </p>
-
-                        <p class="mt-1 text-sm font-medium text-slate-700">
-                            {{ $user->employees->team->divisi->name ?? 'Belum ada divisi' }}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Team
-                        </p>
-
-                        <p class="mt-1 text-sm font-medium text-slate-700">
-                            {{ $user->employees->team->name ?? 'Belum ada team' }}
-                        </p>
-
-                    </div>
-
-
-                    <div>
-
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
                             Employee Status
                         </p>
 
@@ -461,12 +443,14 @@
 
                         </div>
 
-                        @can(['update-user'])
+                        @can('reset-user-password')
+                        @if (! $user->hasRole('super-admin') || auth()->user()->hasRole('super-admin'))
                             <livewire:components.main.user.modal-change-password :user="$user">
                                 <x-wirekit::button type="button" size="sm" intent="danger">
                                     Change Password
                                 </x-wirekit::button>
                             </livewire:components.main.user.modal-change-password>
+                        @endif
                         @endcan
 
                     </div>

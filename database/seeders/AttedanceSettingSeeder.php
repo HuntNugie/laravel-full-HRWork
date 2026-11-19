@@ -13,7 +13,7 @@ class AttedanceSettingSeeder extends Seeder
      */
     public function run(): void
     {
-        AttedanceSetting::create([
+        AttedanceSetting::firstOrCreate([], [
             'late_tolerance_minutes' => 5,
         ]);
     }

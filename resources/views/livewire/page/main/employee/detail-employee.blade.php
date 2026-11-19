@@ -110,13 +110,6 @@
                                 {{ $employee?->position->name ?? 'Belum di ketahui' }}
                             </span>
 
-                            <span
-                                class="inline-flex items-center rounded-full
-                                       bg-slate-100 px-2.5 py-1
-                                       text-xs font-medium text-slate-600">
-                                {{ $employee?->team->divisi->name ?? 'Belum di ketahui' }}
-                            </span>
-
                         </div>
 
                     </x-wirekit::stack>
@@ -493,7 +486,7 @@
 
 
 
-        {{-- Team & Position --}}
+        {{-- Position --}}
         <x-wirekit::card>
 
             <x-wirekit::card.header>
@@ -501,23 +494,13 @@
                 <x-wirekit::stack gap="1">
 
                     <h2 class="text-lg font-semibold text-slate-900">
-                        Penempatan Kerja
+                        Informasi Jabatan
                     </h2>
 
                     <p class="text-sm text-slate-500">
-                        Informasi posisi dan tim karyawan.
+                        Informasi jabatan dan status karyawan.
                     </p>
 
-
-                    @if (!$employee?->supervisorTeam)
-                        <livewire:components.main.employee.modal-add-team :employee="$employee">
-                            <x-wirekit::button>
-                                <x-wirekit::icon name="{{ $employee?->team ? 'paint-brush' : 'plus' }}"
-                                    intent="primary" />
-                                {{ $employee?->team ? ' Ubah' : ' Tambahkan' }} team karyawan
-                            </x-wirekit::button>
-                        </livewire:components.main.employee.modal-add-team>
-                    @endif
 
                 </x-wirekit::stack>
 
@@ -525,26 +508,8 @@
 
 
             <x-wirekit::card.body>
-                @if ($employee?->team || $employee?->position)
+                @if ($employee?->position)
                     <div class="grid gap-6 sm:grid-cols-2">
-
-                        {{-- Team --}}
-                        <div>
-
-                            <span class="text-xs font-medium text-slate-400">
-                                Team
-                            </span>
-
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                {{ $employee?->team->name ?? 'Belum di tambahkan' }}
-
-                                @if ($employee?->supervisorTeam)
-                                    <x-wirekit::badge intent="success">Supervisor</x-wirekit::badge>
-                                @endif
-                            </p>
-
-                        </div>
 
                         {{-- Position --}}
                         <div>
@@ -602,7 +567,7 @@
                     </div>
                 @else
                     <div>
-                        Belum di tempatkan kerja
+                        Jabatan karyawan belum ditetapkan.
                     </div>
                 @endif
             </x-wirekit::card.body>

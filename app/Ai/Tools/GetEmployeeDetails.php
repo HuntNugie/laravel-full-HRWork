@@ -12,7 +12,7 @@ class GetEmployeeDetails extends HRTool implements Tool
 {
     public function description(): Stringable|string
     {
-        return 'Get a detailed HRWork employee profile after an employee has been identified. employee_id is optional when an employee_id was returned by SearchEmployees. You may also identify the employee by employee_code or a name/email query. Use this tool for detailed profile, organization, contract summary, or employment history. Do not ask the user for an internal employee_id when SearchEmployees already identified the employee.';
+        return 'Get a detailed HRWork employee profile after employee identification, including job position, contract summary and employment history. Accept ID, code, or name/email query.';
     }
 
     public function handle(Request $request): Stringable|string
@@ -46,11 +46,6 @@ class GetEmployeeDetails extends HRTool implements Tool
                 'user:id,name,email,status',
                 'profile:id,employee_id,gender,phone_number,nik,birth_date,birth_address',
                 'position:id,name',
-                'team:id,name,divisi_id,supervisor_id',
-                'team.divisi:id,name,manager_id',
-                'team.supervisor:id,user_id,employee_code',
-                'team.supervisor.user:id,name',
-                'managedDivisi:id,name',
                 'latestEmployeeContract',
             ])
             ->withCount([
@@ -90,12 +85,7 @@ class GetEmployeeDetails extends HRTool implements Tool
                     'birth_date' => $employee->profile?->birth_date?->toDateString(),
                     'birth_address' => $employee->profile?->birth_address,
                 ],
-                'organization' => [
-                    'position' => $employee->position?->name,
-                    'division' => $employee->team?->divisi?->name ?? $employee->managedDivisi?->name,
-                    'team' => $employee->team?->name,
-                    'supervisor' => $employee->team?->supervisor?->user?->name,
-                ],
+                'position' => $employee->position?->name,
                 'latest_contract' => $employee->latestEmployeeContract ? [
                     'number' => $employee->latestEmployeeContract->contract_number,
                     'employment_type' => $employee->latestEmployeeContract->employement_type,

@@ -2,15 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\Divisi;
 use App\Models\EmployeeContract;
 use App\Models\EmployeeResignation;
 use App\Models\EmployeeResignationClearance;
 use App\Models\Employees;
-use App\Models\Task;
-use App\Models\MasterProject;
-use App\Models\DivisionProject;
-use App\Models\Team;
 use App\Models\User;
 use App\Service\ResignationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -139,21 +134,19 @@ class ResignationServiceTest extends TestCase
         $approved = app(ResignationService::class)->approve(
             resignation: $resignation,
             reviewer: $user,
-            approvedLastWorkingDate: '2026-10-15',
         );
 
         $this->assertSame(EmployeeResignation::STATUS_APPROVED, $approved->status);
-        $this->assertDatabaseCount('employee_resignation_clearances', 6);
+        $this->assertDatabaseCount('employee_resignation_clearances', 5);
         $this->assertDatabaseCount('employee_resignation_handover_items', 0);
         $this->assertDatabaseHas('employee_resignation_clearances', [
             'resignation_id' => $resignation->id,
             'category' => 'work',
-            'status' => 'completed',
+            'status' => 'pending',
         ]);
-        $this->assertDatabaseHas('employee_resignation_clearances', [
+        $this->assertDatabaseMissing('employee_resignation_clearances', [
             'resignation_id' => $resignation->id,
             'category' => 'organization',
-            'status' => 'pending',
         ]);
     }
 
@@ -188,23 +181,6 @@ class ResignationServiceTest extends TestCase
         Date::setTestNow('2026-09-23');
         [$user, $employee] = $this->makeEmployee();
 
-        $divisi = Divisi::create([
-            'name' => 'Engineering ' . uniqid(),
-            'description' => 'Engineering',
-            'is_active' => 'active',
-            'manager_id' => $employee->id,
-        ]);
-
-        $team = Team::create([
-            'name' => 'Backend ' . uniqid(),
-            'divisi_id' => $divisi->id,
-            'description' => 'Backend',
-            'is_active' => 'active',
-            'supervisor_id' => $employee->id,
-        ]);
-
-        $employee->update(['team_id' => $team->id]);
-
         $resignation = app(ResignationService::class)->create(
             employee: $employee->refresh(),
             submittedBy: $user,
@@ -215,27 +191,17 @@ class ResignationServiceTest extends TestCase
         $resignation = app(ResignationService::class)->approve(
             resignation: $resignation,
             reviewer: $user,
-            approvedLastWorkingDate: '2026-10-15',
         );
 
         $service = app(ResignationService::class);
-
-        $organization = EmployeeResignationClearance::query()
-            ->where('resignation_id', $resignation->id)
-            ->where('category', 'organization')
-            ->firstOrFail();
 
         $access = EmployeeResignationClearance::query()
             ->where('resignation_id', $resignation->id)
             ->where('category', 'access')
             ->firstOrFail();
 
-        $service->updateClearance($organization, $user, 'completed');
         $service->updateClearance($access, $user, 'completed');
 
-        $this->assertNull($employee->refresh()->team_id);
-        $this->assertNull($team->refresh()->supervisor_id);
-        $this->assertNull($divisi->refresh()->manager_id);
         $this->assertSame('inactive', $user->refresh()->status);
 
         $service->cancel(
@@ -244,95 +210,69 @@ class ResignationServiceTest extends TestCase
         );
 
         $this->assertSame('active', $employee->refresh()->status_employee);
-        $this->assertSame($team->id, $employee->team_id);
-        $this->assertSame($employee->id, $team->refresh()->supervisor_id);
-        $this->assertSame($employee->id, $divisi->refresh()->manager_id);
         $this->assertSame('active', $user->refresh()->status);
     }
 
-    public function test_handover_reassigns_task_and_cancel_restores_original_assignee(): void
+    public function test_hr_can_create_and_complete_manual_resignation_handover(): void
     {
         Date::setTestNow('2026-09-23');
         [$user, $employee] = $this->makeEmployee();
         [, $recipient] = $this->makeEmployee();
+        $service = app(ResignationService::class);
 
-        $divisi = Divisi::create([
-            'name' => 'Product ' . uniqid(),
-            'description' => 'Product',
-            'is_active' => 'active',
-            'manager_id' => $employee->id,
-        ]);
-
-        $team = Team::create([
-            'name' => 'Product Team ' . uniqid(),
-            'divisi_id' => $divisi->id,
-            'description' => 'Product',
-            'is_active' => 'active',
-            'supervisor_id' => $employee->id,
-        ]);
-
-        $employee->update(['team_id' => $team->id]);
-        $recipient->update(['team_id' => $team->id]);
-
-        $masterProject = MasterProject::create([
-            'created_by' => $employee->id,
-            'name' => 'Master Project ' . uniqid(),
-            'description' => 'Test',
-            'status' => 'in_progress',
-        ]);
-
-        $divisionProject = DivisionProject::create([
-            'master_project_id' => $masterProject->id,
-            'divisi_id' => $divisi->id,
-            'manager_id' => $employee->id,
-            'created_by' => $employee->id,
-            'name' => 'Division Project ' . uniqid(),
-            'description' => 'Test',
-            'status' => 'in_progress',
-            'is_required' => true,
-            'manual_progress' => 0,
-        ]);
-
-        $task = Task::create([
-            'division_project_id' => $divisionProject->id,
-            'team_id' => $team->id,
-            'assignee_id' => $employee->id,
-            'created_by' => $employee->id,
-            'title' => 'Task handover ' . uniqid(),
-            'description' => 'Test handover',
-            'status' => Task::STATUS_IN_PROGRESS,
-        ]);
-
-        $resignation = app(ResignationService::class)->create(
-            employee: $employee->refresh(),
+        $resignation = $service->create(
+            employee: $employee,
             submittedBy: $user,
             proposedLastWorkingDate: '2026-10-15',
             reason: 'Pindah pekerjaan.',
         );
-
-        $resignation = app(ResignationService::class)->approve(
+        $resignation = $service->approve(
             resignation: $resignation,
             reviewer: $user,
-            approvedLastWorkingDate: '2026-10-15',
         );
 
-        $item = $resignation->handoverItems()->firstOrFail();
+        $item = $service->createHandoverItem(
+            resignation: $resignation,
+            title: 'Serah terima dokumen operasional',
+            description: 'Dokumentasi kerja yang masih berjalan.',
+        );
 
-        app(ResignationService::class)->updateHandover(
+        $this->assertDatabaseHas('employee_resignation_handover_items', [
+            'id' => $item->id,
+            'title' => 'Serah terima dokumen operasional',
+            'status' => 'pending',
+        ]);
+
+        $service->updateHandover(
             item: $item,
             verifier: $user,
             status: 'completed',
             handoverToEmployeeId: $recipient->id,
+            notes: 'Dokumen sudah diserahkan.',
         );
 
-        $this->assertSame($recipient->id, $task->refresh()->assignee_id);
+        $this->assertDatabaseHas('employee_resignation_handover_items', [
+            'id' => $item->id,
+            'status' => 'completed',
+            'handover_to_employee_id' => $recipient->id,
+            'notes' => 'Dokumen sudah diserahkan.',
+        ]);
 
-        app(ResignationService::class)->cancel(
-            resignation: $resignation->refresh(),
-            actor: $user,
-        );
+        $service->cancel(resignation: $resignation->refresh(), actor: $user);
+        $this->assertSame('completed', $item->refresh()->status);
+    }
 
-        $this->assertSame($employee->id, $task->refresh()->assignee_id);
+    public function test_resignation_handover_requires_recipient_before_completion(): void
+    {
+        Date::setTestNow('2026-09-23');
+        [$user, $employee] = $this->makeEmployee();
+        $service = app(ResignationService::class);
+        $resignation = $service->create($employee, $user, '2026-10-15', 'Alasan.');
+        $resignation = $service->approve($resignation, $user);
+        $item = $service->createHandoverItem($resignation, 'Dokumentasi sistem');
+
+        $this->expectException(LogicException::class);
+        $service->updateHandover($item, $user, 'completed');
     }
 
     public function test_completion_requires_clearance_and_last_working_date_but_not_payroll(): void
@@ -350,7 +290,6 @@ class ResignationServiceTest extends TestCase
         $resignation = app(ResignationService::class)->approve(
             resignation: $resignation,
             reviewer: $user,
-            approvedLastWorkingDate: '2026-09-20',
         );
 
         $this->expectException(LogicException::class);
@@ -369,32 +308,10 @@ class ResignationServiceTest extends TestCase
         ]);
     }
 
-    public function test_completion_releases_assignments_and_deactivates_account_without_payroll_link(): void
+    public function test_completion_deactivates_account_and_closes_contract_without_payroll_link(): void
     {
         Date::setTestNow('2026-01-01');
         [$user, $employee, $contract] = $this->makeEmployee();
-
-        $divisi = Divisi::create([
-            'name' => 'Engineering ' . uniqid(),
-            'description' => 'Engineering',
-            'is_active' => 'active',
-        ]);
-
-        $team = Team::create([
-            'name' => 'Backend ' . uniqid(),
-            'divisi_id' => $divisi->id,
-            'description' => 'Backend',
-            'is_active' => 'active',
-            'supervisor_id' => $employee->id,
-        ]);
-
-        $employee->update([
-            'team_id' => $team->id,
-        ]);
-
-        $divisi->update([
-            'manager_id' => $employee->id,
-        ]);
 
         $resignation = app(ResignationService::class)->create(
             employee: $employee->refresh(),
@@ -406,7 +323,6 @@ class ResignationServiceTest extends TestCase
         $resignation = app(ResignationService::class)->approve(
             resignation: $resignation,
             reviewer: $user,
-            approvedLastWorkingDate: '2026-01-01',
         );
 
         EmployeeResignationClearance::query()
@@ -416,6 +332,13 @@ class ResignationServiceTest extends TestCase
                 'verified_by' => $user->id,
                 'verified_at' => now(),
             ]);
+
+        // Clearance organisasi yang dibuat sebelum refactor adalah arsip non-blocking.
+        EmployeeResignationClearance::create([
+            'resignation_id' => $resignation->id,
+            'category' => 'organization',
+            'status' => 'pending',
+        ]);
 
         $completed = app(ResignationService::class)->complete(
             resignation: $resignation,
@@ -427,11 +350,13 @@ class ResignationServiceTest extends TestCase
 
         $this->assertSame('resign', $employee->status_employee);
         $this->assertSame('2026-01-01', optional($employee->ResignDate)?->format('Y-m-d'));
-        $this->assertNull($employee->team_id);
-        $this->assertNull($team->refresh()->supervisor_id);
-        $this->assertNull($divisi->refresh()->manager_id);
         $this->assertSame('inactive', $user->refresh()->status);
         $this->assertSame('terminated', $contract->refresh()->status);
+        $this->assertDatabaseHas('employee_resignation_clearances', [
+            'resignation_id' => $resignation->id,
+            'category' => 'organization',
+            'status' => 'pending',
+        ]);
 
         $this->assertDatabaseHas('employee_status_histories', [
             'employee_id' => $employee->id,

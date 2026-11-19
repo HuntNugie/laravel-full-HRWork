@@ -12,7 +12,7 @@
 
         <span class="text-sm font-medium text-[#30AFFF]">SDM</span>
         <h1 class="text-2xl font-bold tracking-tight text-slate-900">Buat PHK</h1>
-        <p class="text-sm text-slate-500">Buat pengajuan PHK untuk karyawan aktif dan kirim ke General Manager untuk persetujuan.</p>
+        <p class="text-sm text-slate-500">Buat dan kelola proses PHK karyawan aktif melalui HRD.</p>
     </x-wirekit::stack>
 
     @if ($errors->has('action'))

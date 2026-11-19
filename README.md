@@ -1,3 +1,74 @@
+# HRWork — HRIS for Work
+
+HRWork (*HRIS for Work*) adalah aplikasi Human Resource Information System berbasis Laravel dan Livewire yang berfokus pada **Karyawan**, **HRD**, dan **Administrator**. Layanan inti: data karyawan, jabatan (Position), kontrak kerja, presensi, cuti/izin, payroll, surat peringatan, resignation, dan termination. Work Management dan struktur organisasi (Divisi/Team) sudah dipensiunkan dari alur HRIS aktif.
+
+## Ruang Lingkup dan Hak Akses
+
+- **Karyawan:** layanan mandiri (presensi, data diri, kontrak, payroll, cuti/izin, riwayat SP, resignation).
+- **HRD (`hr`):** data dan jabatan karyawan, kontrak, payroll, cuti/izin, presensi, SP, resignation, termination, serta AI Assistant dan CV Analyzer.
+- **Administrator (`administrator`):** pengelolaan akun, status aktif akun, penggantian password, role dan permission; tidak otomatis mendapat akses operasional HRD.
+- **Superadmin (`super-admin`):** akses keseluruhan fitur melalui `Gate::before`, termasuk fungsi semua peran.
+- Jabatan **Manager**, **Supervisor**, dan **General Manager** tetap boleh ada sebagai nama Position dalam data/kontrak, **bukan** role atau penugasan organisasi.
+- Handover resignation/termination tetap berupa item manual HRD. Kompatibilitas untuk clearance historis berkategori organisasi tidak lagi memblokir penyelesaian; instalasi baru tidak membuat struktur Divisi/Team.
+
+## Instalasi Database Bersih (Development / Data Dummy)
+
+Branch `refactor/remove-work-management-hris` sekarang menggunakan **migration HRIS bersih**. Migration untuk membuat, mengarsipkan, lalu menghapus Work Management, Divisi, dan Team sudah dipensiunkan. Hubungan karyawan dengan Position tetap ada; handover resignation/termination tidak lagi membutuhkan tabel tasks.
+
+**Perhatian:** Ini perubahan riwayat migration (*clean-slate*), bukan jalur upgrade non-destruktif untuk database lama. Perintah `migrate:fresh` **menghapus semua tabel pada koneksi database yang dipilih**, termasuk data selain HRWork jika berbagi database. Hanya jalankan pada database dummy yang memang boleh dihapus, termasuk bila berada di server production. Untuk database dengan data nyata, siapkan rencana migrasi dan backup terpisah.
+
+1. Checkout branch `refactor/remove-work-management-hris` dan jalankan `composer install`. Paket `aliziodev/laravel-wilayah` harus terpasang karena digunakan pada model, form alamat, serta seeder.
+2. Atur koneksi `DB_*` di `.env` dan isi `SUPERADMIN_PASSWORD` dengan password yang aman (serta `SUPERADMIN_EMAIL` jika berbeda). Tidak perlu membuat variabel password khusus seeder demo.
+3. Untuk membuat ulang **skema, data master, dan data demo HRIS** di database yang boleh dihapus: `php artisan migrate:fresh --seed` (semua environment, termasuk production jika Anda menyetujui konfirmasi Laravel). Untuk deployment production dengan skema yang sudah ada, jalankan `php artisan db:seed --force` tanpa `migrate:fresh`.
+4. Untuk membuat ulang **skema saja**, jalankan `php artisan migrate:fresh` tanpa `--seed`. Perlu diingat, `php artisan db:seed` akan mengisi **data master sekaligus data demo**.
+5. Jalankan `php artisan permission:cache-reset` dan `php artisan test`. Lakukan uji manual login/role, data karyawan/Position, kontrak, profil dan alamat, presensi, cuti, payroll, resignation, serta termination.
+
+### Dependency Data Wilayah
+
+- Empat tabel `provinces`, `regencies`, `districts`, `villages` tetap diciptakan dari migration paket `aliziodev/laravel-wilayah` yang **sudah dipublikasikan di repository**, berurutan dari induk ke anak. Jangan jalankan `wilayah:install`/publish migration ulang pada proyek ini.
+- `DatabaseSeeder` kini memanggil seeder resmi paket `Aliziodev\Wilayah\Database\Seeders\WilayahSeeder`, sehingga `php artisan migrate:fresh --seed` juga mengisi keempat level alamat dari data lokal yang disertakan paket, kemudian membersihkan cache wilayah.
+- `php artisan migrate:fresh` **tanpa `--seed` tidak mengisi data wilayah**, sehingga dropdown alamat bisa kosong sampai `php artisan db:seed` atau `php artisan wilayah:seed` dijalankan.
+- Tabel opsional `islands`, `region_areas`, `region_populations` tetap dinonaktifkan melalui `config/wilayah.php` karena belum digunakan oleh HRIS.
+
+### Seeder
+
+- `php artisan db:seed` mengisi data wilayah Indonesia, katalog hak akses, pembuatan **Superadmin** berdasarkan `SUPERADMIN_EMAIL` dan **`SUPERADMIN_PASSWORD` wajib di `.env`**, master bank, konfigurasi HR, dan data demo. Password Superadmin tidak dibuat otomatis.
+- Di **semua environment**, termasuk `APP_ENV=production`, `DatabaseSeeder` otomatis memanggil `HRISDevelopmentSeeder`. Hasilnya berupa 50 karyawan contoh lengkap dengan Position dan jobdesk, profil/alamat/rekening, kontrak/benefit/kuota cuti, beberapa status cuti dan sakit/izin, hari libur, riwayat absensi (termasuk keterlambatan), tiga periode payroll lunas, surat peringatan, serta kasus resignation/termination yang diajukan, diproses, ditolak/dibatalkan dan selesai. Tidak ada data Divisi/Team maupun Work Management.
+- Akun demo **selain Superadmin**, misalnya HR `nugiekurniawan03@gmail.com`, Administrator `nugiekurniawan02@gmail.com`, dan karyawan `andi.pratama.hrwork@gmail.com`, memakai password `nugitea123` **hanya di local/testing**. Di production/staging, akun demo baru mendapat password acak yang kuat; akun lama dengan password demo publik juga dirotasi. Password yang sudah diubah oleh Administrator tidak ditimpa pada seeding berikutnya.
+- **Superadmin tetap memakai `SUPERADMIN_PASSWORD` yang sudah ada di `.env`**, dan akun demo production dapat diatur passwordnya melalui fitur penggantian/reset password Superadmin. Tidak ada variabel password khusus demo. Jangan mengumumkan password akun berhak akses HRD/Administrator pada deployment publik.
+- `php artisan db:seed --class=HRISDevelopmentSeeder` tetap bisa dipakai untuk membuat ulang data demo secara manual setelah master data tersedia. Jangan digunakan di database berisi data nyata. Dump `hris.sql` lama hanya rekaman historis, bukan skema target baru.
+
+## PDF Chrome Headless di Production
+
+Fitur cetak kontrak, surat peringatan, slip gaji, rekap payroll, dan daftar pembayaran secara eksplisit menggunakan driver `chrome` dari `spatie/laravel-pdf`. Server harus memiliki Google Chrome/Chromium yang dapat dijalankan oleh user PHP-FPM. `LARAVEL_PDF_DRIVER` tidak mengganti driver yang sudah ditetapkan oleh controller.
+
+Untuk Ubuntu dengan worker PHP-FPM `www-data`, siapkan direktori Chrome yang terpisah dari root website (sesuaikan owner bila user pool berbeda):
+
+```bash
+sudo install -d -o www-data -g www-data -m 700 \
+  /var/lib/hrwork-chrome \
+  /var/lib/hrwork-chrome/.config \
+  /var/lib/hrwork-chrome/.cache \
+  /var/lib/hrwork-chrome/.local \
+  /var/lib/hrwork-chrome/.local/share \
+  /var/lib/hrwork-chrome/.local/share/applications \
+  /var/lib/hrwork-chrome/.local/share/pki \
+  /var/lib/hrwork-chrome/.local/share/pki/nssdb
+```
+
+Setelah memastikan hasil `command -v google-chrome-stable`, tambahkan pada `.env` production:
+
+```dotenv
+LARAVEL_PDF_CHROME_BINARY=/usr/bin/google-chrome-stable
+LARAVEL_PDF_CHROME_HOME=/var/lib/hrwork-chrome
+LARAVEL_PDF_CHROME_CONFIG_HOME=/var/lib/hrwork-chrome/.config
+LARAVEL_PDF_CHROME_CACHE_HOME=/var/lib/hrwork-chrome/.cache
+```
+
+Jalankan `php artisan config:clear && php artisan config:cache`, lalu uji kembali cetak PDF. Ketiga variabel HOME/XDG diteruskan **hanya** ke proses Chrome oleh `config/laravel-pdf.php`; ketika tidak diisi, konfigurasi Chrome lokal tetap seperti semula. Tidak perlu memberi izin `777` pada `/var/www` maupun menonaktifkan Chrome sandbox.
+
+## Laravel
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

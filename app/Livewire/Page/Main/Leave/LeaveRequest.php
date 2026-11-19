@@ -20,7 +20,7 @@ class LeaveRequest extends Component
     |--------------------------------------------------------------------------
     */
 
-    public Employees $employee;
+    public ?Employees $employee = null;
 
     public Collection $entitlements;
 
@@ -50,7 +50,7 @@ class LeaveRequest extends Component
 
     public function mount(): void
     {
-        $this->employee = Auth::user()->employees;
+        $this->employee = Auth::user()?->employees;
 
         $this->loadData();
     }
@@ -64,6 +64,15 @@ class LeaveRequest extends Component
 
     private function loadData(): void
     {
+        // Admin accounts may exist before their employee record is created.
+        // Keep the page usable with empty data instead of failing on null.
+        if (! $this->employee) {
+            $this->entitlements = new Collection();
+            $this->leaveRequests = new Collection();
+
+            return;
+        }
+
         $contract = app(LeaveRequestService::class)
             ->currentActiveContract($this->employee);
 
@@ -320,7 +329,7 @@ class LeaveRequest extends Component
     #[On('leave-request')]
     public function refresh(): void
     {
-        $this->employee = Auth::user()->employees;
+        $this->employee = Auth::user()?->employees;
 
         $this->loadData();
 

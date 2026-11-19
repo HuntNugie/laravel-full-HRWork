@@ -242,7 +242,7 @@
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <?php $actionHint = match ($clearance->category) {
                                         'access' => 'Saat selesai, akun user dinonaktifkan. Jika proses exit dibatalkan, status akun dikembalikan.',
-                                        'organization' => 'Saat selesai, assignment team, supervisor, dan manager dilepas. Jika dibatalkan, assignment sebelumnya dipulihkan.',
+                                        'organization' => 'Arsip clearance organisasi lama. Tidak lagi menjadi syarat proses resign.',
                                         default => 'Verifikasi dilakukan manual karena belum ada subsystem otomatis untuk kategori ini.',
                                     }; ?>
 
@@ -309,20 +309,24 @@
                 <x-wirekit::card.header>
                     <div>
                         <h2 class="text-lg font-semibold text-slate-900">Handover Pekerjaan</h2>
-                        <p class="text-sm text-slate-500">Pekerjaan aktif employee ditampilkan dari Work Management.</p>
+                        <p class="text-sm text-slate-500">Catat dan verifikasi serah terima tanggung jawab karyawan secara manual.</p>
                     </div>
                 </x-wirekit::card.header>
                 <x-wirekit::card.body>
+                    <?php if (auth()->user()->can('manage-resignation-clearance') && $resignation->status === 'approved'): ?>
+                        <form wire:submit="addHandoverItem" class="mb-4 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <x-wirekit::input label="Judul Handover" name="handoverTitle" wire:model="handoverTitle" placeholder="Contoh: Serah terima dokumen operasional" />
+                            <x-wirekit::textarea label="Deskripsi (opsional)" name="handoverDescription" wire:model="handoverDescription" rows="2" />
+                            @error('handover') <p class="text-sm text-rose-600">{{ $message }}</p> @enderror
+                            <div class="flex justify-end"><x-wirekit::button type="submit">Tambahkan Handover</x-wirekit::button></div>
+                        </form>
+                    <?php endif; ?>
                     <?php if ($resignation->handoverItems->isNotEmpty()): foreach ($resignation->handoverItems as $item): ?>
                         <div class="rounded-xl border border-slate-100 p-4">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
                                     <p class="text-sm font-semibold text-slate-800">{{ $item->title }}</p>
-                                    <?php if ($item->task): ?>
-                                        <p class="mt-1 text-xs text-slate-400">
-                                            Status task: {{ str_replace('_', ' ', $item->task->status) }}
-                                        </p>
-                                    <?php endif; ?>
+                                    <?php if ($item->description): ?><p class="mt-1 text-xs text-slate-500">{{ $item->description }}</p><?php endif; ?>
                                 </div>
 
                                 <x-wirekit::badge :intent="$item->status === 'completed' ? 'success' : 'warning'">
@@ -338,6 +342,8 @@
                                     :options="$handoverEmployees"
                                     wire:model="handoverRecipients.{{ $item->id }}"
                                 />
+
+                                <x-wirekit::textarea label="Catatan Verifikasi" name="handoverNotes-{{ $item->id }}" wire:model="handoverNotes.{{ $item->id }}" rows="2" />
 
                                 <?php if (auth()->user()->can('manage-resignation-clearance')): ?>
                                 <div class="flex flex-wrap items-end gap-2">
@@ -373,7 +379,7 @@
                             </div>
                         </div>
                     <?php endforeach; else: ?>
-                        <p class="text-sm text-slate-500">Tidak ada pekerjaan aktif yang terdeteksi.</p>
+                        <p class="text-sm text-slate-500">Belum ada item handover. Tambahkan item jika diperlukan, atau verifikasi clearance pekerjaan sebagai N/A.</p>
                     <?php endif; ?>
                 </x-wirekit::card.body>
             </x-wirekit::card>
@@ -387,11 +393,10 @@
             </x-wirekit::card.header>
 
             <x-wirekit::card.body>
-                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <?php foreach ([
                         'clearance' => 'Clearance',
                         'handover' => 'Handover',
-                        'organization' => 'Organization',
                         'leave' => 'Leave',
                         'last_working_date' => 'Last Working Day',
                     ] as $key => $label): ?>

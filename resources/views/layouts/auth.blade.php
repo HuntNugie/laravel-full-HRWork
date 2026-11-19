@@ -129,7 +129,7 @@
                                        bg-[#D8FFC5]"
                             ></span>
 
-                            HR & Work Management
+                            HRWork — HRIS for Work
 
                         </span>
 
@@ -141,7 +141,7 @@
                         >
                             Satu tempat untuk mengelola
                             <span class="text-[#D8FFC5]">
-                                tim dan pekerjaan
+                                sumber daya manusia
                             </span>
                             Anda.
                         </h2>
@@ -151,8 +151,8 @@
                             class="mt-4 max-w-md text-sm leading-6
                                    text-white/75 xl:text-base xl:leading-7"
                         >
-                            Kelola karyawan, pekerjaan, project,
-                            dan performa tim dalam satu platform
+                            Kelola data karyawan, presensi, cuti,
+                            kontrak, dan payroll dalam satu platform
                             yang terintegrasi.
                         </p>
 
@@ -229,14 +229,14 @@
                                                     class="text-xs font-semibold
                                                            text-slate-900"
                                                 >
-                                                    Work Overview
+                                                    HRIS Overview
                                                 </p>
 
                                                 <p
                                                     class="mt-0.5 text-[10px]
                                                            text-slate-400"
                                                 >
-                                                    Team performance
+                                                    Informasi karyawan
                                                 </p>
 
                                             </div>
@@ -327,7 +327,7 @@
                                             </div>
 
 
-                                            {{-- Tasks --}}
+                                            {{-- Attendance --}}
                                             <div
                                                 class="rounded-xl
                                                        bg-[#F7FFF3] p-3"
@@ -343,7 +343,7 @@
                                                                font-medium
                                                                text-slate-400"
                                                     >
-                                                        Tasks
+                                                        Attendance
                                                     </span>
 
                                                     <span
@@ -442,7 +442,7 @@
                                         >
 
 
-                                            {{-- Project progress --}}
+                                            {{-- HRIS overview --}}
                                             <div
                                                 class="rounded-xl border
                                                        border-slate-100 p-4"
@@ -460,14 +460,14 @@
                                                                    font-semibold
                                                                    text-slate-900"
                                                         >
-                                                            Project Progress
+                                                            HRIS Overview
                                                         </p>
 
                                                         <p
                                                             class="mt-0.5 text-[9px]
                                                                    text-slate-400"
                                                         >
-                                                            Development Team
+                                                            HR Operations
                                                         </p>
 
                                                     </div>
@@ -547,7 +547,7 @@
                                             </div>
 
 
-                                            {{-- Team --}}
+                                            {{-- Karyawan --}}
                                             <div
                                                 class="rounded-xl border
                                                        border-slate-100 p-4"
@@ -565,14 +565,14 @@
                                                                    font-semibold
                                                                    text-slate-900"
                                                         >
-                                                            Team
+                                                            Karyawan
                                                         </p>
 
                                                         <p
                                                             class="mt-0.5 text-[9px]
                                                                    text-slate-400"
                                                         >
-                                                            Active members
+                                                            Akun aktif
                                                         </p>
 
                                                     </div>
@@ -739,7 +739,7 @@
                                                             class="mt-0.5 text-[9px]
                                                                    text-slate-400"
                                                         >
-                                                            Completed by Backend Team
+                                                            Terkelola melalui HRD
                                                         </p>
 
                                                     </div>
@@ -902,7 +902,7 @@
                                     <p
                                         class="text-[9px] text-slate-400"
                                     >
-                                        Team Performance
+                                        Kehadiran Karyawan
                                     </p>
 
                                     <p
@@ -919,7 +919,7 @@
 
 
                         {{-- =================================================
-                        FLOATING TASK CARD
+                        FLOATING HRIS CARD
                         ================================================== --}}
                         <div
                             class="absolute bottom-[18%] left-0
@@ -948,7 +948,7 @@
                                     <p
                                         class="text-[9px] text-slate-400"
                                     >
-                                        Tasks completed
+                                        Attendance recorded
                                     </p>
 
                                     <p

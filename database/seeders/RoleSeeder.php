@@ -17,11 +17,6 @@ class RoleSeeder extends Seeder
             'administrator',
             'employee',
             'super-admin',
-            // Work Management roles
-            'general-manager',
-            'manager',
-            'supervisor',
-            'task-worker',
         ] as $role) {
             Role::firstOrCreate([
                 'name' => $role,

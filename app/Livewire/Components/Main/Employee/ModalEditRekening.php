@@ -41,7 +41,7 @@ class ModalEditRekening extends Component
         ]);
 
         $this->dispatch("wirekit-modal-close", name: 'edit-rekening');
-        $this->dispatch('change-team');
+        $this->dispatch('change-employee');
         $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil mengupdate rekening', message: "anda berhasil merubah rekening");
     }
 

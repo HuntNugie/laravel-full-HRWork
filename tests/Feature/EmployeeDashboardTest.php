@@ -42,7 +42,6 @@ class EmployeeDashboardTest extends TestCase
         $employee = Employees::create([
             'employee_code' => 'EMP-DASH',
             'user_id' => $user->id,
-            'team_id' => null,
             'position_id' => null,
             'status_employee' => 'active',
         ]);

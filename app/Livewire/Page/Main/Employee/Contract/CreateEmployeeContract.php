@@ -9,7 +9,6 @@ use App\Models\Employees;
 use App\Models\EmployeeStatusHistory;
 use App\Models\LeaveType;
 use App\Models\Position;
-use App\Models\Team;
 use App\Service\ContractService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +22,6 @@ class CreateEmployeeContract extends Component
     public Employees $employee;
     public array $positions;
     public Collection $benefits;
-    public array $teams;
     public CreateEmployeeContractForm $form;
     public bool $is_active = false;
     public EmployeeContract $contract;
@@ -55,7 +53,6 @@ class CreateEmployeeContract extends Component
         $this->employee = $employee->load(['user', 'profile']);
         $this->positions = Position::query()->where('is_active', 'active')->pluck('name', 'id')->toArray();
         $this->benefits = Benefit::where('status', '=', 'active')->get();
-        $this->teams = Team::query()->pluck('name', 'id')->toArray();
 
         $this->contract_number = app(ContractService::class)->previewContractNumber();
 

@@ -3,25 +3,18 @@
 namespace App\Livewire\Page\Main\Dashboard;
 
 use App\Models\Attendances;
-use App\Models\Divisi;
-use App\Models\DivisionProject;
 use App\Models\EmployeeAbsenceRequest;
 use App\Models\EmployeeWarningLetter;
 use App\Models\Employees;
 use App\Models\LeaveRequest;
-use App\Models\MasterProject;
 use App\Models\Payroll;
 use App\Models\PayrollPeriod;
 use App\Models\Position;
-use App\Models\ProjectReport;
-use App\Models\Task;
-use App\Models\Team;
 use App\Models\User;
 use App\Service\DashboardService;
 use App\Service\EmployeeDailyStatusService;
 use App\Service\LeaveRequestService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -46,81 +39,8 @@ class Dashboard extends Component
             ->with([
                 'user',
                 'position',
-                'team.divisi',
             ])
             ->firstOrFail();
-
-        $managerDivision = null;
-        $managerAttendanceRows = collect();
-        $managerAttendanceSummary = [
-            'teams' => 0,
-            'employees' => 0,
-            'checked_in' => 0,
-            'late' => 0,
-        ];
-
-        $supervisorTeam = null;
-        $supervisorAttendanceRows = collect();
-        $supervisorAttendanceSummary = [
-            'employees' => 0,
-            'checked_in' => 0,
-            'late' => 0,
-        ];
-
-        if ($user->hasRole('manager')) {
-            $managerDivision = $employee->managedDivisi()
-                ->with([
-                    'team.employees.user',
-                    'team.employees.position',
-                    'team.employees.team',
-                ])
-                ->first();
-
-            $managerTeams = $managerDivision?->team ?? collect();
-            $managerEmployees = $managerTeams
-                ->flatMap(fn ($team) => $team->employees)
-                ->unique('id')
-                ->values();
-
-            $managerAttendanceRows = $this->makeAttendanceRows($managerEmployees);
-
-            $managerAttendanceSummary = [
-                'teams' => $managerTeams->count(),
-                'employees' => $managerEmployees->count(),
-                'checked_in' => $managerAttendanceRows
-                    ->whereNotNull('attendance')
-                    ->count(),
-                'late' => $managerAttendanceRows
-                    ->where('status', 'late')
-                    ->count(),
-            ];
-        }
-
-        if ($user->hasRole('supervisor')) {
-            $supervisorTeam = $employee->supervisorTeam()
-                ->with([
-                    'divisi',
-                    'employees.user',
-                    'employees.position',
-                ])
-                ->first();
-
-            $supervisorEmployees = $supervisorTeam?->employees
-                ->reject(fn ($member) => (int) $member->id === (int) $employee->id)
-                ->values() ?? collect();
-
-            $supervisorAttendanceRows = $this->makeAttendanceRows($supervisorEmployees);
-
-            $supervisorAttendanceSummary = [
-                'employees' => $supervisorEmployees->count(),
-                'checked_in' => $supervisorAttendanceRows
-                    ->whereNotNull('attendance')
-                    ->count(),
-                'late' => $supervisorAttendanceRows
-                    ->where('status', 'late')
-                    ->count(),
-            ];
-        }
 
         $dailyStatusService = app(EmployeeDailyStatusService::class);
         $leaveRequestService = app(LeaveRequestService::class);
@@ -329,12 +249,6 @@ class Dashboard extends Component
             'latestPayroll' => $latestPayroll,
             'issuedWarningLettersCount' => $issuedWarningLettersCount,
             'latestWarningLetter' => $latestWarningLetter,
-            'managerDivision' => $managerDivision,
-            'managerAttendanceRows' => $managerAttendanceRows,
-            'managerAttendanceSummary' => $managerAttendanceSummary,
-            'supervisorTeam' => $supervisorTeam,
-            'supervisorAttendanceRows' => $supervisorAttendanceRows,
-            'supervisorAttendanceSummary' => $supervisorAttendanceSummary,
         ]);
     }
 
@@ -345,7 +259,7 @@ class Dashboard extends Component
         $totalUsers = User::query()->count();
         $activeUsers = User::query()->where('status', 'active')->count();
         $pendingUsers = User::query()->where('status', 'pending')->count();
-        $inactiveUsers = User::query()->where('status', 'non-active')->count();
+        $inactiveUsers = User::query()->where('status', 'inactive')->count();
 
         $activeEmployees = Employees::query()
             ->where('status_employee', 'active')
@@ -379,65 +293,10 @@ class Dashboard extends Component
             ->where('status', 'pending')
             ->count();
 
-        $pendingProjectReports = ProjectReport::query()
-            ->where('status', ProjectReport::STATUS_SUBMITTED)
-            ->count();
+        $pendingActions = $pendingUsers + $pendingLeave + $pendingAbsence;
 
-        $masterReadyForReview = MasterProject::query()
-            ->where('status', 'ready_for_review')
-            ->count();
 
-        $pendingActions = $pendingUsers
-            + $pendingLeave
-            + $pendingAbsence
-            + $pendingProjectReports
-            + $masterReadyForReview;
-
-        $masterProjects = [
-            'total' => MasterProject::query()->count(),
-            'active' => MasterProject::query()->where('status', '!=', 'completed')->count(),
-            'ready_for_review' => $masterReadyForReview,
-            'completed' => MasterProject::query()->where('status', 'completed')->count(),
-        ];
-
-        $divisionProjects = [
-            'total' => DivisionProject::query()->count(),
-            'active' => DivisionProject::query()->where('status', '!=', 'completed')->count(),
-            'submitted_to_gm' => DivisionProject::query()->where('status', 'submitted_to_gm')->count(),
-            'revision_required' => DivisionProject::query()->where('status', 'revision_required')->count(),
-            'completed' => DivisionProject::query()->where('status', 'completed')->count(),
-        ];
-
-        $tasks = [
-            'total' => Task::query()->count(),
-            'open' => Task::query()
-                ->whereNotIn('status', [Task::STATUS_DONE, Task::STATUS_CANCELLED])
-                ->count(),
-            'in_review' => Task::query()->where('status', Task::STATUS_IN_REVIEW)->count(),
-            'done' => Task::query()->where('status', Task::STATUS_DONE)->count(),
-            'blocked' => Task::query()->where('status', Task::STATUS_BLOCKED)->count(),
-        ];
-
-        $reportQueue = [
-            'supervisor' => ProjectReport::query()
-                ->where('report_level', ProjectReport::LEVEL_SUPERVISOR)
-                ->where('status', ProjectReport::STATUS_SUBMITTED)
-                ->count(),
-            'manager' => ProjectReport::query()
-                ->where('report_level', ProjectReport::LEVEL_MANAGER)
-                ->where('status', ProjectReport::STATUS_SUBMITTED)
-                ->count(),
-            'approved' => ProjectReport::query()
-                ->where('status', ProjectReport::STATUS_APPROVED)
-                ->count(),
-            'rejected' => ProjectReport::query()
-                ->where('status', ProjectReport::STATUS_REJECTED)
-                ->count(),
-        ];
-
-        $organization = [
-            'divisions' => Divisi::query()->count(),
-            'teams' => Team::query()->count(),
+        $masterData = [
             'positions' => Position::query()->count(),
             'roles' => Role::query()->count(),
         ];
@@ -448,11 +307,6 @@ class Dashboard extends Component
             ->limit(6)
             ->get();
 
-        $recentProjectReports = ProjectReport::query()
-            ->with(['reporter', 'divisionProject'])
-            ->latest()
-            ->limit(5)
-            ->get();
 
         $latestPayrollPeriod = PayrollPeriod::query()
             ->latest('end_date')
@@ -490,45 +344,11 @@ class Dashboard extends Component
             'unrecordedToday' => $unrecordedToday,
             'pendingLeave' => $pendingLeave,
             'pendingAbsence' => $pendingAbsence,
-            'pendingProjectReports' => $pendingProjectReports,
-            'masterReadyForReview' => $masterReadyForReview,
             'pendingActions' => $pendingActions,
-            'masterProjects' => $masterProjects,
-            'divisionProjects' => $divisionProjects,
-            'tasks' => $tasks,
-            'reportQueue' => $reportQueue,
-            'organization' => $organization,
+            'masterData' => $masterData,
             'latestEmployees' => $latestEmployees,
-            'recentProjectReports' => $recentProjectReports,
             'latestPayrollSummary' => $latestPayrollSummary,
         ]);
     }
 
-    private function makeAttendanceRows(Collection $employees): Collection
-    {
-        if ($employees->isEmpty()) {
-            return collect();
-        }
-
-        $attendanceByEmployee = Attendances::query()
-            ->whereIn('employee_id', $employees->pluck('id'))
-            ->whereDate('date', now()->toDateString())
-            ->get()
-            ->keyBy('employee_id');
-
-        return $employees->map(function ($member) use ($attendanceByEmployee) {
-            $attendance = $attendanceByEmployee->get($member->id);
-
-            return [
-                'employee' => $member,
-                'attendance' => $attendance,
-                'status' => $attendance?->status,
-                'status_label' => match ($attendance?->status) {
-                    'present' => 'Hadir',
-                    'late' => 'Terlambat',
-                    default => 'Belum Check In',
-                },
-            ];
-        })->values();
-    }
 }

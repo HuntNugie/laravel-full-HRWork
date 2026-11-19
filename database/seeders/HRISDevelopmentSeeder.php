@@ -6,18 +6,19 @@ use App\Models\Bank;
 use App\Models\Benefit;
 use App\Models\Attendances;
 use App\Models\ContractLeaveEntitlements;
-use App\Models\Divisi;
 use App\Models\EmployeeBankAccount;
 use App\Models\EmployeeContract;
+use App\Models\EmployeeAbsenceRequest;
 use App\Models\EmployeeProfileAddress;
 use App\Models\Employee_profile;
 use App\Models\Employees;
+use App\Models\Holidays;
+use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\Payroll;
 use App\Models\PayrollItem;
 use App\Models\PayrollPeriod;
 use App\Models\Position;
-use App\Models\Team;
 use App\Models\User;
 use App\Models\WorkTime;
 use App\Service\PayrollCalculationService;
@@ -27,43 +28,42 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
-class WorkManagementDevelopmentSeeder extends Seeder
+class HRISDevelopmentSeeder extends Seeder
 {
+    private const DEMO_ACCOUNT_PASSWORD = 'nugitea123';
+
     /**
-     * Seed a complete development HRWork environment.
+     * Seed a populated HRIS demo environment, including production when requested.
      *
      * Dataset:
-     * - 50 employees
-     * - 5 divisions
-     * - 10 teams
-     * - 1 general manager
-     * - 5 managers
-     * - 10 supervisors
-     * - 31 task workers
+     * - 50 karyawan dengan jabatan, tanpa divisi atau team
      * - HR, administrator, and super-admin accounts
      * - profiles, addresses, bank accounts, status history, contracts,
-     *   benefits, annual leave entitlements, historical attendance,
-     *   and three previous paid payroll periods
+     *   benefits, leave entitlements and activity, attendance, warnings,
+     *   exit cases, and three previous paid payroll periods
      */
     public function run(): void
     {
         $this->seedWilayah();
         $this->seedPositions();
 
-        $divisions = $this->seedDivisions();
         $users = $this->seedUsers();
         $employees = $this->seedEmployees($users);
-
-        $this->seedDivisionAndTeams($divisions, $employees);
         $this->seedProfilesAndBankAccounts($employees);
         $this->seedStatusHistory($employees);
         $this->seedContracts($employees);
         $this->seedBenefits($employees);
         $this->seedLeaveEntitlement($employees);
+
+        $activity = app(HRISDemoActivityData::class);
+        $activity->beforeAttendance($employees, $users);
         $this->seedAttendances($employees);
+        $this->seedTodayAttendances($employees);
         $this->seedPayrollHistory($employees);
+        $activity->afterPayroll($employees, $users);
 
         $count = Employees::query()
             ->where('employee_code', 'like', 'DEV-%')
@@ -75,20 +75,22 @@ class WorkManagementDevelopmentSeeder extends Seeder
             );
         }
 
-        $this->command?->info("Development HR/Work Management data seeded: {$count} employees.");
-        $this->command?->line('Development accounts use password: nugitea123');
+        $this->command?->info("HRIS demo data seeded: {$count} employees.");
+        $this->command?->line(app()->environment(['local', 'testing'])
+            ? 'Local/testing demo employee/HR/admin password: ' . self::DEMO_ACCOUNT_PASSWORD
+            : 'Production demo users have private generated passwords. Set them using Superadmin password management.');
         $this->command?->line('GM: gm.hrwork@gmail.com');
         $this->command?->line('HR: nugiekurniawan03@gmail.com');
         $this->command?->line('Administrator: nugiekurniawan02@gmail.com');
-        $this->command?->line('Super Admin: ' . env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'));
+        $this->command?->line('Super Admin (uses SUPERADMIN_PASSWORD): ' . env('SUPERADMIN_EMAIL', 'superadmin@gmail.com'));
     }
 
     private function seedPositions(): void
     {
         $positions = [
-            ['name' => 'General Manager', 'description' => 'Penanggung jawab final perusahaan dan Work Management.', 'min_salary_daily' => 500000],
-            ['name' => 'Manager', 'description' => 'Penanggung jawab division dan distribusi pekerjaan.', 'min_salary_daily' => 350000],
-            ['name' => 'Supervisor', 'description' => 'Penanggung jawab team dan review pekerjaan.', 'min_salary_daily' => 275000],
+            ['name' => 'General Manager', 'description' => 'Penanggung jawab operasional perusahaan.', 'min_salary_daily' => 500000],
+            ['name' => 'Manager', 'description' => 'Jabatan manajerial yang tercantum pada kontrak kerja.', 'min_salary_daily' => 350000],
+            ['name' => 'Supervisor', 'description' => 'Jabatan supervisi yang tercantum pada kontrak kerja.', 'min_salary_daily' => 275000],
             ['name' => 'Software Engineer', 'description' => 'Pengembangan perangkat lunak umum.', 'min_salary_daily' => 225000],
             ['name' => 'Backend Developer', 'description' => 'Pengembangan layanan backend dan API.', 'min_salary_daily' => 240000],
             ['name' => 'Frontend Developer', 'description' => 'Pengembangan antarmuka aplikasi web.', 'min_salary_daily' => 235000],
@@ -126,66 +128,46 @@ class WorkManagementDevelopmentSeeder extends Seeder
     }
 
     /**
-     * @return array<string, Divisi>
-     */
-    private function seedDivisions(): array
-    {
-        $definitions = [
-            'development' => [
-                'name' => 'Development',
-                'description' => 'Divisi pengembangan aplikasi dan software engineering.',
-            ],
-            'product' => [
-                'name' => 'Product',
-                'description' => 'Divisi product, design, dan quality assurance.',
-            ],
-            'infrastructure' => [
-                'name' => 'Infrastructure',
-                'description' => 'Divisi infrastruktur, DevOps, jaringan, dan IT support.',
-            ],
-            'finance' => [
-                'name' => 'Finance & Administration',
-                'description' => 'Divisi keuangan dan administrasi perusahaan.',
-            ],
-            'people' => [
-                'name' => 'Human Resources & Operations',
-                'description' => 'Divisi HR, people operations, dan operasional karyawan.',
-            ],
-        ];
-
-        $divisions = [];
-
-        foreach ($definitions as $key => $definition) {
-            $divisions[$key] = Divisi::updateOrCreate(
-                ['name' => $definition['name']],
-                [
-                    'description' => $definition['description'],
-                    'is_active' => 'active',
-                    'manager_id' => null,
-                ],
-            );
-        }
-
-        return $divisions;
-    }
-
-    /**
      * @return array<string, User>
      */
     private function seedUsers(): array
     {
         $accounts = $this->accountDefinitions();
         $users = [];
+        $development = app()->environment(['local', 'testing']);
 
         foreach ($accounts as $key => $account) {
-            $user = User::updateOrCreate(
-                ['email' => $account['email']],
-                [
-                    'name' => $account['name'],
-                    'password' => Hash::make('nugitea123'),
-                    'status' => 'active',
-                ],
-            );
+            // UserSeeder already created the privileged account using the
+            // password supplied by the developer. Never overwrite it with a
+            // publicly documented demo password.
+            if ($key === 'superadmin') {
+                $user = User::query()->where('email', $account['email'])->firstOrFail();
+            } elseif ($development) {
+                $user = User::updateOrCreate(
+                    ['email' => $account['email']],
+                    [
+                        'name' => $account['name'],
+                        'password' => Hash::make(self::DEMO_ACCOUNT_PASSWORD),
+                        'status' => 'active',
+                    ],
+                );
+            } else {
+                // Public deployments must not expose known demo credentials.
+                // Preserve administrator-reset passwords on subsequent seeds.
+                $user = User::firstOrCreate(
+                    ['email' => $account['email']],
+                    [
+                        'name' => $account['name'],
+                        'password' => Hash::make(Str::random(40)),
+                        'status' => 'active',
+                    ],
+                );
+
+                // Rotate accounts left with the old, publicly known demo password.
+                if (Hash::check(self::DEMO_ACCOUNT_PASSWORD, $user->password)) {
+                    $user->update(['password' => Hash::make(Str::random(40))]);
+                }
+            }
 
             foreach ($account['roles'] as $roleName) {
                 Role::firstOrCreate([
@@ -210,28 +192,28 @@ class WorkManagementDevelopmentSeeder extends Seeder
             'gm' => [
                 'name' => 'GM HRWork',
                 'email' => 'gm.hrwork@gmail.com',
-                'roles' => ['employee', 'general-manager'],
+                'roles' => ['employee'],
                 'position' => 'General Manager',
                 'code' => 'DEV-GM-001',
             ],
             'manager-development' => [
                 'name' => 'Manager Development',
                 'email' => 'manager.development.hrwork@gmail.com',
-                'roles' => ['employee', 'manager'],
+                'roles' => ['employee'],
                 'position' => 'Manager',
                 'code' => 'DEV-MGR-001',
             ],
             'supervisor-backend' => [
                 'name' => 'Supervisor Backend Development',
                 'email' => 'supervisor.backend.hrwork@gmail.com',
-                'roles' => ['employee', 'supervisor'],
+                'roles' => ['employee'],
                 'position' => 'Supervisor',
                 'code' => 'DEV-SPV-001',
             ],
             'worker-backend-1' => [
                 'name' => 'Worker Backend Development',
                 'email' => 'worker.backend.001.hrwork@gmail.com',
-                'roles' => ['employee', 'task-worker'],
+                'roles' => ['employee'],
                 'position' => 'Backend Developer',
                 'code' => 'DEV-WKR-001',
             ],
@@ -272,7 +254,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             $accounts[$manager['key']] = [
                 'name' => $manager['name'],
                 'email' => $manager['email'],
-                'roles' => ['employee', 'manager'],
+                'roles' => ['employee'],
                 'position' => 'Manager',
                 'code' => $manager['code'],
             ];
@@ -294,7 +276,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             $accounts[$supervisor['key']] = [
                 'name' => $supervisor['name'],
                 'email' => $supervisor['email'],
-                'roles' => ['employee', 'supervisor'],
+                'roles' => ['employee'],
                 'position' => 'Supervisor',
                 'code' => $supervisor['code'],
             ];
@@ -341,7 +323,7 @@ class WorkManagementDevelopmentSeeder extends Seeder
             $accounts[$worker['key']] = [
                 'name' => $worker['name'],
                 'email' => $worker['email'],
-                'roles' => ['employee', 'task-worker'],
+                'roles' => ['employee'],
                 'position' => $worker['position'],
                 'code' => 'DEV-WKR-' . str_pad((string) ($index + 2), 3, '0', STR_PAD_LEFT),
             ];
@@ -371,183 +353,12 @@ class WorkManagementDevelopmentSeeder extends Seeder
                 [
                     'user_id' => $users[$key]->id,
                     'status_employee' => 'active',
-                    'team_id' => null,
                     'position_id' => $positions[$account['position']]->id,
                 ],
             );
         }
 
         return $employees;
-    }
-
-    /**
-     * @param array<string, Divisi> $divisions
-     * @param array<string, Employees> $employees
-     */
-    private function seedDivisionAndTeams(array $divisions, array $employees): void
-    {
-        $divisionManagers = [
-            'development' => 'manager-development',
-            'product' => 'manager-product',
-            'infrastructure' => 'manager-infrastructure',
-            'finance' => 'manager-finance',
-            'people' => 'manager-people',
-        ];
-
-        foreach ($divisionManagers as $divisionKey => $managerKey) {
-            $divisions[$divisionKey]->update([
-                'manager_id' => $employees[$managerKey]->id,
-                'is_active' => 'active',
-            ]);
-        }
-
-        $teamDefinitions = [
-            [
-                'key' => 'backend',
-                'name' => 'Backend Engineering',
-                'description' => 'Backend API dan service development.',
-                'division' => 'development',
-                'supervisor' => 'supervisor-backend',
-                'members' => [
-                    'worker-backend-1',
-                    'worker-backend-2',
-                    'worker-backend-3',
-                    'worker-backend-4',
-                ],
-            ],
-            [
-                'key' => 'frontend',
-                'name' => 'Frontend Engineering',
-                'description' => 'Frontend web dan mobile interface delivery.',
-                'division' => 'development',
-                'supervisor' => 'supervisor-frontend',
-                'members' => [
-                    'worker-frontend-1',
-                    'worker-frontend-2',
-                    'worker-frontend-3',
-                ],
-            ],
-            [
-                'key' => 'uiux',
-                'name' => 'UI/UX Design',
-                'description' => 'UX research, wireframe, dan interface design.',
-                'division' => 'product',
-                'supervisor' => 'supervisor-uiux',
-                'members' => [
-                    'worker-uiux-1',
-                    'worker-uiux-2',
-                    'worker-uiux-3',
-                ],
-            ],
-            [
-                'key' => 'product-delivery',
-                'name' => 'Product Delivery',
-                'description' => 'Product analysis, coordination, dan quality delivery.',
-                'division' => 'product',
-                'supervisor' => 'supervisor-product',
-                'members' => [
-                    'worker-product-1',
-                    'worker-product-2',
-                    'worker-product-3',
-                ],
-            ],
-            [
-                'key' => 'devops',
-                'name' => 'DevOps & Cloud',
-                'description' => 'Deployment, cloud infrastructure, dan reliability.',
-                'division' => 'infrastructure',
-                'supervisor' => 'supervisor-devops',
-                'members' => [
-                    'worker-devops-1',
-                    'worker-devops-2',
-                    'worker-devops-3',
-                ],
-            ],
-            [
-                'key' => 'it-support',
-                'name' => 'IT Support',
-                'description' => 'Support perangkat, jaringan, dan user internal.',
-                'division' => 'infrastructure',
-                'supervisor' => 'supervisor-it-support',
-                'members' => [
-                    'worker-it-1',
-                    'worker-it-2',
-                    'worker-it-3',
-                ],
-            ],
-            [
-                'key' => 'finance',
-                'name' => 'Finance',
-                'description' => 'Finance, accounting, dan reporting.',
-                'division' => 'finance',
-                'supervisor' => 'supervisor-finance',
-                'members' => [
-                    'worker-finance-1',
-                    'worker-finance-2',
-                    'worker-finance-3',
-                ],
-            ],
-            [
-                'key' => 'administration',
-                'name' => 'General Administration',
-                'description' => 'Administrasi dan dokumentasi internal.',
-                'division' => 'finance',
-                'supervisor' => 'supervisor-admin',
-                'members' => [
-                    'worker-admin-1',
-                    'worker-admin-2',
-                    'worker-admin-3',
-                ],
-            ],
-            [
-                'key' => 'hr-operations',
-                'name' => 'HR Operations',
-                'description' => 'Rekrutmen dan operasional HR.',
-                'division' => 'people',
-                'supervisor' => 'supervisor-hr',
-                'members' => [
-                    'worker-hr-1',
-                    'worker-hr-2',
-                    'worker-hr-3',
-                ],
-            ],
-            [
-                'key' => 'people-operations',
-                'name' => 'People Operations',
-                'description' => 'Employee experience dan people operations.',
-                'division' => 'people',
-                'supervisor' => 'supervisor-people',
-                'members' => [
-                    'worker-people-1',
-                    'worker-people-2',
-                    'worker-people-3',
-                ],
-            ],
-        ];
-
-        foreach ($teamDefinitions as $definition) {
-            $team = Team::updateOrCreate(
-                [
-                    'name' => $definition['name'],
-                    'divisi_id' => $divisions[$definition['division']]->id,
-                ],
-                [
-                    'description' => $definition['description'],
-                    'is_active' => 'active',
-                    'supervisor_id' => $employees[$definition['supervisor']]->id,
-                ],
-            );
-
-            $employees[$definition['supervisor']]->update([
-                'team_id' => $team->id,
-            ]);
-
-            foreach ($definition['members'] as $memberKey) {
-                $employees[$memberKey]->update([
-                    'team_id' => $team->id,
-                ]);
-            }
-        }
     }
 
     private function seedWilayah(): void
@@ -764,11 +575,27 @@ class WorkManagementDevelopmentSeeder extends Seeder
         $startDate = today()->subMonths(3)->startOfMonth();
         $seeded = 0;
 
+        $holidays = Holidays::query()
+            ->pluck('date')
+            ->map(fn ($date) => Carbon::parse($date)->toDateString())
+            ->flip();
+
+        $timeOffDates = [];
+        foreach (LeaveRequest::query()->where('status', 'approved')->get() as $leave) {
+            foreach (CarbonPeriod::create($leave->start_date, $leave->end_date) as $leaveDate) {
+                $timeOffDates[$leave->employee_id][Carbon::parse($leaveDate)->toDateString()] = true;
+            }
+        }
+
+        foreach (EmployeeAbsenceRequest::query()->where('status', 'approved')->get() as $absence) {
+            $timeOffDates[$absence->employee_id][Carbon::parse($absence->date)->toDateString()] = true;
+        }
+
         foreach (CarbonPeriod::create($startDate, $endDate) as $date) {
             $date = Carbon::instance($date)->startOfDay();
             $workTime = $workTimes->get($dayNames[$date->dayOfWeekIso]);
 
-            if (! $workTime || ! $workTime->is_working_day) {
+            if (! $workTime || ! $workTime->is_working_day || $holidays->has($date->toDateString())) {
                 continue;
             }
 
@@ -777,6 +604,10 @@ class WorkManagementDevelopmentSeeder extends Seeder
             $workDayNumber = $date->dayOfYear;
 
             foreach (array_values($employees) as $employeeIndex => $employee) {
+                if (isset($timeOffDates[$employee->id][$date->toDateString()])) {
+                    continue;
+                }
+
                 // Roughly 1 in 9 records is late, with deterministic minutes.
                 $isLate = (($employeeIndex + $workDayNumber) % 9) === 0;
                 $checkInOffset = $isLate
@@ -819,6 +650,63 @@ class WorkManagementDevelopmentSeeder extends Seeder
         }
 
         $this->command?->info("Historical attendance seeded: {$seeded} records ({$startDate->toDateString()} s/d {$endDate->toDateString()}).");
+    }
+
+    /**
+     * Populate today's dashboard only after the real shift has started.
+     * Today's records are excluded from the completed historical payrolls.
+     *
+     * @param array<string, Employees> $employees
+     */
+    private function seedTodayAttendances(array $employees): void
+    {
+        $dayName = [
+            1 => 'senin', 2 => 'selasa', 3 => 'rabu', 4 => 'kamis',
+            5 => 'jumat', 6 => 'sabtu', 7 => 'minggu',
+        ][today()->dayOfWeekIso];
+
+        $workTime = WorkTime::query()->where('day_of_week', $dayName)->first();
+        if (! $workTime?->is_working_day || Holidays::query()->whereDate('date', today())->exists()) {
+            return;
+        }
+
+        $start = today()->setTimeFromTimeString($workTime->start_time);
+        $end = today()->setTimeFromTimeString($workTime->end_time);
+        if (now()->lt($start)) {
+            return;
+        }
+
+        foreach (array_slice(array_values($employees), 0, 36) as $index => $employee) {
+            if ($index % 11 === 0) {
+                continue; // Some employees have not checked in yet.
+            }
+
+            $late = $index % 8 === 0;
+            $checkIn = $start->copy()->addMinutes($late ? 13 : ($index % 5));
+            if ($checkIn->isFuture()) {
+                continue;
+            }
+
+            $checkOut = now()->gte($end->copy()->addMinutes(15))
+                ? $end->copy()->addMinutes($index % 15)
+                : null;
+
+            Attendances::query()->updateOrCreate(
+                ['employee_id' => $employee->id, 'date' => today()->toDateString()],
+                [
+                    'check_in_at' => $checkIn,
+                    'check_in_latitude' => -6.914744,
+                    'check_in_longitude' => 107.609810,
+                    'check_out_at' => $checkOut,
+                    'check_out_latitude' => $checkOut ? -6.914744 : null,
+                    'check_out_longitude' => $checkOut ? 107.609810 : null,
+                    'status' => $late ? 'late' : 'present',
+                    'late_minutes' => $late ? 13 : 0,
+                    'work_duration' => $checkOut ? (int) $checkIn->diffInMinutes($checkOut) : null,
+                    'notes' => 'Simulasi presensi hari ini.',
+                ],
+            );
+        }
     }
 
     /**

@@ -146,12 +146,6 @@ return new class extends Migration
                 ->on('employee_resignations')
                 ->cascadeOnDelete();
 
-            $table->foreignId('task_id')->nullable();
-            $table->foreign('task_id', 'erhi_task_fk')
-                ->references('id')
-                ->on('tasks')
-                ->nullOnDelete();
-
             $table->string('title');
             $table->text('description')->nullable();
 

@@ -325,7 +325,6 @@
                                                     'rounded-full px-2.5 py-1 text-xs font-medium',
                                                     'text-olive-600 bg-olive-100' => $role === 'employee',
                                                     'text-purple-600 bg-purple-100' => $role === 'super-admin',
-                                                    'text-sky-600 bg-sky-100' => $role === 'supervisor',
                                                     'text-red-600 bg-red-100' => $role === 'hr',
                                                     'text-blue-600 bg-blue-100' => $role === 'administrator',
                                                 ])>

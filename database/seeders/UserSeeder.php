@@ -21,24 +21,6 @@ class UserSeeder extends Seeder
             );
         }
 
-        $hr = User::updateOrCreate(
-            ['email' => 'nugiekurniawan03@gmail.com'],
-            [
-                'name' => 'Muhammad nadin nugraha',
-                'password' => bcrypt('nugitea123'),
-                'status' => 'active',
-            ],
-        );
-
-        $admin = User::updateOrCreate(
-            ['email' => 'nugiekurniawan02@gmail.com'],
-            [
-                'name' => 'Nugie kurniawan',
-                'password' => bcrypt('nugitea123'),
-                'status' => 'active',
-            ],
-        );
-
         $superAdmin = User::updateOrCreate(
             ['email' => $superAdminEmail],
             [
@@ -48,8 +30,6 @@ class UserSeeder extends Seeder
             ],
         );
 
-        $admin->syncRoles(['administrator']);
-        $hr->syncRoles(['hr']);
         $superAdmin->syncRoles(['super-admin']);
     }
 }

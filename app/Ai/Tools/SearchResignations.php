@@ -41,7 +41,7 @@ class SearchResignations extends HRTool implements Tool
         $limit = min(max((int) ($request['limit'] ?? 20), 1), 50);
 
         $resignations = EmployeeResignation::query()
-            ->with(['employee.user:id,name,email', 'employee.position:id,name', 'employee.team.divisi:id,name'])
+            ->with(['employee.user:id,name,email', 'employee.position:id,name'])
             ->withCount([
                 'clearances as pending_clearances_count' => fn ($q) => $q->where('status', 'pending'),
                 'clearances as completed_clearances_count' => fn ($q) => $q->where('status', 'completed'),
@@ -75,7 +75,6 @@ class SearchResignations extends HRTool implements Tool
                 'employee_code' => $resignation->employee?->employee_code,
                 'employee_name' => $resignation->employee?->user?->name,
                 'position' => $resignation->employee?->position?->name,
-                'division' => $resignation->employee?->team?->divisi?->name,
                 'status' => $resignation->status,
                 'submitted_at' => $resignation->submitted_at?->toDateTimeString(),
                 'proposed_last_working_date' => $resignation->proposed_last_working_date?->toDateString(),

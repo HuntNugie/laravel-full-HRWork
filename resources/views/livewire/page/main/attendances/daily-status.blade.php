@@ -134,7 +134,7 @@
                 </h2>
 
                 <p class="text-sm text-slate-500">
-                    Pilih tanggal dan kelompok karyawan yang ingin diperiksa.
+                    Pilih tanggal dan karyawan yang ingin diperiksa.
                 </p>
 
             </x-wirekit::stack>
@@ -143,7 +143,7 @@
 
         <x-wirekit::card.body>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
 
                 <div>
 
@@ -164,46 +164,6 @@
 
                     <x-wirekit::input wire:model.live.debounce.400ms="search" placeholder="Nama atau kode employee"
                         name="search" />
-
-                </div>
-
-                <div>
-
-                    <label class="mb-2 block text-sm font-medium text-slate-700">
-                        Divisi
-                    </label>
-
-                    <select wire:model.live="divisiId"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
-                        <option value="">Semua Divisi</option>
-
-                        @foreach ($divisis as $divisi)
-                            <option value="{{ $divisi->id }}">
-                                {{ $divisi->name }}
-                            </option>
-                        @endforeach
-
-                    </select>
-
-                </div>
-
-                <div>
-
-                    <label class="mb-2 block text-sm font-medium text-slate-700">
-                        Team
-                    </label>
-
-                    <select wire:model.live="teamId"
-                        class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-[#30AFFF] focus:ring-2 focus:ring-[#30AFFF]/20">
-                        <option value="">Semua Team</option>
-
-                        @foreach ($teams as $team)
-                            <option value="{{ $team->id }}">
-                                {{ $team->name }}
-                            </option>
-                        @endforeach
-
-                    </select>
 
                 </div>
 
@@ -278,7 +238,7 @@
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
-                                Organisasi
+                                Jabatan
                             </x-wirekit::table.th>
 
                             <x-wirekit::table.th>
@@ -361,11 +321,7 @@
                                     <x-wirekit::stack gap="1">
 
                                         <span class="text-sm text-slate-700">
-                                            {{ $row['division_name'] }}
-                                        </span>
-
-                                        <span class="text-xs text-slate-400">
-                                            {{ $row['team_name'] }}
+                                            {{ $row['position_name'] }}
                                         </span>
 
                                     </x-wirekit::stack>

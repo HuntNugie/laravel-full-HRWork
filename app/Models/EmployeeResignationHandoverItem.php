@@ -18,11 +18,6 @@ class EmployeeResignationHandoverItem extends Model
         return $this->belongsTo(EmployeeResignation::class, 'resignation_id');
     }
 
-    public function task()
-    {
-        return $this->belongsTo(Task::class);
-    }
-
     public function handoverTo()
     {
         return $this->belongsTo(Employees::class, 'handover_to_employee_id');

@@ -38,7 +38,10 @@ class RolePolicy
      */
     public function update(User $user, Role $role): bool
     {
-        return $user->can('update-role');
+        // Role inti ditetapkan oleh seeder, tidak dapat diubah oleh administrator.
+        return $user->can('update-role') && ! in_array($role->name, [
+            'super-admin', 'administrator', 'hr', 'employee',
+        ], true);
     }
 
     /**
@@ -46,7 +49,9 @@ class RolePolicy
      */
     public function delete(User $user, Role $role): bool
     {
-        return $user->can('delete-role');
+        return $user->can('delete-role') && ! in_array($role->name, [
+            'super-admin', 'administrator', 'hr', 'employee',
+        ], true);
     }
 
     /**

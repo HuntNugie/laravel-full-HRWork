@@ -34,7 +34,7 @@ class Resignations extends Component
     public function resignations()
     {
         return EmployeeResignation::query()
-            ->with(['employee.user', 'employee.position', 'employee.team.divisi'])
+            ->with(['employee.user', 'employee.position'])
             ->when(filled($this->search), function (Builder $query) {
                 $search = trim($this->search);
 

@@ -41,7 +41,7 @@ class SearchTerminations extends HRTool implements Tool
         $limit = min(max((int) ($request['limit'] ?? 20), 1), 50);
 
         $terminations = EmployeeTermination::query()
-            ->with(['employee.user:id,name,email', 'employee.position:id,name', 'employee.team.divisi:id,name'])
+            ->with(['employee.user:id,name,email', 'employee.position:id,name'])
             ->withCount([
                 'clearances as pending_clearances_count' => fn ($q) => $q->where('status', 'pending'),
                 'clearances as completed_clearances_count' => fn ($q) => $q->where('status', 'completed'),
@@ -72,7 +72,6 @@ class SearchTerminations extends HRTool implements Tool
                 'employee_code' => $termination->employee?->employee_code,
                 'employee_name' => $termination->employee?->user?->name,
                 'position' => $termination->employee?->position?->name,
-                'division' => $termination->employee?->team?->divisi?->name,
                 'status' => $termination->status,
                 'effective_date' => $termination->effective_date?->toDateString(),
                 'reason_type' => $termination->reason_type,

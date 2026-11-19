@@ -89,34 +89,6 @@
                         </div>
 
 
-                        {{-- TEAM --}}
-                        <div>
-
-                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                Team
-                            </p>
-
-                            <p class="mt-1 text-sm font-medium text-slate-900">
-                                {{ $employee?->team->name ?? 'Belum ada team' }}
-                            </p>
-
-                        </div>
-
-
-                        {{-- DIVISI --}}
-                        <div>
-
-                            <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                                Divisi
-                            </p>
-
-                            <p class="mt-1 text-sm font-medium text-slate-900">
-                                {{ $employee?->team?->divisi->name ?? 'Tidak ada divisi' }}
-                            </p>
-
-                        </div>
-
-
                         {{-- STATUS PEGAWAI --}}
                         <div>
 

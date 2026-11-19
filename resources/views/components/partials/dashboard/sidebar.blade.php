@@ -1,6 +1,7 @@
 <x-slot:sidebar>
 
-    <x-wirekit::sidebar>
+    {{-- Batasi tinggi drawer mobile agar seluruh menu tetap bisa dijangkau dengan scroll. --}}
+    <x-wirekit::sidebar class="max-lg:max-h-[calc(100dvh-4rem)] max-lg:overflow-y-auto max-lg:overscroll-contain">
 
         <x-wirekit::sidebar.group label="Overview">
 
@@ -33,30 +34,6 @@
         </x-wirekit::sidebar.group>
 
 
-
-        @can('view-master-project')
-            <x-wirekit::sidebar.group collapsible label="Work Management">
-                <x-wirekit::sidebar.item
-                    href="{{ route('work-management.master-projects') }}"
-                    :active="request()->routeIs('work-management.master-projects*')"
-                    icon="briefcase"
-                    wire:navigate
-                >
-                    Master Projects
-                </x-wirekit::sidebar.item>
-
-                @role('task-worker')
-                    <x-wirekit::sidebar.item
-                        href="{{ route('work-management.tasks') }}"
-                        :active="request()->routeIs('work-management.tasks*')"
-                        icon="clipboard-document-list"
-                        wire:navigate
-                    >
-                        My Tasks
-                    </x-wirekit::sidebar.item>
-                @endrole
-            </x-wirekit::sidebar.group>
-        @endcan
 
         @canany(['view-attendance', 'view-leave', 'view-data-my', 'view-contract-my', 'view-payroll-my', 'view-warning-letter-my', 'view-resignation-my'])
             <x-wirekit::sidebar.group label="Layanan Karyawan">
@@ -149,40 +126,14 @@
             </x-wirekit::sidebar.group>
         @endcanany
 
-        @canany(['view-divisi', 'view-team', 'view-position'])
-
-            <x-wirekit::sidebar.group collapsible label="Organisasi">
-
-                @can('view-divisi')
-                    <x-wirekit::sidebar.item href="{{ route('divisi.view') }}" icon="building" :active="request()->routeIs('divisi.view')"
-                        wire:navigate>
-                        Manajemen Divisi
-                    </x-wirekit::sidebar.item>
-                @endcan
-
-
-                @can('view-team')
-                    <x-wirekit::sidebar.item href="{{ route('team.view') }}" icon="user-group" :active="request()->routeIs('team.view')"
-                        wire:navigate>
-                        Manajemen Team
-                    </x-wirekit::sidebar.item>
-                @endcan
-
+        @canany(['view-employee', 'view-contract', 'view-resignation', 'view-termination'])
+            <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-position')
-                    <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge"
-                        wire:navigate>
+                    <x-wirekit::sidebar.item href="{{ route('position.view') }}" :active="request()->routeIs('position.view')" icon="badge" wire:navigate>
                         Manajemen Jabatan
                     </x-wirekit::sidebar.item>
                 @endcan
-
-
-
-            </x-wirekit::sidebar.group>
-        @endcanany
-
-        @canany(['view-employee', 'view-contract', 'view-resignation', 'view-termination'])
-            <x-wirekit::sidebar.group collapsible label="SDM">
 
                 @can('view-employee')
                     <x-wirekit::sidebar.item href="{{ route('employee.view') }}" :active="request()->routeIs('employee.view')" icon="users"

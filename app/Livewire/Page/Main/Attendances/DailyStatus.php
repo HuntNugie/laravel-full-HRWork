@@ -2,9 +2,7 @@
 
 namespace App\Livewire\Page\Main\Attendances;
 
-use App\Models\Divisi;
 use App\Models\Employees;
-use App\Models\Team;
 use App\Models\WorkTime;
 use App\Service\EmployeeDailyStatusService;
 use Carbon\Carbon;
@@ -21,18 +19,9 @@ class DailyStatus extends Component
 
     public string $status = '';
 
-    public ?int $divisiId = null;
-
-    public ?int $teamId = null;
-
     public function mount(): void
     {
         $this->date = today()->toDateString();
-    }
-
-    public function updatedDivisiId(): void
-    {
-        $this->teamId = null;
     }
 
     public function resetFilter(): void
@@ -40,8 +29,6 @@ class DailyStatus extends Component
         $this->date = today()->toDateString();
         $this->search = '';
         $this->status = '';
-        $this->divisiId = null;
-        $this->teamId = null;
     }
 
     private function employees(): iterable
@@ -49,7 +36,7 @@ class DailyStatus extends Component
         $employees = Employees::query()
             ->with([
                 'user',
-                'team.divisi',
+                'position',
                 'attendances' => function ($query) {
                     $query->whereDate('date', $this->date);
                 },
@@ -72,23 +59,6 @@ class DailyStatus extends Component
                             );
                     });
                 }
-            )
-            ->when(
-                $this->divisiId,
-                fn($query) => $query->whereHas(
-                    'team',
-                    fn($teamQuery) => $teamQuery->where(
-                        'divisi_id',
-                        $this->divisiId
-                    )
-                )
-            )
-            ->when(
-                $this->teamId,
-                fn($query) => $query->where(
-                    'team_id',
-                    $this->teamId
-                )
             )
             ->orderBy('employee_code')
             ->get();
@@ -116,8 +86,7 @@ class DailyStatus extends Component
                 'employee_name' => $employee->user?->name ?? '—',
                 'employee_code' => $employee->employee_code ?? '—',
                 'avatar' => $employee->user?->getFirstMediaUrl('avatar'),
-                'division_name' => $employee->team?->divisi?->name ?? '—',
-                'team_name' => $employee->team?->name ?? '—',
+                'position_name' => $employee->position?->name ?? '—',
                 'work_time_start' => $state['work_time_id']
                     ? $workTimes->get($state['work_time_id'])?->start_time
                     : null,
@@ -192,25 +161,11 @@ class DailyStatus extends Component
             'pending' => $rows->where('state.status', EmployeeDailyStatusService::STATUS_PENDING)->count(),
         ];
 
-        $divisis = Divisi::query()
-            ->orderBy('name')
-            ->get();
-
-        $teams = Team::query()
-            ->when(
-                $this->divisiId,
-                fn($query) => $query->where('divisi_id', $this->divisiId)
-            )
-            ->orderBy('name')
-            ->get();
-
         return view(
             'livewire.page.main.attendances.daily-status',
             [
                 'rows' => $rows,
                 'summary' => $summary,
-                'divisis' => $divisis,
-                'teams' => $teams,
                 'statusLabel' => fn(string $status) => $this->label($status),
                 'statusIntent' => fn(string $status) => $this->intent($status),
                 'sourceLabel' => fn(string $source) => $this->sourceLabel($source),
