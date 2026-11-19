@@ -50,9 +50,26 @@ class LeaveRequest extends Component
 
     public function mount(): void
     {
-        $this->employee = Auth::user()->employees;
+        $this->employee = $this->authenticatedEmployee();
 
         $this->loadData();
+    }
+
+    /**
+     * The personal leave page requires an employee identity even when the
+     * authenticated user can access all routes (e.g. a super-admin).
+     */
+    private function authenticatedEmployee(): Employees
+    {
+        $employee = Auth::user()?->employees;
+
+        abort_unless(
+            $employee instanceof Employees,
+            403,
+            'Akun Anda belum terhubung dengan data karyawan.',
+        );
+
+        return $employee;
     }
 
 
@@ -320,7 +337,7 @@ class LeaveRequest extends Component
     #[On('leave-request')]
     public function refresh(): void
     {
-        $this->employee = Auth::user()->employees;
+        $this->employee = $this->authenticatedEmployee();
 
         $this->loadData();
 
