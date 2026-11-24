@@ -40,7 +40,7 @@ class SearchEmployees extends HRTool implements Tool
                 $q->where(function ($queryBuilder) use ($query) {
                     $queryBuilder
                         ->where('employee_code', 'like', "%{$query}%")
-                        ->orWhere('name', "%{$query}%")
+                        ->orWhere('name', 'like', "%{$query}%")
                         ->orWhereHas('position', function ($positionQuery) use ($query) {
                             $positionQuery->where('name', 'like', "%{$query}%");
                         });

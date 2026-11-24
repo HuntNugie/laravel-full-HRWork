@@ -40,7 +40,7 @@
                     Asisten AI untuk pencarian data karyawan dan kontrak kerja.
                 </p>
             </div>
-            <div class="ml-auto"><x-wirekit::button type="button" size="sm" intent="neutral" surface="outline" wire:click="clearConversation" x-bind:disabled="submitting">Chat Baru</x-wirekit::button></div>
+            <div class="ml-auto"><x-wirekit::button type="button" size="sm" intent="neutral" surface="outline" wire:click="clearConversation" x-on:click="$refs.prompt.value = ''" x-bind:disabled="submitting">Chat Baru</x-wirekit::button></div>
         </div>
 
         <div class="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-[0_10px_40px_rgba(48,175,255,0.08)]"
@@ -137,7 +137,7 @@
             <form x-on:submit.prevent="submitPrompt">
                 <div
                     class="rounded-2xl border border-sky-100 bg-white p-2 shadow-sm transition focus-within:border-[#30AFFF]/60 focus-within:ring-2 focus-within:ring-[#30AFFF]/10">
-                    <textarea x-ref="prompt" wire:model="prompt" rows="3" maxlength="5000"
+                    <textarea x-ref="prompt" rows="3" maxlength="5000"
                         placeholder="Tanyakan data karyawan, jabatan, atau kontrak kerja..."
                         class="w-full resize-none border-0 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0"
                         x-bind:disabled="submitting" wire:loading.attr="disabled"></textarea>
