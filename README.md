@@ -29,11 +29,9 @@ DB_CONNECTION=sqlite
 DB_DATABASE=/absolute/path/hrwork-kp/database/kerja_praktek.sqlite
 HRWORK_ADMIN_EMAIL=
 HRWORK_ADMIN_PASSWORD=
-HRWORK_CONTRACT_SIGNATORY_NAME=
-HRWORK_CONTRACT_SIGNATORY_POSITION=
 ```
 
-Gunakan email admin dan password kuat minimal 12 karakter. Isi nama/jabatan penandatangan sesuai persetujuan perusahaan. Jangan commit file .env.
+Gunakan email admin dan password kuat minimal 12 karakter. Jangan commit file .env.
 
 ```bash
 php artisan migrate --seed
@@ -52,6 +50,8 @@ Migrasi domain KP dikonsolidasikan dalam satu file schema baru. Migrasi infrastr
 ## Kontrak
 
 Jabatan, benefit dan jenis cuti harus dibuat sebelum penyusunan kontrak. Kontrak aktif harus berlaku hari ini; kontrak masa depan disimpan sebagai draft. Aktifkan draft saat tanggal mulai tiba. Scheduler menjalankan app:expire-contracts setiap hari. Untuk development jalankan php artisan schedule:work; pada deployment gunakan scheduler Laravel setiap menit.
+
+Identitas pihak perusahaan pada PDF mengikuti nama akun HRD yang sedang login dan mencetak, dengan jabatan HRD. Pencetakan ulang oleh akun HRD lain akan menggunakan identitas akun tersebut. Ini tidak otomatis memberikan kewenangan menandatangani kontrak secara hukum.
 
 PDF membutuhkan Chrome yang dapat dijalankan PHP. Lihat variabel LARAVEL_PDF_CHROME_* pada .env.example. Estimasi gaji bulanan memakai hari kerja pada bulan tanggal mulai kontrak, default Senin–Sabtu dari konfigurasi warisan; konfirmasikan kebijakan perusahaan dan sesuaikan config/hrwork.php sebelum penggunaan.
 

@@ -317,12 +317,12 @@
                 <tr>
                     <td class="label">Diwakili Oleh</td>
                     <td class="colon">:</td>
-                    <td><strong>{{ config('hrwork.contract_signatory_name') }}</strong></td>
+                    <td><strong>{{ $signatoryName }}</strong></td>
                 </tr>
                 <tr>
                     <td class="label">Jabatan</td>
                     <td class="colon">:</td>
-                    <td>{{ config('hrwork.contract_signatory_position') }}</td>
+                    <td>{{ $signatoryPosition }}</td>
                 </tr>
                 <tr>
                     <td class="label">Jenis Usaha</td>
@@ -836,8 +836,8 @@
                         <p><strong>PIHAK PERTAMA</strong></p>
                         <p>PT. Inovindo Digital Media</p>
                         <div class="signature-space"></div>
-                        <p class="signature-name">{{ config('hrwork.contract_signatory_name') }}</p>
-                        <p class="small">{{ config('hrwork.contract_signatory_position') }}</p>
+                        <p class="signature-name">{{ $signatoryName }}</p>
+                        <p class="small">{{ $signatoryPosition }}</p>
                     </td>
                     <td>
                         <p class="signature-city">Bandung, {{ now()->locale('id')->translatedFormat('d F Y') }}</p>

@@ -16,8 +16,8 @@ class PrintContractEmployeeController extends Controller
     ) {
         abort_if($contract->employee_id !== $employee->id, 404);
 
-        abort_unless(auth()->user()->can('download-employee-contract'), 403);
-        abort_if(blank(config('hrwork.contract_signatory_name')) || blank(config('hrwork.contract_signatory_position')), 422, 'Konfigurasi penandatangan kontrak belum diisi.');
+        $hr = auth()->user();
+        abort_unless($hr && $hr->hasRole('hr') && $hr->can('download-employee-contract'), 403);
 
         $companyBusinessType = "Industri pengembangan perangkat lunak";
 
@@ -199,6 +199,9 @@ class PrintContractEmployeeController extends Controller
         */
 
         return Pdf::view('print.tempContract', [
+            'signatoryName' => $hr->name,
+            'signatoryPosition' => 'HRD',
+
             'employee' =>
             $employee,
 
