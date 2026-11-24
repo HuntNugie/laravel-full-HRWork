@@ -17,7 +17,7 @@ class isActive
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::user()->status !== "active"){
+        if (! Auth::user() || Auth::user()->status !== "active" || ! Auth::user()->hasAnyRole(["administrator", "hr"])) {
             AuthService::logout();
             return redirect()->route('login')->with('login_error',"Akun belum aktif");
         }

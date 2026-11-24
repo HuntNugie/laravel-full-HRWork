@@ -19,11 +19,13 @@
         </x-wirekit::stack>
 
 
+@can('create-employee')
         <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500" href="{{ route('employee.create') }}"
             wire:navigate>
             <x-wirekit::icon name="user-add" />
             Employee
         </x-wirekit::button>
+@endcan
 
     </div>
 
@@ -137,9 +139,9 @@
 
                                         <div
                                             class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                            @if ($employee->user->getFirstMediaUrl('avatar'))
-                                                <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
-                                                    alt="gambar dari {{ $employee->user->name }}"
+                                            @if ($employee->getFirstMediaUrl('avatar'))
+                                                <img src="{{ $employee->getFirstMediaUrl('avatar') }}"
+                                                    alt="gambar dari {{ $employee->name }}"
                                                     class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
                                             @else
                                                 <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
@@ -150,7 +152,7 @@
                                         <div class="min-w-0">
 
                                             <p class="truncate text-sm font-semibold text-slate-800">
-                                                {{ $employee->user->name }}
+                                                {{ $employee->name }}
                                             </p>
 
                                             <p class="truncate text-xs text-slate-400">
@@ -178,7 +180,7 @@
                                 <x-wirekit::table.td>
 
                                     <span class="text-sm text-slate-600">
-                                        {{ $employee->user->email }}
+                                        {{ $employee->email }}
                                     </span>
 
                                 </x-wirekit::table.td>

@@ -13,10 +13,10 @@ class ModalChangePassword extends Component
     #[Validate([
         'required',
         'string',
-        'min:8',
+        'min:12',
     ], message: [
         'newPassword.required' => 'password wajib di isi',
-        'newPassword.min' => 'password minimal 8 karakter'
+        'newPassword.min' => 'password minimal 12 karakter'
     ])]
     public string $newPassword = '';
 
@@ -35,13 +35,16 @@ class ModalChangePassword extends Component
     public function changePassword()
     {
         abort_unless(auth()->user()->can('reset-user-password'), 403);
-        abort_if($this->user->hasRole('super-admin') && ! auth()->user()->hasRole('super-admin'), 403);
+        abort_unless($this->user->hasRole('hr') && ! $this->user->hasRole('administrator'), 403);
 
         $this->validate();
 
         $this->user->update([
-            'password' => bcrypt($this->newPassword),
+            'password' => $this->newPassword,
+            'remember_token' => null,
         ]);
+
+        \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $this->user->id)->delete();
 
         $this->dispatch('wirekit-modal-close', name: 'change-password');
         $this->dispatch('change-user',);

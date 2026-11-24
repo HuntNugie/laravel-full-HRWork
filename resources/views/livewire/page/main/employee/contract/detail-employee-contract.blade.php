@@ -50,9 +50,9 @@
                 {{-- AVATAR --}}
                 <div class="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-100">
 
-                    @if ($employee->user->getFirstMediaUrl('avatar'))
-                        <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
-                            alt="gambar dari {{ $employee->user->name }}"
+                    @if ($employee->getFirstMediaUrl('avatar'))
+                        <img src="{{ $employee->getFirstMediaUrl('avatar') }}"
+                            alt="gambar dari {{ $employee->name }}"
                             class="block size-full rounded-full bg-[#92EEFF]/60 object-cover">
                     @else
                         <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
@@ -65,7 +65,7 @@
                 <div class="min-w-0 flex-1">
 
                     <h3 class="text-base font-semibold text-slate-900">
-                        {{ $employee->user->name }}
+                        {{ $employee->name }}
                     </h3>
 
                     <p class="mt-1 text-sm text-slate-500">
@@ -462,7 +462,7 @@
                                         <div class="min-w-0">
 
                                             <p class="truncate text-sm font-medium text-slate-900">
-                                                {{ $leave->leaveType?->name ?? 'Jenis Cuti' }}
+                                                {{ $leave->name_snapshot }}
                                             </p>
 
                                             <p class="mt-0.5 text-xs text-slate-400">
@@ -565,7 +565,7 @@
                                 <x-wirekit::stack gap="xs">
 
                                     <p class="text-sm font-medium text-slate-900">
-                                        {{ $benefit->name }}
+                                        {{ $benefit->pivot->name_snapshot }}
                                     </p>
 
                                     <p class="text-xs text-slate-500">
@@ -612,7 +612,25 @@
 
                 @endif
 
-            </x-wirekit::stack>
+            
+    @can('terminate-contract')
+        @if ($contract->status === 'active')
+            <x-wirekit::card><x-wirekit::card.body>
+                <h2 class="mb-3 text-lg font-semibold text-slate-900">Akhiri kontrak</h2>
+                <form wire:submit="terminate" class="space-y-3">
+                    <x-wirekit::textarea label="Alasan pengakhiran administratif" name="reason" wire:model="reason" />
+                    <x-wirekit::button type="submit" wire:confirm="Akhiri kontrak ini?">Akhiri kontrak</x-wirekit::button>
+                </form>
+            </x-wirekit::card.body></x-wirekit::card>
+        @endif
+    @endcan
+    @if ($contract->ended_at)
+        <x-wirekit::card><x-wirekit::card.body>
+            <p class="text-sm">Tanggal akhir aktual: {{ $contract->ended_at->format('d M Y') }}</p>
+            <p class="text-sm text-slate-500">{{ $contract->end_reason }}</p>
+        </x-wirekit::card.body></x-wirekit::card>
+    @endif
+</x-wirekit::stack>
 
         </x-wirekit::card.body>
 

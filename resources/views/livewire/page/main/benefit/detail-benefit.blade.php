@@ -30,7 +30,8 @@
 
         <div class="flex items-center gap-2">
 
-            <livewire:components.main.benefit.form-edit>
+            @can('update-benefit')
+<livewire:components.main.benefit.form-edit>
 
                 <x-wirekit::button type="button" class="px-3 py-1.5 text-sm">
                     <x-wirekit::icon name="pencil" />
@@ -38,6 +39,7 @@
                 </x-wirekit::button>
 
             </livewire:components.main.benefit.form-edit>
+@endcan
 
         </div>
 
@@ -268,7 +270,7 @@
                     <x-wirekit::table.body>
 
                         {{-- Employee 1 --}}
-                        @forelse ($benefit->contracts as $ben)
+                        @forelse((auth()->user()->can('show-contract') ? $benefit->contracts : collect()) as $ben)
                             <x-wirekit::table.row>
 
                                 <x-wirekit::table.td>
@@ -277,9 +279,9 @@
 
                                         <div
                                             class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                            @if ($ben->employees->user->getFirstMediaUrl('avatar'))
-                                                <img src="{{ $ben->employees->user->getFirstMediaUrl('avatar') }}"
-                                                    alt="gambar dari {{ $ben->employees->user->name }}"
+                                            @if ($ben->employees->getFirstMediaUrl('avatar'))
+                                                <img src="{{ $ben->employees->getFirstMediaUrl('avatar') }}"
+                                                    alt="gambar dari {{ $ben->employees->name }}"
                                                     class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
                                             @else
                                                 <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
@@ -290,7 +292,7 @@
                                         <div class="min-w-0">
 
                                             <p class="truncate text-sm font-semibold text-slate-800">
-                                                {{ $ben->employees->user->name }}
+                                                {{ $ben->employees->name }}
                                             </p>
 
                                             <p class="truncate text-xs text-slate-400">
@@ -314,7 +316,7 @@
 
                                 <x-wirekit::table.td>
                                     <span class="text-sm font-medium text-slate-700">
-                                        Rp{{ number_format($ben->benefits()->first()->pivot->amount) }}
+                                        Rp{{ number_format($ben->benefits->firstWhere('id', $benefit->id)?->pivot->amount ?? 0) }}
                                     </span>
                                 </x-wirekit::table.td>
 

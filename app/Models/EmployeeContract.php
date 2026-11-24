@@ -1,50 +1,13 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Model;
-
 #[Guarded('id')]
 class EmployeeContract extends Model
 {
-    // relasi ke employees
-    public function employees()
-    {
-        return $this->belongsTo(Employees::class, 'employee_id');
-    }
-
-    // relasi ke benefit
-    public function benefits()
-    {
-        return $this->belongsToMany(Benefit::class, 'contract_benefits', 'employee_contract_id', 'benefit_id')->withPivot('amount');
-    }
-
-    public function contractLeave()
-    {
-        return $this->hasMany(ContractLeaveEntitlements::class, 'employee_contract_id');
-    }
-
-    public function leaveRequest()
-    {
-        return $this->hasMany(LeaveRequest::class, 'employee_contract_id');
-    }
-
-    public function resignations()
-    {
-        return $this->hasMany(EmployeeResignation::class, 'employee_contract_id');
-    }
-
-    public function terminations()
-    {
-        return $this->hasMany(EmployeeTermination::class, 'employee_contract_id');
-    }
-
-    public function casts()
-    {
-        return [
-            'start_date' => 'date',
-            'end_date' => 'date'
-        ];
-    }
+    public function employees() { return $this->belongsTo(Employees::class, 'employee_id'); }
+    public function position() { return $this->belongsTo(Position::class, 'position_id'); }
+    public function benefits() { return $this->belongsToMany(Benefit::class, 'contract_benefits', 'employee_contract_id', 'benefit_id')->withPivot('amount', 'name_snapshot', 'description_snapshot')->withTimestamps(); }
+    public function contractLeave() { return $this->hasMany(ContractLeaveEntitlements::class, 'employee_contract_id'); }
+    protected function casts(): array { return ['start_date' => 'date', 'end_date' => 'date', 'ended_at' => 'date']; }
 }

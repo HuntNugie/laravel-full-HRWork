@@ -36,12 +36,14 @@
         {{-- ACTION --}}
         <div class="flex items-center gap-2">
 
-            <livewire:components.main.leave.type-form-edit :leaveType="$leaveType">
+            @can('update-type-leave')
+<livewire:components.main.leave.type-form-edit :leaveType="$leaveType">
                 <x-wirekit::button type="button" variant="outline">
                     <x-wirekit::icon name="pencil" />
                     Edit
                 </x-wirekit::button>
             </livewire:components.main.leave.type-form-edit>
+@endcan
 
         </div>
 
@@ -317,7 +319,7 @@
                                     <div>
 
                                         <p class="text-sm font-medium text-slate-900">
-                                            {{ $employee?->user?->name ?? 'Karyawan tidak ditemukan' }}
+                                            {{ $employee?->name ?? 'Karyawan tidak ditemukan' }}
                                         </p>
 
                                         <p class="mt-0.5 text-xs text-slate-500">

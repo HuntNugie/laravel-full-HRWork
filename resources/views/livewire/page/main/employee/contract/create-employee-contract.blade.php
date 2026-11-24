@@ -516,9 +516,9 @@
                                     <div
                                         class="flex size-11 shrink-0 items-center justify-center rounded-full bg-sky-100">
 
-                                        @if ($employee->user->getFirstMediaUrl('avatar'))
-                                            <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
-                                                alt="gambar dari {{ $employee->user->name }}"
+                                        @if ($employee->getFirstMediaUrl('avatar'))
+                                            <img src="{{ $employee->getFirstMediaUrl('avatar') }}"
+                                                alt="gambar dari {{ $employee->name }}"
                                                 class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
                                         @else
                                             <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
@@ -530,7 +530,7 @@
                                     <div class="min-w-0">
 
                                         <p class="truncate text-sm font-semibold text-slate-800">
-                                            {{ $employee->user->name }}
+                                            {{ $employee->name }}
                                         </p>
 
                                         <p class="truncate text-xs text-slate-400">
@@ -729,7 +729,7 @@
                                                         class="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2.5">
 
                                                         <span class="text-sm text-slate-600">
-                                                            {{ $leave?->leaveType?->name }}
+                                                            {{ $leave?->name_snapshot }}
                                                         </span>
 
                                                         <span class="text-sm font-medium text-slate-800">

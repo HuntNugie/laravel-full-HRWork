@@ -7,21 +7,10 @@ use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        foreach ([
-            'hr',
-            'administrator',
-            'employee',
-            'super-admin',
-        ] as $role) {
-            Role::firstOrCreate([
-                'name' => $role,
-                'guard_name' => 'web',
-            ]);
+        foreach (['administrator', 'hr'] as $name) {
+            Role::findOrCreate($name, 'web');
         }
     }
 }

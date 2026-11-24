@@ -15,7 +15,7 @@ class DetailPosition extends Component
     public function mount(Position $position)
     {
         $this->authorize("view", $position);
-        $this->position = $position->load(['employees', 'jobdesk']);
+        $this->position = $position->load(['employees.media', 'jobdesk']);
         $this->dispatch('open-edit', id: $position->id);
     }
 

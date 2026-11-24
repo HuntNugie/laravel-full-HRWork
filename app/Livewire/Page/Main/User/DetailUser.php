@@ -3,46 +3,49 @@
 namespace App\Livewire\Page\Main\User;
 
 use App\Models\User;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\On;
 use Livewire\Component;
 
-#[Layout('layouts.main', ['title' => 'Halaman Detail User'])]
+#[Layout('layouts.main', ['title' => 'Detail Akun HRD'])]
 class DetailUser extends Component
 {
     public User $user;
-    public function mount(User $user)
+    public string $name = '';
+    public string $email = '';
+
+    private function guardTarget(string $ability): void
     {
-        $this->user = $user->load(['employees']);
+        abort_unless(auth()->user()->can($ability), 403);
+        abort_unless($this->user->hasRole('hr') && ! $this->user->hasRole('administrator'), 404);
     }
 
-    public function actionStatusAccount()
+    public function mount(User $user): void
     {
-        abort_unless(auth()->user()->can('change-user-status'), 403);
-        abort_if($this->user->hasRole('super-admin') && ! auth()->user()->hasRole('super-admin'), 403);
-        abort_if($this->user->is(auth()->user()), 403, 'Tidak dapat mengubah status akun sendiri.');
-
-        if ($this->user->status !== 'active' && $this->user->employees && $this->user->employees->latestEmployeeContract?->status !== 'active') {
-            $this->dispatch('wirekit-toast', variant: 'danger', title: 'Gagal aktifasi', message: "Akun contract nya tidak aktif");
-            return;
-        }
-        $this->user->update([
-            'status' => $this->user->status === 'active'
-                ? 'inactive'
-                : 'active',
-        ]);
-
-        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil aktifasi', message: "anda berhasil mengaktifkan akun");
+        $this->user = $user;
+        $this->guardTarget('show-user');
+        $this->name = $user->name;
+        $this->email = $user->email;
     }
 
-    #[On('change-user')]
-    public function changeUser()
+    public function save(): void
     {
-        $this->user->load(['employees']);
+        $this->guardTarget('update-user');
+        $this->user->update($this->validate(['name' => 'required|string|max:100', 'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($this->user->id)]]));
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Akun diperbarui.');
+    }
+
+    public function actionStatusAccount(): void
+    {
+        $this->guardTarget('change-user-status');
+        $this->user->update(['status' => $this->user->status === 'active' ? 'inactive' : 'active', 'remember_token' => null]);
+        \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $this->user->id)->delete();
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Status akun diperbarui.');
     }
 
     public function render()
     {
+        $this->guardTarget('show-user');
         return view('livewire.page.main.user.detail-user');
     }
 }

@@ -47,9 +47,9 @@
                             class="flex h-24 w-24 items-center justify-center rounded-full
                    bg-[#92EEFF] text-3xl font-bold text-sky-700
                    ring-1 ring-slate-200">
-                            @if ($employee->user->getFirstMediaUrl('avatar'))
-                                <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
-                                    alt="gambar dari {{ $employee->user->name }}"
+                            @if ($employee->getFirstMediaUrl('avatar'))
+                                <img src="{{ $employee->getFirstMediaUrl('avatar') }}"
+                                    alt="gambar dari {{ $employee->name }}"
                                     class="block size-full rounded-full bg-[#92EEFF]/60 object-cover">
                             @else
                                 <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
@@ -58,8 +58,9 @@
                         </div>
 
                         {{-- Edit Foto --}}
+@can('update-employee')
                         <div class="mt-2">
-                            <livewire:components.main.employee.modal-edit-photo :user="$employee->user">
+                            <livewire:components.main.employee.modal-edit-photo :employee="$employee">
                                 <x-wirekit::button type="button"
                                     class="border border-slate-200 bg-white text-xs text-slate-700 hover:bg-slate-50">
                                     <x-wirekit::icon name="pencil" />
@@ -67,6 +68,7 @@
                                 </x-wirekit::button>
                             </livewire:components.main.employee.modal-edit-photo>
                         </div>
+@endcan
 
                     </div>
 
@@ -76,7 +78,7 @@
                     <x-wirekit::stack gap="1">
 
                         <h2 class="text-xl font-semibold text-slate-900">
-                            {{ $employee->user->name }}
+                            {{ $employee->name }}
                         </h2>
 
                         <p class="text-sm text-slate-500">
@@ -119,17 +121,19 @@
                 {{-- Actions --}}
                 <div class="flex flex-wrap gap-2">
 
+@can('update-employee')
                     <x-wirekit::button type="button" href="{{ route('employee.edit', $employee->id) }}" wire:navigate
                         class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
                         Edit Employee
                     </x-wirekit::button>
+@endcan
 
-                    @if ($employee?->latestEmployeeContract)
+                    @can('create-contract')
                         <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500"
                             href="{{ route('contract.create', $employee->id) }}" wire:navigate>
                             Buat Contract baru
                         </x-wirekit::button>
-                    @endif
+                    @endcan
 
                 </div>
 
@@ -173,7 +177,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->name }}
+                        {{ $employee->name }}
                     </p>
                 </div>
 
@@ -239,7 +243,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->email }}
+                        {{ $employee->email }}
                     </p>
                 </div>
 
@@ -316,11 +320,13 @@
 
                 <div class="flex items-center gap-2">
 
+@can('update-employee')
                     <livewire:components.main.employee.modal-edit-rekening :employee="$employee">
                         <x-wirekit::button class="bg-[#30AFFF] text-white hover:bg-sky-500">
                             Edit Rekening
                         </x-wirekit::button>
                     </livewire:components.main.employee.modal-edit-rekening>
+@endcan
 
 
                 </div>
@@ -341,7 +347,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->profile->bankAccount->bank->name }}
+                        {{ $employee->profile->bankAccount?->bank?->name ?? 'Belum diisi' }}
                     </p>
 
                 </div>
@@ -354,7 +360,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->profile->bankAccount->account_number }}
+                        {{ $employee->profile->bankAccount?->account_number ?? 'Belum diisi' }}
                     </p>
 
                 </div>
@@ -367,7 +373,7 @@
                     </span>
 
                     <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->profile->bankAccount->account_holder }}
+                        {{ $employee->profile->bankAccount?->account_holder ?? 'Belum diisi' }}
                     </p>
 
                 </div>
@@ -378,626 +384,40 @@
 
     </x-wirekit::card>
 
-    {{-- =====================================================
-        ACCOUNT INFORMATION
-    ====================================================== --}}
-    <x-wirekit::card>
-
-        <x-wirekit::card.header>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <x-wirekit::stack gap="xs">
-
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Informasi Akun
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Informasi akun yang digunakan untuk mengakses sistem.
-                    </p>
-                </x-wirekit::stack>
-
-                <div class="flex items-center gap-2">
-                    <x-wirekit::button type="button" href="{{ route('user.show', $employee->user->id) }}"
-                        wire:navigate class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
-                        Detail Akun User
-                    </x-wirekit::button>
-                </div>
-
+    
+    <x-wirekit::card><x-wirekit::card.body>
+        <h2 class="mb-3 text-lg font-semibold text-slate-900">Riwayat Status Kepegawaian</h2>
+        @forelse ($employee->statusHistory->sortByDesc('id') as $history)
+            <div class="border-b border-slate-200 py-3 text-sm">
+                <strong>{{ $history->old_status ?? '—' }} → {{ $history->new_status }}</strong>
+                <span class="ml-2 text-slate-500">{{ $history->effective_date }}</span>
+                <p class="text-slate-500">{{ $history->reason }}</p>
             </div>
-
-
-
-
-        </x-wirekit::card.header>
-
-
-        <x-wirekit::card.body>
-
-            <div class="grid gap-6 sm:grid-cols-3">
-
-                {{-- Username / Email --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Email Akun
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->email }}
-                    </p>
-
-                </div>
-
-                {{-- Role --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Role
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->getRoleNames()->first() ?? 'Belum ada role' }}
-                    </p>
-
-                </div>
-
-                {{-- Account Status --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Status Akun
-                    </span>
-
-                    <p @class([
-                        'mt-1 text-sm font-medium ',
-                        'text-emerald-600' => $employee->user->status === 'active',
-                        'text-red-600' => $employee->user->status === 'inactive',
-                        'text-yellow-600' => $employee->user->status === 'pending',
-                    ])>
-                        {{ $employee->user->status }}
-                    </p>
-
-                </div>
-
-                {{-- Joined --}}
-                <div>
-
-                    <span class="text-xs font-medium text-slate-400">
-                        Dibuat Pada
-                    </span>
-
-                    <p class="mt-1 text-sm font-medium text-slate-800">
-                        {{ $employee->user->created_at->format('d F Y') }}
-                    </p>
-
-                </div>
-
-
-
-            </div>
-
-        </x-wirekit::card.body>
-
-    </x-wirekit::card>
-    {{-- =====================================================
-        EMPLOYMENT INFORMATION
-    ====================================================== --}}
-    <div class="grid gap-6 lg:grid-cols-2">
-
-
-
-        {{-- Position --}}
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <x-wirekit::stack gap="1">
-
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Informasi Jabatan
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Informasi jabatan dan status karyawan.
-                    </p>
-
-
-                </x-wirekit::stack>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-                @if ($employee?->position)
-                    <div class="grid gap-6 sm:grid-cols-2">
-
-                        {{-- Position --}}
-                        <div>
-
-                            <span class="text-xs font-medium text-slate-400">
-                                Position
-                            </span>
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                {{ $employee?->position->name ?? 'Belum di tambahkan' }}
-                            </p>
-
-                        </div>
-
-
-                        {{-- Employment Status --}}
-                        <div>
-
-                            <span class="text-xs font-medium text-slate-400">
-                                Status karyawan
-                            </span>
-
-                            <span @class([
-                                "inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           text-xs font-medium ",
-                                'bg-emerald-50 text-emerald-600' =>
-                                    $employee?->status_employee === 'active',
-                                'bg-red-50 text-red-600' =>
-                                    $employee?->status_employee === 'inactive' ||
-                                    $employee?->status_employee === 'resign',
-                                'bg-yellow-50 text-yellow-600' =>
-                                    $employee?->status_employee === 'onboarding',
-                                'bg-slate-50 text-slate-600' =>
-                                    $employee?->status_employee === 'terminated',
-                                'bg-sky-50 text-sky-600' => $employee?->status_employee === null,
-                            ])>
-                                {{ $employee?->status_employee ?? 'Belum di ketahui' }}
-                            </span>
-
-                        </div>
-
-                        @if ($employee?->TerminationDate)
-                            <div>
-                                <span class="text-xs font-medium text-slate-400">
-                                    Tanggal PHK
-                                </span>
-
-                                <p class="mt-1 text-sm font-medium text-slate-800">
-                                    {{ $employee->TerminationDate->translatedFormat('d M Y') }}
-                                </p>
-                            </div>
-                        @endif
-
-                    </div>
-                @else
+        @empty
+            <p class="text-sm text-slate-500">Belum ada riwayat status.</p>
+        @endforelse
+    </x-wirekit::card.body></x-wirekit::card>
+    @can('show-contract')
+        <x-wirekit::card><x-wirekit::card.body>
+            <h2 class="mb-3 text-lg font-semibold text-slate-900">Riwayat Kontrak</h2>
+            @forelse ($contracts as $contract)
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 py-3 text-sm">
                     <div>
-                        Jabatan karyawan belum ditetapkan.
+                        <strong>{{ $contract->contract_number }}</strong>
+                        <p class="text-slate-500">{{ $contract->position_name }} · {{ $contract->status }} · {{ $contract->start_date->format('d M Y') }} — {{ $contract->end_date?->format('d M Y') ?? 'Tanpa tanggal akhir' }}</p>
                     </div>
-                @endif
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-        {{-- Contract --}}
-
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                    <x-wirekit::stack gap="1">
-
-                        <h2 class="text-lg font-semibold text-slate-900">
-                            Contract
-                        </h2>
-
-                        <p class="text-sm text-slate-500">
-                            Informasi kontrak kerja karyawan.
-                        </p>
-
-                    </x-wirekit::stack>
-
-                    <div class="flex items-center gap-2">
-
-                        <span @class([
-                            'inline-flex items-center rounded-full
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                px-2.5 py-1
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               text-xs font-medium',
-                            'bg-emerald-50 text-emerald-600' =>
-                                $employee?->latestEmployeeContract?->status == 'active',
-                            'bg-slate-50 text-slate-600' =>
-                                $employee?->latestEmployeeContract?->status == 'draft',
-                            'bg-yellow-50 text-yellow-600' =>
-                                $employee?->latestEmployeeContract?->status == 'expired',
-                            'bg-red-50 text-red-600' =>
-                                $employee?->latestEmployeeContract?->status == 'terminated',
-                            'bg-orange-50 text-orange-600' =>
-                                $employee?->latestEmployeeContract?->status == null,
-                        ])>
-                            {{ $employee?->latestEmployeeContract?->status ?? 'Belum membuat contract' }}
-                        </span>
-
-                        @if ($employee?->latestEmployeeContract)
-                            @if($employee?->latestEmployeeContract?->status === 'draft')
-                            @can('update-contract')
-                                <x-wirekit::button type="button" wire:navigate
-                                    href="{{ route('contract.edit', [
-                                        'employee' => $employee->id,
-                                    ]) }}"
-                                    class="border border-white bg-sky-500 text-white hover:bg-sky-500">
-                                    Edit Contract Draft
-                                </x-wirekit::button>
-                            @endcan
+                    <div class="flex gap-2">
+                        @can('update-contract')
+                            @if ($contract->status === 'draft' && $contract->is($employee->latestEmployeeContract))
+                                <a wire:navigate class="text-sky-600" href="{{ route('contract.edit', $employee->id) }}">Edit draft</a>
                             @endif
-                            @can('show-contract')
-                                <x-wirekit::button type="button" wire:navigate
-                                    href="{{ route('contract.show', [
-                                        'employee' => $employee->id,
-                                        'contract' => $employee->latestEmployeeContract->id,
-                                    ]) }}"
-                                    class="border border-slate-200 bg-white text-slate-700 hover:bg-slate-50">
-                                    Detail Contract
-                                </x-wirekit::button>
-                            @endcan
-                        @else
-                            <x-wirekit::button type="button" wire:navigate
-                                href="{{ route('contract.create', $employee->id) }}"
-                                class="border border-blue-200 bg-white text-blue-700 hover:bg-blue-50">
-                                <x-wirekit::icon name="plus" /> Create Contract
-                            </x-wirekit::button>
-                        @endif
-
-
+                        @endcan
+                        <a wire:navigate class="text-sky-600" href="{{ route('contract.show', [$employee->id, $contract->id]) }}">Detail</a>
                     </div>
-
                 </div>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-
-                @if (count($employee->employeeContract))
-                    <div class="grid gap-6 sm:grid-cols-2">
-
-                        {{-- Contract Type --}}
-                        <div>
-
-                            <span class="text-xs font-medium text-slate-400">
-                                Jenis Kontrak
-                            </span>
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                {{ $employee->latestEmployeeContract->employement_type }}
-                            </p>
-
-                        </div>
-
-                        {{-- Contract Number --}}
-                        <div>
-
-                            <span class="text-xs font-medium text-slate-400">
-                                Nomor Kontrak
-                            </span>
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                {{ $employee->latestEmployeeContract->contract_number }}
-                            </p>
-
-                        </div>
-
-                        {{-- Start Date --}}
-                        <div>
-
-                            <span class="text-xs font-medium text-slate-400">
-                                Tanggal Mulai
-                            </span>
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                {{ $employee->latestEmployeeContract->start_date }}
-                            </p>
-
-                        </div>
-
-                        {{-- End Date --}}
-                        <div>
-
-                            <span class="text-xs font-medium text-slate-400">
-                                Tanggal Berakhir
-                            </span>
-
-                            <p class="mt-1 text-sm font-medium text-slate-800">
-                                {{ $employee->latestEmployeeContract->end_date ?? 'Pegawai Tetap' }}
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    {{-- Salary --}}
-                    <div class="mt-6 border-t border-slate-100 pt-6">
-
-                        <span class="text-xs font-medium text-slate-400">
-                            Gaji Pokok / hari
-                        </span>
-
-                        <p class="mt-1 text-lg font-semibold text-slate-900">
-                            Rp {{ number_format($employee->latestEmployeeContract->salary_daily) }}
-                        </p>
-
-                    </div>
-                @endif
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-    </div>
-
-{{-- =====================================================
-    LEAVE ENTITLEMENTS
-====================================================== --}}
-<x-wirekit::card>
-
-    <x-wirekit::card.header>
-
-        <x-wirekit::stack gap="1">
-
-            <h2 class="text-lg font-semibold text-slate-900">
-                Jatah Cuti
-            </h2>
-
-            <p class="text-sm text-slate-500">
-                Informasi jatah dan sisa cuti karyawan pada tahun {{ now()->year }}.
-            </p>
-
-        </x-wirekit::stack>
-
-    </x-wirekit::card.header>
-
-
-    <x-wirekit::card.body>
-
-        @if ($leaveEntitlements->isNotEmpty())
-
-            <div class="wk-scrollbar max-h-[320px] overflow-auto pr-2">
-
-                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-
-                    @foreach ($leaveEntitlements as $leave)
-
-                        @php
-                            $used = $this->usedLeave($leave->leave_type_id);
-                            $pending = $this->pendingLeave($leave->leave_type_id);
-                            $remaining = $this->remainingLeave($leave);
-                        @endphp
-
-                        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-
-                            <div class="flex items-start justify-between gap-4">
-
-                                <div class="flex min-w-0 items-center gap-3">
-
-                                    <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-sky-50">
-                                        <x-wirekit::icon
-                                            name="calendar"
-                                            class="size-5 text-sky-500"
-                                        />
-                                    </div>
-
-                                    <div class="min-w-0">
-
-                                        <p class="truncate text-sm font-medium text-slate-900">
-                                            {{ $leave->leaveType?->name ?? 'Jenis Cuti' }}
-                                        </p>
-
-                                        <p class="mt-0.5 text-xs text-slate-400">
-                                            Jatah {{ $leave->days }} hari
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-
-                                <div class="shrink-0 text-right">
-
-                                    <p class="text-lg font-semibold text-slate-900">
-                                        {{ $remaining }}
-                                    </p>
-
-                                    <p class="text-xs text-slate-400">
-                                        Hari tersisa
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-
-                            <div class="mt-4 border-t border-slate-200 pt-3">
-
-                                <div class="flex items-center justify-between text-xs">
-
-                                    <span class="text-slate-400">
-                                        Terpakai
-                                    </span>
-
-                                    <span class="font-medium text-slate-700">
-                                        {{ $used }} / {{ $leave->days }} Hari
-                                    </span>
-
-                                </div>
-
-
-                                @if ($pending > 0)
-
-                                    <div class="mt-1 flex items-center justify-between text-xs">
-
-                                        <span class="text-slate-400">
-                                            Menunggu persetujuan
-                                        </span>
-
-                                        <span class="font-medium text-amber-600">
-                                            {{ $pending }} Hari
-                                        </span>
-
-                                    </div>
-
-                                @endif
-
-                            </div>
-
-                        </div>
-
-                    @endforeach
-
-                </div>
-
-            </div>
-
-        @else
-
-            <div class="rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-4">
-
-                <div class="flex items-start gap-3">
-
-                    <div class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-slate-100">
-
-                        <x-wirekit::icon
-                            name="information-circle"
-                            class="size-5 text-slate-500"
-                        />
-
-                    </div>
-
-                    <div>
-
-                        <p class="text-sm font-semibold text-slate-800">
-                            Belum ada jatah cuti
-                        </p>
-
-                        <p class="mt-1 text-sm text-slate-500">
-                            Contract karyawan ini belum memiliki jatah cuti
-                            yang terdaftar.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        @endif
-
-    </x-wirekit::card.body>
-
-</x-wirekit::card>
-        <x-wirekit::card>
-
-            <x-wirekit::card.header>
-
-                <x-wirekit::stack gap="1">
-                    <h2 class="text-lg font-semibold text-slate-900">
-                        Riwayat Contract
-                    </h2>
-
-                    <p class="text-sm text-slate-500">
-                        Riwayat kontrak kerja karyawan dari waktu ke waktu.
-                    </p>
-                </x-wirekit::stack>
-
-            </x-wirekit::card.header>
-
-
-            <x-wirekit::card.body>
-
-                <x-wirekit::timeline>
-
-                   @foreach ($employee->employeeContract as $contract)
-
-    <x-wirekit::timeline.item
-        :icon="$contract->status === 'active'
-            ? 'check'
-            : ($contract->status === 'terminated'
-                ? 'close'
-                : 'warning')"
-        :intent="$contract->status === 'active'
-            ? 'success'
-            : ($contract->status === 'terminated'
-                ? 'danger'
-                : 'warning')"
-        :time="$contract->start_date->format('d M Y') . ' — ' . ($contract->end_date
-            ? $contract->end_date->format('d M Y')
-            : 'Sekarang')"
-    >
-
-        <x-slot:title>
-            {{ $contract->contract_number }}
-        </x-slot:title>
-
-        <div class="mt-1 space-y-1">
-
-            <p class="text-sm text-slate-700">
-                {{ $contract->position_name ?? 'Belum diketahui' }}
-                ·
-                {{ $contract->employement_type }}
-            </p>
-
-            <p class="text-xs text-slate-500">
-                @switch($contract->status)
-                    @case('active')
-                        Kontrak aktif
-                        @break
-
-                    @case('terminated')
-                        Kontrak dihentikan
-                        @break
-
-                    @case('expired')
-                        Kontrak telah berakhir
-                        @break
-
-                    @default
-                        {{ ucfirst($contract->status) }}
-                @endswitch
-            </p>
-
-        </div>
-
-        <div class="mt-3">
-
-            @can('show-contract')
-                <x-wirekit::button
-                    type="button"
-                    variant="outline"
-                    class="px-3 py-1.5 text-xs"
-                    href="{{ route('contract.show', [
-                        'employee' => $employee->id,
-                        'contract' => $contract->id,
-                    ]) }}"
-                    wire:navigate
-                >
-                    Detail Contract
-                </x-wirekit::button>
-            @endcan
-
-
-
-        </div>
-
-    </x-wirekit::timeline.item>
-
-@endforeach
-
-                </x-wirekit::timeline>
-
-            </x-wirekit::card.body>
-
-        </x-wirekit::card>
-
-
-    <livewire:components.main.employee.section-attendance-history :employee="$employee" />
-
-
-
-    <livewire:components.main.employee.section-absence-history :employee="$employee" />
-
+            @empty
+                <p class="text-sm text-slate-500">Belum ada kontrak.</p>
+            @endforelse
+        </x-wirekit::card.body></x-wirekit::card>
+    @endcan
 </x-wirekit::stack>

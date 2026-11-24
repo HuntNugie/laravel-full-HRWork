@@ -49,7 +49,7 @@
                         @endif
                     </x-wirekit::dropdown.trigger>
                     <x-wirekit::dropdown.panel>
-                        @if ($user?->employees)
+                        @if ($user)
                             <x-wirekit::dropdown.item href="{{ route('my-profile') }}"
                                 wire:navigate>Profile</x-wirekit::dropdown.item>
                             <x-wirekit::dropdown.separator />

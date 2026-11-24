@@ -12,18 +12,22 @@ class EditEmployeeForm extends Form
     public ?string $provinceCode = null;
     public ?string $regencyCode = null;
     public ?string $districtCode = null;
+    #[Validate(['required', 'exists:villages,code'])]
     public ?string $villageCode = null;
 
 
-    #[Validate(['required', 'min:2', 'string'], message: [
+    #[Validate(['required', 'min:2', 'max:100', 'string'], message: [
         'fullname.required' => "Nama wajib di isi",
         'fullname.min' => 'Minimal 2 karakter',
         'fullname.string' => "Nama wajib menggunakan teks"
     ])]
     public string $fullname = '';
 
+    #[Validate(['required', 'email', 'max:255'])]
+    public string $email = '';
 
-    #[Validate(['required', 'digits:16', 'unique:employee_profiles,nik'], message: [
+
+    #[Validate(['required', 'digits:16', 'string'], message: [
         'nik.required' => 'NIK wajib di isi',
         'nik.digits' => 'Nik harus terdiri dari 16 karakter',
         'nik.unique' => 'Nik sudah terdaftar atau di gunakan orang lain'
@@ -51,7 +55,7 @@ class EditEmployeeForm extends Form
     public string $detailAddress = '';
 
 
-    #[Validate(['required', 'date'], message: ['birthDate.required' => 'Tanggal lahir wajib di isi', 'birhtDate.date' => 'Tanggal lahir harus berupa tanggal'])]
+    #[Validate(['required', 'date', 'before:today'], message: ['birthDate.required' => 'Tanggal lahir wajib di isi', 'birhtDate.date' => 'Tanggal lahir harus berupa tanggal'])]
     public ?string $birthDate = '';
 
     #[Validate(['required'], message: ['birthAddress.required' => 'Alamat tempat lahir wajib di isi'])]

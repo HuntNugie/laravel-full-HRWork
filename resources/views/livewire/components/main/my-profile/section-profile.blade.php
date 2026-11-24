@@ -29,20 +29,7 @@
 
                 {{-- EMAIL PRIBADI --}}
                 <x-wirekit::input type="email" label="Email Pribadi" placeholder="Masukkan email pribadi"
-                    value="nugie.personal@email.com" wire:model.live.debounce.400ms='email' disabled readonly />
-
-
-                {{-- NOMOR TELEPON --}}
-                <x-wirekit::input type="tel" label="Nomor Telepon" placeholder="08xxxxxxxxxx"
-                    wire:model.live.debounce.400ms='noHp' name="noHp" />
-
-
-                {{-- JENIS KELAMIN --}}
-                <x-wirekit::select label="Jenis Kelamin" placeholder="Pilih jenis kelamin" :options="[
-                    'male' => 'Laki-laki',
-                    'female' => 'Perempuan',
-                ]"
-                    wire:model.live='gender' name="gender" />
+                    wire:model.live.debounce.400ms='email' disabled readonly />
 
 
                 <div class="flex justify-end pt-2">

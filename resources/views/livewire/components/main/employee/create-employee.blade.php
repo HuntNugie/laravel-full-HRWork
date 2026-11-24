@@ -20,8 +20,7 @@
         </h1>
 
         <p class="text-sm text-black">
-            Tambahkan data karyawan beserta informasi akun,
-            pribadi, pekerjaan, dan rekening bank.
+            Tambahkan identitas dan informasi pribadi karyawan tanpa membuat akun login.
         </p>
 
     </x-wirekit::stack>
@@ -45,12 +44,11 @@
                     <x-wirekit::stack gap="1">
 
                         <h2 class="text-lg font-semibold text-black">
-                            Informasi Akun
+                            Identitas Karyawan
                         </h2>
 
                         <p class="text-sm text-black/60">
-                            Informasi akun yang akan digunakan karyawan
-                            untuk masuk ke dalam sistem.
+                            Nama dan email untuk administrasi, bukan akun login.
                         </p>
 
                     </x-wirekit::stack>
@@ -107,17 +105,6 @@
                             wire:model.live.debounce.500ms="form.email" placeholder="karyawan@perusahaan.com" />
 
 
-                        {{-- =================================================
-                        Password
-                        ================================================== --}}
-                        <x-wirekit::password-input label="Kata Sandi Baru" name="password"
-                            wire:model.live.debounce.500ms="form.password" :strength-meter="true"
-                            hint="Gunakan minimal 8 karakter dengan kombinasi huruf, angka, dan simbol." />
-                        {{-- =================================================
-                        Password
-                        ================================================== --}}
-                        <x-wirekit::password-input label="Konfirmasi password" name="form.password_confirmation"
-                            wire:model.live.debounce.500ms="form.password_confirmation" />
 
                     </div>
 
@@ -330,8 +317,7 @@
                         </h2>
 
                         <p class="text-sm text-black/60">
-                            Informasi rekening bank yang digunakan
-                            untuk kebutuhan penggajian karyawan.
+                            Informasi rekening opsional. Isi seluruh kolom atau kosongkan semuanya.
                         </p>
 
                     </x-wirekit::stack>

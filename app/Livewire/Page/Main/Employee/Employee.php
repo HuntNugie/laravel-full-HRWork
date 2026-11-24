@@ -36,14 +36,10 @@ class Employee extends Component
     public function render()
     {
         $employees = Employees::query()
-            ->with(['user', 'position'])
+            ->with(['position', 'media'])
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
-                    $query->whereHas('user', function ($userQuery) {
-                        $userQuery
-                            ->where('name', 'like', '%' . $this->search . '%')
-                            ->orWhere('email', 'like', '%' . $this->search . '%');
-                    })->orWhere('employee_code', 'like', '%' . $this->search . '%');
+                    $query->where('name', 'like', '%' . $this->search . '%')->orWhere('email', 'like', '%' . $this->search . '%')->orWhere('employee_code', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->filterPosition, function ($q) {

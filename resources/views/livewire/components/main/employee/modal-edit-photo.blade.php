@@ -35,8 +35,8 @@
 
                     @if ($photo)
                         <img src="{{ $photo->temporaryUrl() }}" alt="Preview foto profil" class="size-full object-cover">
-                    @elseif ($user->hasMedia('avatar'))
-                        <img src="{{ $user->getFirstMediaUrl('avatar') }}" alt="Foto profil {{ auth()->user()->name }}"
+                    @elseif ($employee->hasMedia('avatar'))
+                        <img src="{{ $employee->getFirstMediaUrl('avatar') }}" alt="Foto profil {{ $employee->name }}"
                             class="size-full object-cover">
                     @else
                         <img src="{{ asset('assets/nonProfile.jpg') }}" alt="Preview foto profil"

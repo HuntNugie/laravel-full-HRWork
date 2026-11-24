@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Livewire\Page\Main\Employee\Contract;
-
 use App\Models\Benefit;
 use App\Models\EmployeeContract;
 use App\Models\Employees;
@@ -9,213 +7,84 @@ use App\Models\LeaveType;
 use App\Models\Position;
 use App\Service\ContractService;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.main', ['title' => 'Halaman Edit kontrak draft'])]
+#[Layout('layouts.main', ['title' => 'Edit Kontrak Draft'])]
 class EditEmployeeContract extends Component
 {
-    public Employees $employee;
-    public EmployeeContract $contract;
     public EditEmployeeContractForm $form;
+    public EmployeeContract $contract;
+
+    public Employees $employee;
     public array $positions = [];
-    public string $position_name = '';
+    public Collection $benefits;
+    public Collection $leaveType;
     public bool $is_active = false;
+    public string $position_name = '';
     public string $contract_number = '';
-    public ?Collection $benefits = null;
-    public ?Collection $leaveType = null;
-
-    public function mount(Employees $employee)
+    private function loadOptions(): void
     {
-        $this->authorize('update', $employee->latestEmployeeContract);
-        $this->employee = $employee;
-        $this->contract = $employee->latestEmployeeContract;
-        $this->positions = Position::query()->where('is_active', 'active')->pluck('name', 'id')->toArray();
-        $this->benefits = Benefit::where('status', '=', 'active')->get();
-
-
-        $this->contract_number = $this->contract->contract_number;
-        $this->form->positionId = $employee?->position?->id;
-        $this->form->salary_position = $employee?->position?->min_salary_daily;
-        $this->form->salary_daily = $this->contract?->salary_daily;
-        $this->form->contractType = $this->contract?->employement_type;
-        $this->is_active = $this->form?->contractType === 'pkwtt';
-        $this->form->start_date = $this->contract->start_date->format('Y-m-d');
-        $this->form->end_date = $this->is_active ? null : $this->contract->end_date?->format('Y-m-d');
-        $this->form->statusContract = $this->contract->status;
-        $this->form->benefitSelect = $this->contract->benefits
-            ->mapWithKeys(function ($benefit) {
-                return [
-                    $benefit->id => [
-                        'selected' => true,
-                        'amount' => intval($benefit->pivot->amount),
-                    ],
-                ];
-            })
-            ->toArray();
-        $this->leaveType = LeaveType::query()->where('status', 'active')->where(function ($q) {
-            $q->where('gender', $this->employee->profile->gender)->orWhere('gender', 'all');
-        })->get();
-        $this->form->dayLeave = $this->contract?->contractLeave ? $this->contract?->contractLeave()->pluck('days', 'leave_type_id')->toArray() : $this?->leaveType?->pluck('default_days', 'id')->toArray();
-        $this->form->note = $this->contract->notes;
+        $this->positions = Position::where('is_active', 'active')->pluck('name', 'id')->all();
+        $this->benefits = Benefit::where('status', 'active')->get();
+        $this->leaveType = LeaveType::where('status', 'active')->whereIn('gender', ['all', $this->employee->profile?->gender])->get();
     }
-
-    // untuk save
-    public function save()
+    public function updatedFormPositionId($value): void
     {
-        $this->authorize('update', $this->contract);
-        $this->validate();
-
-        DB::transaction(function () {
-
-            if (
-                $this->contract->status === 'draft'
-                && $this->form->statusContract === 'active'
-            ) {
-                $previousActiveContract = $this->employee->employeeContract()
-                    ->where('status', 'active')
-                    ->whereKeyNot($this->contract->id)
-                    ->latest('id')
-                    ->first();
-
-                $previousActiveContract?->update([
-                    'status' => 'terminated',
-                ]);
-            }
-
-            $this->employee?->latestEmployeeContract()->update([
-                'employement_type' => $this->form->contractType,
-                'start_date' => $this->form->start_date,
-                'end_date' => $this->form->end_date,
-                'salary_daily' => $this->form->salary_daily,
-                'status' => $this->form->statusContract,
-                'notes' => $this->form->note,
-                'contract_number' => $this->contract_number,
-            ]);
-
-            // untuk tunjangan
-            $benefits = [];
-            foreach ($this->form->benefitSelect as $benefitId => $benefit) {
-                if ($benefit['selected'] ?? false) {
-                    $benefits[$benefitId] = [
-                        'amount' => $benefit['amount'],
-                    ];
-                }
-            }
-            $this->contract->benefits()->sync($benefits);
-
-            // untuk cuti
-            foreach ($this->form->dayLeave as $leaveTypeId => $days) {
-
-                $this->contract->contractLeave()->updateOrCreate(
-                    [
-                        'leave_type_id' => $leaveTypeId,
-                    ],
-                    [
-                        'days' => $days,
-                    ]
-                );
-            }
-
-            // jika active
-            if ($this->form->statusContract === 'active') {
-                $oldStatus = $this->employee->status_employee;
-                $newStatus = 'active';
-                // ubah status employee
-                $this->employee->update([
-                    'status_employee' => $newStatus,
-                ]);
-
-                // ubah history
-                if ($oldStatus === $newStatus) {
-                    $this->employee->statusHistory()->create([
-                        'old_status' => $oldStatus,
-                        'new_status' => $newStatus,
-                        'effective_date' => $this->form->start_date,
-                        'reason' => 'Update kontrak draft',
-                    ]);
-                }
-            }
-        });
-        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Berhasil mengedit kontrak draft');
-        $this->redirectRoute('employee.show', $this->employee->id, navigate: true);
+        $position = Position::where('is_active', 'active')->find($value);
+        $this->form->salary_position = $position?->min_salary_daily ?? 0;
+        $this->form->salary_daily = $position?->min_salary_daily ?? 0;
+        $this->position_name = $position?->name ?? '';
     }
-
-    #[Computed]
-    public function totalBenefitSalaryMonth()
+    public function updatedFormContractType($value): void
     {
-        $total = $this->form->salary_daily;
-        foreach ($this->form->benefitSelect as $benefit) {
-            if ($benefit['selected'] ?? false) {
-                $total += $benefit['amount'] ?? 0;
-            }
-        }
-        return $total * 24;
+        $this->is_active = $value === 'pkwtt';
+        if ($this->is_active) { $this->form->end_date = null; }
     }
-
-    #[Computed]
-    public function totalBenefitSalaryDay()
+    #[Computed] public function workingDays(): int { return app(ContractService::class)->workingDays($this->form->start_date); }
+    #[Computed] public function totalBenefitDay(): float
     {
-        $total = $this->form->salary_daily;
-        foreach ($this->form->benefitSelect as $benefit) {
-            if ($benefit['selected'] ?? false) {
-                $total += $benefit['amount'] ?? 0;
-            }
-        }
-        return $total;
+        return collect($this->form->benefitSelect)->filter(fn ($benefit) => $benefit['selected'] ?? false)->sum(fn ($benefit) => (float) ($benefit['amount'] ?? 0));
     }
-
-    #[Computed]
-    public function totalSalaryMonth()
+    #[Computed] public function totalSalaryMonth(): float { return (float) $this->form->salary_daily * $this->workingDays; }
+    #[Computed] public function totalBenefitMonth(): float { return $this->totalBenefitDay * $this->workingDays; }
+    #[Computed] public function totalBenefitSalaryDay(): float { return (float) $this->form->salary_daily + $this->totalBenefitDay; }
+    #[Computed] public function totalBenefitSalaryMonth(): float { return $this->totalBenefitSalaryDay * $this->workingDays; }
+    private function redirectAfterSave(EmployeeContract $contract): void
     {
-        return $this->form->salary_daily * 24;
-    }
-
-    #[Computed]
-    public function totalBenefitDay()
-    {
-        $total = 0;
-        foreach ($this->form->benefitSelect as $benefit) {
-            if ($benefit['selected'] ?? false) {
-                $total += $benefit['amount'] ?? 0;
-            }
-        }
-        return $total;
-    }
-    #[Computed]
-    public function totalBenefitMonth()
-    {
-        $total = 0;
-        foreach ($this->form->benefitSelect as $benefit) {
-            if ($benefit['selected'] ?? false) {
-                $total += $benefit['amount'] ?? 0;
-            }
-        }
-        return $total * 24;
-    }
-
-    public function updatedFormContractType($value)
-    {
-        if ($value === "pkwtt") {
-            $this->is_active = true;
-            $this->form->end_date = null;
+        session()->flash('success', 'Kontrak berhasil disimpan.');
+        if (auth()->user()->can('show-contract')) {
+            $this->redirectRoute('contract.show', [$contract->employee_id, $contract->id], navigate: true);
         } else {
-            $this->is_active = false;
+            $this->redirectRoute('dashboard', navigate: true);
         }
     }
 
-    public function updatedFormPositionId($value)
+    public function mount(Employees $employee): void
     {
-        $position = Position::findOrFail($value);
-        $this->form->salary_position = $position->min_salary_daily;
-        $this->form->salary_daily = $position->min_salary_daily;
-        $this->position_name = $position->name;
+        $this->employee = $employee->load(['profile', 'media']);
+        $this->contract = $employee->employeeContract()->where('status', 'draft')->latest('id')->firstOrFail();
+        $this->authorize('update', $this->contract);
+        $this->loadOptions();
+        $this->contract_number = $this->contract->contract_number;
+        $this->form->positionId = $this->contract->position_id;
+        $this->position_name = $this->contract->position_name;
+        $this->form->salary_position = $this->contract->position?->min_salary_daily ?? 0;
+        $this->form->salary_daily = $this->contract->salary_daily;
+        $this->form->contractType = $this->contract->employement_type;
+        $this->is_active = $this->form->contractType === 'pkwtt';
+        $this->form->start_date = $this->contract->start_date->format('Y-m-d');
+        $this->form->end_date = $this->contract->end_date?->format('Y-m-d');
+        $this->form->statusContract = 'draft';
+        $this->form->note = $this->contract->notes ?? '';
+        $this->form->benefitSelect = $this->contract->benefits->where('status', 'active')->mapWithKeys(fn ($benefit) => [$benefit->id => ['selected' => true, 'amount' => $benefit->pivot->amount]])->toArray();
+        $this->form->dayLeave = $this->leaveType->mapWithKeys(fn ($leave) => [$leave->id => $this->contract->contractLeave->firstWhere('leave_type_id', $leave->id)?->days ?? $leave->default_days])->toArray();
     }
-
-    public function render()
+    public function save(): void
     {
-        return view('livewire.page.main.employee.contract.edit-employee-contract');
+        $this->validate();
+        $this->redirectAfterSave(app(ContractService::class)->save($this->employee, $this->form->all(), $this->contract));
     }
+    public function render() { return view('livewire.page.main.employee.contract.edit-employee-contract'); }
 }

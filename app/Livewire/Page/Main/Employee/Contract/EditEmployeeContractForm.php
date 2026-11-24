@@ -30,7 +30,7 @@ class EditEmployeeContractForm extends Form
     #[Validate(['nullable', 'date', 'after:start_date'])]
     public ?string $end_date = null;
 
-    #[Validate(['required', 'numeric'], message: [
+    #[Validate(['required', 'numeric', 'min:0'], message: [
         'salary_daily.required' => 'Gaji harian wajib di isi',
         'salary_daily.numeric' => 'Gaji harian harus berisi angka',
 
@@ -47,7 +47,7 @@ class EditEmployeeContractForm extends Form
 
     public array $benefitSelect = [];
 
-    #[Validate(['required', 'string'], message: [
+    #[Validate(['nullable', 'string', 'max:10000'], message: [
         'salary_daily.required' => 'catatan wajib di isi',
         'salary_daily.string' => 'catatan harus berisi teks',
 

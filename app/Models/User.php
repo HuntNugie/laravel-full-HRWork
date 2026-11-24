@@ -13,7 +13,7 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'status'])]
+#[Fillable(['name', 'email', 'password', 'status', 'remember_token'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements HasMedia
 {
@@ -29,18 +29,6 @@ class User extends Authenticatable implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')->singleFile();
-    }
-
-    // relasi ke table employees
-    public function employees()
-    {
-        return $this->hasOne(Employees::class, 'user_id');
-    }
-
-    // relasi ke employee_absence_request untuk yang approve sakit atau izin nya
-    public function employeeAbsenceRequest()
-    {
-        return $this->hasMany(EmployeeAbsenceRequest::class, 'user_id');
     }
 
     protected function casts(): array

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Components\Main\Employee;
 
-use App\Models\User;
+use App\Models\Employees;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,7 +12,7 @@ class ModalEditPhoto extends Component
 {
     use WithFileUploads;
 
-    public User $user;
+    public Employees $employee;
     #[Validate(['required', 'image', 'mimes:jpg,jpeg,webp,png', 'max:5120'], message: [
         'photo.required' => 'Photo wajib di isi',
         'photo.image' => 'file yang di upload Harus berupa gambar',
@@ -23,9 +23,10 @@ class ModalEditPhoto extends Component
 
     public function save()
     {
+        $this->authorize('update', $this->employee);
         $this->validate();
 
-        $this->user->addMedia($this->photo)
+        $this->employee->addMedia($this->photo)
             ->usingFileName(Str::uuid() . '.' . $this->photo->getClientOriginalExtension())
             ->toMediaCollection('avatar');
 

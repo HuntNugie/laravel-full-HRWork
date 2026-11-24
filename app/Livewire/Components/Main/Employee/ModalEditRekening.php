@@ -14,7 +14,7 @@ class ModalEditRekening extends Component
     #[Validate(['required', 'exists:banks,id'])]
     public string $bankId = "";
 
-    #[Validate(['required', 'numeric'], message: ['accountNumber.required' => 'wajib mengisi nomor rekening', 'accountNumber.numeric' => 'yang di isi wajib angka'])]
+    #[Validate(['required', 'digits_between:5,30'], message: ['accountNumber.required' => 'wajib mengisi nomor rekening', 'accountNumber.numeric' => 'yang di isi wajib angka'])]
     public string $noRek = "";
 
 
@@ -23,9 +23,9 @@ class ModalEditRekening extends Component
 
     public function mount()
     {
-        $this->bankId = $this->employee->profile->bankAccount->bank_id;
-        $this->noRek = $this->employee->profile->bankAccount->account_number;
-        $this->holder = $this->employee->profile->bankAccount->account_holder;
+        $this->bankId = $this->employee->profile->bankAccount?->bank_id ?? '';
+        $this->noRek = $this->employee->profile->bankAccount?->account_number ?? '';
+        $this->holder = $this->employee->profile->bankAccount?->account_holder ?? '';
     }
 
     public function update()
@@ -34,7 +34,7 @@ class ModalEditRekening extends Component
 
         $this->validate();
 
-        $this->employee->profile->bankAccount->update([
+        $this->employee->profile->bankAccount()->updateOrCreate([], [
             'bank_id' => $this->bankId,
             'account_number' => $this->noRek,
             'account_holder' => $this->holder

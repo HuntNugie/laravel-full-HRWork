@@ -10,6 +10,6 @@ class Benefit extends Model
 {
     public function contracts()
     {
-        return $this->belongsToMany(EmployeeContract::class, 'contract_benefits', 'benefit_id', 'employee_contract_id')->withPivot('amount');
+        return $this->belongsToMany(EmployeeContract::class, 'contract_benefits', 'benefit_id', 'employee_contract_id')->withPivot('amount', 'name_snapshot', 'description_snapshot')->withTimestamps();
     }
 }

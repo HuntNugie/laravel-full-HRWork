@@ -38,6 +38,8 @@ class FormAdd extends Component
     public function store()
     {
         $this->authorize('create', Position::class);
+        $this->validate();
+        $this->validate(['jobdesk' => ['array'], 'jobdesk.*' => ['required', 'string', 'max:1000']]);
 
         $position = Position::create([
             'name' => $this->name,

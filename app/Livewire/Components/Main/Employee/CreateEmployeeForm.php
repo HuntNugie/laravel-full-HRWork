@@ -13,39 +13,24 @@ class CreateEmployeeForm extends Form
     public ?string $provinceCode = null;
     public ?string $regencyCode = null;
     public ?string $districtCode = null;
+    #[Validate(['required', 'exists:villages,code'])]
     public ?string $villageCode = null;
 
 
-    #[Validate(['required', 'min:2', 'string'], message: [
+    #[Validate(['required', 'min:2', 'max:100', 'string'], message: [
         'fullname.required' => "Nama wajib di isi",
         'fullname.min' => 'Minimal 2 karakter',
         'fullname.string' => "Nama wajib menggunakan teks"
     ])]
     public string $fullname = '';
 
-    #[Validate(['required', 'email:dns', 'unique:users'], message: [
+    #[Validate(['required', 'email', 'unique:employees,email'], message: [
         'email.required' => 'email wajib di isi',
         'email.email' => 'Format Email tidak valid',
         'email.unique' => 'Email sudah di gunakan orang lain'
     ])]
     public string $email = '';
 
-    #[Validate([
-        'required',
-        'string',
-        'min:8',
-    ], message: [
-        'password.required' => 'password wajib di isi',
-        'password.min' => 'password minimal 8 karakter'
-    ])]
-    public string $password = '';
-
-
-    #[Validate(['required', 'string', 'same:password'], message: [
-        'password_confirmation.required' => 'konfirmasi password wajib di isi',
-        'password_confirmation.same' => 'Konfirmasi password tidak sama dengan password',
-    ])]
-    public string $password_confirmation = '';
 
     #[Validate(['required', 'digits:16', 'unique:employee_profiles,nik'], message: [
         'nik.required' => 'NIK wajib di isi',
@@ -75,19 +60,19 @@ class CreateEmployeeForm extends Form
     public string $detailAddress = '';
 
 
-    #[Validate(['required', 'exists:banks,id'], message: [
+    #[Validate(['nullable', 'exists:banks,id'], message: [
         'bankId.required' => 'Bank wajib di pilih',
         'bankId.exists' => 'Bank wajib yang ada di pilihan',
     ])]
     public $bankId = '';
 
-    #[Validate(['required', 'numeric'], message: ['accountNumber.required' => 'wajib mengisi nomor rekening', 'accountNumber.numeric' => 'yang di isi wajib angka'])]
+    #[Validate(['nullable', 'digits_between:5,30'], message: ['accountNumber.required' => 'wajib mengisi nomor rekening', 'accountNumber.numeric' => 'yang di isi wajib angka'])]
     public string $accountNumber = '';
 
-    #[Validate(['required'], message: ['accountHolder.required' => 'Nama pemilik rekening wajib di isi'])]
+    #[Validate(['nullable', 'string', 'max:100'], message: ['accountHolder.required' => 'Nama pemilik rekening wajib di isi'])]
     public string $accountHolder = '';
 
-    #[Validate(['required', 'date'], message: ['birthDate.required' => 'Tanggal lahir wajib di isi', 'birhtDate.date' => 'Tanggal lahir harus berupa tanggal'])]
+    #[Validate(['required', 'date', 'before:today'], message: ['birthDate.required' => 'Tanggal lahir wajib di isi', 'birhtDate.date' => 'Tanggal lahir harus berupa tanggal'])]
     public string $birthDate = '';
 
     #[Validate(['required'], message: ['birthAddress.required' => 'Alamat tempat lahir wajib di isi'])]

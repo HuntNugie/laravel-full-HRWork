@@ -3,100 +3,44 @@
 namespace App\Livewire\Page\Main\User;
 
 use App\Models\User as ModelsUser;
-use Livewire\Attributes\Computed;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Spatie\Permission\Models\Role;
 
-#[Layout('layouts.main', ['title' => 'Halaman manajemen User'])]
+#[Layout('layouts.main', ['title' => 'Manajemen Akun HRD'])]
 class User extends Component
 {
     use WithPagination;
 
     public string $search = '';
+    public string $name = '';
+    public string $email = '';
+    public string $password = '';
+    public string $password_confirmation = '';
+    public bool $showCreate = false;
 
-    public string $roleFilter = '';
+    public function updatedSearch(): void { $this->resetPage(); }
 
-    public function updatedSearch(): void
+    public function createAccount(): void
     {
-        $this->resetPage();
-    }
-
-    public function updatedRoleFilter(): void
-    {
-        $this->resetPage();
-    }
-
-    public function resetFilters(): void
-    {
-        $this->reset(['search', 'roleFilter']);
-        $this->resetPage();
-    }
-
-    #[Computed]
-    public function totalPending()
-    {
-        return ModelsUser::where('status', 'pending')->whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'super-admin');
-        })->count();
-    }
-
-    #[Computed]
-    public function totalUser()
-    {
-        return ModelsUser::query()->whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'super-admin');
-        })->count();
-    }
-
-    #[Computed]
-    public function totalActive()
-    {
-        return ModelsUser::where('status', 'active')->whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'super-admin');
-        })->count();
-    }
-
-    #[Computed]
-    public function totalInactive()
-    {
-        return ModelsUser::where('status', 'inactive')->whereDoesntHave('roles', function ($q) {
-            $q->where('name', 'super-admin');
-        })->count();
+        abort_unless(auth()->user()->can('create-user'), 403);
+        $data = $this->validate(['name' => 'required|string|max:100', 'email' => 'required|email|max:255|unique:users,email', 'password' => 'required|string|min:12|confirmed']);
+        $user = DB::transaction(function () use ($data) {
+            $user = ModelsUser::create([...$data, 'status' => 'active']);
+            $user->assignRole('hr');
+            return $user;
+        });
+        $this->reset(['name', 'email', 'password', 'password_confirmation', 'showCreate']);
+        $this->redirectRoute('user.role.show', ['user' => $user->id], navigate: true);
     }
 
     public function render()
     {
-        $users = ModelsUser::query()
-            ->with(['employees.position', 'roles'])
-            ->whereDoesntHave('roles', function ($q) {
-                $q->where('name', 'super-admin');
-            })
-            ->when($this->search, function ($q) {
-                $q->where(function ($qe) {
-                    $qe->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhereHas('employees', function ($q) {
-                            $q->where('employee_code', 'like', '%' . $this->search . '%');
-                        });
-                });
-            })
-            ->when($this->roleFilter, function ($q) {
-                $q->whereHas('roles', function ($roleQuery) {
-                    $roleQuery->where('name', $this->roleFilter);
-                });
-            })
-            ->latest()
-            ->paginate(5);
-
-        $roles = Role::query()
-            ->where('name', '!=', 'super-admin')
-            ->orderBy('name')
-            ->pluck('name', 'name')
-            ->mapWithKeys(fn ($name) => [$name => str($name)->headline()])
-            ->all();
-
-        return view('livewire.page.main.user.user', compact('users', 'roles'));
+        abort_unless(auth()->user()->can('view-user'), 403);
+        $users = ModelsUser::role('hr')->whereDoesntHave('roles', fn ($q) => $q->where('name', 'administrator'))
+            ->when($this->search, fn ($q) => $q->where(fn ($q) => $q->where('name', 'like', '%'.$this->search.'%')->orWhere('email', 'like', '%'.$this->search.'%')))
+            ->latest()->paginate(10);
+        return view('livewire.page.main.user.user', compact('users'));
     }
 }

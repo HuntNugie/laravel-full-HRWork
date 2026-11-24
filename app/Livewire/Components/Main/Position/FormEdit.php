@@ -37,6 +37,8 @@ class FormEdit extends Component
     public function update()
     {
         $this->authorize('update', $this->position);
+        $this->validate();
+        $this->validate(['jobdesk' => ['array'], 'jobdesk.*' => ['required', 'string', 'max:1000']]);
 
         $this->position->update([
             'name' => $this->name,

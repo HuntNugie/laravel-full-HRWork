@@ -317,12 +317,12 @@
                 <tr>
                     <td class="label">Diwakili Oleh</td>
                     <td class="colon">:</td>
-                    <td><strong>{{ auth()->user()?->name ?? 'Novi Setia Nurviat' }}</strong></td>
+                    <td><strong>{{ config('hrwork.contract_signatory_name') }}</strong></td>
                 </tr>
                 <tr>
                     <td class="label">Jabatan</td>
                     <td class="colon">:</td>
-                    <td>{{ auth()->user()?->employees?->position?->name ?? 'Direktur' }}</td>
+                    <td>{{ config('hrwork.contract_signatory_position') }}</td>
                 </tr>
                 <tr>
                     <td class="label">Jenis Usaha</td>
@@ -338,7 +338,7 @@
                 <tr>
                     <td class="label">Nama Lengkap</td>
                     <td class="colon">:</td>
-                    <td><strong>{{ $employee->user->name }}</strong></td>
+                    <td><strong>{{ $employee->name }}</strong></td>
                 </tr>
                 <tr>
                     <td class="label">NIK</td>
@@ -836,15 +836,15 @@
                         <p><strong>PIHAK PERTAMA</strong></p>
                         <p>PT. Inovindo Digital Media</p>
                         <div class="signature-space"></div>
-                        <p class="signature-name">{{ auth()->user()?->name ?? 'Novi Setia Nurviat' }}</p>
-                        <p class="small">{{ auth()->user()?->employees?->position?->name ?? 'Direktur' }}</p>
+                        <p class="signature-name">{{ config('hrwork.contract_signatory_name') }}</p>
+                        <p class="small">{{ config('hrwork.contract_signatory_position') }}</p>
                     </td>
                     <td>
                         <p class="signature-city">Bandung, {{ now()->locale('id')->translatedFormat('d F Y') }}</p>
                         <p><strong>PIHAK KEDUA</strong></p>
                         <p>Pekerja</p>
                         <div class="signature-space"></div>
-                        <p class="signature-name">{{ $employee->user->name }}</p>
+                        <p class="signature-name">{{ $employee->name }}</p>
                         <p class="small">{{ $employee->employee_code }}</p>
                     </td>
                 </tr>

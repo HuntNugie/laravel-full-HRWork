@@ -1,92 +1,56 @@
 <?php
-
 namespace App\Livewire\Components\Main\Employee;
-
 use App\Models\Bank;
 use App\Models\Employees;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-
-#[Layout('layouts.main', ['title' => 'Halaman Buat akun karyawan'])]
+#[Layout('layouts.main', ['title' => 'Tambah Data Karyawan'])]
 class CreateEmployee extends Component
 {
     use WithFileUploads;
-
-
-    public ?User $user;
     public CreateEmployeeForm $form;
     public array $banks = [];
-    public function mount()
+    public function mount(): void
     {
+        $this->authorize('create', Employees::class);
         $this->banks = Bank::query()->pluck('name', 'id')->toArray();
     }
-
-
-    public function store()
+    public function store(): void
     {
-        $this->createUser();
-        $this->createEmployee();
-
-        // setelah berhasil menambahkan user redirect ke create contract
-        $this->redirectRoute('contract.create', $this->user->employees->id, navigate: true);
-    }
-
-    protected function createUser()
-    {
-        // HRD boleh membuat akun yang terikat karyawan, bukan user administratif bebas.
         $this->authorize('create', Employees::class);
-
-        $user = [
-            'name' => $this->form->fullname,
-            'email' => $this->form->email,
-            'password' => bcrypt($this->form->password),
-        ];
-        DB::transaction(function () use ($user) {
-
-            $this->user = User::create($user);
-
-            if ($this->form?->photo) {
-                $this->user->addMedia($this->form->photo)->toMediaCollection('avatar');
+        $this->validate();
+        if (filled($this->form->bankId) || filled($this->form->accountNumber) || filled($this->form->accountHolder)) {
+            if (! filled($this->form->bankId) || ! filled($this->form->accountNumber) || ! filled($this->form->accountHolder)) {
+                throw ValidationException::withMessages(['form.bankId' => 'Lengkapi seluruh informasi rekening atau kosongkan semuanya.']);
             }
+        }
+        $employee = DB::transaction(function () {
+            $employee = Employees::create(['name' => $this->form->fullname, 'email' => $this->form->email, 'status_employee' => 'onboarding']);
+            $employee->update(['employee_code' => 'EMP-'.$employee->id]);
+            $profile = $employee->profile()->create([
+                'gender' => $this->form->gender, 'phone_number' => $this->form->phone, 'nik' => $this->form->nik,
+                'birth_date' => $this->form->birthDate, 'birth_address' => $this->form->birthAddress,
+            ]);
+            $profile->addressProfile()->create(['full_address' => $this->form->detailAddress, 'village_code' => $this->form->villageCode]);
+            if (filled($this->form->bankId)) {
+                $profile->bankAccount()->create(['bank_id' => $this->form->bankId, 'account_number' => $this->form->accountNumber, 'account_holder' => $this->form->accountHolder]);
+            }
+            $employee->statusHistory()->create(['new_status' => 'onboarding', 'effective_date' => today(), 'reason' => 'Pendaftaran karyawan', 'changed_by' => auth()->id()]);
+            return $employee;
         });
+        if ($this->form->photo) {
+            $employee->addMedia($this->form->photo)->toMediaCollection('avatar');
+        }
+        session()->flash('success', 'Data karyawan berhasil dibuat tanpa akun login.');
+        if (auth()->user()->can('show-employee')) {
+            $this->redirectRoute('employee.show', $employee->id, navigate: true);
+        } else {
+            $this->redirectRoute('dashboard', navigate: true);
+        }
     }
-
-    protected function createEmployee()
-    {
-        $this->authorize('create', Employees::class);
-        DB::transaction(function () {
-            $employee = $this->user->employees()->create();
-
-            $employee->update(['employee_code' => 'EMP-' . $employee->id]);
-            $this->user->assignRole("employee");
-            //    isi profile nya
-            $profile =  $employee->profile()->create([
-                'gender' => $this->form->gender,
-                'phone_number' => $this->form->phone,
-                'nik' => $this->form->nik,
-                'birth_date' => $this->form->birthDate,
-                'birth_address' => $this->form->birthAddress,
-            ]);
-
-            //    isi profile address
-            $profile->addressProfile()->create([
-                'full_address' => $this->form->detailAddress,
-                'village_code' => $this->form->villageCode
-            ]);
-
-            //    isi bank
-            $profile->bankAccount()->create([
-                'bank_id' => $this->form->bankId,
-                'account_number' => $this->form->accountNumber,
-                'account_holder' => $this->form->accountHolder,
-            ]);
-        });
-    }
-    public function render()
-    {
-        return view('livewire.components.main.employee.create-employee');
-    }
+    public function cancel(): void { $this->redirectRoute(auth()->user()->can('view-employee') ? 'employee.view' : 'dashboard', navigate: true); }
+    public function render() { return view('livewire.components.main.employee.create-employee'); }
 }

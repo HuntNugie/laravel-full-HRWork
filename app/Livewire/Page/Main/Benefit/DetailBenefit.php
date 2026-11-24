@@ -16,7 +16,7 @@ class DetailBenefit extends Component
         $this->benefit = $benefit->load([
             'contracts' => function ($query) {
                 $query->where('status', 'active')
-                    ->with('employees.user');
+                    ->with(['employees.media', 'benefits']);
             },
         ]);
 

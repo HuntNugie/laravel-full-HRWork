@@ -8,6 +8,11 @@ use App\Models\EmployeeContract;
 use App\Models\Employees;
 use App\Models\LeaveType;
 use App\Models\User;
+use App\Models\Position;
+use App\Support\HrAccess;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -18,6 +23,12 @@ class DetailLeaveTypeSearchTest extends TestCase
 
     public function test_search_filters_by_employee_name_code_and_contract_number(): void
     {
+        $this->withoutVite();
+        $this->seed([PermissionSeeder::class, RoleSeeder::class, RolePermissionSeeder::class]);
+        $hr = User::factory()->create(['status' => 'active']);
+        $hr->assignRole('hr');
+        $hr->givePermissionTo(HrAccess::hr());
+        $this->actingAs($hr);
         $leaveType = LeaveType::create(['name' => 'Cuti Tahunan', 'default_days' => 12]);
 
         $this->createEntitlement($leaveType, 'Alice Rahma', 'EMP-ALICE', 'CTR-ALICE');
@@ -50,17 +61,19 @@ class DetailLeaveTypeSearchTest extends TestCase
         string $employeeCode,
         string $contractNumber,
     ): void {
-        $user = User::factory()->create(['name' => $name, 'status' => 'active']);
+        $position = Position::firstOrCreate(['name' => 'Staff'], ['description' => 'Staff', 'min_salary_daily' => 100000, 'is_active' => 'active']);
 
         $employee = Employees::create([
             'employee_code' => $employeeCode,
-            'user_id' => $user->id,
+            'name' => $name,
+            'email' => strtolower($employeeCode).'@example.test',
             'status_employee' => 'active',
         ]);
 
         $contract = EmployeeContract::create([
             'employee_id' => $employee->id,
             'contract_number' => $contractNumber,
+            'position_id' => $position->id,
             'position_name' => 'Staff',
             'employement_type' => 'pkwtt',
             'start_date' => '2026-01-01',
@@ -72,6 +85,7 @@ class DetailLeaveTypeSearchTest extends TestCase
             'employee_contract_id' => $contract->id,
             'leave_type_id' => $leaveType->id,
             'days' => 12,
+            'name_snapshot' => $leaveType->name,
         ]);
     }
 }

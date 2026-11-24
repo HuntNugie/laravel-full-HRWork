@@ -1,83 +1,18 @@
 <?php
-
 namespace App\Models;
-
 use Illuminate\Database\Eloquent\Attributes\Guarded;
 use Illuminate\Database\Eloquent\Model;
-
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 #[Guarded('id')]
-class Employees extends Model
+class Employees extends Model implements HasMedia
 {
-    // relasi ke users
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    // relasi ke profile
-    public function profile()
-    {
-        return $this->hasOne(Employee_profile::class, 'employee_id');
-    }
-
-    // relasi ke position
-    public function position()
-    {
-        return $this->belongsTo(Position::class, 'position_id');
-    }
-
-    // relasi ke employee contract
-    public function employeeContract()
-    {
-        return $this->hasMany(EmployeeContract::class, 'employee_id');
-    }
-
-    // relasi has one untuk contract employee terbaru
-    public function latestEmployeeContract()
-    {
-        return $this->hasOne(EmployeeContract::class, 'employee_id')->latestOfMany();
-    }
-
-    // relasi ke status history
-    public function statusHistory()
-    {
-        return $this->hasMany(EmployeeStatusHistory::class, 'employee_id');
-    }
-
-    // relasi ke attendances
-    public function attendances()
-    {
-        return $this->hasMany(Attendances::class, "employee_id");
-    }
-
-    // relasi ke employee_absence_request untuk sakit atau izin
-    public function employeeAbsenceRequest()
-    {
-        return $this->hasMany(EmployeeAbsenceRequest::class, "employee_id");
-    }
-
-    // relasi ke leaveRequest
-    public function leaveRequest()
-    {
-        return $this->hasMany(LeaveRequest::class, 'employee_id');
-    }
-
-    public function resignations()
-    {
-        return $this->hasMany(EmployeeResignation::class, 'employee_id');
-    }
-
-    public function terminations()
-    {
-        return $this->hasMany(EmployeeTermination::class, 'employee_id');
-    }
-
-    protected function casts(): array
-    {
-        return [
-            'JoinDate' => 'date',
-            'ResignDate' => 'date',
-            'TerminationDate' => 'date',
-        ];
-    }
+    use InteractsWithMedia;
+    public function registerMediaCollections(): void { $this->addMediaCollection('avatar')->singleFile(); }
+    public function profile() { return $this->hasOne(Employee_profile::class, 'employee_id'); }
+    public function position() { return $this->belongsTo(Position::class, 'position_id'); }
+    public function employeeContract() { return $this->hasMany(EmployeeContract::class, 'employee_id'); }
+    public function latestEmployeeContract() { return $this->hasOne(EmployeeContract::class, 'employee_id')->latestOfMany(); }
+    public function activeContract() { return $this->hasOne(EmployeeContract::class, 'employee_id')->ofMany(['id' => 'max'], fn ($q) => $q->where('status', 'active')); }
+    public function statusHistory() { return $this->hasMany(EmployeeStatusHistory::class, 'employee_id'); }
 }

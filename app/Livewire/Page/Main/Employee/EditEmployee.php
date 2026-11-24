@@ -1,67 +1,56 @@
 <?php
-
 namespace App\Livewire\Page\Main\Employee;
-
 use App\Models\Employees;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-
-#[Layout('layouts.main', ['title' => 'Halaman edit employee'])]
+#[Layout('layouts.main', ['title' => 'Edit Karyawan'])]
 class EditEmployee extends Component
 {
     public EditEmployeeForm $form;
     public Employees $employee;
-    public function mount(Employees $employee)
+    public function mount(Employees $employee): void
     {
+        $this->authorize('update', $employee);
         $this->employee = $employee;
-        $this->form->fullname = $employee->user->name;
-        $this->form->nik = $employee->profile->nik;
-        $this->form->gender = $employee->profile->gender;
-        $this->form->phone = $employee->profile->phone_number;
-        $this->form->birthDate = $employee->profile->birth_date->format('Y-m-d');
-        $this->form->birthAddress = $employee->profile->birth_address;
-        $this->form->provinceCode = $employee->profile->addressProfile->village->district->regency->province->code;
-        $this->form->regencyCode = $employee->profile->addressProfile->village->district->regency->code;
-        $this->form->districtCode = $employee->profile->addressProfile->village->district->code;
-        $this->form->villageCode = $employee->profile->addressProfile->village->code;
-
-        $this->form->detailAddress = $employee->profile->addressProfile->full_address;
+        $this->form->fullname = $employee->name;
+        $this->form->email = $employee->email;
+        $profile = $employee->profile;
+        $this->form->nik = $profile->nik ?? '';
+        $this->form->gender = $profile->gender;
+        $this->form->phone = $profile->phone_number ?? '';
+        $this->form->birthDate = $profile->birth_date?->format('Y-m-d') ?? '';
+        $this->form->birthAddress = $profile->birth_address ?? '';
+        $address = $profile->addressProfile;
+        $this->form->provinceCode = $address?->village?->district?->regency?->province?->code;
+        $this->form->regencyCode = $address?->village?->district?->regency?->code;
+        $this->form->districtCode = $address?->village?->district?->code;
+        $this->form->villageCode = $address?->village?->code;
+        $this->form->detailAddress = $address?->full_address ?? '';
     }
-
-
-    public function update()
+    public function update(): void
     {
-        $this->authorize("update", $this->employee);
-        // update
+        $this->authorize('update', $this->employee);
+        $this->validate();
+        $this->validate([
+            'form.email' => ['required', 'email', Rule::unique('employees', 'email')->ignore($this->employee->id)],
+            'form.nik' => ['required', 'digits:16', Rule::unique('employee_profiles', 'nik')->ignore($this->employee->profile->id)],
+        ]);
         DB::transaction(function () {
-            // update untuk user
-            $this->employee->user()->update([
-                'name' => $this->form->fullname
-            ]);
-
-            // update untuk profile
+            $this->employee->update(['name' => $this->form->fullname, 'email' => $this->form->email]);
             $this->employee->profile()->update([
-                'nik' => $this->form->nik,
-                'gender' => $this->form->gender,
-                'phone_number' => $this->form->phone,
-                'birth_date' => $this->form->birthDate,
-                'birth_address' => $this->form->birthAddress,
+                'nik' => $this->form->nik, 'gender' => $this->form->gender, 'phone_number' => $this->form->phone,
+                'birth_date' => $this->form->birthDate, 'birth_address' => $this->form->birthAddress,
             ]);
-
-            // update address
-            $this->employee->profile->addressProfile()->update([
-                'full_address' => $this->form->detailAddress,
-                'village_code' => $this->form->villageCode
-            ]);
+            $this->employee->profile->addressProfile()->updateOrCreate([], ['full_address' => $this->form->detailAddress, 'village_code' => $this->form->villageCode]);
         });
-
-        session()->flash('success', 'Berhasil mengedit data employee');
-        $this->redirectRoute('employee.show', $this->employee->id, navigate: true);
+        session()->flash('success', 'Data karyawan berhasil diperbarui.');
+        if (auth()->user()->can('show-employee')) {
+            $this->redirectRoute('employee.show', $this->employee->id, navigate: true);
+        } else {
+            $this->redirectRoute('dashboard', navigate: true);
+        }
     }
-
-    public function render()
-    {
-        return view('livewire.page.main.employee.edit-employee');
-    }
+    public function render() { return view('livewire.page.main.employee.edit-employee'); }
 }

@@ -3,41 +3,41 @@
 namespace App\Livewire\Page\Main\User;
 
 use App\Models\User;
-use Livewire\Attributes\Computed;
+use App\Support\HrAccess;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.main', ['title' => 'Halaman Detail role dan permission user'])]
+#[Layout('layouts.main', ['title' => 'Hak Akses HRD'])]
 class DetailRolePermission extends Component
 {
     public User $user;
+    public array $permissions = [];
 
-    public string $search = '';
-    public function mount(User $user)
+    private function guardTarget(): void
     {
-        $this->user = $user->load(['roles']);
+        abort_unless(auth()->user()->can('manage-hr-access'), 403);
+        abort_unless($this->user->hasRole('hr') && ! $this->user->hasRole('administrator'), 404);
     }
 
-    #[Computed]
-    public function getPermissions($role)
+    public function mount(User $user): void
     {
-        return $role->permissions->groupBy(function ($permission) {
-            return str($permission->name)
-                ->afterLast('-')
-                ->headline();
-        });
+        $this->user = $user;
+        $this->guardTarget();
+        $this->permissions = $user->getDirectPermissions()->pluck('name')->intersect(HrAccess::hr())->values()->all();
     }
 
+    public function save(): void
+    {
+        $this->guardTarget();
+        $this->validate(['permissions' => 'array', 'permissions.*' => ['string', 'distinct', Rule::in(HrAccess::hr())]]);
+        $this->user->syncPermissions($this->permissions);
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Hak akses HRD diperbarui.');
+    }
 
     public function render()
     {
-        $roles = $this->user->roles()->when($this->search, function ($q) {
-            return $q->where(function ($qd) {
-                $qd->where('name', 'like', '%' . $this->search . '%')->orWhereHas('permissions', function ($qe) {
-                    $qe->where('name', 'like', '%' . $this->search . '%');
-                });
-            });
-        })->get();
-        return view('livewire.page.main.user.detail-role-permission', compact('roles'));
+        $this->guardTarget();
+        return view('livewire.page.main.user.detail-role-permission', ['groups' => HrAccess::GROUPS]);
     }
 }

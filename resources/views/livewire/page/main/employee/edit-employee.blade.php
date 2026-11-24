@@ -75,6 +75,7 @@
                         </div>
 
 
+                        <x-wirekit::input class="text-black" type="email" label="Email" name="form.email" wire:model="form.email" />
                         {{-- =================================================
                         NIK
                         ================================================== --}}

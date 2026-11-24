@@ -16,6 +16,9 @@ class PrintContractEmployeeController extends Controller
     ) {
         abort_if($contract->employee_id !== $employee->id, 404);
 
+        abort_unless(auth()->user()->can('download-employee-contract'), 403);
+        abort_if(blank(config('hrwork.contract_signatory_name')) || blank(config('hrwork.contract_signatory_position')), 422, 'Konfigurasi penandatangan kontrak belum diisi.');
+
         $companyBusinessType = "Industri pengembangan perangkat lunak";
 
         /*
@@ -25,7 +28,6 @@ class PrintContractEmployeeController extends Controller
         */
 
         $employee->loadMissing([
-            'user',
             'profile',
             'profile.addressProfile.village.district.regency.province',
         ]);
@@ -38,9 +40,7 @@ class PrintContractEmployeeController extends Controller
         */
 
         $contract->loadMissing([
-            'benefits' => function ($q) {
-                $q->where('status', 'active');
-            },
+            'benefits',
 
             'contractLeave.leaveType',
         ]);
@@ -96,7 +96,7 @@ class PrintContractEmployeeController extends Controller
         $workingDaysPerMonth = collect($period)
             ->filter(
                 fn(Carbon $date) =>
-                $date->dayOfWeekIso <= 6
+                in_array($date->dayOfWeekIso, config('hrwork.contract_workdays'), true)
             )
             ->count();
 
@@ -115,10 +115,10 @@ class PrintContractEmployeeController extends Controller
             function ($benefit) {
                 return [
                     'name' =>
-                    $benefit->name,
+                    $benefit->pivot->name_snapshot,
 
                     'description' =>
-                    $benefit->description,
+                    $benefit->pivot->description_snapshot,
 
                     'amount' =>
                     (float) (
@@ -171,7 +171,7 @@ class PrintContractEmployeeController extends Controller
             ->map(function ($entitlement) {
                 return [
                     'name' =>
-                    $entitlement->leaveType?->name ?? 'Jenis Cuti',
+                    $entitlement->name_snapshot,
 
                     'days' =>
                     (int) $entitlement->days,

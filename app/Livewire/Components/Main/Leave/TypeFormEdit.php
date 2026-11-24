@@ -24,9 +24,10 @@ class TypeFormEdit extends Component
     }
     public function save()
     {
+        abort_unless(auth()->user()->can('update-type-leave'), 403);
         $this->validate([
             'nameLeave' => ['required', 'string'],
-            'defaultDay' => ['required', 'numeric'],
+            'defaultDay' => ['required', 'integer', 'min:0', 'max:366'],
             'genderLeave' => ['required', 'in:all,male,female'],
             'descriptionLeave' => ['required', 'string'],
         ], [

@@ -22,12 +22,14 @@
 
         <div class="flex items-center gap-2">
 
-            <livewire:components.main.position.form-edit>
+            @can('update-position')
+<livewire:components.main.position.form-edit>
                 <x-wirekit::button type="button" class="px-3 py-1.5 text-sm">
                     <x-wirekit::icon name="pencil" />
                     Edit Position
                 </x-wirekit::button>
             </livewire:components.main.position.form-edit>
+@endcan
 
         </div>
 
@@ -311,7 +313,7 @@
 
                     <x-wirekit::table.body>
 
-                        @forelse ($position->employees  as $employee)
+                        @forelse((auth()->user()->can('show-employee') ? $position->employees : collect()) as $employee)
                             {{-- Employee 1 --}}
                             <x-wirekit::table.row>
 
@@ -321,9 +323,9 @@
 
                                         <div
                                             class="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100">
-                                            @if ($employee->user->getFirstMediaUrl('avatar'))
-                                                <img src="{{ $employee->user->getFirstMediaUrl('avatar') }}"
-                                                    alt="gambar dari {{ $employee->user->name }}"
+                                            @if ($employee->getFirstMediaUrl('avatar'))
+                                                <img src="{{ $employee->getFirstMediaUrl('avatar') }}"
+                                                    alt="gambar dari {{ $employee->name }}"
                                                     class="block size-full rounded-full object-cover bg-[#92EEFF]/60">
                                             @else
                                                 <img src="{{ asset('assets/nonProfile.jpg') }}" alt=""
@@ -334,7 +336,7 @@
                                         <div class="min-w-0">
 
                                             <p class="truncate text-sm font-semibold text-slate-800">
-                                                {{ $employee->user->name }}
+                                                {{ $employee->name }}
                                             </p>
 
                                             <p class="truncate text-xs text-slate-400">

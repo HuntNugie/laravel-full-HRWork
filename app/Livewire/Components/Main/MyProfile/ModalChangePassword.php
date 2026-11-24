@@ -16,6 +16,7 @@ class ModalChangePassword extends Component
 
     public function save()
     {
+        abort_unless($this->user->is(auth()->user()), 403);
         $this->validate([
             'oldPassword' => [
                 'required',
@@ -25,7 +26,7 @@ class ModalChangePassword extends Component
             'newPassword' => [
                 'required',
                 'string',
-                'min:8',
+                'min:12',
                 'confirmed'
             ],
 
@@ -33,7 +34,7 @@ class ModalChangePassword extends Component
             'oldPassword.required' => 'Password lama wajib di isi',
             'oldPassword.current_password' => 'Password lama tidak sesuai',
             'newPassword.required' => 'Password baru wajib di isi',
-            'newPassword.min' => 'Password minimal 8 karakter',
+            'newPassword.min' => 'Password minimal 12 karakter',
             'newPassword.confirmed' => 'konfirmasi password tidak sama dengan password',
         ]);
 

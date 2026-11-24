@@ -2,23 +2,27 @@
 
 namespace App\Providers;
 
-use App\Policies\RolePolicy;
+use App\Http\Middleware\isActive;
+use App\Support\HrAccess;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
-use Spatie\Permission\Models\Role;
+use Livewire\Livewire;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        //
-    }
-
     public function boot(): void
     {
-        Gate::policy(Role::class, RolePolicy::class);
-
-        // Superadmin memiliki seluruh kemampuan termasuk yang diperiksa lewat policy.
-        Gate::before(fn ($user) => $user->hasRole('super-admin') ? true : null);
+        Gate::before(function ($user, string $ability) {
+            if (in_array($ability, HrAccess::ADMIN, true) && ! $user->hasRole('administrator')) {
+                return false;
+            }
+            if (in_array($ability, HrAccess::hr(), true) && (! $user->hasRole('hr') || $user->hasRole('administrator'))) {
+                return false;
+            }
+            return null;
+        });
+        Livewire::addPersistentMiddleware([isActive::class, RoleMiddleware::class, PermissionMiddleware::class]);
     }
 }

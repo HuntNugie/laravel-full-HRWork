@@ -9,7 +9,7 @@ class AuthService{
         if(!$user){
             return ["result" => false,"message" => "Akun belum terdaftar"];
         }
-        if($user->status !== "active"){
+        if($user->status !== "active" || ! $user->hasAnyRole(["administrator", "hr"])){
             return ["result" => false,"message"=>"Akun belum aktif"];
         }
         if(Auth::attempt([

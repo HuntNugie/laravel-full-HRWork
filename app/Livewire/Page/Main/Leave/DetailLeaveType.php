@@ -28,7 +28,7 @@ class DetailLeaveType extends Component
     private function loadLeaveType(LeaveType $leaveType): void
     {
         $this->leaveType = $leaveType->load([
-            'contractLeaveEntitlement.employeeContract.employees.user',
+            'contractLeaveEntitlement.employeeContract.employees',
         ]);
 
         $this->contractEntitlements =
@@ -50,7 +50,7 @@ class DetailLeaveType extends Component
     {
         $search = trim($this->search);
 
-        $filteredContractEntitlements = $this->contractEntitlements->filter(function ($entitlement) use ($search) {
+        $filteredContractEntitlements = (auth()->user()->can('show-contract') ? $this->contractEntitlements : new Collection())->filter(function ($entitlement) use ($search) {
             if ($search === '') {
                 return true;
             }
@@ -58,7 +58,7 @@ class DetailLeaveType extends Component
             $contract = $entitlement->employeeContract;
             $employee = $contract?->employees;
 
-            return Str::contains((string) $employee?->user?->name, $search, true)
+            return Str::contains((string) $employee?->name, $search, true)
                 || Str::contains((string) $employee?->employee_code, $search, true)
                 || Str::contains((string) $contract?->contract_number, $search, true);
         });

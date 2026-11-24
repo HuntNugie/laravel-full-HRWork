@@ -19,12 +19,14 @@
 
 
         {{-- Tambah --}}
-        <livewire:components.main.leave.type-form-add>
+        @can('create-type-leave')
+<livewire:components.main.leave.type-form-add>
             <x-wirekit::button type="button" class="bg-[#30AFFF] text-white hover:bg-sky-500">
                 <x-wirekit::icon name="plus" />
                 Tambah Jenis Cuti
             </x-wirekit::button>
         </livewire:components.main.leave.type-form-add>
+@endcan
 
     </div>
 
