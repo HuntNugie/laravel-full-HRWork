@@ -27,7 +27,7 @@
             <x-wirekit::stack gap="md">
 
                 {{-- PASSWORD BARU --}}
-                <x-wirekit::password-input name="newPassword" label="Password Baru"
+                <x-wirekit::password-input name="newPassword" label="Password Baru" hint="Minimal 12 karakter."
                     wire:model.live.debounce.400ms='newPassword' />
 
                 {{-- KONFIRMASI PASSWORD --}}
@@ -59,9 +59,9 @@
 
             <div class="flex justify-end gap-2">
 
-                <x-wirekit::button type="button" variant="ghost">
-                    Batal
-                </x-wirekit::button>
+                <x-wirekit::modal.close>
+                    <x-wirekit::button type="button" intent="neutral" surface="outline">Batal</x-wirekit::button>
+                </x-wirekit::modal.close>
 
                 <x-wirekit::button type="submit" :disabled="!$this->canSubmit()">
                     <span wire:loading.remove wire:target='changePassword'>Ubah Password</span>

@@ -32,7 +32,10 @@ class DetailUser extends Component
     {
         $this->guardTarget('update-user');
         $this->user->update($this->validate(['name' => 'required|string|max:100', 'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($this->user->id)]]));
-        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Akun diperbarui.');
+        $this->user->refresh();
+        $this->resetValidation();
+        $this->dispatch('wirekit-modal-close', name: 'edit-hr-account');
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Akun HRD berhasil diperbarui.');
     }
 
     public function actionStatusAccount(): void

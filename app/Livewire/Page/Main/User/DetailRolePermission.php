@@ -27,11 +27,31 @@ class DetailRolePermission extends Component
         $this->permissions = $user->getDirectPermissions()->pluck('name')->intersect(HrAccess::hr())->values()->all();
     }
 
+    public function selectAllPermissions(): void
+    {
+        $this->guardTarget();
+        $this->permissions = HrAccess::hr();
+    }
+
+    public function clearPermissions(): void
+    {
+        $this->guardTarget();
+        $this->permissions = [];
+    }
+
+    public function selectGroup(string $group): void
+    {
+        $this->guardTarget();
+        abort_unless(array_key_exists($group, HrAccess::GROUPS), 422);
+        $this->permissions = array_values(array_unique(array_merge($this->permissions, HrAccess::GROUPS[$group])));
+    }
+
     public function save(): void
     {
         $this->guardTarget();
         $this->validate(['permissions' => 'array', 'permissions.*' => ['string', 'distinct', Rule::in(HrAccess::hr())]]);
         $this->user->syncPermissions($this->permissions);
+        $this->user->refresh();
         $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Hak akses HRD diperbarui.');
     }
 

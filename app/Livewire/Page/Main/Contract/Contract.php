@@ -18,7 +18,7 @@ class Contract extends Component
     public function render()
     {
         abort_unless(auth()->user()->can('view-contract'), 403);
-        $contracts = EmployeeContract::with('employees')
+        $contracts = EmployeeContract::with('employees.media')
             ->when($this->search, fn ($q) => $q->where(fn ($q) => $q->where('contract_number', 'like', '%'.$this->search.'%')->orWhereHas('employees', fn ($e) => $e->where('name', 'like', '%'.$this->search.'%')->orWhere('employee_code', 'like', '%'.$this->search.'%'))))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->when($this->employmentTypeFilter, fn ($q) => $q->where('employement_type', $this->employmentTypeFilter))
