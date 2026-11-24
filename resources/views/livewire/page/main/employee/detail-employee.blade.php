@@ -385,39 +385,136 @@
     </x-wirekit::card>
 
     
-    <x-wirekit::card><x-wirekit::card.body>
-        <h2 class="mb-3 text-lg font-semibold text-slate-900">Riwayat Status Kepegawaian</h2>
-        @forelse ($employee->statusHistory->sortByDesc('id') as $history)
-            <div class="border-b border-slate-200 py-3 text-sm">
-                <strong>{{ $history->old_status ?? '—' }} → {{ $history->new_status }}</strong>
-                <span class="ml-2 text-slate-500">{{ $history->effective_date }}</span>
-                <p class="text-slate-500">{{ $history->reason }}</p>
-            </div>
-        @empty
-            <p class="text-sm text-slate-500">Belum ada riwayat status.</p>
-        @endforelse
-    </x-wirekit::card.body></x-wirekit::card>
+    <x-wirekit::card>
+        <x-wirekit::card.header>
+            <x-wirekit::stack gap="1">
+                <h2 class="text-lg font-semibold text-slate-900">Riwayat Status Kepegawaian</h2>
+                <p class="text-sm text-slate-500">Perubahan status karyawan dari waktu ke waktu.</p>
+            </x-wirekit::stack>
+        </x-wirekit::card.header>
+        <x-wirekit::card.body>
+            <x-wirekit::timeline>
+                @forelse ($employee->statusHistory->sortByDesc('id') as $history)
+                    <x-wirekit::timeline.item :icon="$history->new_status === 'active' ? 'check' : 'warning'" :intent="$history->new_status === 'active' ? 'success' : 'warning'" :time="$history->effective_date">
+                        <x-slot:title>{{ $history->old_status ?? '—' }} → {{ $history->new_status }}</x-slot:title>
+                        <p class="text-sm text-slate-500">{{ $history->reason }}</p>
+                    </x-wirekit::timeline.item>
+                @empty
+                    <p class="text-sm text-slate-500">Belum ada riwayat status.</p>
+                @endforelse
+            </x-wirekit::timeline>
+        </x-wirekit::card.body>
+    </x-wirekit::card>
     @can('show-contract')
-        <x-wirekit::card><x-wirekit::card.body>
-            <h2 class="mb-3 text-lg font-semibold text-slate-900">Riwayat Kontrak</h2>
-            @forelse ($contracts as $contract)
-                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 py-3 text-sm">
-                    <div>
-                        <strong>{{ $contract->contract_number }}</strong>
-                        <p class="text-slate-500">{{ $contract->position_name }} · {{ $contract->status }} · {{ $contract->start_date->format('d M Y') }} — {{ $contract->end_date?->format('d M Y') ?? 'Tanpa tanggal akhir' }}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        @can('update-contract')
-                            @if ($contract->status === 'draft' && $contract->is($employee->latestEmployeeContract))
-                                <a wire:navigate class="text-sky-600" href="{{ route('contract.edit', $employee->id) }}">Edit draft</a>
-                            @endif
-                        @endcan
-                        <a wire:navigate class="text-sky-600" href="{{ route('contract.show', [$employee->id, $contract->id]) }}">Detail</a>
-                    </div>
-                </div>
-            @empty
-                <p class="text-sm text-slate-500">Belum ada kontrak.</p>
-            @endforelse
-        </x-wirekit::card.body></x-wirekit::card>
+        <x-wirekit::card>
+
+            <x-wirekit::card.header>
+
+                <x-wirekit::stack gap="1">
+                    <h2 class="text-lg font-semibold text-slate-900">
+                        Riwayat Kontrak
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+                        Riwayat kontrak kerja karyawan dari waktu ke waktu.
+                    </p>
+                </x-wirekit::stack>
+
+            </x-wirekit::card.header>
+
+
+            <x-wirekit::card.body>
+
+                <x-wirekit::timeline>
+
+                   @forelse ($contracts as $contract)
+
+    <x-wirekit::timeline.item
+        :icon="$contract->status === 'active'
+            ? 'check'
+            : ($contract->status === 'terminated'
+                ? 'close'
+                : 'warning')"
+        :intent="$contract->status === 'active'
+            ? 'success'
+            : ($contract->status === 'terminated'
+                ? 'danger'
+                : 'warning')"
+        :time="$contract->start_date->format('d M Y') . ' — ' . ($contract->end_date
+            ? $contract->end_date->format('d M Y')
+            : 'Sekarang')"
+    >
+
+        <x-slot:title>
+            {{ $contract->contract_number }}
+        </x-slot:title>
+
+        <div class="mt-1 space-y-1">
+
+            <p class="text-sm text-slate-700">
+                {{ $contract->position_name ?? 'Belum diketahui' }}
+                ·
+                {{ $contract->employement_type }}
+            </p>
+
+            <p class="text-xs text-slate-500">
+                @switch($contract->status)
+                    @case('active')
+                        Kontrak aktif
+                        @break
+
+                    @case('terminated')
+                        Kontrak dihentikan
+                        @break
+
+                    @case('expired')
+                        Kontrak telah berakhir
+                        @break
+
+                    @default
+                        {{ ucfirst($contract->status) }}
+                @endswitch
+            </p>
+
+        </div>
+
+        <div class="mt-3">
+
+            @can('show-contract')
+                <x-wirekit::button
+                    type="button"
+                    variant="outline"
+                    class="px-3 py-1.5 text-xs"
+                    href="{{ route('contract.show', [
+                        'employee' => $employee->id,
+                        'contract' => $contract->id,
+                    ]) }}"
+                    wire:navigate
+                >
+                    Detail Contract
+                </x-wirekit::button>
+            @endcan
+            @can('update-contract')
+                @if ($contract->status === 'draft')
+                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="outline" href="{{ route('contract.edit', $employee->id) }}" wire:navigate>Edit Draft</x-wirekit::button>
+                @endif
+            @endcan
+
+
+
+        </div>
+
+    </x-wirekit::timeline.item>
+
+@empty
+    <p class="text-sm text-slate-500">Belum ada riwayat kontrak.</p>
+@endforelse
+
+                </x-wirekit::timeline>
+
+            </x-wirekit::card.body>
+
+        </x-wirekit::card>
+
     @endcan
 </x-wirekit::stack>
