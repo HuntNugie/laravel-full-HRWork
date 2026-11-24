@@ -82,11 +82,11 @@
 
                     <div>
                         <p class="text-xs font-medium uppercase tracking-wide text-slate-400">
-                            Permissions
+                            Permissions dipilih
                         </p>
 
                         <p class="mt-1 text-lg font-semibold text-slate-900">
-                            {{ $user->getAllPermissions()->count() }}
+                            {{ count($permissions) }}
                         </p>
                     </div>
 
@@ -106,7 +106,7 @@
                     <x-wirekit::row align="center" justify="between" class="flex-wrap gap-3">
                         <x-wirekit::stack gap="1">
                             <h2 class="text-lg font-semibold text-slate-900">Role & Permission</h2>
-                            <p class="text-sm text-slate-500">Role HRD tetap. Pilih hak akses sesuai tanggung jawab pengguna.</p>
+                            <p class="text-sm text-slate-500">Role HRD tetap. Pilih hak akses sesuai tanggung jawab pengguna, lalu simpan perubahan.</p>
                         </x-wirekit::stack>
                         <x-wirekit::row gap="sm">
                             <x-wirekit::button type="button" size="sm" intent="neutral" surface="outline" wire:click="clearPermissions">Kosongkan</x-wirekit::button>
@@ -125,14 +125,16 @@
                                         </div>
                                         <x-wirekit::stack gap="1">
                                             <h3 class="text-sm font-semibold text-slate-900">{{ $group }}</h3>
-                                            <span class="text-xs text-slate-500">{{ count($items) }} permissions</span>
+                                            <span class="text-xs text-slate-500">{{ count(array_intersect($items, $permissions)) }} / {{ count($items) }} permission dipilih</span>
                                         </x-wirekit::stack>
                                     </x-wirekit::row>
-                                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="outline" wire:click="selectGroup(@js($group))">Pilih grup</x-wirekit::button>
+                                    <x-wirekit::button type="button" size="sm" intent="neutral" surface="outline" wire:click="selectGroup({{ $loop->index }})" wire:loading.attr="disabled" wire:target="selectGroup">Pilih grup</x-wirekit::button>
                                 </x-wirekit::row>
                                 <div class="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
                                     @foreach ($items as $permission)
-                                        <x-wirekit::checkbox :label="str($permission)->replace('-', ' ')->headline()" wire:model="permissions" value="{{ $permission }}" wire:key="permission-{{ $permission }}" />
+                                        <div wire:key="permission-{{ $permission }}">
+                                            <x-wirekit::checkbox id="permission-{{ $permission }}" name="permissions[]" :label="str($permission)->replace('-', ' ')->headline()" wire:model.live="permissions" value="{{ $permission }}" />
+                                        </div>
                                     @endforeach
                                 </div>
                             </x-wirekit::stack>

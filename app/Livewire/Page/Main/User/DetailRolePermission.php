@@ -39,11 +39,12 @@ class DetailRolePermission extends Component
         $this->permissions = [];
     }
 
-    public function selectGroup(string $group): void
+    public function selectGroup(int $index): void
     {
         $this->guardTarget();
-        abort_unless(array_key_exists($group, HrAccess::GROUPS), 422);
-        $this->permissions = array_values(array_unique(array_merge($this->permissions, HrAccess::GROUPS[$group])));
+        $groups = array_values(HrAccess::GROUPS);
+        abort_unless(array_key_exists($index, $groups), 422);
+        $this->permissions = array_values(array_unique(array_merge($this->permissions, $groups[$index])));
     }
 
     public function save(): void

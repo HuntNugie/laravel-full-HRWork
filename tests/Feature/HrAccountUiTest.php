@@ -76,12 +76,29 @@ class HrAccountUiTest extends TestCase
         $hr->assignRole('hr');
 
         Livewire::test(DetailRolePermission::class, ['user' => $hr])
-            ->call('selectGroup', 'Karyawan')
-            ->assertSet('permissions', HrAccess::GROUPS['Karyawan'])
+            ->assertSeeHtml('wire:click="selectGroup(0)"')
+            ->assertSeeHtml('wire:click="selectGroup(4)"')
+            ->set('permissions', ['view-benefit'])
+            ->call('selectGroup', 0)
+            ->assertSet('permissions', array_merge(['view-benefit'], HrAccess::GROUPS['Karyawan']))
+            ->call('selectGroup', 0)
+            ->assertSet('permissions', array_merge(['view-benefit'], HrAccess::GROUPS['Karyawan']))
+            ->call('selectGroup', 4)
+            ->assertSet('permissions', array_merge(['view-benefit'], HrAccess::GROUPS['Karyawan'], HrAccess::GROUPS['Jenis cuti']))
             ->call('save')
             ->assertHasNoErrors()
             ->assertDispatched('wirekit-toast');
 
-        $this->assertEqualsCanonicalizing(HrAccess::GROUPS['Karyawan'], $hr->fresh()->getDirectPermissions()->pluck('name')->all());
+        $this->assertEqualsCanonicalizing(array_merge(['view-benefit'], HrAccess::GROUPS['Karyawan'], HrAccess::GROUPS['Jenis cuti']), $hr->fresh()->getDirectPermissions()->pluck('name')->all());
+
+        Livewire::test(DetailRolePermission::class, ['user' => $hr])
+            ->call('selectAllPermissions')
+            ->assertSet('permissions', HrAccess::hr())
+            ->call('clearPermissions')
+            ->assertSet('permissions', [])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertCount(0, $hr->fresh()->getDirectPermissions());
     }
 }
