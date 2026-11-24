@@ -68,7 +68,7 @@ class Assistant extends Component
         $this->isLoading = true;
 
         // Keep the current request out of the history we send to the model.
-        // The current prompt is passed separately to stream(), so it appears
+        // The current prompt is passed separately to prompt(), so it appears
         // exactly once in the model context.
         $this->messages = array_slice($this->messages, -12);
         $history = collect($this->messages)
@@ -89,16 +89,16 @@ class Assistant extends Component
         try {
             $response = HRAssistant::make()
                 ->withMessages($history)
-                ->stream(
+                ->prompt(
                     $prompt,
                     provider: '9router',
                     model: config('ai.providers.9router.models.text.default')
                 );
 
-            // Drain the SSE stream completely so Laravel AI can execute
-            // tool calls and continue the agent loop until the final answer.
-            foreach ($response as $event) {
-                // The UI renders the completed answer as one message.
+            // The WireKit UI renders the completed response rather than streamed deltas.
+            // A non-streaming request avoids gateway-specific SSE parsing.
+            if (blank($response->text)) {
+                throw new \RuntimeException('AI returned an empty response.');
             }
 
             $this->messages[] = [
@@ -106,7 +106,20 @@ class Assistant extends Component
                 'content' => $response->text ?? '',
             ];
         } catch (Throwable $exception) {
-            logger()->warning('HRWork AI request failed', ['exception_type' => get_class($exception)]);
+            // Log the source location, not raw provider payloads or employee data.
+            logger()->warning('HRWork AI request failed', [
+                'exception_type' => get_class($exception),
+                'file' => str_replace(base_path().DIRECTORY_SEPARATOR, '', $exception->getFile()),
+                'line' => $exception->getLine(),
+                'diagnostic' => $exception instanceof \ErrorException
+                    ? match (true) {
+                        str_starts_with($exception->getMessage(), 'Undefined array key') => 'undefined_array_key',
+                        str_starts_with($exception->getMessage(), 'Trying to access array offset') => 'invalid_array_offset',
+                        str_starts_with($exception->getMessage(), 'Undefined property') => 'undefined_property',
+                        default => 'php_error',
+                    }
+                    : 'request_failed',
+            ]);
 
             array_pop($this->messages);
 

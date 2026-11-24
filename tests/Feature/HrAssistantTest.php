@@ -79,4 +79,23 @@ class HrAssistantTest extends TestCase
         Livewire::test(Assistant::class)->call('send', 'Test')->assertSet('messages', [])
             ->assertSee('AI belum diaktifkan');
     }
+
+    public function test_enabled_assistant_renders_completed_response(): void
+    {
+        $this->actingAs($this->hr(['view-ai-assistant']));
+        config([
+            'ai.hrwork_enabled' => true,
+            'ai.providers.9router.url' => 'http://example.test/v1',
+            'ai.providers.9router.key' => 'test-only',
+            'ai.providers.9router.models.text.default' => 'test-model',
+        ]);
+
+        HRAssistant::fake(['Halo, saya HRWork AI.']);
+
+        Livewire::test(Assistant::class)
+            ->call('send', 'Halo')
+            ->assertHasNoErrors()
+            ->assertSet('errorMessage', null)
+            ->assertSet('messages.1.content', 'Halo, saya HRWork AI.');
+    }
 }
