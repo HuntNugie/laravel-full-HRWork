@@ -46,7 +46,10 @@ class HRISWorkManagementRemovalTest extends TestCase
         $superAdmin = Role::findByName('super-admin', 'web');
         $this->assertTrue($superAdmin->hasPermissionTo('view-employee'));
         $this->assertTrue($superAdmin->hasPermissionTo('complete-termination'));
-        $this->assertTrue($superAdmin->hasPermissionTo('view-ai-assistant'));
+        $this->assertDatabaseMissing('permissions', ['name' => 'view-ai-assistant']);
+        $this->assertDatabaseMissing('permissions', ['name' => 'view-cv-analyzer']);
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('ai.assistant'));
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('ai.cv-analyzer'));
         $this->assertTrue($superAdmin->hasPermissionTo('reset-user-password'));
     }
 }

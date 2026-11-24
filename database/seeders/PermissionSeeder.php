@@ -67,8 +67,6 @@ class PermissionSeeder extends Seeder
             'update-user',
             'update-work-time',
             'view-absence',
-            'view-ai-assistant',
-            'view-cv-analyzer',
             'view-attendance',
             'view-benefit',
             'view-contract',
@@ -123,6 +121,7 @@ class PermissionSeeder extends Seeder
 
         // Remove retired permissions from existing installations as well.
         Permission::query()->where('guard_name', 'web')->whereIn('name', [
+            'view-ai-assistant', 'view-cv-analyzer',
             'approve-master-project', 'assign-project-team', 'assign-task',
             'create-division-project', 'create-master-project', 'create-task',
             'report-project-progress', 'review-division-project', 'review-project', 'review-task',

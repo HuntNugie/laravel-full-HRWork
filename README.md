@@ -1,3 +1,7 @@
+# HRWork — branch Kerja Praktik (work in progress)
+
+> Branch `kerjaPraktek` is a separate, unfinished refactor. Do not deploy it against the main branch database. AI Assistant and CV Analyzer have been retired; the remaining HRIS modules are still being refactored. The instructions below describe the inherited application and are not the final KP installation guide.
+
 # HRWork — HRIS for Work
 
 HRWork (*HRIS for Work*) adalah aplikasi Human Resource Information System berbasis Laravel dan Livewire yang berfokus pada **Karyawan**, **HRD**, dan **Administrator**. Layanan inti: data karyawan, jabatan (Position), kontrak kerja, presensi, cuti/izin, payroll, surat peringatan, resignation, dan termination. Work Management dan struktur organisasi (Divisi/Team) sudah dipensiunkan dari alur HRIS aktif.
@@ -5,7 +9,7 @@ HRWork (*HRIS for Work*) adalah aplikasi Human Resource Information System berba
 ## Ruang Lingkup dan Hak Akses
 
 - **Karyawan:** layanan mandiri (presensi, data diri, kontrak, payroll, cuti/izin, riwayat SP, resignation).
-- **HRD (`hr`):** data dan jabatan karyawan, kontrak, payroll, cuti/izin, presensi, SP, resignation, termination, serta AI Assistant dan CV Analyzer.
+- **HRD (`hr`):** data dan jabatan karyawan, kontrak, payroll, cuti/izin, presensi, SP, resignation, termination.
 - **Administrator (`administrator`):** pengelolaan akun, status aktif akun, penggantian password, role dan permission; tidak otomatis mendapat akses operasional HRD.
 - **Superadmin (`super-admin`):** akses keseluruhan fitur melalui `Gate::before`, termasuk fungsi semua peran.
 - Jabatan **Manager**, **Supervisor**, dan **General Manager** tetap boleh ada sebagai nama Position dalam data/kontrak, **bukan** role atau penugasan organisasi.

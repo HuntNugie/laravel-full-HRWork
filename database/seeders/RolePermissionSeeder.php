@@ -43,8 +43,6 @@ class RolePermissionSeeder extends Seeder
             ],
 
             'hr' => [
-                'view-ai-assistant',
-                'view-cv-analyzer',
                 'view-position',
                 'show-position',
                 'create-position',
