@@ -51,12 +51,13 @@ Tambahkan konfigurasi ke .env lokal (jangan commit API key):
 
 ```dotenv
 HRWORK_AI_ENABLED=true
-OPENAI_COMPATIBLE_URL=
+OPENAI_COMPATIBLE_URL=https://router.huntnugie.my.id/v1
 OPENAI_COMPATIBLE_API_KEY=
-OPENAI_COMPATIBLE_MODEL=
+OPENAI_COMPATIBLE_MODEL=op-key/gemini-3.8-flash
+DEBUGBAR_COLLECTORS_AI=false
 ```
 
-Isi URL gateway, API key dan model yang valid. Untuk database KP yang sudah ada jalankan `php artisan db:seed --class=PermissionSeeder` dan `php artisan optimize:clear`. Administrator memberi permission **view-ai-assistant** melalui Hak Akses HRD. Permission AI tidak otomatis memberi akses karyawan, kontrak atau jabatan. Tidak perlu migration ulang.
+Isi URL gateway, API key dan model yang valid. Seperti branch main, nonaktifkan AI Collector Debugbar dengan DEBUGBAR_COLLECTORS_AI=false karena collector 4.4.x tidak kompatibel dengan Laravel AI v1. Perubahan .env.example tidak otomatis mengubah .env lokal. Untuk database KP yang sudah ada jalankan `php artisan db:seed --class=PermissionSeeder` dan `php artisan optimize:clear`. Administrator memberi permission **view-ai-assistant** melalui Hak Akses HRD. Permission AI tidak otomatis memberi akses karyawan, kontrak atau jabatan. Tidak perlu migration ulang.
 
 ## Database
 

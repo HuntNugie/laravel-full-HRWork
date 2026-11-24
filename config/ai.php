@@ -30,7 +30,7 @@ return [
                 'text' => [
                     'default' => env(
                         'OPENAI_COMPATIBLE_MODEL',
-                        ''
+                        'op-key/gemini-3.8-flash'
                     ),
                 ],
             ],

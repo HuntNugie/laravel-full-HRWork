@@ -68,7 +68,7 @@ class Assistant extends Component
         $this->isLoading = true;
 
         // Keep the current request out of the history we send to the model.
-        // The current prompt is passed separately to prompt(), so it appears
+        // The current prompt is passed separately to stream(), so it appears
         // exactly once in the model context.
         $this->messages = array_slice($this->messages, -12);
         $history = collect($this->messages)
@@ -89,16 +89,16 @@ class Assistant extends Component
         try {
             $response = HRAssistant::make()
                 ->withMessages($history)
-                ->prompt(
+                ->stream(
                     $prompt,
                     provider: '9router',
                     model: config('ai.providers.9router.models.text.default')
                 );
 
-            // The WireKit UI renders the completed response rather than streamed deltas.
-            // A non-streaming request avoids gateway-specific SSE parsing.
-            if (blank($response->text)) {
-                throw new \RuntimeException('AI returned an empty response.');
+            // Drain the SSE stream completely so Laravel AI can execute
+            // tool calls and continue the agent loop until the final answer.
+            foreach ($response as $event) {
+                // The UI renders the completed answer as one message.
             }
 
             $this->messages[] = [
