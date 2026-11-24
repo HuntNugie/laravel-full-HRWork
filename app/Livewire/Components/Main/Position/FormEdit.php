@@ -57,6 +57,7 @@ class FormEdit extends Component
 
         $this->dispatch('wirekit-modal-close', name: 'edit-position');
         $this->dispatch('updated-position');
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Jabatan berhasil diperbarui.');
     }
 
     #[On('open-edit')]

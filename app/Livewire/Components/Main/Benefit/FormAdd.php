@@ -32,6 +32,9 @@ class FormAdd extends Component
 
         $this->dispatch('wirekit-modal-close', name: 'create-benefit');
         $this->dispatch('create-benefit');
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Benefit berhasil ditambahkan.');
+        $this->reset(['name', 'desc', 'isActive']);
+        $this->resetValidation();
     }
 
     public function canSubmit()

@@ -58,6 +58,7 @@ class FormAdd extends Component
 
         $this->dispatch('wirekit-modal-close', name: 'create-position');
         $this->dispatch('create-position');
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Jabatan berhasil ditambahkan.');
         $this->reset();
     }
     public function canSubmit()

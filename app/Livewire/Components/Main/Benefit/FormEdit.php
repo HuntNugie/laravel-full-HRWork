@@ -48,6 +48,7 @@ class FormEdit extends Component
 
         $this->dispatch('wirekit-modal-close', name: 'edit-benefit');
         $this->dispatch('update-benefit');
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Benefit berhasil diperbarui.');
     }
 
     public function canSubmit()

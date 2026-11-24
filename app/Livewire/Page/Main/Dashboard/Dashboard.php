@@ -18,7 +18,7 @@ class Dashboard extends Component
         $metrics = [];
         $expiring = collect();
         if ($admin) {
-            $metrics = ['Total akun HRD' => User::role('hr')->count(), 'Aktif' => User::role('hr')->where('status', 'active')->count(), 'Nonaktif' => User::role('hr')->where('status', 'inactive')->count()];
+            $metrics = ['Total akun HRD' => User::role('hr')->count(), 'Aktif' => User::role('hr')->where('status', 'active')->count(), 'Nonaktif' => User::role('hr')->where('status', 'inactive')->count(), 'Pending' => User::role('hr')->where('status', 'pending')->count()];
         } else {
             if ($user->can('view-employee')) {
                 $metrics += ['Total karyawan' => Employees::count(), 'Karyawan aktif' => Employees::where('status_employee', 'active')->count()];

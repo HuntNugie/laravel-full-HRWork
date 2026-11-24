@@ -32,6 +32,9 @@ class DetailEmployeeContract extends Component
         $this->contract->refresh();
         $this->employee->refresh();
         $this->reset('reason');
+        $this->resetValidation();
+        $this->dispatch('wirekit-modal-close', name: 'terminate-contract');
+        $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Kontrak berhasil diakhiri.');
     }
     public function render() { return view('livewire.page.main.employee.contract.detail-employee-contract'); }
 }

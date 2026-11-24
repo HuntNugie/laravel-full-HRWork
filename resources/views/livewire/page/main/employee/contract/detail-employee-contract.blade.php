@@ -615,13 +615,47 @@
             
     @can('terminate-contract')
         @if ($contract->status === 'active')
-            <x-wirekit::card><x-wirekit::card.body>
-                <h2 class="mb-3 text-lg font-semibold text-slate-900">Akhiri kontrak</h2>
-                <form wire:submit="terminate" class="space-y-3">
-                    <x-wirekit::textarea label="Alasan pengakhiran administratif" name="reason" wire:model="reason" />
-                    <x-wirekit::button type="submit" wire:confirm="Akhiri kontrak ini?">Akhiri kontrak</x-wirekit::button>
-                </form>
-            </x-wirekit::card.body></x-wirekit::card>
+            <x-wirekit::card>
+                <x-wirekit::card.header>
+                    <x-wirekit::stack gap="1">
+                        <h2 class="text-lg font-semibold text-slate-900">Pengakhiran Kontrak</h2>
+                        <p class="text-sm text-slate-500">Kelola status kontrak aktif secara administratif.</p>
+                    </x-wirekit::stack>
+                </x-wirekit::card.header>
+                <x-wirekit::card.body>
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <p class="text-sm text-slate-600">Kontrak saat ini aktif. Riwayat kontrak tetap tersimpan setelah diakhiri.</p>
+                        <x-wirekit::modal name="terminate-contract">
+                            <x-slot:trigger>
+                                <x-wirekit::button type="button" intent="danger">Akhiri Kontrak</x-wirekit::button>
+                            </x-slot:trigger>
+                            <x-wirekit::modal.header>
+                                <x-wirekit::stack gap="1">
+                                    <h2 class="text-lg font-semibold text-slate-900">Akhiri Kontrak</h2>
+                                    <p class="text-sm text-slate-500">Kontrak {{ $contract->contract_number }} akan ditandai terminated.</p>
+                                </x-wirekit::stack>
+                            </x-wirekit::modal.header>
+                            <x-wirekit::form wire:submit="terminate">
+                                <x-wirekit::modal.body>
+                                    <x-wirekit::stack gap="md">
+                                        <div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">Pastikan pengakhiran kontrak telah disetujui sesuai prosedur perusahaan.</div>
+                                        <x-wirekit::textarea label="Alasan pengakhiran administratif" name="reason" wire:model="reason" rows="4" />
+                                    </x-wirekit::stack>
+                                </x-wirekit::modal.body>
+                                <x-wirekit::modal.footer>
+                                    <x-wirekit::row justify="end" gap="sm">
+                                        <x-wirekit::modal.close><x-wirekit::button type="button" intent="neutral" surface="outline">Batal</x-wirekit::button></x-wirekit::modal.close>
+                                        <x-wirekit::button type="submit" intent="danger" wire:loading.attr="disabled" wire:target="terminate">
+                                            <span wire:loading.remove wire:target="terminate">Akhiri Kontrak</span>
+                                            <span wire:loading wire:target="terminate"><x-wirekit::spinner /> Memproses...</span>
+                                        </x-wirekit::button>
+                                    </x-wirekit::row>
+                                </x-wirekit::modal.footer>
+                            </x-wirekit::form>
+                        </x-wirekit::modal>
+                    </div>
+                </x-wirekit::card.body>
+            </x-wirekit::card>
         @endif
     @endcan
     @if ($contract->ended_at)

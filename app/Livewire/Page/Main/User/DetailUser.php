@@ -5,6 +5,7 @@ namespace App\Livewire\Page\Main\User;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 #[Layout('layouts.main', ['title' => 'Detail Akun HRD'])]
@@ -44,6 +45,13 @@ class DetailUser extends Component
         $this->user->update(['status' => $this->user->status === 'active' ? 'inactive' : 'active', 'remember_token' => null]);
         \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $this->user->id)->delete();
         $this->dispatch('wirekit-toast', variant: 'success', title: 'Berhasil', message: 'Status akun diperbarui.');
+    }
+
+    #[On('change-user')]
+    public function refreshAccount(): void
+    {
+        $this->guardTarget('show-user');
+        $this->user->refresh();
     }
 
     public function render()
