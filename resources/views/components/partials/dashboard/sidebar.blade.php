@@ -2,6 +2,9 @@
     <x-wirekit::sidebar class="max-lg:max-h-[calc(100dvh-4rem)] max-lg:overflow-y-auto max-lg:overscroll-contain">
         <x-wirekit::sidebar.group label="Overview">
             <x-wirekit::sidebar.item href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" icon="home" wire:navigate>Dashboard</x-wirekit::sidebar.item>
+            @can('view-ai-assistant')
+                <x-wirekit::sidebar.item href="{{ route('ai.assistant') }}" :active="request()->routeIs('ai.assistant')" icon="sparkles" wire:navigate>HRWork AI</x-wirekit::sidebar.item>
+            @endcan
         </x-wirekit::sidebar.group>
         @role('administrator')
             <x-wirekit::sidebar.group label="Manajemen Sistem">

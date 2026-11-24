@@ -12,6 +12,7 @@ final class HrAccess
         'Jabatan' => ['view-position', 'show-position', 'create-position', 'update-position'],
         'Benefit' => ['view-benefit', 'show-benefit', 'create-benefit', 'update-benefit'],
         'Jenis cuti' => ['view-type-leave', 'show-type-leave', 'create-type-leave', 'update-type-leave'],
+        'AI Assistant' => ['view-ai-assistant'],
     ];
 
     public static function hr(): array

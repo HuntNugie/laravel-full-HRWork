@@ -7,7 +7,7 @@ Cabang terpisah dari `main`, berfokus pada administrasi data karyawan dan kontra
 - Administrator: dashboard akun, pembuatan/penonaktifan akun HRD, reset kata sandi, permission individual.
 - HRD: dashboard, karyawan (tanpa akun login), kontrak, jabatan, benefit, jenis cuti sesuai permission.
 - Kontrak: draft, aktivasi, berakhir otomatis, pengakhiran, nomor unik, riwayat status, snapshot benefit/hak cuti dan cetak PDF.
-- Presensi, payroll, pengajuan cuti/izin/sakit, kedisiplinan, alur resign/PHK, AI dan self-service karyawan tidak termasuk.
+- Presensi, payroll, pengajuan cuti/izin/sakit, kedisiplinan, alur resign/PHK, CV Analyzer dan self-service karyawan tidak termasuk.
 
 ## Instalasi lokal
 
@@ -43,6 +43,21 @@ php artisan serve
 
 Seeder mengisi wilayah, bank, katalog permission, dua role dan administrator awal; tidak membuat akun demo otomatis. Login administrator, buat akun HRD, lalu pilih permission masing-masing HRD. Role hr tidak otomatis mendapatkan permission operasional.
 
+## AI Assistant (opsional)
+
+Chat WireKit dari main dan Laravel AI menggunakan gateway 9Router/OpenAI-compatible. Lima tool read-only mengikuti permission HRD. Tidak ada NIK, alamat, rekening, kontak pribadi, gaji atau catatan bebas pada hasil tool. Prompt dan hasil tool dapat diteruskan ke provider; perusahaan harus menyetujui provider dan pemrosesan data sebelum aktivasi.
+
+Tambahkan konfigurasi ke .env lokal (jangan commit API key):
+
+```dotenv
+HRWORK_AI_ENABLED=true
+OPENAI_COMPATIBLE_URL=
+OPENAI_COMPATIBLE_API_KEY=
+OPENAI_COMPATIBLE_MODEL=
+```
+
+Isi URL gateway, API key dan model yang valid. Untuk database KP yang sudah ada jalankan `php artisan db:seed --class=PermissionSeeder` dan `php artisan optimize:clear`. Administrator memberi permission **view-ai-assistant** melalui Hak Akses HRD. Permission AI tidak otomatis memberi akses karyawan, kontrak atau jabatan. Tidak perlu migration ulang.
+
 ## Database
 
 Migrasi domain KP dikonsolidasikan dalam satu file schema baru. Migrasi infrastruktur Laravel, Spatie dan wilayah tetap digunakan. Tidak tersedia jalur upgrade in-place dari database main; migrasi data lama harus dirancang terpisah bila dibutuhkan. Jangan menjalankan migrate:fresh pada database yang berisi data penting.
@@ -63,4 +78,4 @@ php artisan route:list
 npm run build
 ```
 
-Uji manual login kedua role, penolakan akses URL langsung, pemberian/pencabutan permission, tambah karyawan tanpa user, CRUD master, draft/aktivasi/expiry/pengakhiran kontrak, riwayat snapshot dan render PDF. PHPUnit memakai SQLite in-memory. Paket AI dan Leaflet yang tidak lagi dipakai dapat dibersihkan berikut lockfile melalui Composer/npm di lingkungan development; jangan mengedit lockfile secara manual.
+Uji manual login kedua role, penolakan akses URL langsung, pemberian/pencabutan permission, tambah karyawan tanpa user, CRUD master, draft/aktivasi/expiry/pengakhiran kontrak, riwayat snapshot dan render PDF. PHPUnit memakai SQLite in-memory. Paket Leaflet yang tidak lagi dipakai dapat dibersihkan berikut lockfile melalui Composer/npm di lingkungan development; jangan mengedit lockfile secara manual.

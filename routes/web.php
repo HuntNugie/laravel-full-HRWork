@@ -4,6 +4,7 @@ use App\Http\Controllers\PrintContractEmployeeController;
 use App\Livewire\Components\Main\Employee\CreateEmployee;
 use App\Livewire\Page\Auth\Login;
 use App\Livewire\Page\Main\Base\MyProfile;
+use App\Livewire\Page\Main\AI\Assistant;
 use App\Livewire\Page\Main\Benefit\Benefit;
 use App\Livewire\Page\Main\Benefit\DetailBenefit;
 use App\Livewire\Page\Main\Contract\Contract;
@@ -37,6 +38,7 @@ Route::middleware(['auth', 'isActive', 'role:administrator|hr'])->group(function
     });
 
     Route::middleware('role:hr')->group(function () {
+        Route::get('/ai-assistant', Assistant::class)->middleware('permission:view-ai-assistant')->name('ai.assistant');
         Route::prefix('employees')->group(function () {
             Route::get('/', Employee::class)->middleware('permission:view-employee')->name('employee.view');
             Route::get('/create', CreateEmployee::class)->middleware('permission:create-employee')->name('employee.create');
